@@ -77,8 +77,11 @@ install httpx2 instead`（FastAPI 0.162 + httpx 0.28.1 的已知弃用提示，�
 1. **本机主目录是 Git 仓库**（`C:\Users\25803\.git`，origin 指向另一项目）。项目内已
    `git init` 隔离，`git rev-parse --show-toplevel` 为 `C:/Users/25803/finance-media-ai`；
    但任何 `cd` 到父目录执行 git 命令都会命中那一个仓库——操作前必须确认 toplevel。
-2. **尚无远程仓库**：需求提到"GitHub 私有仓库已创建"，但本地没有任何指向
-   `finance-media-ai` 的 remote，因此本次只做本地提交，未 push（不擅自创建远程）。
+2. **远程历史与本项目无关，已用 merge 整合**：远程 `https://github.com/AckNove/finance-media-ai.git`
+   在接入前已有一次 `Initial commit`（`8632e0c`，内容仅 `README.md` 一行标题）。本地历史与之
+   无共同祖先，因此采用 `git merge --allow-unrelated-histories` 合并（`README.md` 冲突采用本地
+   完整版本，远程内容仅为同名 H1，无信息丢失），**全程未使用 `--force`**。推送结果：
+   `8632e0c..c8c3caa main -> main`（快进推送）。
 3. SQLite 下 `unique=True, index=True` 落成**唯一索引**而非表级 UNIQUE 约束，
    inspector 报告的形态与 PostgreSQL 不同（已在测试中按方言实际情况断言）。
 4. `KnowledgeService.search()` 为全表 `LIKE`，数据量大时性能会退化。
