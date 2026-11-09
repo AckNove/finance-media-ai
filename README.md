@@ -98,6 +98,7 @@ tests/                             76 个 pytest 用例
 | `docs/agent_manual.md` | 九角色、统一协议、调度接口、新增角色步骤 |
 | `docs/workflow.md` | 十四步内容/视频工作流、状态机、四个模板、12 项质检 |
 | `docs/phase1_acceptance.md` | 12 项验收实测结果 + 功能状态（DONE/PARTIAL/NOT IMPLEMENTED） |
+| `docs/research_hub/` | **第二阶段架构设计**（10 份）：现状审计、系统架构、业务流程、数据库设计、Agent 架构、工具能力、API、状态机、路线图、验收标准 |
 | `agents/PROTOCOL.md` | Agent 统一输入输出协议（10 字段）+ 品牌与内容规则 |
 
 ## 安全约定
