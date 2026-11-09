@@ -1,0 +1,65 @@
+# 模板：case_documentary（案例复盘）
+#
+# 用途：金融事件与企业案例。结局先行，然后回到当时的平衡，推进时间线，抽出放大器。
+# 纪律：不猎奇、不点名指控、不虚构时间线节点。
+
+id: case_documentary
+display_name: 案例复盘型
+description: 结局先行，还原时间线与资金流向，提炼可迁移的机制与放大器
+
+target_duration_seconds:
+  min: 120
+  max: 360
+  default: 210
+
+canvas:
+  width: 1080
+  height: 1920
+  fps: 30
+  aspect_ratio: "9:16"
+
+structure:
+  - key: outcome_first
+    label: 结局先行
+    share: 0.10
+    requirement: 先给结果（金额/违约/损失），并标注时点
+  - key: equilibrium
+    label: 当时的平衡
+    share: 0.18
+    requirement: 说明事发前的契约关系与激励结构
+  - key: timeline
+    label: 时间线推进
+    share: 0.30
+    requirement: 每个节点必须有来源；无来源节点删除
+  - key: amplifier
+    label: 放大器
+    share: 0.22
+    requirement: 至少一个放大机制（杠杆/期限错配/抵押品贬值/交叉违约）
+  - key: mechanism
+    label: 机制结论
+    share: 0.12
+    requirement: 去掉具体公司名后的通用规律 + 适用边界
+  - key: close
+    label: 免责声明
+    share: 0.08
+    requirement: 声明基于公开信息，不构成对任何主体的指控
+
+analogy_policy:
+  required: false
+  require_scope_statement: true
+  require_limitations_statement: true
+  max_share_of_script: 0.15
+
+compliance_notes:
+  - 涉及未定罪个人或机构时，只描述已公开的法律文书与披露事实
+  - 评价性表述必须标注为观点并给出依据
+  - 禁止渲染个人恩怨与动机推测
+
+visual_preferences:
+  - 时间线纵向排列，节点不超过 5 个
+  - 资金流向用实线（已发生）/虚线（或有）区分
+  - 结局数字用单一焦点大字号
+
+review_gates:
+  - fact_checker.verify_claims
+  - fact_checker.review_compliance

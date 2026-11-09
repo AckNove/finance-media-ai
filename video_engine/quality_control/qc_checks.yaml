@@ -1,0 +1,87 @@
+# 自动质检项（第一阶段：清单已定义，检测脚本未实现）
+#
+# 说明：
+#   - 本文件是质检规则的唯一来源，agents/video_producer/PROMPT.md 的 run_qc 必须逐项覆盖。
+#   - 当前没有任何脚本读取本文件；检测逻辑属于渲染引擎阶段（见 ../renderers/README.md）。
+#   - 标 auto: true 的项将来可由 ffprobe/规则脚本自动判定；auto: false 必须人工确认。
+
+version: 1
+spec:
+  canvas: {width: 1080, height: 1920, fps: 30, aspect_ratio: "9:16"}
+  duration_tolerance_ratio: 0.10
+  subtitle: {max_chars_per_line: 14, safe_margin_bottom_px: 180}
+  loudness: {target_lufs: -14, tolerance_lufs: 2, max_true_peak_dbtp: -1}
+  sync: {max_offset_ms: 200}
+
+checks:
+  - id: canvas
+    label: 画布与帧率
+    auto: true
+    rule: 分辨率 1080x1920、fps 30、比例 9:16
+    on_fail: blocker
+
+  - id: duration
+    label: 时长偏差
+    auto: true
+    rule: 与脚本目标时长偏差不超过 10%
+    on_fail: needs_fix
+
+  - id: subtitle_presence
+    label: 字幕完整性
+    auto: true
+    rule: 每个口播段落都有对应字幕，无遗漏
+    on_fail: blocker
+
+  - id: subtitle_line_length
+    label: 单行字数
+    auto: true
+    rule: 每行不超过 14 字
+    on_fail: needs_fix
+
+  - id: subtitle_safe_area
+    label: 字幕安全区
+    auto: true
+    rule: 距底部至少 180px，避免被平台 UI 遮挡
+    on_fail: needs_fix
+
+  - id: audio_sync
+    label: 音画同步
+    auto: true
+    rule: 口播起止与镜头起止偏差不超过 200ms
+    on_fail: blocker
+
+  - id: loudness
+    label: 响度
+    auto: true
+    rule: -14 LUFS ±2，峰值不超过 -1 dBTP
+    on_fail: needs_fix
+
+  - id: number_consistency
+    label: 数字一致性
+    auto: false
+    rule: 屏上数字与脚本数字逐项一致（含单位与时点）
+    on_fail: blocker
+
+  - id: disclaimer_present
+    label: 免责声明
+    auto: false
+    rule: 成片结尾出现完整免责声明，可读时长不少于 3 秒
+    on_fail: blocker
+
+  - id: analogy_boundary_spoken
+    label: 类比边界
+    auto: false
+    rule: 含足球类比时，成立与不成立的部分都在口播或字幕中出现
+    on_fail: blocker
+
+  - id: hook_has_substance
+    label: 片头有效性
+    auto: false
+    rule: 前 3 秒出现具体信息（数字/条款/时点），无空白帧与寒暄
+    on_fail: needs_fix
+
+  - id: investment_advice
+    label: 投资建议
+    auto: false
+    rule: 不出现买卖、点位、仓位、标的评级等面向个人的建议
+    on_fail: blocker

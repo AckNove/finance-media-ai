@@ -1,0 +1,48 @@
+# ============================================================
+# 个人 IP / 品牌配置
+# 说明：常量型品牌信息。任何真实姓名、联系方式、账号密码都不写在此处。
+# ============================================================
+
+brand:
+  name: finance-media-ai
+  display_name: 金融知识研究台
+  tagline: 用足球讲金融，用金融看世界
+  positioning: 以个人 IP 为核心的金融知识自媒体研究与内容生产平台
+  language: zh-CN
+
+audience:
+  primary: 有一定学习能力、希望系统理解金融行业的成年人
+  assumed_knowledge: 具备基础经济学常识，不假定金融从业经验
+  excluded: 寻求具体投资买卖建议的人群
+
+tone:
+  primary_style: 专业金融讲解
+  secondary_style: 适度幽默
+  football_element: 作为教学隐喻，不作为内容边界
+  forbidden:
+    - 为了趣味性扭曲真实金融机制
+    - 用足球类比替代真实的金融定义与公式
+    - 承诺收益、暗示稳赚
+    - 面向个人的具体投资买卖建议
+
+analogy_policy:
+  # 足球类比必须双向说明：哪里成立、哪里不成立
+  require_scope_statement: true
+  require_limitations_statement: true
+  max_analogy_share_of_script: 0.35
+  note: 类比是脚手架，不是证据；一旦类比的边界不清，必须显式标注不成立的部分。
+
+platforms:
+  primary:
+    - name: 抖音
+      aspect_ratio: "9:16"
+      default_duration_seconds: 180
+    - name: 小红书
+      aspect_ratio: "9:16"
+      default_duration_seconds: 180
+  secondary:
+    - name: 微信公众号
+      aspect_ratio: null
+      default_duration_seconds: null
+  # 实际分发改由人工完成，系统不自动发布
+  auto_publish: false

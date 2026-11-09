@@ -1,0 +1,59 @@
+# 模板：industry_research（产业链研究）
+#
+# 用途：产业链与利润池。核心不是"行业前景"，而是"钱在哪一环赚到、凭什么"。
+
+id: industry_research
+display_name: 产业链研究型
+description: 用具体现象切入，展示产业链全景与利润池分布，解释议价能力来源
+
+target_duration_seconds:
+  min: 90
+  max: 300
+  default: 180
+
+canvas:
+  width: 1080
+  height: 1920
+  fps: 30
+  aspect_ratio: "9:16"
+
+structure:
+  - key: hook
+    label: 一个具体数字或现象
+    share: 0.10
+    requirement: 数字必须带时点与口径
+  - key: chain_map
+    label: 链条全景
+    share: 0.28
+    requirement: 至少 4 个环节，每环一句话说明"靠什么赚钱"
+  - key: profit_pool
+    label: 利润池在哪
+    share: 0.24
+    requirement: 给出可复核的毛利率/净利率量级比较，并注明口径
+  - key: why
+    label: 凭什么
+    share: 0.20
+    requirement: 至少一个议价能力来源（技术代差/规模/准入/切换成本）
+  - key: what_changes
+    label: 什么会变
+    share: 0.10
+    requirement: 指出一个可能改变利润分配的变量
+  - key: close
+    label: 边界与免责声明
+    share: 0.08
+    requirement: 说明样本与非上市企业数据局限
+
+analogy_policy:
+  required: false
+  require_scope_statement: true
+  require_limitations_statement: true
+  max_share_of_script: 0.15
+
+visual_preferences:
+  - 链条图纵向排列（竖屏），每屏 4-5 个环节
+  - 利润池用同一坐标轴同口径对比，禁止混合口径
+  - 关键企业用类型标签，不点名评价个体
+
+review_gates:
+  - fact_checker.verify_claims
+  - fact_checker.check_consistency

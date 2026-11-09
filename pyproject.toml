@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finance-media-ai"
+version = "0.1.0"
+description = "以个人 IP 为核心的金融知识自媒体研究与内容生产平台（第一阶段：基础设施）"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "finance-media-ai" }]
+
+# 第一阶段实际运行所需依赖；与 requirements.txt 保持一致。
+dependencies = [
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.30,<1.0",
+    "SQLAlchemy>=2.0.30,<2.1",
+    "alembic>=1.13,<2.0",
+    "pydantic>=2.8,<3.0",
+    "pydantic-settings>=2.4,<3.0",
+    "PyYAML>=6.0,<7.0",
+]
+
+[project.optional-dependencies]
+# 开发/测试依赖
+dev = [
+    "pytest>=8.0,<9.0",
+    "httpx>=0.27,<1.0",
+]
+# 第二阶段图表生成依赖（第一阶段未安装、未实现）
+charts = ["matplotlib>=3.8"]
+# 第二阶段数据库迁移依赖（第一阶段使用 SQLite，未安装、未验证）
+postgres = ["psycopg[binary]>=3.1"]
+
+[tool.setuptools]
+packages = ["backend", "backend.app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "error::DeprecationWarning:backend.*",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".venv", "backend/migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]  # FastAPI Depends() 在默认参数中调用是官方推荐写法

@@ -1,0 +1,61 @@
+# 模板：financial_mechanism（机制讲解）
+#
+# 用途：主线的金融知识讲解型。以反直觉现象开场，拆到现金流/定价，落到风险承担者。
+# 特点：不依赖足球，也可以完全不用类比。
+
+id: financial_mechanism
+display_name: 金融机制讲解型
+description: 用反直觉现象开场，拆解一个金融机制的现金流、定价与风险结构
+
+target_duration_seconds:
+  min: 60
+  max: 240
+  default: 150
+
+canvas:
+  width: 1080
+  height: 1920
+  fps: 30
+  aspect_ratio: "9:16"
+
+structure:
+  - key: hook
+    label: 反直觉现象
+    share: 0.10
+    requirement: 10 秒内提出一个真实且可核对的矛盾现象
+  - key: why_exists
+    label: 它为什么能存在
+    share: 0.18
+    requirement: 说明制度/条款/激励上的原因，不得只写"市场情绪"
+  - key: cash_flow
+    label: 现金流与定价拆解
+    share: 0.30
+    requirement: 给出至少一条完整资金链路或定价公式
+  - key: risk_bearer
+    label: 谁在承担风险
+    share: 0.20
+    requirement: 明确风险承担者与转移路径
+  - key: break_condition
+    label: 什么会打破它
+    share: 0.12
+    requirement: 给出至少一个可观察的失效触发条件
+  - key: close
+    label: 边界与免责声明
+    share: 0.10
+    requirement: 说明适用辖区与时点，出现完整 disclaimer
+
+analogy_policy:
+  required: false
+  optional_source: football_researcher
+  require_scope_statement: true
+  require_limitations_statement: true
+  max_share_of_script: 0.20
+
+visual_preferences:
+  - 现金流用横向箭头链路，箭头旁标注"流的是什么"
+  - 定价公式用逐项展开动画，不要一次给全式
+  - 风险承担者用角色标签而非抽象图形
+
+review_gates:
+  - fact_checker.verify_claims
+  - fact_checker.review_compliance

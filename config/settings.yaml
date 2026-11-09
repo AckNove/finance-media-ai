@@ -1,0 +1,69 @@
+# ============================================================
+# finance-media-ai 全局运行配置
+# 注意：本文件只放非敏感的应用配置。密钥一律走环境变量（见 .env.example）。
+# ============================================================
+
+app:
+  name: finance-media-ai
+  version: 0.1.0
+  description: 金融知识自媒体研究与内容生产平台
+  api_prefix: /api
+  docs_url: /docs
+  redoc_url: /redoc
+
+server:
+  host: 127.0.0.1
+  port: 8000
+  # 第一阶段为本地单体服务，不引入反向代理与容器编排
+  workers: 1
+
+database:
+  # 默认值，可被环境变量 DATABASE_URL 覆盖
+  url: sqlite:///./data/finance_media.db
+  echo: false
+  # 第一阶段使用 SQLite；模型层不使用 SQLite 专有类型，便于后续迁移 PostgreSQL
+  target_production_dialect: postgresql
+  pool_pre_ping: true
+
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s"
+
+paths:
+  config_dir: config
+  agents_dir: agents
+  knowledge_dir: knowledge
+  content_dir: content
+  prompts_dir: prompts
+  data_dir: data
+  video_engine_dir: video_engine
+
+pagination:
+  default_limit: 20
+  max_limit: 100
+
+# --- 第二阶段预留：模型与检索接入（第一阶段未实现任何调用） ---
+integrations:
+  llm:
+    enabled: false
+    provider: null          # 例如 deepseek / openai / local
+    base_url: null          # 从环境变量读取，不写入仓库
+    model: null
+  web_search:
+    enabled: false
+    provider: null
+  vector_store:
+    enabled: false
+    # 约束：第一阶段不引入独立向量数据库，检索用数据库全文/模糊匹配
+
+video:
+  # 默认竖屏规格，适配抖音/小红书
+  width: 1080
+  height: 1920
+  fps: 30
+  aspect_ratio: "9:16"
+  audio_sample_rate: 48000
+  subtitle_format: srt
+  ffmpeg_binary: ffmpeg
+  # 第一阶段不执行渲染，仅定义规格
+  rendering_enabled: false

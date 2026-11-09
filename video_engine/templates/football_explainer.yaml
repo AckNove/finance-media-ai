@@ -1,0 +1,60 @@
+# 模板：football_explainer（足球入口，金融落点）
+#
+# 用途：用一个真实足球商业场景切入，引出金融机制，最后回到足球验证。
+# 纪律：足球是教学工具；必须在片中口播类比的边界。
+
+id: football_explainer
+display_name: 足球切入型
+description: 从真实足球商业场景切入，讲清一个金融机制，再回到足球场景验证
+
+target_duration_seconds:
+  min: 90
+  max: 180
+  default: 150
+
+canvas:
+  width: 1080
+  height: 1920
+  fps: 30
+  aspect_ratio: "9:16"
+
+structure:
+  - key: hook
+    label: 足球场景切入
+    share: 0.12
+    requirement: 前 15 秒内出现具体场景（金额/条款/时点），禁止寒暄
+  - key: bridge
+    label: 引出金融问题
+    share: 0.12
+    requirement: 明确说出"这件事背后的金融问题是什么"
+  - key: mechanism
+    label: 机制拆解
+    share: 0.34
+    requirement: 至少拆解现金流或定价中的一个完整链条
+  - key: back_to_football
+    label: 回到足球验证
+    share: 0.20
+    requirement: 用同一机制重新解释开头的场景，不得引入新事实
+  - key: boundary
+    label: 类比边界声明
+    share: 0.12
+    requirement: 必须口播"哪里像、哪里不像"，缺此段视为不合规
+  - key: close
+    label: 收束与免责声明
+    share: 0.10
+    requirement: 出现完整 disclaimer，不出现投资建议
+
+analogy_policy:
+  required: true
+  require_scope_statement: true
+  require_limitations_statement: true
+  max_share_of_script: 0.35
+
+visual_preferences:
+  - 场景数字用大字号单一焦点
+  - 机制部分用流向图（箭头需标注"流的是什么"）
+  - 边界声明用对照表（成立 / 不成立）
+
+review_gates:
+  - fact_checker.review_analogy
+  - fact_checker.review_compliance

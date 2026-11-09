@@ -1,0 +1,76 @@
+# ============================================================
+# 内容生产规则
+# 这些规则同时被：Agent 提示词、Fact Checker 审核、测试用例引用。
+# 修改本文件时需同步 docs/content 相关文档。
+# ============================================================
+
+compliance:
+  allow_investment_advice: false
+  forbid_guaranteed_return_claims: true
+  require_disclaimer: true
+  disclaimer_text: >-
+    本内容为金融知识科普，不构成任何投资建议。市场有风险，决策需自主判断。
+  # 出现下列关键词时，Fact Checker 必须强制进入人工复核
+  human_review_triggers:
+    - 推荐买入
+    - 推荐卖出
+    - 稳赚
+    - 保本高收益
+    - 内幕消息
+    - 必然上涨
+    - 必然下跌
+
+evidence:
+  # 重要事实必须关联证据，否则不得进入脚本阶段
+  require_evidence_for_facts: true
+  min_sources_per_report: 2
+  support_types:
+    - supports
+    - refutes
+    - contextual
+    - ambiguous
+  # 事实、推断、观点必须在数据层显式区分
+  statement_natures:
+    - fact
+    - inference
+    - opinion
+  # 证据不足时的处理方式
+  on_missing_evidence: block_script_stage
+
+sourcing:
+  prefer_primary_sources: true
+  min_credibility_for_key_fact: high
+  require_access_date: true
+  require_jurisdiction: true
+  # 禁止的来源类型
+  forbidden_source_types:
+    - 匿名聊天截图
+    - 无法追溯出处的二次转述
+  citation_style: 标题 + 发布机构 + 日期 + 链接
+
+writing:
+  script_template_structures:
+    football_explainer: [钩子, 金融概念, 足球类比, 类比边界, 机制拆解, 案例, 结论]
+    financial_mechanism: [钩子, 定义, 参与者, 资金流向, 定价逻辑, 风险结构, 结论]
+    industry_research: [钩子, 产业链全景, 上下游利润分配, 关键企业, 风险, 结论]
+    case_documentary: [钩子, 事件时间线, 关键数字, 资金流向, 争议点, 启示, 结论]
+  max_sentences_per_scene: 3
+  hook_max_seconds: 8
+
+review:
+  stages:
+    - professional      # 专业审核（金融准确性）
+    - compliance        # 合规审核（投资建议/免责声明）
+    - final             # 终审（人工）
+  verdicts:
+    - pass
+    - needs_revision
+    - reject
+  require_human_final_approval: true
+  # 未经 final 审核通过的脚本版本不得产生发布记录
+  block_publication_without_approval: true
+
+workflow_states:
+  research: [pending, in_progress, completed, failed]
+  content: [idea, research, drafting, reviewing, approved, storyboard, producing, qa, published, archived]
+  note: 状态机在 backend/app/models/enums.py 中实现，本处为人类可读版本。

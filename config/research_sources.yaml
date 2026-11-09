@@ -1,0 +1,124 @@
+# ============================================================
+# 研究来源分级清单（research_sources.yaml）
+# 用途：
+#   1. 作为 Financial/Industry/Football Researcher 的取源白名单参考。
+#   2. 作为 Fact Checker 判断 credibility_level 的默认依据。
+#   3. 作为 research_sources 相关测试的固定数据。
+# 说明：本文件只登记来源类别与可信度基线，不存任何密钥与个人联系方式。
+# ============================================================
+
+version: 1
+
+credibility_scale:
+  high: 一手权威数据、监管披露、交易所公告、经同行评审研究
+  medium: 有编辑审核的专业媒体、行业协会报告、券商深度研究
+  low: 自媒体转述、无署名聚合站、论坛帖
+  unknown: 来源不明或尚未评估
+
+# --- 一级来源：监管与官方统计 ---
+primary:
+  official_statistics:
+    credibility: high
+    license_status: public_domain
+    examples:
+      - 国家统计局
+      - 中国人民银行
+      - 国家外汇管理局
+      - 中国证监会
+      - 国家金融监督管理总局
+      - 美国证券交易委员会 (SEC EDGAR)
+      - 美国联邦储备委员会 (FRED)
+      - 欧洲中央银行
+    notes: 优先用于宏观数据、监管规则与行业口径定义。
+
+  exchange_disclosure:
+    credibility: high
+    license_status: public_domain
+    examples:
+      - 上海证券交易所
+      - 深圳证券交易所
+      - 北京证券交易所
+      - 香港交易所披露易 (HKEXnews)
+      - 纽约证券交易所 / 纳斯达克 (SEC filings)
+      - 伦敦证券交易所 (RNS)
+    notes: 上市公司年报、招股书、重大事项公告的关键一手来源。
+
+  regulator_filing:
+    credibility: high
+    license_status: public_domain
+    examples:
+      - 基金业协会备案信息
+      - 保险业协会披露
+      - 欧足联 (UEFA) 俱乐部许可与财务公平竞赛披露
+      - 各国公司注册处 (Companies House 等)
+    notes: 用于金融机构、俱乐部主体与产品备案信息。
+
+# --- 二级来源：专业研究与行业报告 ---
+secondary:
+  academic_paper:
+    credibility: high
+    license_status: varies
+    examples:
+      - SSRN
+      - NBER
+      - 中国知网 (CNKI)
+      - JSTOR
+    notes: 引用时须记录作者、年份与出处，并注意许可证限制。
+
+  industry_report:
+    credibility: medium
+    license_status: licensed
+    examples:
+      - 券商深度研究报告
+      - 行业协会年度报告
+      - 咨询机构行业白皮书
+    notes: 需交叉验证其口径，标注报告方立场与利益关系。
+
+  company_report:
+    credibility: medium
+    license_status: licensed
+    examples:
+      - 上市公司年报与投资者关系材料
+      - 俱乐部财报（如 Deloitte Football Money League 配套数据）
+    notes: 注意会计口径与统计期间差异。
+
+# --- 三级来源：媒体（仅作背景与线索，不作关键事实唯一来源） ---
+tertiary:
+  financial_news:
+    credibility: medium
+    license_status: licensed
+    examples:
+      - 财新
+      - 路透社
+      - 彭博社
+      - 金融时报
+      - 新华社财经
+    notes: 关键数字必须回到一手披露核对。
+
+  football_media:
+    credibility: low
+    license_status: licensed
+    examples:
+      - 转会市场 (Transfermarkt)
+      - 主流体育媒体转会报道
+    notes: 转会费与条款口径差异极大，必须标注"媒体报道未经俱乐部确认"。
+
+  social_media:
+    credibility: low
+    license_status: unclear
+    examples:
+      - 社交平台账号爆料
+      - 论坛与社群讨论
+    notes: 仅作为线索，不得作为证据入库。
+
+forbidden:
+  - 匿名聊天截图
+  - 无法追溯出处的二次转述
+  - 篡改过的财务报表截图
+  - 付费"内幕消息"群组内容
+
+rules:
+  - 同一关键事实至少交叉两个独立来源，其中至少一个为一级来源。
+  - 所有来源必须记录 url、publisher、accessed_at 与 jurisdiction。
+  - 付费墙内容只记录元数据与原文摘录，不复制全文入库。
+  - 涉及中国境内金融产品，以境内监管口径为准并注明适用司法辖区。

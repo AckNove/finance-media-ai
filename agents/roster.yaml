@@ -1,0 +1,140 @@
+# Agent 名册与调度约定（第一阶段）
+#
+# 本文件是 Agent 团队的唯一机器可读清单，由 backend/app/services/agent_registry.py
+# 的 load_roster() 读取；roster_keys_missing_prompts() 会校验下面每个 prompt_file 是否存在。
+#
+# 字段说明：
+#   key             角色唯一标识，写入 agent_runs.agent_name；一经使用不得随意改名
+#   display_name    人类可读名称
+#   role            一句话职责
+#   prompt_file     相对 agents/ 的提示词文件路径（必须存在）
+#   responsibilities 职责要点，供调度器做任务路由初筛
+#   task_types      该角色接受的 task_type 取值，对应统一协议
+#
+# 统一输入输出协议见 agents/PROTOCOL.md。
+#
+# 第一阶段状态：仅完成角色定义、提示词、统一协议与可扩展调度接口。
+# 未接入任何大模型、网页搜索或抓取工具；RecordingDispatcher 只把任务登记进
+# agent_runs 表（status=pending，output 为空），不会编造任何执行结果。
+
+version: 1
+protocol: PROTOCOL.md
+
+agents:
+  - key: orchestrator
+    display_name: Research Orchestrator
+    role: "总调度：任务拆解、分派、结果整合与冲突收口"
+    prompt_file: orchestrator/PROMPT.md
+    responsibilities:
+      - 把选题拆成可执行研究任务
+      - 为每个任务指定执行角色与验收标准
+      - 汇总各角色产出，标注冲突与缺口
+    task_types:
+      - plan_research
+      - integrate_results
+      - escalate_to_human
+
+  - key: financial_researcher
+    display_name: Financial Researcher
+    role: "金融工具、产品、市场机制与风险结构研究"
+    prompt_file: financial_researcher/PROMPT.md
+    responsibilities:
+      - 解释金融工具的现金流与定价逻辑
+      - 说明参与方、利润来源与风险转移路径
+      - 记录数据口径（日期、币种、单位、辖区）
+    task_types:
+      - research_instrument
+      - research_market_mechanism
+      - explain_risk_structure
+
+  - key: football_researcher
+    display_name: Football Business Researcher
+    role: "足球商业、俱乐部财务、转会与足球金融案例研究"
+    prompt_file: football_researcher/PROMPT.md
+    responsibilities:
+      - 收集俱乐部财务与转会公开数据
+      - 区分足球特殊性与通用商业规律
+      - 为金融类比提供真实可核对的素材
+    task_types:
+      - research_club_finance
+      - research_transfer_case
+      - collect_analogy_material
+
+  - key: industry_researcher
+    display_name: Industry Researcher
+    role: "产业链、上下游、企业经营与利润分配研究"
+    prompt_file: industry_researcher/PROMPT.md
+    responsibilities:
+      - 画出产业链环节与关键企业
+      - 说明价值分配与议价能力来源
+      - 指出数据可得性与口径限制
+    task_types:
+      - map_industry_chain
+      - analyze_profit_pool
+      - profile_company
+
+  - key: case_analyst
+    display_name: Case Analyst
+    role: "金融事件、企业案例与资金流向分析"
+    prompt_file: case_analyst/PROMPT.md
+    responsibilities:
+      - 还原事件时间线与资金流向
+      - 区分因果与相关
+      - 提炼可迁移的机制结论
+    task_types:
+      - analyze_case
+      - trace_cash_flow
+      - extract_mechanism
+
+  - key: fact_checker
+    display_name: Fact Checker
+    role: "事实、数字、公式、来源、类比边界与合规审核"
+    prompt_file: fact_checker/PROMPT.md
+    responsibilities:
+      - 逐条核对事实与数字的来源
+      - 校验公式与量纲
+      - 判定类比成立与不成立的部分
+      - 拦截投资建议与合规风险
+    task_types:
+      - verify_claims
+      - check_consistency
+      - review_compliance
+      - review_analogy
+
+  - key: scriptwriter
+    display_name: Scriptwriter
+    role: "把研究报告转成可拍摄的视频脚本"
+    prompt_file: scriptwriter/PROMPT.md
+    responsibilities:
+      - 按模板组织结构与节奏
+      - 保持事实与推断的区分表述
+      - 输出免责声明与引用清单
+    task_types:
+      - write_script
+      - revise_script
+
+  - key: visual_designer
+    display_name: Visual Designer
+    role: "知识图解、产业链图、资金流向图与分镜设计"
+    prompt_file: visual_designer/PROMPT.md
+    responsibilities:
+      - 把文字结构转成可视化结构
+      - 输出分镜表与图表绘制说明
+      - 保证图中数字与脚本文本一致
+    task_types:
+      - design_storyboard
+      - design_diagram
+      - specify_chart
+
+  - key: video_producer
+    display_name: Video Producer
+    role: "配音、字幕、视频合成与质检工作流"
+    prompt_file: video_producer/PROMPT.md
+    responsibilities:
+      - 规划配音与字幕制作
+      - 组装渲染任务与规范校验
+      - 执行自动质检并列出问题清单
+    task_types:
+      - plan_production
+      - build_render_spec
+      - run_qc
