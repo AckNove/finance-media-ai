@@ -206,6 +206,26 @@ cost:
 | 费用 | 低（默认纯规则比对；语义比对才调模型，且批量） |
 | 落库 | `tool_calls` + `review_records`（由 executor 汇总写入） |
 
+### 2.11 逐工具测试方法（M1.5 要求）
+
+> 每个工具至少覆盖 **成功 / 未配置 / 参数非法 / 权限拒绝** 四类；下表给出每个工具的特有验证点。
+> 原则：**离线可测**——需要外部服务的，一律用协议替换为 Fake；真实调用另打 `@pytest.mark.integration`。
+
+| 工具 | 成功用例（怎么做） | 特有失败/边界用例 | 离线方式 |
+|---|---|---|---|
+| `web_search` | FakeProvider 返回 3 条固定结果，断言字段与 `rank` 排序 | 空结果（`ok=true, results=[]`）；`not_configured` 时**不得**返回任何结果 | `FakeSearchProvider`（`tests/fixtures/search.json`） |
+| `fetch_url` | `http.server` 起本地端口返回固定 HTML，断言 `sha256` 与落盘路径 | 404→`not_found`；403→`SnapshotStatus.blocked`；超 5MB→`too_large`；超时→`timeout`；同一 URL 两次→两行快照 | 本地 `http.server` + fixture 文件 |
+| `parse_pdf` | fixture PDF 抽取文本，断言 `text[start:end] == quote` | 加密 PDF→`unsupported_format`；无文本层→`has_text_layer=false`（不返回空串冒充成功） | `tests/fixtures/sample.pdf` |
+| `parse_xlsx` | fixture XLSX 取表，断言列名与行数 | 超大表截断并给 `warnings`；公式列标 `formula_cached=true` | `tests/fixtures/sample.xlsx` |
+| `db_query` | 预置 3 条知识条目，按 `spec=knowledge_search` 命中 | 未知 spec→`invalid_argument`；越权表（如 Fact Checker 查 `topics`）→`permission_denied`；`limit` 超 100 被截断 | 事务内临时 SQLite（现有 `db_session` fixture） |
+| `db_write` | 写一条 evidence 并回读 | 幂等键重复→`skipped` 不报错；FK 不存在→`invalid_argument` + 字段路径；**权限拒绝**：scriptwriter 写 `evidence`→`denied`；`dry_run=true` 时不落库 | 事务内临时 SQLite + `dry_run` |
+| `llm_complete` | `FakeModelGateway` 返回合法 JSON，断言解析与 `usage` | `not_configured`→503；JSON 不合 schema→重试 1 次后 `schema_invalid`；超预算→**调用前**拦截 `budget_blocked`（断言网关未被调用） | `FakeModelGateway` |
+| `task_update` | 合法迁移 `pending→ready` 写库 + 事件 | 非法迁移→422 且 `details.allowed` 非空；租约过期→`permission_denied(lease_lost)` | 临时 SQLite |
+| `handoff` | 发 `request_revision` 落 `task_events` | 未知 `handoff_type`→`invalid_argument`；`to_agent` 不在 roster→`invalid_argument` | 临时 SQLite |
+| `fact_check` | 预置"引文一致"的证据 → `pass` | 篡改引文→`quote_mismatch` + `reject`；快照缺失→`issues[no_snapshot]` 为 blocker（保守失败）；非 Fact Checker 调用→`permission_denied` | 临时 SQLite + `FakeFetcher` |
+
+**验收口径**：每个工具的四类用例必须在 `pytest` 默认运行中全部执行（不联网、不需密钥）；`integration` 标记下再有 1 个真实调用用例，默认跳过。
+
 ---
 
 ## 3. 证据链的工具级保障（网页变化怎么办）

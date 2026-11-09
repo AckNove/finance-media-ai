@@ -23,7 +23,7 @@
 > **如何把「选题 → 资料 → 证据 → 分析 → 报告 → 内容 → 发布」变成一条真实可执行、
 > 可追溯、可控制成本、不会把推测写成事实的生产线？**
 
-本目录的 11 份文档就是这条生产线的完整设计。
+本目录的 13 份文档就是这条生产线的完整设计。
 
 ---
 
@@ -67,13 +67,15 @@
 
 | 文档 | 内容 | 什么时候读它 |
 |---|---|---|
+| [`m1_delivery_checklist.md`](m1_delivery_checklist.md) | **M1 交付记录**：Goal 能力自检 14 项、任务书逐条对照、实测证据、风险 | 想知道"M1 做完了没有、哪些是设计" |
 | [`current_state_audit.md`](current_state_audit.md) | **现状审计**：逐项标记真实实现 / 仅数据结构 / 仅 Prompt / 未实现 | 想确认"现在到底有什么" |
 | [`system_architecture.md`](system_architecture.md) | 总体架构、分层、运行时、部署形态、技术选型与理由 | 想理解系统骨架 |
 | [`business_workflow.md`](business_workflow.md) | 端到端业务流程 +《商业银行是如何赚钱的》完整推演 | 想知道"一条内容是怎么做出来的" |
 | [`database_design.md`](database_design.md) | 现有 ER 图、目标 ER 图、19 张新表字段、迁移方案 | 要动数据库之前必读 |
+| [`module_design.md`](module_design.md) | 七大模块（A–G）逐条能力：现状 → 目标设计 → 表/端点 → 阶段 | 想知道某个功能归哪张表、哪个阶段 |
 | [`agent_architecture.md`](agent_architecture.md) | 9 个 Agent 的边界、输入输出、权限、失败处理、编排机制 | 要写 Agent 代码之前必读 |
-| [`tooling_architecture.md`](tooling_architecture.md) | 10 个工具的接口契约、权限、错误、费用 | 要接工具之前必读 |
-| [`api_design.md`](api_design.md) | 新增 API 清单与请求/响应示例 | 要写后端接口之前必读 |
+| [`tooling_architecture.md`](tooling_architecture.md) | 10 个工具的接口契约、权限、错误、费用、**逐工具测试方法** | 要接工具之前必读 |
+| [`api_design.md`](api_design.md) | 新增 API 清单、请求/响应示例、**权限与错误码总表** | 要写后端接口之前必读 |
 | [`state_machine.md`](state_machine.md) | 选题、研究任务、子任务、内容的状态机与守卫条件 | 要写状态流转代码之前必读 |
 | [`implementation_roadmap.md`](implementation_roadmap.md) | 2.0–2.9 分阶段开发计划、依赖、迁移、验收、成本 | 要排期之前必读 |
 | [`acceptance_criteria.md`](acceptance_criteria.md) | 每个阶段的客观验收标准（可测试） | 每阶段结束时对照打勾 |

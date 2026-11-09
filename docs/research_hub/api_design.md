@@ -132,6 +132,58 @@
 | GET | `/api/ops/costs?date=` | 当日成本汇总（模型/工具/按 Agent） |
 | POST | `/api/_dev/worker/tick` | 手动推进一轮队列（仅 `execution.enabled=false` 或 `APP_ENV!=production` 可用） |
 
+### 2.3 权限与错误码（M1.7 要求）
+
+第二阶段**仍无身份认证**，因此"权限"在本文档中定义为**调用者类别**，由代码而非凭据约束：
+
+| 调用者 | 含义 | 实现方式 |
+|---|---|---|
+| `human` | 人工通过 `/docs`、前端或脚本调用 | 无限制 |
+| `agent` | 执行层（AgentExecutor）代表某个 Agent 调用的工具端点 | 工具白名单 + `db_scopes` 校验（见 [`tooling_architecture.md`](tooling_architecture.md) §1.3） |
+| `dev-only` | 仅本机开发可用 | 校验 `APP_ENV != production` 且请求来自 loopback；否则 404 |
+
+| 端点组 | 允许调用者 | 必须由人发起（Agent 无工具） | 主要错误码 |
+|---|---|---|---|
+| `/health`、`/api/system/status` | human、agent | — | 无（探针不返回业务错误） |
+| `/api/topics*` 读 | human、agent | — | `not_found` |
+| `POST /api/topics`、`PATCH /api/topics/{id}` | human、agent | — | `request_validation_error`、`conflict`（slug 重复） |
+| `POST /api/topics/{id}/approve`、`/merge`、`/split` | human | ✅ **是** | `domain_validation_error`（状态机不允许）、`not_found` |
+| `PUT /api/topics/{id}/collections`、`/tags` | human、agent（受限） | — | `domain_validation_error`（数量/primary 不唯一/未知 code） |
+| `POST /api/topics/{id}/score` | human、agent | — | `dependency_unavailable`（模型评分未配置）、`domain_validation_error` |
+| `POST /api/topics/discover`、`/candidates` | human、agent | — | `dependency_unavailable`（无搜索/模型） |
+| `/api/research-tasks*` 读、`/cost`、`/events` | human、agent | — | `not_found` |
+| `POST /api/research-tasks`、`/{id}/plan` | human、agent | — | `domain_validation_error`（选题未立项）、`not_found` |
+| `POST /{id}/start` | human、agent | — | `conflict`（`execution.enabled=false` 或已在运行） |
+| `POST /{id}/pause`、`/resume`、`/cancel`、`/revise` | human | ✅ **是** | `domain_validation_error`（状态机） |
+| `/api/sources*` 读、`/snapshots` | human、agent | — | `not_found` |
+| `POST /api/sources`、`/upload`、`/{id}/fetch`、`/summary` | human、agent | — | `invalid_argument`、`not_configured`（未配搜索）、`too_large` |
+| `POST /api/snapshots/{id}/extract` | human、agent | — | `unsupported_format`、`not_found` |
+| `/api/findings/*`、`/api/reports/*/findings` 读 | human、agent | — | `not_found` |
+| `POST /api/reports/{id}/findings`、`/findings/{id}/evidence` | human、agent（研究层） | — | `domain_validation_error`（证据不属于该结论/角色）、`not_found` |
+| `POST /api/reports/{id}/verify` | human、agent | — | `dependency_unavailable`（模型未配置）、`conflict`（已在核查） |
+| `POST /api/evidence/{id}/verify`（人工标 verified）、`/invalidate` | human | ✅ **verify 需要 note 时仅人** | `domain_validation_error` |
+| `/api/content-items*` 读、`/api/scripts/{id}` | human、agent | — | `not_found` |
+| `POST /api/content-items`、`/{id}/scripts`、`/scripts/{id}/links` | human、agent | — | `domain_validation_error`（报告未过核查） |
+| `POST /api/scripts/{id}/approve` | human | ✅ **是** | `domain_validation_error`（段落缺依据/未过审核） |
+| `POST /api/publications` | human | ✅ **是** | `domain_validation_error`（脚本未审批）、`conflict`（同平台同版本已存在） |
+| `GET /api/ops/costs` | human | — | 无 |
+| `POST /api/_dev/worker/tick` | `dev-only` | — | 生产环境返回 **404**（不是 403，避免暴露端点存在） |
+
+**统一错误码**（沿用现有 `backend/app/core/errors.py`）：
+
+| code | HTTP | 典型触发 |
+|---|---|---|
+| `request_validation_error` | 422 | 字段缺失/类型错误/`limit` 越界 |
+| `domain_validation_error` | 422 | 状态机不允许、引用不存在对象、数量超限 |
+| `not_found` | 404 | 读取不存在的资源 |
+| `conflict` | 409 | slug/唯一键冲突、重复启动、幂等键非法重放 |
+| `dependency_unavailable` | 503 | 模型/搜索未配置或不可用 |
+| `database_integrity_error` | 409 | 底层约束被触发（兜底） |
+| `database_error` / `internal_error` | 500 | 兜底，必须带日志 trace id |
+
+> 权限被拒时的返回：**不新增 403 语义**，统一用 `domain_validation_error`（422）+ `details.reason="permission_denied"`，
+> 与现有错误信封保持一致；只有开发端点在生产环境伪装成 `not_found`。
+
 ---
 
 ## 3. 关键请求/响应示例
