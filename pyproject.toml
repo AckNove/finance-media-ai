@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "finance-media-ai"
 version = "0.1.0"
-description = "以个人 IP 为核心的金融知识自媒体研究与内容生产平台（第一阶段：基础设施）"
+description = "AK带你拆解世界（电力之王AK）金融与商业研究内容生产平台"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Proprietary" }

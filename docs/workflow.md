@@ -27,6 +27,18 @@
 | 13 | 自动质检 | 质检报告 | `video_engine/quality_control/` | 12 项检查 | NOT IMPLEMENTED（清单已定义） |
 | 14 | 人工终审 + 发布 | `publications` 行 | `content/published/` | `script_id + script_version` | NOT IMPLEMENTED（表已建，无发布接口） |
 
+### 第 1 步之前：先定合集与形式
+
+选题进入流程前，先按 `config/content_taxonomy.yaml` 确定：
+
+- `collections`：1–3 个合集 + 1 个 primary（六大合集：金融知识 / 财经时事 / 产业链研究 /
+  公司商业解剖 / 足球金融与商业 / 金融与商业案例）；
+- `audience_level`：`mass` / `learner` / `researcher`（对应库字段 `beginner`/`intermediate`/`advanced`）；
+- `forms`：本次要做 60–120s 短视频、2–5min 知识视频、5–15min 纪录片、图文、报告、系列、
+  会员内容还是课程——**形式决定模板，模板不是形式本身**。
+
+数据库当前只有单选 `column_id`，多合集的真实存储是二期任务（见 `docs/content_strategy.md` §3）。
+
 ## 2. 状态机
 
 - 选题内容状态：`idea → research → drafting → reviewing → approved → storyboard →
@@ -52,6 +64,19 @@
 
 每个模板包含：`canvas`、`target_duration_seconds`、`structure`（段落 key/label/share/
 requirement）、`analogy_policy`、`review_gates`。
+
+### 内容形式 ↔ 模板映射
+
+| 内容形式（`config/content_taxonomy.yaml#forms`） | 时长 | 可用模板 |
+| --- | --- | --- |
+| `short_news` 热点短视频 | 60–120s | `financial_mechanism`、`football_explainer` |
+| `knowledge_video` 知识视频 | 120–300s | `financial_mechanism`、`football_explainer`、`industry_research` |
+| `documentary` 深度纪录片 | 300–900s | `case_documentary`、`industry_research` |
+| `article` 图文 / `research_report` / `series` / `member_research` / `course` | — | 不渲染视频（报告与课程可再派生上面三种） |
+
+注意时长口径差异：模板的 `target_duration_seconds` 是**单条视频的实现范围**，
+形式的时长是**产品定义的硬边界**，取交集使用（例如 60s 的短视频只能用
+`financial_mechanism` 的下限区间，不能套 300s 的产业链模板）。
 
 默认视频规格（全局）：**1080×1920、30fps、9:16 竖屏**，适配抖音与小红书
 （`config/settings.yaml` 的 `video`，`rendering_enabled: false`）。

@@ -1,9 +1,13 @@
 # ============================================================
-# 内容生产规则
+# 内容生产规则（正式战略版本 2.0，2026-11-09 确认）
 # 这些规则同时被：Agent 提示词、Fact Checker 审核、测试用例引用。
-# 修改本文件时需同步 docs/content 相关文档。
+# 修改本文件时需同步 docs/content_strategy.md、docs/business_model.md
+# 与 config/content_taxonomy.yaml。
 # ============================================================
 
+# ------------------------------------------------------------
+# 合规：金融内容红线（最高优先级，任何角色不得绕过）
+# ------------------------------------------------------------
 compliance:
   allow_investment_advice: false
   forbid_guaranteed_return_claims: true
@@ -19,7 +23,43 @@ compliance:
     - 内幕消息
     - 必然上涨
     - 必然下跌
+    - 抄底
+    - 满仓
+    - 目标价
+  # 教育 / 研究 / 咨询的边界：本项目只做前两者
+  allowed_activity:
+    - 金融知识教育
+    - 公开资料研究
+    - 商业与产业分析
+    - 方法论与工具讲解
+  forbidden_activity:
+    - 收费荐股（含"会员专享标的池"）
+    - 代客理财、代客下单、代管账户
+    - 个性化证券投资咨询（针对具体个人给出买卖建议）
+    - 承诺收益、保本、稳赚、内幕消息
+    - 以"预测点位"为核心卖点的付费产品
+  # 免责声明必须出现在成片与图文中，位置与形式见 video_engine/quality_control/qc_checks.yaml
+  disclaimer_placement: [成片片尾 5 秒以上, 图文正文首屏或文末, 会员报告封面页]
+  jurisdiction_note: >
+    内容默认面向中国大陆读者（jurisdiction=CN）。引用境外监管规则、产品与市场时，
+    必须写明适用辖区，避免把境外合规结论套到境内。
 
+# ------------------------------------------------------------
+# 商业合作与利益披露
+# ------------------------------------------------------------
+collaboration:
+  require_disclosure: true
+  disclosure_text_template: "本期内容包含与 {品牌} 的商业合作，研究结论未受其影响。"
+  rules:
+    - 商业合作必须显著披露（片头或口播明确说明），不得隐藏为"推荐"
+    - 品牌方不得参与研究结论与脚本定稿
+    - 出现"删改不利结论"要求时，必须终止合作并在内容中说明原因
+    - 不得把广告内容伪装成知识科普或案例研究
+    - 不接受以"推荐买入某标的"为交付物的合作
+
+# ------------------------------------------------------------
+# 证据与来源
+# ------------------------------------------------------------
 evidence:
   # 重要事实必须关联证据，否则不得进入脚本阶段
   require_evidence_for_facts: true
@@ -36,6 +76,10 @@ evidence:
     - opinion
   # 证据不足时的处理方式
   on_missing_evidence: block_script_stage
+  # 观点鲜明不等于无证；下列内容必须各自附证据
+  opinion_requirements:
+    - 判断类结论必须列出"支撑证据 + 反方证据"
+    - 预测类表述必须标注为 inference，并写出失效条件
 
 sourcing:
   prefer_primary_sources: true
@@ -48,6 +92,31 @@ sourcing:
     - 无法追溯出处的二次转述
   citation_style: 标题 + 发布机构 + 日期 + 链接
 
+# ------------------------------------------------------------
+# 表达风格（"犀利有趣"的具体执行标准）
+# ------------------------------------------------------------
+style:
+  voice:
+    - 观点鲜明：结尾必须有一个清晰的判断，不能只罗列事实
+    - 犀利：敢指出机制里的利益方与代价，但不做人身攻击
+    - 有趣：允许调侃与反差，不能用段子替代解释
+    - 求真：不确定就说不确定，并给出去核实的路径
+  structure:
+    - 开头 8 秒提出"值得思考的问题"，而不是重复新闻标题
+    - 中段用真实案例或数据推进，每 60–90 秒一个信息台阶
+    - 结尾回答开头的问题，并说明这个结论的边界
+  forbidden:
+    - 简单新闻搬运（无增量的复述与翻译）
+    - 标题党与情绪煽动（"震惊""崩了""全都完了"式表述）
+    - 用术语堆砌制造专业感
+    - 用足球类比替代真实金融定义与公式
+  football_analogy_rule: >
+    足球是六大合集之一，也是常用类比场景。使用类比时必须同时写清
+    "成立的部分"与"不成立的部分"，见 config/brand.yaml 的 analogy_policy。
+
+# ------------------------------------------------------------
+# 内容形式与脚本模板（详细规范见 config/content_taxonomy.yaml#forms）
+# ------------------------------------------------------------
 writing:
   script_template_structures:
     football_explainer: [钩子, 金融概念, 足球类比, 类比边界, 机制拆解, 案例, 结论]
@@ -56,11 +125,20 @@ writing:
     case_documentary: [钩子, 事件时间线, 关键数字, 资金流向, 争议点, 启示, 结论]
   max_sentences_per_scene: 3
   hook_max_seconds: 8
+  # 时长分档（秒）：与 content_taxonomy.yaml 的 forms 保持一致
+  duration_tiers:
+    short_news: {min: 60, max: 120}
+    knowledge_video: {min: 120, max: 300}
+    documentary: {min: 300, max: 900}
+  speech_rate_chars_per_second: {min: 3.5, max: 4.5}
 
+# ------------------------------------------------------------
+# 审核
+# ------------------------------------------------------------
 review:
   stages:
     - professional      # 专业审核（金融准确性）
-    - compliance        # 合规审核（投资建议/免责声明）
+    - compliance        # 合规审核（投资建议/免责声明/合作披露）
     - final             # 终审（人工）
   verdicts:
     - pass
@@ -69,8 +147,20 @@ review:
   require_human_final_approval: true
   # 未经 final 审核通过的脚本版本不得产生发布记录
   block_publication_without_approval: true
+  compliance_checklist:
+    - 是否出现买卖建议、点位、仓位、标的推荐
+    - 是否出现收益承诺或稳赚表述
+    - 免责声明是否在指定位置出现
+    - 商业合作是否已披露
+    - 重要数字是否注明币种、单位、时点与辖区
+    - 观点是否有证据支撑，反方证据是否被提及
 
+# ------------------------------------------------------------
+# 工作流状态（与 backend/app/models/enums.py 保持一致）
+# ------------------------------------------------------------
 workflow_states:
   research: [pending, in_progress, completed, failed]
   content: [idea, research, drafting, reviewing, approved, storyboard, producing, qa, published, archived]
-  note: 状态机在 backend/app/models/enums.py 中实现，本处为人类可读版本。
+  note: >
+    状态机在 backend/app/models/enums.py 中实现，本处为人类可读版本。
+    枚举是唯一真相，任何文档不得自造与枚举不一致的状态名。

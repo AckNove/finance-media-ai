@@ -96,3 +96,64 @@ pending ──dispatch──> running ──成功──> succeeded
   明确告知"执行器不可用"，而不是返回假结果。
 - 未来接入模型/搜索：新增一个 `TaskDispatcher` 子类（例如 `LLMDispatcher`），
   在 `get_dispatcher()` 中按配置返回；协议、数据库表与调用点保持不变。
+
+## 6. 品牌与内容规则（所有角色必须遵守）
+
+协议解决"怎么交接"，本节解决"产出必须符合什么标准"。配置真相见
+`config/brand.yaml`、`config/content_taxonomy.yaml`、`config/content_rules.yaml`；
+人类可读版见 `docs/brand_strategy.md` 与 `docs/content_strategy.md`。
+
+### 6.1 身份与署名
+
+- 对外内容品牌：**AK带你拆解世界**；个人 IP：**电力之王AK**（IP 名只上账号主页）。
+- 产出面向读者，不面向"投资人"；不写"我建议你买"这类第一人称决策语句。
+
+### 6.2 每条产出必须声明分类
+
+在 `output` 中补充（除协议必填字段外）：
+
+```json
+{
+  "collections": ["football_finance", "business_cases"],
+  "primary_collection": "football_finance",
+  "audience_level": "mass|learner|researcher",
+  "tags": {"instrument": [], "industry": [], "geography": [], "period": [], "mechanism": []}
+}
+```
+
+- `collections` 取自六大合集 id（`financial_knowledge` / `market_briefing` /
+  `industry_research` / `company_teardown` / `football_finance` / `business_cases`），
+  不得自造；新合集必须先在 taxonomy 中登记。
+- 无法判断归属时，写进 `open_questions` 交给 `orchestrator`，**不要猜一个合集凑数**。
+
+### 6.3 表达风格（硬要求）
+
+1. 观点鲜明：结论必须是一个清晰判断，不能只罗列事实。
+2. 犀利但守边界：可以指出利益方与代价，不做人身攻击、不嘲讽具体个人。
+3. 有趣但不低俗：允许调侃与反差，禁止段子替代解释。
+4. **不做新闻搬运**：任何时事产出必须包含"为什么发生 + 谁受益 + 机制是什么"三层增量。
+5. 禁止标题党与情绪表述（"震惊""崩了""全都完了"），禁止用术语堆砌制造专业感。
+6. 观点类结论（`nature=opinion` 或 `inference`）必须同时列出**支撑证据与反方证据**，
+   并写出结论的失效条件。
+
+### 6.4 足球的定位
+
+- 足球是六大合集之一（`football_finance`），也是讲金融机制时的类比场景；
+  **它不是账号的内容边界**，也不得被默认塞进其它合集的每一篇产出。
+- 一旦使用足球类比：`holds`（成立的部分）与 `breaks_down`（不成立的部分）**均必填**，
+  且类比文字占比不得超过脚本的 35%（`brand.yaml#analogy_policy`）。
+
+### 6.5 合规（任何角色发现即阻断）
+
+- 不输出买卖建议、点位、仓位、目标价、收益承诺、内幕消息。
+- 命中 `content_rules.yaml#compliance.human_review_triggers` 任一关键词 → 以
+  `blocker` 升级，整份产出判 `reject`，不得自行改写规避。
+- 涉及商业合作的内容必须标注披露（`collaboration.disclosure_text_template`）；
+  品牌方要求修改结论时，直接写进 `errors` 并终止该产出的交接。
+- 数据必须带币种、单位、时点、辖区；跨境案例必须写明适用司法辖区。
+
+### 6.6 越权与交接
+
+- 合集的 `agents.primary` 决定谁下结论；协作角色只提供材料与 `open_questions`。
+- 跨合集选题由 `orchestrator` 指定 primary 角色，其余角色以 support 身份交付。
+- 任何情况下都不允许"为了交付而编造"，`failed` + 说清缺什么，比一份漂亮的假产出更合格。

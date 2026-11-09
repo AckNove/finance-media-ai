@@ -1,0 +1,324 @@
+# ============================================================
+# 内容分类与标签规范（唯一真相 / single source of truth）
+# 读取方：Agent 提示词、选题接口调用方、content/ 与 knowledge/ 目录规范、
+#         未来二期的 collection 表与标签表。
+#
+# 说明：
+#   1. 本文件是"业务分类"，不是数据库表定义。第一阶段数据库不做改动，
+#      reasons 见 multi_label.storage_today / multi_label.gap。
+#   2. 合集（collection）是内容组织方式，不是独立账号。
+#   3. 一个选题可以同时属于多个合集；必须以其中一个作为 primary。
+#   4. 合集可以增加，不得因为当前只有六类而限制研究领域。
+# ============================================================
+
+version: 1
+updated_at: "2026-11-09"
+brand_ref: brand.yaml
+content_rules_ref: content_rules.yaml
+
+# ------------------------------------------------------------
+# 受众层次（内容必须同时服务三层，但单条内容只选一层为主）
+# 括号内为数据库中 topics.audience_level 的对应取值。
+# ------------------------------------------------------------
+audience_levels:
+  - id: mass
+    name: 大众认知
+    db_value: beginner
+    description: 第一次接触这个概念也能听懂；不预设术语储备，术语首次出现必须解释。
+  - id: learner
+    name: 进阶学习
+    db_value: intermediate
+    description: 已有基础金融常识的主动学习者；可以讲机制、算例与对比。
+  - id: researcher
+    name: 深度研究
+    db_value: advanced
+    description: 关注口径、数据、模型与争议的深度读者；允许不确定性与方法论讨论。
+
+# 三层并存原则：不为覆盖更多人群而降低专业质量，也不把深度内容做成术语墙。
+audience_rule: >
+  同一选题可以做多版本（大众版 60–120 秒 / 进阶版 2–5 分钟 / 深度版 5–15 分钟），
+  但每一版都必须独立成立，不得用"简单版"取代研究的严谨性。
+
+# ------------------------------------------------------------
+# 六大长期内容合集
+#   id            机器标识（英文，稳定，不随中文改名变化）
+#   name          对外中文名
+#   mission       该合集存在的理由（不是选题清单）
+#   scope         覆盖范围
+#   boundary      明确不做什么（防止跑偏）
+#   typical       典型选题示例
+#   agents        主责 / 协作 Agent（key 见 agents/roster.yaml）
+#   templates     适配的视频模板（见 video_engine/templates/）
+#   forms         适配的内容形式（见下方 forms）
+#   risk          该合集特有的合规与准确性风险
+# ------------------------------------------------------------
+collections:
+  - id: financial_knowledge
+    name: 金融知识
+    mission: 建立读者理解世界的概念底座——货币、利率、汇率与各类金融产品如何运作。
+    scope:
+      - 货币、利率、汇率、通货膨胀
+      - 股票、债券、基金、期货、期权等金融产品与工具
+      - 银行、证券、保险等金融机构
+      - 金融市场机制、金融风险与经典理论
+    boundary:
+      - 不做产品推荐，不做"哪个更好"的投资结论
+      - 不做教科书式罗列，必须指出机制在现实中如何被扭曲
+    typical:
+      - 为什么加息会先打崩债市再传导到股市
+      - 可转债的溢价率究竟在给什么定价
+      - 保险公司的浮存金为什么像一笔长期贷款
+    agents:
+      primary: financial_researcher
+      support: [fact_checker, scriptwriter]
+    templates: [financial_mechanism]
+    forms: [knowledge_video, short_news, article, series, course]
+    risk: 概念简化不能变成错误简化；公式与口径必须给出来源。
+
+  - id: market_briefing
+    name: 财经时事
+    mission: 把新闻从"发生了什么"推进到"为什么发生、谁受益、会往哪走"。
+    scope:
+      - 国内外重大财经新闻
+      - 经济数据、政策变化与市场事件
+      - 国际金融事件
+      - 把热点转成可复用的金融知识或商业分析
+    boundary:
+      - 不做新闻搬运与二次转述（必须有增量分析）
+      - 不预测短期点位与涨跌，不给出交易时点
+      - 热点过期即失效，必须注明数据时点与辖区
+    typical:
+      - 一次降准的真实传导链条：从银行间到你的房贷
+      - 某国货币危机的三个先行指标
+      - 一份财报里最容易被忽略的那一行
+    agents:
+      primary: financial_researcher
+      support: [case_analyst, fact_checker, scriptwriter]
+    templates: [financial_mechanism]
+    forms: [short_news, knowledge_video, article]
+    risk: 时效性强、口径易错；必须区分"已发生/官方口径/市场传闻"。
+
+  - id: industry_research
+    name: 产业链研究
+    mission: 回答"钱在链条的哪一段被赚走"，以及为什么是那一段。
+    scope:
+      - 行业上下游与产业链结构
+      - 利润分配、成本结构与技术壁垒
+      - 供应链、议价能力与替代风险
+      - 行业竞争格局、周期与发展趋势
+    boundary:
+      - 不做行业投资评级
+      - 不把"毛利率高"直接等同于"好生意"
+    typical:
+      - 一部手机的 BOM 里谁拿走了最多毛利
+      - 光伏产业链的三次利润迁移
+      - 为什么最赚钱的环节往往不在制造端
+    agents:
+      primary: industry_researcher
+      support: [case_analyst, fact_checker, scriptwriter]
+    templates: [industry_research]
+    forms: [knowledge_video, documentary, article, research_report, series, member_research]
+    risk: 产业链数据多来自商业数据库，必须标注数据来源与年份。
+
+  - id: company_teardown
+    name: 公司商业解剖
+    mission: 拆开一家公司，看清它靠什么赚钱、靠什么活着、靠什么长大。
+    scope:
+      - 企业商业模式与收入结构
+      - 成本、利润与现金流
+      - 竞争优势与经营风险
+      - 上下游关系、融资与资本运作、成长逻辑
+    boundary:
+      - 不做个股推荐与目标价
+      - 不把管理层叙事当作事实
+    typical:
+      - 一家连锁餐饮的单店模型到底能不能复制
+      - 应收账款里藏着的增长质量
+      - 从现金流看一家公司是怎么"突然"倒下的
+    agents:
+      primary: industry_researcher
+      support: [case_analyst, financial_researcher, fact_checker, scriptwriter]
+    templates: [industry_research, case_documentary]
+    forms: [knowledge_video, documentary, article, research_report, member_research]
+    risk: 财务数据必须注明报告期、币种与合并口径；不构成投资建议。
+
+  - id: football_finance
+    name: 足球金融与商业
+    mission: 用足球这一高关注度场景，讲清金融知识与商业逻辑；足球本身也是独立研究领域。
+    scope:
+      - 球员转会与资产定价
+      - 俱乐部经营与财务（工资结构、摊销、FFP）
+      - 赛事版权、赞助与商业收入
+      - 足球产业链
+      - 用足球案例解释金融与商业机制
+    boundary:
+      - 足球是六大合集之一，**不是账号的内容边界**；账号不是足球财经号
+      - 类比必须写清"成立的部分"和"不成立的部分"（见 brand.yaml analogy_policy）
+      - 不为了趣味性扭曲真实金融机制
+    typical:
+      - 转会费摊销为什么能让一家俱乐部"财务合规"
+      - 球员合同本质是一份带期权的资产
+      - 转播权分成如何决定中小俱乐部的生死
+    agents:
+      primary: football_researcher
+      support: [financial_researcher, fact_checker, scriptwriter]
+    templates: [football_explainer]
+    forms: [short_news, knowledge_video, documentary, article, series]
+    risk: 类比的边界必须被明确说出来；足球数据口径（欧元/英镑、赛季）易混。
+
+  - id: business_cases
+    name: 金融与商业案例
+    mission: 用真实事件证明金融与商业规律如何运作，以及人在其中如何犯错。
+    scope:
+      - 金融危机与经济事件
+      - 商业骗局与财务造假
+      - 企业兴衰
+      - 资本运作与并购
+      - 历史金融事件与经典商业案例
+    boundary:
+      - 不猎奇、不传播未经证实的指控
+      - 涉及司法结论必须区分"判决认定"与"媒体指控"
+      - 不美化违法行为，也不做道德审判替代机制分析
+    typical:
+      - 一家公司如何用三张表同时造假
+      - 某次危机的流动性链条断裂点
+      - 并购对赌失败之后发生了什么
+    agents:
+      primary: case_analyst
+      support: [financial_researcher, industry_researcher, fact_checker, scriptwriter]
+    templates: [case_documentary]
+    forms: [documentary, knowledge_video, article, research_report, series, member_research]
+    risk: 名誉与法律风险最高；人名、公司名、金额、判决结果必须有可追溯来源。
+
+# ------------------------------------------------------------
+# 多标签分类规范
+# ------------------------------------------------------------
+multi_label:
+  required: true
+  rule: 一个选题可以关联多个合集，但必须指定 primary；合集用于组织，标签用于检索。
+  per_topic_limits:
+    collections: "1–3 个（必须含 primary）"
+    tags: "0–6 个"
+  tag_dimensions:
+    - dimension: instrument
+      examples: [股票, 债券, 基金, 期货, 期权, 互换, 结构性产品, ABS]
+    - dimension: institution_type
+      examples: [银行, 券商, 保险, 基金公司, 交易所, 评级机构, 监管机构]
+    - dimension: industry
+      examples: [半导体, 光伏, 新能源车, 白酒, 餐饮连锁, 航空]
+    - dimension: geography
+      examples: [CN, US, EU, JP, HK, global]
+    - dimension: period
+      examples: ["1997-asia-crisis", "2008-gfc", "2022-rate-hike"]
+    - dimension: mechanism
+      examples: [杠杆, 流动性, 期限错配, 监管套利, 资产证券化, 汇率传导]
+  tag_naming:
+    - 标签用中文短词或稳定英文 id，不在同一选题内混用中英文同一概念
+    - 不得用标签替代合集（例如把"足球"当合集用）
+    - 新标签首次使用时必须能对应到一个 tag_dimension
+  # ---- 现状与缺口（必须诚实记录）----
+  storage_today: >
+    第一阶段 topics 表只有 column_id（指向 topic_columns，单选）与 knowledge_domain（单选），
+    **不支持一个选题挂多个合集**。当前替代做法：column_id 填 primary 合集，
+    其余合集写在选题描述与 content/topics/<slug>.md 的 front matter 中。
+  gap: 缺少 topic↔collection 多对多关系与标签表。
+  planned:
+    phase: 2
+    schema:
+      - "topic_collections(topic_id, collection_id, is_primary)"
+      - "collection 表（或继续用 topic_columns，由 collection id 对应）"
+      - "topic_tags(topic_id, dimension, value)"
+    note: 属于数据库结构变更，需用户确认后进入二期，本阶段不改库。
+
+# ------------------------------------------------------------
+# 内容形式（长度与产品形态）
+#   时长单位：秒。range 为硬边界，default 为默认值。
+# ------------------------------------------------------------
+forms:
+  - id: short_news
+    name: 热点短视频
+    duration_seconds: {min: 60, max: 120, default: 90}
+    templates: [financial_mechanism, football_explainer]
+    platforms: [抖音, 小红书]
+    requirement: 8 秒内给出钩子；只讲一个机制或一个数字；必须给数据时点。
+  - id: knowledge_video
+    name: 金融知识视频
+    duration_seconds: {min: 120, max: 300, default: 180}
+    templates: [financial_mechanism, football_explainer, industry_research]
+    platforms: [抖音, 小红书, bilibili]
+    requirement: 讲完一个完整机制；含参与者、资金流向与风险结构。
+  - id: documentary
+    name: 深度纪录片
+    duration_seconds: {min: 300, max: 900, default: 480}
+    templates: [case_documentary, industry_research]
+    platforms: [bilibili, youtube]
+    requirement: 时间线 + 关键数字 + 争议点 + 启示；每 60–90 秒一个信息台阶。
+  - id: article
+    name: 图文
+    duration_seconds: null
+    templates: []
+    platforms: [微信公众号, 小红书]
+    requirement: 图表与来源齐全，可直接转成视频脚本。
+  - id: research_report
+    name: 研究报告
+    duration_seconds: null
+    templates: []
+    platforms: []
+    requirement: 落库 research_reports；含 findings（标注 fact/inference/opinion）、limitations、来源清单。
+  - id: series
+    name: 系列专题
+    duration_seconds: null
+    templates: []
+    platforms: []
+    requirement: 3 集以上；每集独立可看，整体有递进结构。
+  - id: member_research
+    name: 会员深度研究
+    duration_seconds: null
+    templates: []
+    platforms: []
+    requirement: 面向付费用户；数据与模型可复核；必须含免责声明与利益披露。
+  - id: course
+    name: 系统课程
+    duration_seconds: null
+    templates: []
+    platforms: []
+    requirement: 有明确学习路径与作业；不含个股建议。
+
+form_rule: >
+  不要求每个选题都生成全部形式。选题价值决定产品形态：
+  有时效性的做短视频，有机制深度的做知识视频，有叙事张力的做纪录片，
+  有数据积累的做报告与会员内容。
+
+# ------------------------------------------------------------
+# 研究报告 → 内容产品的关联规则
+# ------------------------------------------------------------
+report_to_content:
+  rule: 任何内容产品都必须能回溯到一份研究报告与其证据链；不允许"直接开写"。
+  chain:
+    - "topic（选题，含 collections）"
+    - "sources（原始来源）+ evidence（证据，标注 supports/refutes）"
+    - "research_reports（findings + limitations，含 fact/inference/opinion）"
+    - "review_records（专业审核 + 合规审核 + 终审）"
+    - "scripts（脚本，关联 topic_id 与 research_report_id）"
+    - "media_assets（图表/音频/字幕）"
+    - "publications（发布记录，关联 script_id + script_version）"
+  db_fields:
+    - research_reports.topic_id
+    - scripts.topic_id / scripts.research_report_id
+    - publications.script_id / publications.script_version
+  one_report_many_products: 一份研究报告可以派生多条内容（短视频/长视频/图文/课程节），
+    但每条内容都必须引用同一 report_id 与相同证据，不得各版本口径不一致。
+
+# ------------------------------------------------------------
+# 扩展政策
+# ------------------------------------------------------------
+extension_policy:
+  add_collection_steps:
+    - 在本文件 collections 中新增条目（id 稳定、boundary 必须写）
+    - 更新 docs/content_strategy.md 与 knowledge/README.md 的映射表
+    - 二期后同步 collection 表/topic_columns 记录（需要数据库变更则先报备）
+    - 补一个 tests 用例校验新增合集的必填字段
+  forbidden:
+    - 直接改已有合集的 id（会破坏历史选题与标签）
+    - 用合集代替账号（合集不是独立账号）
+    - 因新增合集而删除已有合集

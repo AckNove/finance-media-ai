@@ -16,6 +16,19 @@
 | `cases/` | 金融事件与商业案例 | `financial_cases` |
 | `research_reports/` | 研究报告的 Markdown 版本 | —（对应 `research_reports` 表） |
 
+### 知识域 ≠ 内容合集（不要混用）
+
+- `knowledge_domain` 是**知识条目**的学科归属（上表右列，对应 `knowledge_items.domain`）。
+- **内容合集**（金融知识 / 财经时事 / 产业链研究 / 公司商业解剖 / 足球金融与商业 /
+  金融与商业案例）是**内容产品**的栏目归属，定义在 `config/content_taxonomy.yaml`。
+- 同一篇文稿可以被多个合集引用：例如"可转债"条目（`instruments/`）既服务
+  `financial_knowledge`（讲机制）也服务 `market_briefing`（讲某次发行热）。
+  知识库是资产，合集是货架。
+
+已知缺口：`concepts/` 目录目前**没有对应的枚举取值**（`KnowledgeDomain` 只有六域 +
+`general`），概念类条目请使用 `domain: general`，并在正文首行注明所属概念族。
+这是数据库枚举变更，需二期决定，不要在本阶段手改枚举。
+
 ## 文稿格式约定
 
 每篇知识文稿使用 YAML front matter，字段与数据库列一一对应：

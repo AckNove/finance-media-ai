@@ -10,17 +10,20 @@
 名册的**唯一真相**是 `agents/roster.yaml`（纯 YAML，代码读取）；角色提示词在
 `agents/<key>/PROMPT.md`；轮子与规则在 `agents/PROTOCOL.md`。
 
-| key | 名称 | 定位 | 主要 task_type |
-| --- | --- | --- | --- |
-| `orchestrator` | Research Orchestrator | 总调度、任务拆解、结果整合、缺口标记 | `plan_research`、`merge_results`、`audit_coverage` |
-| `financial_researcher` | Financial Researcher | 金融工具、产品、市场机制与风险研究 | `research_instrument`、`research_mechanism`、`research_risk` |
-| `football_researcher` | Football Business Researcher | 足球商业、俱乐部财务、转会与足球金融 | `research_club_finance`、`research_transfer`、`research_league_economics` |
-| `industry_researcher` | Industry Researcher | 产业链、上下游、企业、利润分配 | `map_value_chain`、`research_profit_pool`、`research_company` |
-| `case_analyst` | Case Analyst | 金融事件、企业案例、资金流向 | `analyze_case`、`trace_fund_flow`、`compare_cases` |
-| `fact_checker` | Fact Checker | 事实、数字、公式、来源、类比边界与合规审核 | `review_facts`、`verify_numbers`、`check_analogy_boundary`、`compliance_review` |
-| `scriptwriter` | Scriptwriter | 把研究报告转成可拍摄脚本 | `write_script`、`rewrite_script` |
-| `visual_designer` | Visual Designer | 知识图解、产业链图、资金流向图、分镜 | `design_storyboard`、`design_chart`、`design_diagram` |
-| `video_producer` | Video Producer | 配音、字幕、合成与质检工作流 | `plan_production`、`check_subtitles`、`run_qc` |
+| key | 名称 | 定位 | 负责合集 | 主要 task_type |
+| --- | --- | --- | --- | --- |
+| `orchestrator` | Research Orchestrator | 总调度、任务拆解、结果整合、缺口标记 | all（指定 primary 合集） | `plan_research`、`merge_results`、`audit_coverage` |
+| `financial_researcher` | Financial Researcher | 金融工具、产品、市场机制与风险研究 | 金融知识、财经时事 | `research_instrument`、`research_mechanism`、`research_risk` |
+| `football_researcher` | Football Business Researcher | 足球商业、俱乐部财务、转会与足球金融 | 足球金融与商业 | `research_club_finance`、`research_transfer`、`research_league_economics` |
+| `industry_researcher` | Industry Researcher | 产业链、上下游、企业、利润分配 | 产业链研究、公司商业解剖 | `map_value_chain`、`research_profit_pool`、`research_company` |
+| `case_analyst` | Case Analyst | 金融事件、企业案例、资金流向 | 金融与商业案例、公司商业解剖 | `analyze_case`、`trace_fund_flow`、`compare_cases` |
+| `fact_checker` | Fact Checker | 事实、数字、公式、来源、类比边界与合规审核 | all（闸门） | `review_facts`、`verify_numbers`、`check_analogy_boundary`、`compliance_review` |
+| `scriptwriter` | Scriptwriter | 把研究报告转成可拍摄脚本 | all | `write_script`、`rewrite_script` |
+| `visual_designer` | Visual Designer | 知识图解、产业链图、资金流向图、分镜 | all | `design_storyboard`、`design_chart`、`design_diagram` |
+| `video_producer` | Video Producer | 配音、字幕、合成与质检工作流 | all | `plan_production`、`check_subtitles`、`run_qc` |
+
+合集 id 定义在 `config/content_taxonomy.yaml`；名册里的 `collections` 字段（`all` 或 id 列表）
+只用于路由初筛，`load_roster()` 不读取它。
 
 `fact_checker` 是**唯一强制闸门**：研究报告与脚本在没有 `pass` 结论前不得进入下一阶段。
 
@@ -78,7 +81,25 @@ get_dispatcher(db).dispatch(task)   # 落库 agent_runs(status=pending)，不执
 7. 不自动发布任何内容：`auto_publish` 在 `config/brand.yaml` 中为 `false`，
    发布永远是人工动作。
 
-## 5. 新增或修改一个角色
+## 5. 品牌与内容规则（所有角色必须遵守）
+
+完整条文见 `agents/PROTOCOL.md` 第 6 节，配置真相在 `config/brand.yaml`、
+`config/content_taxonomy.yaml`、`config/content_rules.yaml`。要点：
+
+| 规则 | 落地方式 |
+| --- | --- |
+| 对外身份是内容品牌「AK带你拆解世界」（IP 名「电力之王AK」只上主页） | `prompts/system/base_system.md` 首段 |
+| 每条产出必须声明 `collections` / `primary_collection` / `audience_level` / `tags` | `output` 附加字段，`fact_checker` 校验 |
+| 观点鲜明、犀利、有趣；不做新闻搬运、不用段子替代解释 | `content_rules.yaml#style`，`base_system.md` 输出风格 |
+| 足球是六大合集之一与类比场景，不是内容边界；`holds`/`breaks_down` 均必填 | `brand.yaml#analogy_policy`，`fact_checker.review_analogy` |
+| 命中买卖建议类关键词即 blocker，整份产出 reject | `content_rules.yaml#compliance.human_review_triggers` |
+| 商业合作必须披露，品牌方不得改结论 | `content_rules.yaml#collaboration` |
+| 合集归属不确定时交 `orchestrator`，不许猜 | `PROTOCOL.md` §6.2 / §6.6 |
+
+合集与角色的对应关系写在各角色的 `prompt_file` 与 `roster.yaml` 的 `collections` 字段里；
+跨合集选题由 `orchestrator` 指定 primary 角色，其余角色以 support 身份交付材料。
+
+## 6. 新增或修改一个角色
 
 1. 在 `agents/roster.yaml` 的 `agents:` 列表里加一条（`key/display_name/role/prompt_file/
    responsibilities/task_types`）；`prompt_file` 用相对 `agents/` 的路径。
@@ -92,7 +113,7 @@ get_dispatcher(db).dispatch(task)   # 落库 agent_runs(status=pending)，不执
 注意：`load_roster()` 只读 YAML，**不要在 roster.yaml 里写 Markdown 说明**——
 缩进一旦混入散文就会 `yaml.scanner.ScannerError`。
 
-## 6. 第二阶段接线清单（尚未实现）
+## 7. 第二阶段接线清单（尚未实现）
 
 1. 实现 `LLMTaskDispatcher(TaskDispatcher)`：构造提示词 → 调用模型 → 校验输出结构 →
    写 `output_payload` 与 `status`。

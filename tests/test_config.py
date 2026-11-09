@@ -20,6 +20,7 @@ REQUIRED_CONFIG_FILES = (
     "settings.yaml",
     "brand.yaml",
     "content_rules.yaml",
+    "content_taxonomy.yaml",
     "research_sources.yaml",
 )
 
