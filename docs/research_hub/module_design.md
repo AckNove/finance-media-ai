@@ -27,13 +27,17 @@ flowchart LR
 
 | 模块 | 主表 | 已有端点 | 计划端点 | 阶段 |
 |---|---|---|---|---|
-| A Topic Hub | `topics`、`topic_columns`、`topic_collections`、`topic_tags`、`tags`、`topic_score_snapshots` | 5 | 11 | 2.7 |
+| A Topic Hub | `topics`、`topic_columns`、`topic_collections`、`topic_tags`、`tags`、`topic_score_snapshots` | 5 | 14 | 2.7 |
 | B Research Hub | `research_tasks`、`research_subtasks`、`research_subtask_dependencies`、`task_events`、`model_calls`、`tool_calls` | 0 | 13 | 2.4 |
-| C Source Hub | `sources`、`source_snapshots`、`source_extractions`、`source_summaries`、`research_task_sources` | 4 | 7 | 2.2–2.3 |
+| C Source Hub | `sources`、`source_snapshots`、`source_extractions`、`source_summaries`、`research_task_sources` | 4 | 9 | 2.2–2.3 |
 | D Evidence Hub | `evidence`、`report_findings`、`finding_evidence`、`research_reports` | 5 | 9 | 2.5 |
 | E Analysis Hub | 复用 D 的 findings/tier + `review_records` | 0 | 0（复用） | 2.5–2.6 |
 | F Knowledge Hub | `knowledge_items`、`knowledge_relations`、`companies`、`industries`、`institutions`、`financial_*` | 7 | 1 | 2.8 |
 | G Content Hub | `content_items`、`scripts`、`script_evidence_links`、`media_assets`、`publications` | 0 | 8 | 2.9 |
+
+> **端点计数口径（M1.2 统一）**：以 [`api_design.md`](api_design.md) §2.2 为准，按**操作数**统计
+> （同一路径的 GET+POST 记 2）。M1.1 审查发现旧版此处写 Topic Hub 11 个，而 `api_design.md`
+> A 组 6 + B 组 8 = 14 个，差异来自漏算了 `/collections` 与 `/tags` 的读端点。现已对齐为 14。
 
 ---
 
@@ -42,7 +46,7 @@ flowchart LR
 | 能力 | 现状 | 目标设计 | 涉及 | 阶段 |
 |---|---|---|---|---|
 | 人工创建选题 | `DONE`（`POST /api/topics`） | 保留；增加 `status=candidate` 与来源字段 | `topics.origin_type=manual` | 已有 |
-| **主动发现选题** | `NOT IMPL` | Agent 任务 `topic.discover`：RSS/新闻源/知识缺口扫描 → 生成 **候选**（`status=candidate`、`origin_type=rss|news|knowledge_gap|ai_suggested`），**必须人工立项** | `POST /api/topics/discover`（202）、`POST /api/topics/candidates` | 2.7 |
+| **主动发现选题** | `NOT IMPL` | Agent 任务 **`topic.discover`**（第十种 task_type，见 [`agent_architecture.md`](agent_architecture.md) §4.0.2）：RSS/新闻源/知识缺口扫描 → 生成 **候选**（`status=candidate`、`origin_type=rss|news|knowledge_gap|ai_suggested`），**必须人工立项** | `POST /api/topics/discover`（202）、`POST /api/topics/candidates` | 2.7 |
 | **新闻与事件采集** | `NOT IMPL` | 定时抓取 `config/research_sources.yaml` 中登记的信息源（RSS 优先，零成本）→ 归一化为候选选题；**只做候选，不做自动立项** | `sources`（`source_type=financial_news`）+ `topics.origin_type=news` | 2.7 |
 | 选题评分 | `DATA-ONLY`（`priority` 单一字段） | 六维分（重要性/时效性/研究价值/传播潜力/商业价值/资料可获得性）→ 加权 `score_total` + 快照；`scored_by=rule|model|human`；人工可覆盖 | `topic_score_snapshots`、`POST /api/topics/{id}/score`、`GET /{id}/scores` | 2.7 |
 | 选题去重 | `NOT IMPL` | `dedupe_key`（标题归一化 + 主体 + 时间窗）；相似度≥阈值 → 提示合并而非自动合并 | `topics.dedupe_key`、`GET /api/topics/duplicates` | 2.7 |
@@ -85,7 +89,7 @@ flowchart LR
 | Excel | `NOT IMPL` | `openpyxl` 只读；行数据存 JSON 文件 | `source_extractions(kind=spreadsheet_rows)` | 2.3 |
 | **用户上传资料** | `NOT IMPL` | `POST /api/sources/upload`（multipart）→ 落 `data/raw/uploads/` + `sources.url=file://...`；`fetch_method=upload` | `sources`、`source_snapshots(fetch_method=upload)` | 2.3 |
 | 原始资料存储 | `DATA-ONLY`（`sources` 有元数据） | 原文存文件仓，DB 只存路径 + `sha256` | `source_snapshots.storage_path` | 2.2 |
-| 来源信息 | `DONE`（`sources` 14 字段） | 增加 `publisher_type`/`jurisdiction` 一致性校验 | `sources` | 已有 |
+| 来源信息 | `DONE`（`sources` **15 列**，实测） | 增加 `publisher_type`/`jurisdiction` 一致性校验 | `sources` | 已有 |
 | 抓取时间 | `DONE`（`accessed_at`） | 快照另记 `fetched_at` | `source_snapshots` | 2.2 |
 | 发布时间 | `DONE`（`published_at`） | 缺失时由解析器尝试从正文/元数据提取，仍缺则留空（不猜） | `sources.published_at` | 2.2 |
 | **内容版本** | `NOT IMPL` | 同 URL 多次抓取 → 多行快照，永不覆盖；`etag`/`last-modified` 用于判断是否变化 | `source_snapshots` | 2.2 |
@@ -139,13 +143,18 @@ flowchart LR
 
 > **禁止**：把 `reasonable_speculation` 写成 `verified_fact`；脚本层引用推测必须显式口播标注（`config/content_rules.yaml:style` 已约束）。
 
+> **定档细则的唯一来源**：`evidence.claim_nature`（`fact`/`inference`/`opinion`，三档）如何映射到
+> `FindingTier`（五档），由 [`agent_architecture.md`](agent_architecture.md) §3.6.2 的映射表定义，
+> 本节的"最低要求"表必须与该映射表**逐字一致**（`tests/test_tier_rules.py` 校验）。
+> M1.1 审查指出两套"事实/推断/观点"并存容易漂移，M1.2 用"证据侧三档 + 结论侧五档 + 一张映射表"固定下来。
+
 ---
 
 ## F. Knowledge Hub — 知识中心
 
 | 能力 | 现状 | 目标设计 | 涉及 | 阶段 |
 |---|---|---|---|---|
-| 公司档案 | `DATA-ONLY`（`financial_*` 无 `companies`） | 新表 `companies`（名称/代码/交易所/行业/母公司/关联 `institution_id`） | `companies` | 2.7 |
+| 公司档案 | `DATA-ONLY`（`financial_*` 无 `companies`） | 新表 `companies`（名称/代码/交易所/行业/母公司/关联 `institution_id`）；**与 `institutions` 按主体类型分工（决策 D13，Q7=A）**：金融机构/监管/交易所/俱乐部/联赛 → `institutions`；非金融经营主体 → `companies`；同一法律实体不得两边各存一条，用 `institution_id` 互指 | `companies` | 2.7（**B6 批次**） |
 | 行业档案 | `DONE`（`industries` 自引用树） | 增加 `key_metrics`（JSON，带口径与期间） | `industries` | 2.8 |
 | 产业链档案 | `PARTIAL`（`industries.chain_stage`） | 产业链 = `industries` 树 + `knowledge_relations(type=composed_of)`；暂不建独立表 | `knowledge_relations` | 2.8 |
 | 金融概念 | `DONE`（`knowledge_items` 9 段结构） | 继续用 `knowledge_domain=general`（决策 3：不加 `concepts`） | `knowledge_items` | 已有 |

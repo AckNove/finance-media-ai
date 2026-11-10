@@ -1,6 +1,6 @@
 # API 设计：端点清单、请求响应与约定
 
-> 现状：21 个端点已实现（见 [`current_state_audit.md`](current_state_audit.md)）。
+> 现状：**14 个路径 / 21 个操作**已实现（口径见 [`current_state_audit.md`](current_state_audit.md) §2 与 M1.1 实测 `path_count=14`、`operation_count=21`）。
 > 本文档定义**目标**端点。标注 `P2.x` 表示计划在该小阶段实现；**未标注的不要现在动手**。
 
 ---
@@ -24,7 +24,7 @@
 
 ## 2. 端点总览
 
-### 2.1 已实现（只读参考，P2 期间不改行为）
+### 2.1 已实现（14 路径 / 21 操作；只读参考，P2 期间不改行为）
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
@@ -65,7 +65,7 @@
 | POST | `/api/topics/candidates` | 人工/Agent 提交候选选题（含来源链接），进 `awaiting_review` |
 | POST | `/api/topics/{topic_id}/score` | 重算评分（规则 + 可选模型），写快照 |
 | GET | `/api/topics/{topic_id}/scores` | 评分历史快照 |
-| POST | `/api/topics/{topic_id}/approve` | 人工确认立项（`idea → approved`） |
+| POST | `/api/topics/{topic_id}/approve` | 人工确认立项（`candidate → scored → awaiting_review → approved` 路径见 `state_machine.md` §2；本端点完成最后一跳） |
 | POST | `/api/topics/{topic_id}/merge` | 合并到目标选题（`merged_into_topic_id`，原选题 `archived`） |
 | POST | `/api/topics/{topic_id}/split` | 拆分为多个新选题（保留来源引用） |
 | GET | `/api/topics/duplicates?dedupe_key=` | 去重预检 |
@@ -91,6 +91,8 @@
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
+| POST | `/api/sources` | **已有**：登记资料来源（title/url/publisher 等） |
+| POST | `/api/sources/upload` | **本阶段补入目录**：上传本地文件（PDF/XLSX）作为来源，落 `data/raw/uploads/`，`fetch_method=upload`，返回 `source_id` + `snapshot_id` |
 | POST | `/api/sources/{source_id}/fetch` | 抓取并生成快照；返回 `snapshot_id` |
 | GET | `/api/sources/{source_id}/snapshots` | 快照历史（多版本） |
 | POST | `/api/snapshots/{snapshot_id}/extract` | 解析（pdf/xlsx/html）→ `extraction_id` |
@@ -98,6 +100,10 @@
 | POST | `/api/sources/{source_id}/summary` | 生成 AI 摘要（**明确标记 `generated_by=ai`**，不得替代原文） |
 | POST | `/api/research-tasks/{task_id}/sources` | 关联资料到任务（含 `purpose`） |
 | GET | `/api/research-tasks/{task_id}/sources` | 任务资料清单 |
+
+> `/api/sources/upload` 在 M1.1 审查中被指出"只出现在权限表里、不在端点目录里"，
+> 属于文档缺口而非新决策。它对应 `fetch_method=upload`——**用户上传的资料同样是"快照为锚"的证据来源**，
+> 与网页抓取在 `source_snapshots` 里地位相同（只是 `fetch_method` 不同）。
 
 **E. 证据与发现（P2.5）**
 
@@ -132,15 +138,31 @@
 | GET | `/api/ops/costs?date=` | 当日成本汇总（模型/工具/按 Agent） |
 | POST | `/api/_dev/worker/tick` | 手动推进一轮队列（仅 `execution.enabled=false` 或 `APP_ENV!=production` 可用） |
 
-### 2.3 权限与错误码（M1.7 要求）
+### 2.3 权限与错误码（P1-7 修订：CallerContext）
 
-第二阶段**仍无身份认证**，因此"权限"在本文档中定义为**调用者类别**，由代码而非凭据约束：
+第二阶段**仍无身份认证**，但这不等于"没有权限"。M1.2 把权限定义为**代码级的 `CallerContext`**
+（定义见 [`tooling_architecture.md`](tooling_architecture.md) §1.3），由依赖注入统一构造，
+**每个路由都必须显式声明所需 kind**，未声明即视为配置错误（启动时校验）：
 
-| 调用者 | 含义 | 实现方式 |
-|---|---|---|
-| `human` | 人工通过 `/docs`、前端或脚本调用 | 无限制 |
-| `agent` | 执行层（AgentExecutor）代表某个 Agent 调用的工具端点 | 工具白名单 + `db_scopes` 校验（见 [`tooling_architecture.md`](tooling_architecture.md) §1.3） |
-| `dev-only` | 仅本机开发可用 | 校验 `APP_ENV != production` 且请求来自 loopback；否则 404 |
+```python
+@router.post("/api/topics/{topic_id}/approve", dependencies=[Depends(require_caller(CallerKind.HUMAN))])
+def approve_topic(...): ...
+```
+
+| 调用者 | 识别方式 | 强制点 | 越权返回 |
+|---|---|---|---|
+| `human` | 请求头 `X-Caller: human`（缺省值） | 只有人类可发起的动作（立项/审批/发布/暂停/合并/拆分）要求此 kind | `domain_validation_error`(422) + `details.reason="permission_denied"` |
+| `agent` | 执行层在进程内构造（带 `task_id`/`subtask_id`/`attempt_token`）；**HTTP 头无法伪造**，因为 agent 不直接走公网 HTTP | 工具白名单 + `db_scopes` + `attempt_token` 与 `research_subtasks.attempt_token` 比对 | 同上 + `details.required="human"` |
+| `dev` | 仅 `POST /api/_dev/*` 且 `settings.app_env != "production"` | 生产环境直接 **404** | `not_found` |
+
+**安全边界（明确写下来，避免以后被误解为"已有鉴权"）**
+
+1. 服务**只监听 `127.0.0.1`**（`API_HOST` 默认值）。当前 21 个端点对任意本机进程开放，
+   安全前提是"本机可信"。这不是鉴权，是信任边界。
+2. 一旦要改为局域网/公网访问，**必须先实现**：真实鉴权（Token/OAuth）+ HTTPS + 每端点权限矩阵，
+   否则不得改 `API_HOST`。该约束写入 `acceptance_criteria.md` 的 M2 前置条件。
+3. `X-Caller` 头是**约定而非凭据**：它的作用是把"人发起的写"与"Agent 发起的写"在审计里分开，
+   不承担防伪造职责。真正的强制在 Agent 侧（agent 走进程内调用，不经过 HTTP）。
 
 | 端点组 | 允许调用者 | 必须由人发起（Agent 无工具） | 主要错误码 |
 |---|---|---|---|
@@ -174,15 +196,25 @@
 | code | HTTP | 典型触发 |
 |---|---|---|
 | `request_validation_error` | 422 | 字段缺失/类型错误/`limit` 越界 |
-| `domain_validation_error` | 422 | 状态机不允许、引用不存在对象、数量超限 |
-| `not_found` | 404 | 读取不存在的资源 |
-| `conflict` | 409 | slug/唯一键冲突、重复启动、幂等键非法重放 |
+| `domain_validation_error` | 422 | 状态机不允许、引用不存在对象、数量超限、`unknown_task_type`、`permission_denied`、`lease_lost` |
+| `not_found` | 404 | 读取不存在的资源；生产环境下的 `_dev` 端点 |
+| `conflict` | 409 | slug/唯一键冲突、重复启动、幂等键非法重放、预算不足（`budget_exceeded`）、**价目缺失（`pricing_unknown`，Q8=B）** |
 | `dependency_unavailable` | 503 | 模型/搜索未配置或不可用 |
 | `database_integrity_error` | 409 | 底层约束被触发（兜底） |
 | `database_error` / `internal_error` | 500 | 兜底，必须带日志 trace id |
 
 > 权限被拒时的返回：**不新增 403 语义**，统一用 `domain_validation_error`（422）+ `details.reason="permission_denied"`，
 > 与现有错误信封保持一致；只有开发端点在生产环境伪装成 `not_found`。
+>
+> `details.reason` 的取值集合（与 `tooling_architecture.md` §1.2 对齐）：
+> `permission_denied` / `unknown_task_type` / `lease_lost` / `quote_mismatch` / `budget_exceeded` /
+> `pricing_unknown` / `state_invalid`（附 `details.allowed` 为允许的目标状态数组）。
+>
+> **`pricing_unknown`（Q8=B 新增）**：模型价目缺失且该模型未在
+> `config/models.yaml: approved_exceptions` 中人工登记时，任何启动研究任务的请求返回
+> `409 conflict` + `details.reason="pricing_unknown"`，并在 `details` 中给出
+> `{missing_models: [...], policy: "reject_unknown"}`——**不落 `model_calls`、不发外部请求**。
+> 这不是错误而是设计：它把"要不要花钱"这个问题挡在了用户界面之前。
 
 ---
 
@@ -199,7 +231,7 @@ Content-Type: application/json
   "objective": "解释商业银行的盈利结构与风险来源",
   "scope": {"geography": "CN", "period": "2023-2025", "exclude": ["个股推荐"]},
   "budget_max_calls": 60,
-  "budget_max_cost_cny": 2.0
+  "budget_max_cost": 2.0
 }
 ```
 
@@ -208,13 +240,23 @@ Content-Type: application/json
 {
   "id": 31,
   "topic_id": 12,
-  "status": "draft",
+  "status": "created",
   "objective": "解释商业银行的盈利结构与风险来源",
   "budget_max_calls": 60,
-  "budget_used_calls": 0,
+  "budget_max_cost": 2.0,
+  "calls_spent": 0,
+  "cost_spent": 0.0,
+  "calls_reserved": 0,
+  "cost_reserved": 0.0,
   "created_at": "2026-11-09T15:20:31Z"
 }
 ```
+
+> **字段命名以数据库为准**（M1.2 统一）：`budget_max_calls` / `budget_max_tokens` /
+> `budget_max_cost` / `calls_spent` / `tokens_spent` / `cost_spent` / `calls_reserved` / `cost_reserved`。
+> M1.1 审查发现旧示例用的 `budget_max_cost_cny`、`budget_used_calls` 在库里不存在，
+> 会给前端与实现者造成"到底听谁的"的歧义，此处一律对齐 `database_design.md` §4.5。
+> 币种由 `config/models.yaml` 的 `cost.currency` 统一声明（默认 CNY），字段名不再带币种后缀。
 
 错误示例（选题不存在）：
 
@@ -347,9 +389,10 @@ sequenceDiagram
 
 | 检查项 | 结论 |
 |---|---|
-| 现有 21 端点是否改路径 | **否**，全部保留 |
+| 现有 21 个操作（14 路径）是否改路径 | **否**，全部保留 |
 | 现有响应字段是否删除 | **否**，只新增（如 `TopicOut` 增 `collections`、`status`，字段可选默认 `null`/`[]`） |
-| 现有错误码是否改 | **否**，新端点复用同一套 code |
+| 现有错误码是否改 | **否**，新端点复用同一套 code（新增的 `details.reason` 取值不改信封结构） |
 | 现有测试是否会破 | 需要新增断言但**不应改旧断言**；新增字段不得改变旧字段语义 |
 | 是否引入新依赖 | P2 需要 `httpx`（已有）、`pypdf`、`openpyxl`（新增可选依赖组 `[research]`） |
 | 是否需要鉴权 | 第二阶段否；但 `/api/_dev/*` 必须拒绝非 localhost 且 `APP_ENV=production` 时 404 |
+| `X-Caller` 头是否改变现有行为 | **否**：缺省按 `human` 处理（现有端点都是人可发起的动作），不加头即与今天完全一致 |

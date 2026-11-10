@@ -1,23 +1,28 @@
-# 状态流转：七套状态机与非法迁移规则
+# 状态流转：八套状态机与非法迁移规则
 
 > 原则：**状态是代码里的事实，不是文档里的口号**。每次迁移由服务层 `_assert_transition()` 校验，非法迁移返回 422 并附"允许的目标状态"。
 > 所有迁移必须写 `task_events`（研究域）或 `review_records`（审核域），失败后能回答"谁在什么时候改的"。
 
 ---
 
-## 1. 七套状态机总览
+## 1. 八套状态机总览
 
 | 状态机 | 载体 | 枚举 | 谁在推 | 人工闸门 |
 |---|---|---|---|---|
 | 选题生命周期 | `topics.status` | `TopicStatus` | 人 + 系统评分 + Agent 发现 | ✅ 立项、合并/拆分 |
 | 研究任务 | `research_tasks.status` | `ResearchTaskStatus` | 编排层 | ✅ 恢复/追加预算 |
 | 研究子任务 | `research_subtasks.status` | `SubtaskStatus` | 执行层 | — |
-| 资料快照/解析 | `source_snapshots.status`、`source_extractions.status` | `SnapshotStatus`、`ExtractionStatus` | 工具层 | — |
+| **模型调用记账** | `model_calls.status` | `CallStatus`（M1.2 新增，见 `database_design.md` §4.15.1） | `ModelGateway` | —（超预算转人工） |
+| 资料快照/解析 | `source_snapshots.snapshot_status`、`source_extractions.extraction_status` | `SnapshotStatus`、`ExtractionStatus` | 工具层 | — |
 | 证据核实 | `evidence.verification_status` | `VerificationStatus`（现有） | Fact Checker + 人 | ✅ 人工复核争议 |
 | 内容作品 | `content_items.status` | `ContentItemStatus` | 制作层 + 人 | ✅ 审批、发布 |
 | 脚本 | `scripts.status` | `ScriptStatus`（现有） | Scriptwriter + 人 | ✅ 审批 |
 
 > 现有 `topics.research_status` / `content_status` 在迁移期**保留**，映射为 `topics.status` 的投影（见 §2.1），2.10 再评估删除。
+>
+> **`CallStatus` 单独说明**：它不属于"业务流程状态"，而是**记账状态**（`reserved → running → succeeded/failed/timeout/unknown`）。
+> 之所以放进本文档，是因为它同样受"非法迁移 422 + 状态必须落库"的约束，且崩溃恢复依赖它。
+> 完整状态图与八问（崩溃/超时/缓存/并发/未知价）见 `database_design.md` §4.15，本文档不重复展开，避免两处漂移。
 
 ---
 
@@ -49,7 +54,7 @@ stateDiagram-v2
 | from | to | 触发 | 执行者 | 守卫条件 | 副作用 |
 |---|---|---|---|---|---|
 | `candidate` | `scored` | 评分写入 `topic_score_snapshots` | 系统 | 六维分齐且有 `scored_by` | `score_total` 更新 |
-| `candidate`/`scored` | `awaiting_review` | 自动（评分后）或人工提交 | 系统 | `score_total >= 阈值`（默认 3.5/5） | 进待审队列 |
+| `candidate`/`scored` | `awaiting_review` | 自动（评分后）或人工提交 | 系统 | `score_total >= 阈值`（**0–1 量纲，默认 0.70**，见下方说明） | 进待审队列 |
 | `awaiting_review` | `approved` | `POST /topics/{id}/approve` | **人** | 人工确认 | `approved_at` 记录在事件 |
 | `awaiting_review` | `rejected`/`parked` | 人工操作 | **人** | 需给 `reason` | 事件 `rejected`/`parked` |
 | `approved` | `in_research` | 创建 `research_tasks` | 系统/人 | 任务存在且未取消 | `research_status=in_progress`（兼容投影） |
@@ -58,6 +63,20 @@ stateDiagram-v2
 | `researched` | `content_produced` | 首个 `content_items` 创建 | 系统 | — | `content_status=approved`（兼容投影） |
 | 任意（除 `merged`） | `archived` | 人工归档 | **人** | — | 只读 |
 | `candidate`/`approved` | `merged` | `POST /topics/{id}/merge` | **人** | 目标选题存在且未合并 | `merged_into_topic_id` 必填 |
+
+**评分量纲统一（M1.1 审查 P2 修正）**
+
+六维分每项取 **0–1**（`topic_score_snapshots` 的六列 + `weights` 均为 0–1），
+加权和 `score_total` 也落在 **0–1**；因此进入待审的阈值写成 **0.70**，而不是旧文的 "3.5/5"。
+两套量纲混用会让"到底多少分才立项"变成一句无法执行的话。展示层若想用百分制，由 API 乘 100，
+**数据库与判定逻辑只用 0–1**。
+
+**主合集约束（与 `topic_collections` 对齐）**
+
+`topics.status` 进入 `approved` 的**前提**是：该选题在 `topic_collections` 中
+**恰好有 1 条 `is_primary=1`**（1–3 条关联）。守卫写在服务层（`_assert_transition` 前置检查），
+数据库侧用部分唯一索引 `uq_topic_primary_collection(topic_id) WHERE is_primary = 1` 兜底。
+否则会出现"立项了但不知道属于哪个合集"的选题——内容中心的模板选择与 Agent 路由都依赖它。
 
 **禁止**：`approved → candidate`（不可逆回退到候选）、`archived → *`（需人工新建）、任何绕过 `awaiting_review` 直接 `approved` 的路径（除人工端点外，Agent 无此工具）。
 

@@ -38,7 +38,7 @@
 
 ## 2. 数据库：19 张表逐项审计
 
-表名、列数、外键来自 `Base.metadata` 实测（详见 [`database_design.md`](database_design.md) 的现有 ER 图）。
+表名、列数、外键来自 `Base.metadata` 实测（详见 [`database_design.md`](database_design.md) §1 的现有 ER 图——该图刻意只画 18 张业务表之间的关系，`alembic_version` 与弱多态目标不作为 ER 节点）。
 
 | # | 表 | 列数 | 关键外键 | 状态 | 说明 |
 |---|---|---|---|---|---|
@@ -62,9 +62,11 @@
 | 18 | `financial_cases` | 17 | 同上三个 | **DATA-ONLY** | 含 `fund_flow_summary`/`risk_notes` |
 | 19 | `alembic_version` | 1 | — | DONE | 当前 `de8148733a9b` |
 
-**结论**：19 张表里，**真正被业务逻辑写入并通过 API 验证的只有 5 张**
-（`topics`、`topic_columns`、`knowledge_items`、`knowledge_relations`、`sources`、`evidence`、`research_reports` —— 精确说是 7 张，
-经 `POST` 接口 + 服务层 + 测试验证）；其余是"结构就绪、无生产者"。
+**结论**：19 张物理表里，**真正被业务逻辑写入并通过 API 验证的有 7 张**
+（`topics`、`topic_columns`、`knowledge_items`、`knowledge_relations`、`sources`、`evidence`、`research_reports`
+—— 经 `POST` 接口 + 服务层 + 测试验证）；其余 11 张业务表是"结构就绪、无生产者"，
+`alembic_version` 是基础设施表（M1.2 修正：旧文此处先写"5 张"、紧接着又说"精确说是 7 张"，属自相矛盾，
+现统一为 7）。
 
 ---
 

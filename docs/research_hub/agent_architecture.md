@@ -173,6 +173,44 @@ flowchart TB
 - 缺证据但结论合理 → **needs_revision**，并把 tier 降为 `unconfirmed`/`reasonable_speculation`；
 - 只有措辞/结构问题 → needs_revision（非阻塞）。
 
+#### 3.6.1 引文一致性闸门（P0-1 配套，M1.2 新增）
+
+`quote_mismatch` **不是提示，是硬阻断**：
+
+```text
+对每条 evidence：
+  1. 用 extraction_id + char_start/char_end 从 source_extractions.text_content 重新切出片段
+  2. normalize_quote(切片) 与 normalize_quote(evidence.original_excerpt) 比较
+  3. 计算 quote_hash 并与 evidence.quote_hash 比对
+  任一不一致：
+     evidence.quote_mismatch = true
+     evidence.verification_status = 'disputed'
+     依赖该 evidence 的 finding：
+        若 tier 为 verified_fact → 强制下调为 unconfirmed（tier_overrides）
+        若该 finding 无其它 supports 证据 → 该 finding 不得通过（blocker）
+     review_records(verdict='needs_revision', findings=[{id:'Q-1', severity:'blocker', ...}])
+```
+
+> 为什么这么严：证据链的价值全在"能回到原文那一段"。如果引文与原文对不上，
+> 那么整份报告的可信度就无从谈起——这种错误必须在代码里被挡住，而不是靠人肉眼比对。
+
+#### 3.6.2 `claim_nature` → `FindingTier` 的映射（避免两套"事实/推断/观点"并存）
+
+现状 `evidence.claim_nature` 只有 `fact`/`inference`/`opinion` 三档，而
+`report_findings.tier` 有五档。两者不是重复设计，而是**粒度不同**：前者描述单条证据的主张性质，
+后者描述整条结论的可信档位。Fact Checker 的定档规则（写进 PROMPT 与代码常量）：
+
+| 证据侧事实 | 可给的最高 tier |
+|---|---|
+| 至少 1 条 `claim_nature=fact` + `verification_status=verified` + `support_type=supports`，且来源≥2 独立 | `verified_fact` |
+| 全部为 `fact` 但来源只有 1 个 | `supported_judgment` |
+| 含 `inference`，且有 `invalid_if` | `reasonable_speculation` |
+| 只有 `opinion`（本人观点） | `supported_judgment`（并必须标注"这是观点"） |
+| 存在 `support_type=refutes` 且未解决 | 最高 `disputed` |
+
+> 该表是**代码常量 + 测试**（`tests/test_tier_rules.py`，2.5 阶段），不是自由心证。
+> 表与 `docs/research_hub/module_design.md` 的"FindingTier 五档最低证据要求"必须逐字一致。
+
 ### 3.7 Scriptwriter（`scriptwriter`）
 
 | 项 | 内容 |
@@ -225,19 +263,77 @@ flowchart TB
 
 ## 4. Orchestrator 调度机制（重点）
 
-### 4.1 task_type 目录与路由表
+### 4.0 task_type 单一注册表（P1-5 修订，决策 D8）
 
-| task_type | 说明 | 候选 Agent（按优先级） | 默认工具集 |
-|---|---|---|---|
-| `research.plan` | 拆解问题 | orchestrator | llm, db_read |
-| `research.collect` | 搜集资料（搜集即产出 sources/snapshots） | 由合集决定：`financial_knowledge`/`market_briefing`→financial；`football_finance`→football；`industry_research`→industry；`company_teardown`→industry+case；`business_cases`→case | search, fetch, parse_* |
-| `research.extract` | 从资料抽取事实与证据 | 与 collect 同域 Agent | parse_*, db_write(evidence), llm |
-| `research.analyze` | 领域机制/结构分析 | 同上 | db_read, llm |
-| `research.synthesize` | 汇总为报告骨架与五档建议 | lead_agent（通常 financial/industry/case） | db_read, db_write(findings), llm |
-| `verify.claims` | 事实核查与定档 | fact_checker（唯一） | db_read, fetch(受限), llm |
-| `content.script` | 脚本 | scriptwriter | llm, db_write(scripts) |
-| `content.visual` | 分镜与图解 | visual_designer | llm, db_write(media_assets) |
-| `content.produce` | 制作与质检 | video_producer | qc, db_write(media_assets) |
+M1.1 审查发现 `module_design.md:45` 使用了 `topic.discover`，而本文件的九种 task_type
+与 routing 白名单里都没有它 → 编排层会直接拒绝该任务。M1.2 的处理是**建立唯一注册表**，
+而不是在别处补一句说明。
+
+#### 4.0.1 唯一来源与三处同步
+
+| 位置 | 角色 | 谁改 |
+|---|---|---|
+| `config/agent_routing.yaml`（`task_types:` 段） | **唯一权威**：task_type 名称、说明、允许的 Agent、默认工具集、是否人工闸门 | 人（改配置） |
+| `backend/app/execution/task_types.py` | 代码侧枚举/常量，**必须与 YAML 逐项相等**（启动时校验，不等则拒绝启动） | 代码生成/手写，配同步测试 |
+| `agents/*/PROMPT.md` 的"接受的 task_type"表 | 角色视图，必须 ⊆ 注册表 | 人（写提示词） |
+
+**数据库侧不做枚举约束**：`research_subtasks.task_type` 是 `String(64)`，只加
+`CHECK (length(task_type) BETWEEN 3 AND 64 AND task_type GLOB '*.*')`（形如 `domain.action`）。
+理由：task_type 会随业务增长（本次就新增了第 10 种），把它写进 CHECK 意味着**每加一种就要迁移一次库**，
+而注册表本来就该是可配置的。校验发生在服务层与编排层（白名单），不是在 CHECK 里。
+
+#### 4.0.2 注册表内容（十种，含本轮新增）
+
+| task_type | 说明 | 候选 Agent（按优先级） | 默认工具集 | 人工闸门 |
+|---|---|---|---|---|
+| `topic.discover` | **新增**：从 RSS / 财经时事 / 知识缺口扫描发现候选选题 | orchestrator（发现）+ 领域 Agent（初判归属合集） | search, db_read, db_write(topics:候选) | 否（候选需人工立项） |
+| `research.plan` | 拆解问题 | orchestrator | llm, db_read | 否 |
+| `research.collect` | 搜集资料（搜集即产出 sources/snapshots） | 由合集决定：`financial_knowledge`/`market_briefing`→financial；`football_finance`→football；`industry_research`→industry；`company_teardown`→industry+case；`business_cases`→case | search, fetch, parse_* | 否 |
+| `research.extract` | 从资料抽取事实与证据 | 与 collect 同域 Agent | parse_*, db_write(evidence), llm | 否 |
+| `research.analyze` | 领域机制/结构分析 | 同上 | db_read, llm | 否 |
+| `research.synthesize` | 汇总为报告骨架与五档建议 | lead_agent（通常 financial/industry/case） | db_read, db_write(findings), llm | 否 |
+| `verify.claims` | 事实核查与定档 | fact_checker（唯一） | db_read, fetch(受限), llm | **是（唯一强制门）** |
+| `content.script` | 脚本 | scriptwriter | llm, db_write(scripts:草案) | 是（人工审批脚本） |
+| `content.visual` | 分镜与图解 | visual_designer | llm, db_write(media_assets) | 否 |
+| `content.produce` | 制作与质检 | video_producer | qc, db_write(media_assets) | 是（发布前终审） |
+
+#### 4.0.3 同步保障（三处校验，缺一即视为设计未落地）
+
+```text
+C1 启动校验：yaml 的 task_types 键集合 == task_types.py 的枚举值集合，否则 RuntimeError 拒绝启动
+C2 测试校验：tests/test_task_type_registry.py
+   - 键集合相等
+   - 每个 task_type 的 allowed_agents ⊆ roster.yaml 的 9 个 key
+   - 每个 Agent 的 PROMPT.md 里声明的 task_type ⊆ 注册表
+   - module_design.md / api_design.md 里出现的 task_type 字面量 ⊆ 注册表（正则扫描文档）
+C3 运行校验：编排层派发前查白名单，命中不到 → 422 domain_validation_error + details.reason=unknown_task_type
+```
+
+> C2 的"文档正则扫描"是刻意加的：M1.1 的 `topic.discover` 冲突正是**文档先行、代码没跟上**造成的。
+> 让测试去读文档，才能防止下一份文档再引入不存在的 task_type。
+
+#### 4.0.4 新增 task_type 的流程
+
+1. 在 `config/agent_routing.yaml` 增一条（含 allowed_agents、tools、human_gate）；
+2. 在 `backend/app/execution/task_types.py` 增同名常量；
+3. 在相关 `agents/*/PROMPT.md` 里声明；
+4. 跑 `tests/test_task_type_registry.py`；
+5. 若要落库约束（不建议）才考虑迁移。
+
+### 4.1 路由表（由 4.0 的注册表派生，不再单独维护）
+
+| task_type | 候选 Agent（按优先级） |
+|---|---|
+| `topic.discover` | orchestrator → financial/football/industry/case（按合集初判） |
+| `research.plan` | orchestrator |
+| `research.collect` | 域 Agent（按合集，见 4.0.2） |
+| `research.extract` | 域 Agent |
+| `research.analyze` | 域 Agent |
+| `research.synthesize` | lead_agent（financial / industry / case） |
+| `verify.claims` | fact_checker（唯一） |
+| `content.script` | scriptwriter |
+| `content.visual` | visual_designer |
+| `content.produce` | video_producer |
 
 > 路由来源：`config/agent_routing.yaml`（与 `agents/roster.yaml` 的 `collections` 对齐），
 > 代码里 `backend/app/execution/routing.py` 读它并做**白名单校验**：
@@ -345,7 +441,7 @@ def run_task(task):
 | Fact Checker | 批量复核（5–10 条/次）；只对高风险结论做二次抓取 |
 | Scriptwriter | 一次生成 + 一次润色；用"事实清单"而非全文报告 |
 | Visual/Video | 图形规格用文本，不调图像模型；TTS/渲染前先算价 |
-| 全部 | 每个调用写 `model_calls`；`pricing_unknown` 时不下结论性费用 |
+| 全部 | 每个调用写 `model_calls`；**价目缺失时调用会被拒绝（Q8=B）**——Agent 不得绕过网关直接请求，也不得把"没调通"写成"已分析"（必须返回 `budget_blocked` 并上报） |
 
 ---
 

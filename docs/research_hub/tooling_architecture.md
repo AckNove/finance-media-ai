@@ -3,6 +3,22 @@
 > **核心原则**：Agent 不能"通过 Prompt 假装拥有工具"。工具必须由代码注册、按白名单下发、调用留痕、失败可降级。
 > 本文档定义 10 类工具的契约。第二阶段**先实现其中 6 类**（见 [`implementation_roadmap.md`](implementation_roadmap.md)），其余保留契约与降级行为。
 
+## 0. 现状分级（把"已实现 / 已设计 / 只有占位"写死在文档里）
+
+M1.1 审查要求区分这三类。以下分级依据 **2026-11-10 实测**（`backend/app/` 目录树 + 全仓符号搜索），
+不是根据文档推断：
+
+| 分级 | 含义 | 当前有哪些 |
+|---|---|---|
+| **REAL**（已实现，可运行） | 有代码、有测试、当前即可执行 | `db_query`（等价能力：现有 21 个查询端点走 SQLAlchemy 服务层）、`db_write`（等价能力：`/api/sources`、`/api/evidence`、`/api/knowledge` 等 POST 端点）、`task_update`（等价能力：`RecordingDispatcher` 写 `agent_runs`，**但只有记录，没有状态机**） |
+| **DESIGNED**（契约已定，代码未写） | 本文档给全了输入输出错误码，M2–M6 逐项实现 | `web_search`、`fetch_url`、`parse_pdf`、`parse_xlsx`、`llm_complete`、`fact_check`、`handoff`（后者已有协议字段但无工具实现） |
+| **NOT IMPLEMENTED**（明确不做/未开始） | 第二阶段不做，或依赖外部条件 | OCR 文本识别、向量检索、浏览器渲染抓取（JS 站点）、TTS/字幕/视频渲染 |
+
+> **一句话**：现在仓库里**没有任何一个真实的模型调用、网络搜索或网页抓取代码**。
+> 全仓无 `httpx.AsyncClient(`、无 `openai`/`anthropic`/`requests` 导入，
+> `config/settings.yaml` 的四个 integration 开关全部 `enabled: false`。
+> 因此任何"Agent 已经能上网查资料"的说法都是不成立的。
+
 ---
 
 ## 1. 总体机制：ToolRegistry + 统一信封
@@ -50,19 +66,48 @@ flowchart LR
 | `too_large` | 超过大小上限 | 否 | 分页/截断，或改抓摘要 |
 | `unsupported_format` | 格式不支持 | 否 | 标记该源不可解析 |
 | `permission_denied` | 该 Agent 无权 | 否 | 通过 handoff 申请 |
-| `budget_blocked` | 预算不足 | 否 | 上报 `budget_exceeded` |
+| `budget_blocked` | 预算不足（含预留失败） | 否 | 上报 `budget_exceeded` |
+| `lease_lost` | 租约已过期/被抢占 | 否 | 立即停止写库，交由恢复流程接管 |
+| `quote_mismatch` | 引文与原文快照不一致 | 否 | 该证据标 `quote_mismatch`，结论降档 |
 | `internal_error` | 实现缺陷 | 视情况 | 记 `tool_calls.error`，不重试 |
 
-### 1.3 权限模型（三层）
+> 新增三个码的理由：M1.1 审查指出"预算/租约/引文"三类失败在旧表里没有名字，
+> 只能被塞进 `internal_error`，导致审计时无法区分"我们拦住了"和"我们出 bug 了"。
+
+### 1.3 权限模型（三层 + 统一 CallerContext，P1-7）
+
+**统一身份对象（代码级，不是文档口号）**
+
+```python
+@dataclass(frozen=True)
+class CallerContext:
+    kind: Literal["human", "agent", "dev"]      # 三类调用者
+    name: str                                    # human: "owner"；agent: roster key；dev: "worker"
+    task_id: str | None = None                   # agent 必填
+    subtask_id: str | None = None
+    attempt_token: str | None = None             # agent 必填，与 research_subtasks.attempt_token 比对
+    db_scopes: frozenset[str] = frozenset()       # 允许读写的表（agent 由 routing 注入）
+    dry_run: bool = False
+```
+
+**三类调用者的来源与强制点**
+
+| kind | 从哪来 | 怎么强制 | 失败行为 |
+|---|---|---|---|
+| `human` | 本机 HTTP 请求（`127.0.0.1` 绑定 + `X-Caller: human` 头，M2 前无鉴权） | 只允许调用 `/api/*` 中"人可发起"的动作（立项/审批/发布/暂停/合并） | 缺头 → 视为 `human` 但只能读（fail-closed 的动作清单） |
+| `agent` | 执行层构造（AgentExecutor 从 `research_subtasks` 读出 `attempt_token`） | 工具白名单 + `db_scopes` + `attempt_token` 三重校验 | `permission_denied` / `lease_lost`，并写 `tool_calls` |
+| `dev` | 仅 `POST /api/_dev/*`，且 `settings.app_env != production` | 生产环境直接 404（不是 403，避免暴露端点存在） | 404 |
 
 | 层 | 由谁定义 | 内容 |
 |---|---|---|
 | 工具白名单 | `config/agent_routing.yaml` → `agents[].tools` | 该 Agent 可用的工具名集合 |
 | 数据域权限 | 同上 `agents[].db_scopes` | 可读表 / 可写表（含字段级限制，如只允许写 `evidence.verification_status`） |
-| 实例权限 | 运行时的 `ToolContext` | 当前 `research_task_id`/`subtask_id`/`budget_left`/`dry_run` |
+| 实例权限 | 运行时的 `CallerContext` | `research_task_id`/`subtask_id`/`attempt_token`/`budget_left`/`dry_run` |
 
 > 违反任一层 → `permission_denied`，并写 `task_events(type=tool_denied)`，**供审计**。
 > `dry_run=true` 时所有写工具改为"模拟成功 + 记录将写入的内容"，用于排演与测试。
+> **执行位置**：`backend/app/capabilities/guard.py` 的 `require(caller, tool, spec)`，
+> 由 `ToolRegistry.dispatch()` 在调用任何工具前统一执行——**不在各工具里各写一遍**。
 
 ---
 
@@ -135,30 +180,31 @@ flowchart LR
 | 实现方式 | 受控写端点集合（`WriteSpec`），如 `evidence.create`、`source_summary.upsert`、`finding.create`、`content_item.update_status`、`review.record`。每个 spec 内部走对应领域服务，复用现有校验（如 `EvidenceCreate` 的二选一约束）。 |
 | 输入 | `spec` + `payload`（Pydantic 校验）+ `idempotency_key`（必填，通常 `task_id:subtask_id:seq`） |
 | 输出 | `{created_ids: [], updated_ids: [], skipped: []}` |
-| 错误处理 | 校验失败 → `invalid_argument`（带字段路径）；幂等键重复 → `ok=true` + `skipped`（**不报错**，避免重试风暴）；FK 不存在 → `invalid_argument` |
-| 权限边界 | 严格按 §1.3 的 `db_scopes`；**研究层不得写 `scripts`/`publications`**；制作层不得写 `evidence.tier` |
+| 错误处理 | 校验失败 → `invalid_argument`（带字段路径）；幂等键重复 → `ok=true` + `skipped`（**不报错**，避免重试风暴）；FK 不存在 → `invalid_argument`；租约失效 → `lease_lost` |
+| 权限边界 | 由 `CallerContext` 统一强制（见 §1.3）：`human` 只能发起审批类写；`agent` 严格按 `db_scopes`；**研究层不得写 `scripts`/`publications`**；制作层不得写 `evidence.tier`；任何 kind 都不得直接改 `model_calls` 的金额字段 |
 | 费用 | 无 |
 | 落库 | 目标表 + `tool_calls` |
 
-### 2.7 `llm_complete` — 模型调用
+### 2.7 `llm_complete` — 模型调用（P0-2 修订：先预留，后调用）
 
 | 项 | 内容 |
 |---|---|
-| 实现方式 | `ModelGateway.complete(request)`：`provider`（`openai_compatible|anthropic|local`）+ `model` + `temperature` + `max_tokens` + `response_schema`（可选 JSON Schema）+ `purpose`（`plan|collect|extract|analyze|synthesize|verify|script|visual|qc`）。未配置 → `not_configured`。 |
+| 实现方式 | `ModelGateway.complete(request)`：`provider`（`openai_compatible|anthropic|local`）+ `model` + `temperature` + `max_tokens` + `response_schema`（可选 JSON Schema）+ `purpose`（`topic_discover|plan|collect|extract|analyze|synthesize|verify|script|visual|qc`）。未配置 → `not_configured`。 |
 | 输入 | `system_prompt_ref`（指向 `prompts/` 文件 + 变量）、`messages`、`response_schema?`、`max_tokens`（默认按 purpose 预设）、`cache_key?` |
-| 输出 | `{text, parsed?（按 schema 校验）, usage{prompt_tokens,completion_tokens}, model, cost_estimate, latency_ms, cache_hit}` |
-| 错误处理 | 无密钥/网络 → `not_configured`/`network_error`；JSON 不合 schema → 重试 1 次（temp-0.2）→ `schema_invalid`；预算不足 → 调用前拦截 `budget_blocked` |
+| **执行顺序（不可调换）** | ⓪ **价目闸门（Q8=B）**：`pricing_status=missing` 且不在 `approved_exceptions` → 立即 `budget_blocked`（`details.reason=pricing_unknown`），**不进预留、不发请求**；① 单次闸门：`est_cost > request.budget.max_cost` 或 `est_tokens > max_tokens` → `budget_blocked`，**不发请求**；② `reserve_call()`：在 `BEGIN IMMEDIATE` 事务内查 `research_tasks(spent+reserved)`，超限 → 回滚预留 + `budget_blocked`；否则写 `model_calls(status='reserved', reserved_cost, attempt_token)` 并 `cost_reserved += 预估`，**提交**；③ 发真实请求；④ 结算：写终态 + 真实 tokens/cost + 释放 `reserved` |
+| 输出 | `{text, parsed?（按 schema 校验）, usage{prompt_tokens,completion_tokens}, model, cost_estimate, reserved_cost, latency_ms, cache_hit, billable, model_call_id}` |
+| 错误处理 | 无密钥 → `not_configured`（**且不落 reserved 行**）；**价目缺失且无人工例外 → `budget_blocked`（`pricing_unknown`，不落 reserved 行、不发请求）**；网络错误 → `network_error` + `failed`（释放预留）；超时 → `timeout`（**按预留额计费，不释放**）；JSON 不合 schema → 重试 1 次（temp-0.2，第二次同样要走预留）→ `schema_invalid`；预算不足 → `budget_blocked`（无网络调用） |
 | 权限边界 | 9 个 Agent 全部可用，但 `purpose` 与其角色绑定（如 Fact Checker 只能用 `verify`） |
-| 费用 | **有**，是主要成本项。三层闸门：单次 `max_tokens` → 子任务预算 → 任务预算 → 日预算 |
-| 落库 | `model_calls`（provider/model/purpose/tokens/cost/request_hash/latency/status），**不存完整 prompt 正文**（防泄漏与膨胀），只存 `prompt_hash` + 前 500 字摘要 |
+| 费用 | **有**，是主要成本项。闸门见 `system_architecture.md` §8.2 |
+| 落库 | `model_calls`（provider/model/purpose/tokens/cost/reserved_cost/request_hash/latency/status/attempt_token/lease_until/billable/cache_hit），**不存完整 prompt 正文**，只存 `prompt_hash` + 前 500 字摘要 |
 
-**成本闸门示例（`config/models.yaml`）**
+**成本闸门配置（`config/models.yaml`）**
 
 ```yaml
 providers:
   openai_compatible:
     base_url: ${LLM_BASE_URL}
-    pricing_unknown: true        # 不猜价：费用显示为"未知"
+    pricing_unknown: true        # 诚实声明：本 provider 未提供可核对价目（Q8=B 下 = 默认拒绝调用）
 models:
   default:
     provider: openai_compatible
@@ -168,7 +214,31 @@ cost:
   daily_cap_cny: 5.0
   per_task_cap_cny: 2.0
   max_calls_per_subtask: 8
+  unknown_price_upper_bound_cny: 0.05   # 仅供"人工例外"预留使用，不用来收费
+  cache_ttl_hours: 24
+  pricing_policy: reject_unknown        # Q8=B：价目缺失即拒绝调用（人工已定，不得改为默认放行）
+# 唯一放行通道：人工显式登记的例外。六项缺一不可，过期即失效。
+approved_exceptions: []
+# 示例（照抄前必须由人确认金额与有效期）：
+# approved_exceptions:
+#   - model: gpt-4o-mini
+#     max_cost_per_call_cny: 0.05
+#     total_budget_cny: 5.0
+#     approved_by: AK
+#     approved_at: 2026-11-10
+#     expires_at: 2026-12-10
 ```
+
+> **Q8=B 的落地口径**：`pricing_policy: reject_unknown` 是**默认值也是常态**；
+> `approved_exceptions` 为空时，**任何未填价目的模型都调不通**——这是刻意的：
+> 第一次花真钱之前，必须有人写下模型名、单次上限、总预算、批准人、批准时间与有效期。
+> 例外登记只放宽"这一次允许调用"，**不改变** `billable` 记账口径与 `pricing_gaps.log` 的留痕要求。
+
+> **代码级硬门（P0-2）**：`ModelGateway.complete()` 第一行断言
+> `reserve_call()` 已返回 `model_call_id`；任何绕过预留直接发请求的路径都属于实现缺陷，
+> 必须在 code review 与 `tests/test_model_gateway_reservation.py` 中被拦住。
+> 该测试覆盖：预留失败不发请求、成功结算、超时保守计费、缓存命中不计费、
+> 崩溃复原（模拟租约过期）、并发两次调用不会超支。
 
 ### 2.8 `task_update` — 任务状态更新
 
