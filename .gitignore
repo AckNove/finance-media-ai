@@ -111,7 +111,7 @@ tools/openkatana/
 
 # --- 内容任务目录（V2.1 / V2.2）---
 # 渲染中间产物（帧序列、素材盘、字体副本）全部可再生，体积却以 GB 计，不入库。
-# 保留：storyboard/、script/、research/、output/*.mp4、project/**/timeline.json、
+# 保留：storyboard/、script/、research/、project/**/timeline.json、
 #       assets/compositions/*.json、qc/*.md|json、assets_manifest.csv。
 content/jobs/*/project/*/.openkatana/
 content/jobs/*/project/*/plates/
@@ -123,8 +123,11 @@ content/jobs/assets/frames/
 content/jobs/media_toolchain_check/work/
 content/jobs/media_toolchain_check/audio/
 content/jobs/media_toolchain_check/output/
-# 成片是交付物，可复现但重渲一次要十几分钟，所以显式保留（覆盖上面的 *.mp4 规则）。
-!content/jobs/*/output/*.mp4
+# 引擎每次保存时间轴留下的历史快照（timeline-<hash>.json）同样可再生，不入库。
+content/jobs/*/project/*/timeline-*.json
+# 成片改由本地保留：Phase 2 冻结轮按"不把 MP4 等大体积可再生资产提交到 Git"的口径，
+# 取消了原先的 !content/jobs/*/output/*.mp4 例外。文件仍在磁盘上，路径与 SHA-256 记在
+# docs/research_hub/phase2_artifact_index.md。需要重新入库时删除本节注释并 git add -f 即可。
 
 # V1 旧任务目录：含从本机桌面复制来的原始数据（csv/xlsx/pdf），
 # 与 V2.x 的「旧数据全局隔离」口径一致，不入库。本地文件保留在磁盘上。
