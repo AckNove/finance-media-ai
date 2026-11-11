@@ -1,0 +1,190 @@
+{
+  "film": "output\\preview_30_45s.mp4",
+  "contact_sheet": "qc\\review\\contact_sheet.png",
+  "frames": [
+    {
+      "index": 0,
+      "label": "00_opening",
+      "at": 0.6,
+      "file": "qc/review/00_00_opening.png",
+      "purpose": "开场第一秒：画面立即有内容，不是黑底空转"
+    },
+    {
+      "index": 1,
+      "label": "shot_sh01",
+      "at": 2.5,
+      "file": "qc/review/01_shot_sh01.png",
+      "purpose": "sh01 主体：阿波罗17号拍下的地球原片，缓慢推近，右下角留字幕安全区"
+    },
+    {
+      "index": 2,
+      "label": "shot_sh02",
+      "at": 8.0,
+      "file": "qc/review/02_shot_sh02.png",
+      "purpose": "sh02 主体：VIIRS 地球自转片段前 6 秒，横向轻移，铺满竖屏（"
+    },
+    {
+      "index": 3,
+      "label": "shot_sh03",
+      "at": 13.25,
+      "file": "qc/review/03_shot_sh03.png",
+      "purpose": "sh03 主体：蓝色弹珠静帧，慢推，字幕压在下方安全区。"
+    },
+    {
+      "index": 4,
+      "label": "shot_sh04",
+      "at": 19.0,
+      "file": "qc/review/04_shot_sh04.png",
+      "purpose": "sh04 主体：深色底，五根条形按帧生长，数值标签逐个浮现，网格线先出现"
+    },
+    {
+      "index": 5,
+      "label": "shot_sh05",
+      "at": 26.0,
+      "file": "qc/review/05_shot_sh05.png",
+      "purpose": "sh05 主体：一条竖向流程链，节点从上到下落位，连线在节点之间生长，最"
+    },
+    {
+      "index": 6,
+      "label": "shot_sh06",
+      "at": 32.0,
+      "file": "qc/review/06_shot_sh06.png",
+      "purpose": "sh06 主体：自转片段 12–17 秒，手持微抖，转场从下方推入。"
+    },
+    {
+      "index": 7,
+      "label": "shot_sh07",
+      "at": 38.5,
+      "file": "qc/review/07_shot_sh07.png",
+      "purpose": "sh07 主体：纯色底：标题、三行素材署名逐条淡入，随后是引擎与授权说明"
+    },
+    {
+      "index": 8,
+      "label": "trans_sh02",
+      "at": 5.15,
+      "file": "qc/review/08_trans_sh02.png",
+      "purpose": "sh02 入场转场 dissolve：有无撕裂/闪烁/黑边"
+    },
+    {
+      "index": 9,
+      "label": "trans_sh03",
+      "at": 11.15,
+      "file": "qc/review/09_trans_sh03.png",
+      "purpose": "sh03 入场转场 push：有无撕裂/闪烁/黑边"
+    },
+    {
+      "index": 10,
+      "label": "trans_sh04",
+      "at": 15.65,
+      "file": "qc/review/10_trans_sh04.png",
+      "purpose": "sh04 入场转场 glitch：有无撕裂/闪烁/黑边"
+    },
+    {
+      "index": 11,
+      "label": "trans_sh05",
+      "at": 22.65,
+      "file": "qc/review/11_trans_sh05.png",
+      "purpose": "sh05 入场转场 zoom：有无撕裂/闪烁/黑边"
+    },
+    {
+      "index": 12,
+      "label": "trans_sh06",
+      "at": 29.65,
+      "file": "qc/review/12_trans_sh06.png",
+      "purpose": "sh06 入场转场 slide：有无撕裂/闪烁/黑边"
+    },
+    {
+      "index": 13,
+      "label": "trans_sh07",
+      "at": 34.65,
+      "file": "qc/review/13_trans_sh07.png",
+      "purpose": "sh07 入场转场 dip：有无撕裂/闪烁/黑边"
+    },
+    {
+      "index": 14,
+      "label": "anim_sh04",
+      "at": 22.0,
+      "file": "qc/review/14_anim_sh04.png",
+      "purpose": "sh04 动画收尾：staggered bar growth + v"
+    },
+    {
+      "index": 15,
+      "label": "anim_sh05",
+      "at": 29.0,
+      "file": "qc/review/15_anim_sh05.png",
+      "purpose": "sh05 动画收尾：node drop + link growth"
+    },
+    {
+      "index": 16,
+      "label": "anim_sh07",
+      "at": 42.0,
+      "file": "qc/review/16_anim_sh07.png",
+      "purpose": "sh07 动画收尾：credit lines fade in one"
+    },
+    {
+      "index": 17,
+      "label": "99_credits",
+      "at": 41.8,
+      "file": "qc/review/17_99_credits.png",
+      "purpose": "结尾卡署名：逐条可读、不裁切、不被字幕遮挡"
+    }
+  ],
+  "effect_windows": [
+    {
+      "shot": "sh02",
+      "effect": "whoosh_low",
+      "at": 5.0,
+      "music_only_db": -25.9,
+      "with_effect_db": -22.0,
+      "delta_db": 3.9,
+      "verdict": "可闻且不刺耳"
+    },
+    {
+      "shot": "sh03",
+      "effect": "impact_soft",
+      "at": 11.0,
+      "music_only_db": -24.4,
+      "with_effect_db": -23.2,
+      "delta_db": 1.2,
+      "verdict": "可闻且不刺耳"
+    },
+    {
+      "shot": "sh04",
+      "effect": "digital_rise",
+      "at": 15.5,
+      "music_only_db": -23.7,
+      "with_effect_db": -21.4,
+      "delta_db": 2.3,
+      "verdict": "可闻且不刺耳"
+    },
+    {
+      "shot": "sh05",
+      "effect": "riser",
+      "at": 22.5,
+      "music_only_db": -26.0,
+      "with_effect_db": -20.2,
+      "delta_db": 5.8,
+      "verdict": "可闻且不刺耳"
+    },
+    {
+      "shot": "sh06",
+      "effect": "whoosh_tail",
+      "at": 29.5,
+      "music_only_db": -24.4,
+      "with_effect_db": -20.0,
+      "delta_db": 4.4,
+      "verdict": "可闻且不刺耳"
+    },
+    {
+      "shot": "sh07",
+      "effect": "soft_hit",
+      "at": 34.5,
+      "music_only_db": -26.0,
+      "with_effect_db": -21.7,
+      "delta_db": 4.3,
+      "verdict": "可闻且不刺耳"
+    }
+  ],
+  "mean_volume_db": -24.5,
+  "note": "抽帧与分窗测量只提供复核材料；好不好看、听感是否舒服必须由人播放整片判断。"
+}

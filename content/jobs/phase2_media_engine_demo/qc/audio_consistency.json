@@ -1,0 +1,55 @@
+{
+  "timeline_revision": "4737bce9b992fb3823df85650cf31b06a84a6145f2cc8048431d657fc8b1f850",
+  "events": 6,
+  "distinct_effects": 6,
+  "generated_files": 6,
+  "music_tracks": 2,
+  "effect_tracks": 6,
+  "total_tracks": 8,
+  "event_detail": [
+    {
+      "shot_id": "sh02",
+      "name": "whoosh_low",
+      "at": 5.0
+    },
+    {
+      "shot_id": "sh03",
+      "name": "impact_soft",
+      "at": 11.0
+    },
+    {
+      "shot_id": "sh04",
+      "name": "digital_rise",
+      "at": 15.5
+    },
+    {
+      "shot_id": "sh05",
+      "name": "riser",
+      "at": 22.5
+    },
+    {
+      "shot_id": "sh06",
+      "name": "whoosh_tail",
+      "at": 29.5
+    },
+    {
+      "shot_id": "sh07",
+      "name": "soft_hit",
+      "at": 34.5
+    }
+  ],
+  "generated": {
+    "whoosh_low": "audio/whoosh_low.m4a",
+    "impact_soft": "audio/impact_soft.m4a",
+    "digital_rise": "audio/digital_rise.m4a",
+    "riser": "audio/riser.m4a",
+    "whoosh_tail": "audio/whoosh_tail.m4a",
+    "soft_hit": "audio/soft_hit.m4a"
+  },
+  "music_srcs": [
+    "audio/score_bed.m4a",
+    "audio/orbit_loop.m4a"
+  ],
+  "ok": true,
+  "problems": []
+}

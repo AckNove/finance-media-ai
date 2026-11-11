@@ -3,12 +3,12 @@
     "w": 1080,
     "h": 1920,
     "fps": 30,
-    "frames": 1200,
+    "frames": 1275,
     "bg": "#0b1220"
   },
   "clips": {
     "S01": {
-      "frames_dir": "plates/d9f3659e1419",
+      "frames_dir": "plates/d27c8420a7b2",
       "n": 1,
       "fps": 30,
       "w": 1024,
@@ -16,7 +16,7 @@
       "pattern": "%05d.png"
     },
     "S03A": {
-      "frames_dir": "plates/b86e3afdbaf5",
+      "frames_dir": "plates/e06fc4ea589c",
       "n": 180,
       "fps": 30.0,
       "w": 640,
@@ -24,7 +24,7 @@
       "pattern": "%05d.png"
     },
     "S02": {
-      "frames_dir": "plates/373f998f137a",
+      "frames_dir": "plates/08fb12458dcf",
       "n": 1,
       "fps": 30,
       "w": 1024,
@@ -32,7 +32,7 @@
       "pattern": "%05d.png"
     },
     "C_CHART": {
-      "frames_dir": ".openkatana/compositions/2b216995eb7f4ad19b8034afe6fe9b66/frames",
+      "frames_dir": ".openkatana/compositions/a1cbad951db04d3193ae83c850f2c59b/frames",
       "pattern": "%05d.png",
       "n": 210,
       "fps": 30,
@@ -40,7 +40,7 @@
       "h": 1920
     },
     "C_DIAGRAM": {
-      "frames_dir": ".openkatana/compositions/e968f873a3d64b6989d5806720b24491/frames",
+      "frames_dir": ".openkatana/compositions/a8672df61b114c5785dbab407e3350a3/frames",
       "pattern": "%05d.png",
       "n": 210,
       "fps": 30,
@@ -48,7 +48,7 @@
       "h": 1920
     },
     "S03B": {
-      "frames_dir": "plates/f2cd88c060b8",
+      "frames_dir": "plates/42d1583f4312",
       "n": 150,
       "fps": 30.0,
       "w": 640,
@@ -56,9 +56,9 @@
       "pattern": "%05d.png"
     },
     "C_OUTRO": {
-      "frames_dir": ".openkatana/compositions/d57bc73ea2634ba5ae4c4a2b0f3eb2d3/frames",
+      "frames_dir": ".openkatana/compositions/2e0b08cfb1294e9bac0b59a98c77416d/frames",
       "pattern": "%05d.png",
-      "n": 165,
+      "n": 240,
       "fps": 30,
       "w": 1080,
       "h": 1920
@@ -187,7 +187,7 @@
     },
     {
       "f0": 1035,
-      "f1": 1200,
+      "f1": 1275,
       "clip": "C_OUTRO",
       "src": 0,
       "speed": 1,
@@ -308,22 +308,6 @@
       "stroke": "#0b1220",
       "lw": 3,
       "shadow": "dark"
-    },
-    {
-      "type": "caption",
-      "family": "AKSC",
-      "text": "分镜 → 时间轴 → 成片",
-      "f0": 1035,
-      "f1": 1200,
-      "pos": [
-        0.5,
-        0.84
-      ],
-      "size": 44,
-      "fill": "#f6f8fa",
-      "stroke": "#0b1220",
-      "lw": 3,
-      "shadow": "dark"
     }
   ],
   "audio": {
@@ -347,32 +331,32 @@
       {
         "src": "audio/whoosh_low.m4a",
         "at": 5.0,
-        "volume": 0.5
+        "volume": 0.9
       },
       {
         "src": "audio/impact_soft.m4a",
         "at": 11.0,
-        "volume": 0.45
+        "volume": 0.9
       },
       {
         "src": "audio/digital_rise.m4a",
         "at": 15.5,
-        "volume": 0.45
+        "volume": 0.9
       },
       {
         "src": "audio/riser.m4a",
         "at": 22.5,
-        "volume": 0.4
+        "volume": 0.85
       },
       {
         "src": "audio/whoosh_tail.m4a",
         "at": 29.5,
-        "volume": 0.5
+        "volume": 0.9
       },
       {
         "src": "audio/soft_hit.m4a",
         "at": 34.5,
-        "volume": 0.4
+        "volume": 0.9
       }
     ]
   }

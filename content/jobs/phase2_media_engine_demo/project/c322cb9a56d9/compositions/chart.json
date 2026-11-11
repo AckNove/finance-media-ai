@@ -242,7 +242,7 @@
               {
                 "id": "val3",
                 "type": "text",
-                "text": "7",
+                "text": "6",
                 "style": {
                   "font-family": "AKSC",
                   "font-size": "52px",
@@ -257,7 +257,7 @@
                 "type": "box",
                 "style": {
                   "width": "96px",
-                  "height": "770px",
+                  "height": "660px",
                   "background-color": "#f2f5f7",
                   "border-radius": "8px 8px 3px 3px",
                   "transform-origin": "50% 100%",
@@ -320,7 +320,7 @@
               {
                 "id": "lab4",
                 "type": "text",
-                "text": "音轨条",
+                "text": "音效轨",
                 "style": {
                   "font-family": "AKSC",
                   "font-size": "30px",

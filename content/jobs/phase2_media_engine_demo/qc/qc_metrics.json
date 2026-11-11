@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-11-11T03:51:43+00:00",
+  "generated_at": "2026-11-11T09:02:28+00:00",
   "file": "output\\preview_30_45s.mp4",
-  "byte_size": 19868025,
-  "duration": 40.0,
+  "byte_size": 20097925,
+  "duration": 42.5,
   "video": {
     "codec": "h264",
     "width": 1080,
     "height": 1920,
     "fps": "30/1",
-    "duration": 40.0,
-    "frames": "1200"
+    "duration": 42.5,
+    "frames": "1275"
   },
   "audio": {
     "codec": "aac",
     "sample_rate": "48000",
     "channels": 2,
-    "duration": 40.0
+    "duration": 42.5
   },
   "black_segments": [],
   "freeze_segments": [],
   "silence_segments": [],
-  "mean_volume_db": -25.4,
-  "max_volume_db": -13.5,
+  "mean_volume_db": -24.5,
+  "max_volume_db": -6.3,
   "loudness": {
-    "input_i": "-23.63",
-    "input_tp": "-13.51",
-    "input_lra": "2.20",
-    "input_thresh": "-33.93",
-    "output_i": "-23.94",
-    "output_tp": "-14.01",
-    "output_lra": "2.10",
-    "output_thresh": "-34.22",
+    "input_i": "-22.27",
+    "input_tp": "-6.27",
+    "input_lra": "5.60",
+    "input_thresh": "-32.71",
+    "output_i": "-23.79",
+    "output_tp": "-8.04",
+    "output_lra": "4.70",
+    "output_thresh": "-34.12",
     "normalization_type": "dynamic",
-    "target_offset": "-0.06"
+    "target_offset": "-0.21"
   },
   "storyboard_counts": {
     "shots": 7,
@@ -40,10 +40,21 @@
     "real_image": 2,
     "composition": 3,
     "generated_image": 0,
-    "subtitles": 7,
+    "subtitles": 6,
     "transitions": 6,
     "camera_motions": 5,
-    "sound_effects": 7
+    "sound_effects": 6,
+    "sound_effect_names": 6
+  },
+  "audio_counts": {
+    "effect_events": 6,
+    "distinct_effects": 6,
+    "generated_files": 6,
+    "music_tracks": 2,
+    "effect_tracks": 6,
+    "total_tracks": 8,
+    "consistent": true,
+    "problems": []
   },
   "checks": [
     {
@@ -69,12 +80,12 @@
     {
       "check": "duration_matches_storyboard",
       "ok": true,
-      "detail": "40.000s vs storyboard 40.000s"
+      "detail": "42.500s vs storyboard 42.500s"
     },
     {
       "check": "av_equal_length",
       "ok": true,
-      "detail": "video 40.000s / audio 40.000s"
+      "detail": "video 42.500s / audio 42.500s"
     },
     {
       "check": "no_black_over_0.45s",
@@ -94,12 +105,12 @@
     {
       "check": "no_clipping",
       "ok": true,
-      "detail": "max_volume -13.5 dB"
+      "detail": "max_volume -6.3 dB"
     },
     {
       "check": "audible",
       "ok": true,
-      "detail": "mean_volume -25.4 dB"
+      "detail": "mean_volume -24.5 dB"
     },
     {
       "check": "shot_count",
@@ -125,6 +136,11 @@
       "check": "multi_track_audio",
       "ok": true,
       "detail": "8 audio tracks in the timeline"
+    },
+    {
+      "check": "audio_counts_consistent",
+      "ok": true,
+      "detail": "6 处音效事件 / 6 个音效文件 / 2 条配乐 / 8 条总音轨"
     }
   ],
   "all_checks_ok": true,

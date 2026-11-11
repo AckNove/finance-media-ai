@@ -1,8 +1,9 @@
 {
+  "duration": 42.5,
   "score": {
     "file": "score_bed.m4a",
-    "duration": 40.0,
-    "source": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\c322cb9a56d9\\.openkatana\\scores\\fd1d983965204684ae3bb69e3fb1b862\\score.wav",
+    "duration": 42.5,
+    "source": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\c322cb9a56d9\\.openkatana\\scores\\a2a8ca05fd914396b9f7ea8942a819f2\\score.wav",
     "credits_used": 0
   },
   "licensed_bed": {
@@ -14,51 +15,56 @@
     {
       "name": "whoosh_low",
       "at": 5.0,
-      "volume": 0.5,
       "shot": "sh02",
+      "volume": 0.9,
       "file": "whoosh_low.m4a",
-      "byte_size": 17731
+      "byte_size": 17808
     },
     {
       "name": "impact_soft",
       "at": 11.0,
-      "volume": 0.45,
       "shot": "sh03",
+      "volume": 0.9,
       "file": "impact_soft.m4a",
-      "byte_size": 14314
+      "byte_size": 14308
     },
     {
       "name": "digital_rise",
       "at": 15.5,
-      "volume": 0.45,
       "shot": "sh04",
+      "volume": 0.9,
       "file": "digital_rise.m4a",
-      "byte_size": 17137
+      "byte_size": 17076
     },
     {
       "name": "riser",
       "at": 22.5,
-      "volume": 0.4,
       "shot": "sh05",
+      "volume": 0.85,
       "file": "riser.m4a",
-      "byte_size": 37507
+      "byte_size": 37505
     },
     {
       "name": "whoosh_tail",
       "at": 29.5,
-      "volume": 0.5,
       "shot": "sh06",
+      "volume": 0.9,
       "file": "whoosh_tail.m4a",
-      "byte_size": 21476
+      "byte_size": 21885
     },
     {
       "name": "soft_hit",
       "at": 34.5,
-      "volume": 0.4,
       "shot": "sh07",
+      "volume": 0.9,
       "file": "soft_hit.m4a",
-      "byte_size": 11700
+      "byte_size": 11663
     }
   ],
+  "counts": {
+    "effect_events": 6,
+    "distinct_effects": 6,
+    "music_tracks": 2
+  },
   "narration": "none — no TTS was called and no human recording exists for this demo"
 }

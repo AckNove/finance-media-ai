@@ -1,6 +1,11 @@
 {
   "manifest": "assets_manifest.csv",
-  "manifest_rows": 10,
+  "manifest_rows": 16,
+  "manifest_source_rows": 4,
+  "manifest_original_rows": 6,
+  "manifest_sfx_rows": 6,
+  "captions_from": "subtitle",
+  "narration_rendered": false,
   "frames": [
     {
       "shot_id": "sh01",
@@ -34,7 +39,7 @@
     },
     {
       "shot_id": "sh07",
-      "at": 37.8,
+      "at": 39.3,
       "file": "07_sh07.png"
     }
   ],

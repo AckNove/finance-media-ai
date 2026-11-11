@@ -3,7 +3,7 @@
     "path": "compositions/chart.json",
     "frames": 210,
     "clip": {
-      "frames_dir": ".openkatana/compositions/2b216995eb7f4ad19b8034afe6fe9b66/frames",
+      "frames_dir": ".openkatana/compositions/a1cbad951db04d3193ae83c850f2c59b/frames",
       "pattern": "%05d.png",
       "n": 210,
       "fps": 30,
@@ -15,7 +15,7 @@
     "path": "compositions/diagram.json",
     "frames": 210,
     "clip": {
-      "frames_dir": ".openkatana/compositions/e968f873a3d64b6989d5806720b24491/frames",
+      "frames_dir": ".openkatana/compositions/a8672df61b114c5785dbab407e3350a3/frames",
       "pattern": "%05d.png",
       "n": 210,
       "fps": 30,
@@ -25,11 +25,11 @@
   },
   "C_OUTRO": {
     "path": "compositions/outro.json",
-    "frames": 165,
+    "frames": 240,
     "clip": {
-      "frames_dir": ".openkatana/compositions/d57bc73ea2634ba5ae4c4a2b0f3eb2d3/frames",
+      "frames_dir": ".openkatana/compositions/2e0b08cfb1294e9bac0b59a98c77416d/frames",
       "pattern": "%05d.png",
-      "n": 165,
+      "n": 240,
       "fps": 30,
       "w": 1080,
       "h": 1920

@@ -1,21 +1,21 @@
 {
-  "request_id": "phase2-45fa15aa",
-  "revision": "45fa15aade3b86574ce44f2cfd76059918d8edff76b7da4d91c2606ef49538cd",
-  "engine_output": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\c322cb9a56d9\\.openkatana\\jobs\\5d7086caf37e57ddbe30429e572ab6b1\\render\\video.mp4",
+  "request_id": "phase2-4737bce9",
+  "revision": "4737bce9b992fb3823df85650cf31b06a84a6145f2cc8048431d657fc8b1f850",
+  "engine_output": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\c322cb9a56d9\\.openkatana\\jobs\\f16714728d8d5fe7bf219225ff78e89d\\render\\video.mp4",
   "file": "preview_30_45s.mp4",
-  "byte_size": 19868025,
+  "byte_size": 20097925,
   "render": {
-    "job_id": "5d7086caf37e57ddbe30429e572ab6b1",
-    "id": "5d7086caf37e57ddbe30429e572ab6b1",
-    "request_id": "phase2-45fa15aa",
+    "job_id": "f16714728d8d5fe7bf219225ff78e89d",
+    "id": "f16714728d8d5fe7bf219225ff78e89d",
+    "request_id": "phase2-4737bce9",
     "state": "succeeded",
-    "revision": "45fa15aade3b86574ce44f2cfd76059918d8edff76b7da4d91c2606ef49538cd",
-    "created_at": "2026-11-11T03:28:54.587915+00:00",
-    "video": ".openkatana/jobs/5d7086caf37e57ddbe30429e572ab6b1/render/video.mp4",
-    "frames": 1200,
-    "sha256": "b64562e6323dd750467af36b846c4c28fd09f173f12d0ddc85a5059c70bcea6f",
-    "finished_at": "2026-11-11T03:51:17.246641+00:00",
+    "revision": "4737bce9b992fb3823df85650cf31b06a84a6145f2cc8048431d657fc8b1f850",
+    "created_at": "2026-11-11T08:57:38.243795+00:00",
+    "video": ".openkatana/jobs/f16714728d8d5fe7bf219225ff78e89d/render/video.mp4",
+    "frames": 1275,
+    "sha256": "0aa4dde0e483a09566d48c4b04c32ff7cac2fae7e71bfd24db73cc2069909ea9",
+    "finished_at": "2026-11-11T09:01:59.681113+00:00",
     "project": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\c322cb9a56d9",
-    "video_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\c322cb9a56d9\\.openkatana\\jobs\\5d7086caf37e57ddbe30429e572ab6b1\\render\\video.mp4"
+    "video_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\c322cb9a56d9\\.openkatana\\jobs\\f16714728d8d5fe7bf219225ff78e89d\\render\\video.mp4"
   }
 }

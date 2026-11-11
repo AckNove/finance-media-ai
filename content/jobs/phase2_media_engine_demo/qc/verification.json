@@ -1,0 +1,181 @@
+{
+  "storyboard": {
+    "ok": true,
+    "path": "storyboard/storyboard.csv",
+    "duration": 42.5,
+    "fps": 30,
+    "total_frames": 1275,
+    "counts": {
+      "shots": 7,
+      "real_video": 2,
+      "real_image": 2,
+      "composition": 3,
+      "generated_image": 0,
+      "subtitles": 6,
+      "transitions": 6,
+      "camera_motions": 5,
+      "sound_effects": 6,
+      "sound_effect_names": 6
+    },
+    "sound_effect_events": [
+      {
+        "shot_id": "sh02",
+        "name": "whoosh_low",
+        "at": 5.0
+      },
+      {
+        "shot_id": "sh03",
+        "name": "impact_soft",
+        "at": 11.0
+      },
+      {
+        "shot_id": "sh04",
+        "name": "digital_rise",
+        "at": 15.5
+      },
+      {
+        "shot_id": "sh05",
+        "name": "riser",
+        "at": 22.5
+      },
+      {
+        "shot_id": "sh06",
+        "name": "whoosh_tail",
+        "at": 29.5
+      },
+      {
+        "shot_id": "sh07",
+        "name": "soft_hit",
+        "at": 34.5
+      }
+    ]
+  },
+  "sources": {
+    "ok": true,
+    "entries": [
+      {
+        "source_id": "S01",
+        "file": "nasa_apollo17_earthrise.jpg",
+        "sha256_matches": true,
+        "license": "NASA public-domain media (media-use policy applies)",
+        "commercial_use": "allowed",
+        "credit": "Earth Science and Remote Sensing Unit, NASA Johnson Space Center",
+        "verification_status": "verified"
+      },
+      {
+        "source_id": "S02",
+        "file": "nasa_blue_marble_starfield.jpg",
+        "sha256_matches": true,
+        "license": "NASA public-domain media (media-use policy applies)",
+        "commercial_use": "allowed",
+        "credit": "NASA Scientific Visualization Studio; Cheng Zhang",
+        "verification_status": "verified"
+      },
+      {
+        "source_id": "S03",
+        "file": "nasa_earth_rotation.mp4",
+        "sha256_matches": true,
+        "license": "NASA public-domain media (media-use policy applies)",
+        "commercial_use": "allowed",
+        "credit": "NASA Scientific Visualization Studio; Amy Moran and Jesse Allen",
+        "verification_status": "verified"
+      },
+      {
+        "source_id": "S04",
+        "file": "openkatana_orbit_score.wav",
+        "sha256_matches": true,
+        "license": "Apache-2.0",
+        "commercial_use": "allowed",
+        "credit": "OpenKatana contributors, Apache-2.0",
+        "verification_status": "verified"
+      }
+    ],
+    "problems": [],
+    "register_columns": [
+      "source_id",
+      "source_name",
+      "original_filename",
+      "publisher",
+      "source_url",
+      "published_at",
+      "data_as_of",
+      "retrieved_at",
+      "unit",
+      "methodology",
+      "original_file_hash",
+      "verification_status",
+      "byte_size",
+      "license",
+      "commercial_use",
+      "credit"
+    ]
+  },
+  "manifest": {
+    "ok": true,
+    "rows": 16,
+    "by_class": {
+      "A": 5,
+      "B": 10,
+      "C": 1
+    },
+    "problems": []
+  },
+  "timeline": {
+    "ok": true,
+    "frames": 1275,
+    "shots": 7,
+    "transitions": [
+      "dissolve",
+      "push",
+      "glitch",
+      "zoom",
+      "slide",
+      "dip"
+    ],
+    "camera_effects": [
+      "push",
+      "fit",
+      "cover",
+      "pan",
+      "fit",
+      "cover",
+      "push",
+      "fit",
+      "cover",
+      "punch",
+      "fit",
+      "cover",
+      "pan",
+      "fit",
+      "cover",
+      "handheld",
+      "fit",
+      "cover",
+      "fit",
+      "cover"
+    ],
+    "captions": 6,
+    "audio_tracks": 8,
+    "audio_srcs": [
+      "audio/score_bed.m4a",
+      "audio/orbit_loop.m4a",
+      "audio/whoosh_low.m4a",
+      "audio/impact_soft.m4a",
+      "audio/digital_rise.m4a",
+      "audio/riser.m4a",
+      "audio/whoosh_tail.m4a",
+      "audio/soft_hit.m4a"
+    ],
+    "problems": []
+  },
+  "audio": {
+    "ok": true,
+    "events": 6,
+    "distinct_effects": 6,
+    "generated_files": 6,
+    "music_tracks": 2,
+    "effect_tracks": 6,
+    "total_tracks": 8,
+    "problems": []
+  }
+}
