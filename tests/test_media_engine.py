@@ -143,6 +143,54 @@ def test_call_log_is_jsonl(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     assert record["ok"] is True
 
 
+def test_render_polling_backs_off_and_respects_deadline(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    engine = _engine(tmp_path)
+    now = 0.0
+    sleeps: list[float] = []
+    states = iter([{"status": "running"}] * 4 + [{"status": "completed"}])
+
+    def sleep(seconds: float) -> None:
+        nonlocal now
+        sleeps.append(seconds)
+        now += seconds
+
+    monkeypatch.setattr(engine, "start_render", lambda **_: {"job_id": "job-1"})
+    monkeypatch.setattr(engine, "get_render", lambda _: next(states))
+    monkeypatch.setattr("backend.app.capabilities.media.openkatana.time.monotonic", lambda: now)
+    monkeypatch.setattr("backend.app.capabilities.media.openkatana.time.sleep", sleep)
+
+    result = engine.render(request_id="request-1", timeout=30, poll=2)
+
+    assert result["status"] == "completed"
+    assert sleeps == [2, 5, 10, 10]
+
+
+def test_render_polling_does_not_sleep_past_timeout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    engine = _engine(tmp_path)
+    now = 0.0
+    sleeps: list[float] = []
+
+    def sleep(seconds: float) -> None:
+        nonlocal now
+        sleeps.append(seconds)
+        now += seconds
+
+    monkeypatch.setattr(engine, "start_render", lambda **_: {"job_id": "job-1"})
+    monkeypatch.setattr(engine, "get_render", lambda _: {"status": "running"})
+    monkeypatch.setattr("backend.app.capabilities.media.openkatana.time.monotonic", lambda: now)
+    monkeypatch.setattr("backend.app.capabilities.media.openkatana.time.sleep", sleep)
+
+    with pytest.raises(MediaEngineError) as error:
+        engine.render(request_id="request-1", timeout=6, poll=2)
+
+    assert error.value.code == "timeout"
+    assert sleeps == [2, 4]
+
+
 def test_health_reports_a_foreign_ffmpeg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     engine = _engine(tmp_path)
     payload = {

@@ -410,16 +410,20 @@ class OpenKatanaEngine:
             raise MediaEngineError("bad_output", "start_render returned no job id", tool="start_render",
                                    detail=json.dumps(started, ensure_ascii=False)[:1000])
         deadline = time.monotonic() + timeout
+        intervals = (poll, max(poll, 5.0), max(poll, 10.0))
+        interval_index = 0
         while True:
             state = self.get_render(job_id)
             status = str(state.get("status") or state.get("state") or "").lower()
             if status in {"done", "complete", "completed", "succeeded", "ok", "failed", "error", "cancelled"}:
                 return {"job_id": job_id, **state}
-            if time.monotonic() > deadline:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
                 raise MediaEngineError(
                     "timeout", f"render {job_id} did not finish within {timeout:.0f}s",
                     tool="get_render", detail=json.dumps(state, ensure_ascii=False)[:1000])
-            time.sleep(poll)
+            time.sleep(min(intervals[interval_index], remaining))
+            interval_index = min(interval_index + 1, len(intervals) - 1)
 
     # ----------------------------------------------------------- compositions
     def save_composition(self, path: str, document: dict[str, Any], *, revision: str | None = None) -> dict[str, Any]:

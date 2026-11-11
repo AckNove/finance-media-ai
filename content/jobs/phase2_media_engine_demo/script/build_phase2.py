@@ -807,7 +807,7 @@ def stage_render() -> dict[str, Any]:
     revision = state["revision"]
     request_id = f"phase2-{revision[:8]}"
     log(f"render request {request_id}")
-    result = engine.render(request_id=request_id, timeout=2400.0, poll=3.0)
+    result = engine.render(request_id=request_id, timeout=2400.0, poll=2.0)
     relative = str(result.get("video") or result.get("output") or result.get("path") or "")
     if not relative:
         raise SystemExit(f"render finished without an output file: {json.dumps(result)[:400]}")
