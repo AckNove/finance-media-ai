@@ -1,0 +1,38 @@
+[
+  {
+    "source_id": "S01",
+    "slug": "jgb_yields",
+    "title": "日本国债收益率日线（本地数据文件，2024-01-03 至 2025-12-31）",
+    "tool": "parse_xlsx",
+    "path": "source_text/raw/S01_jgb_yields.csv",
+    "credibility": "E1",
+    "used_for": "收益率水平、涨幅倍数、峰值日期等全部量化结论"
+  },
+  {
+    "source_id": "S02",
+    "slug": "gold_price",
+    "title": "国际金价日线（本地数据文件，2024-01-01 至 2025-12-31）",
+    "tool": "parse_xlsx",
+    "path": "source_text/raw/S02_gold_price.csv",
+    "credibility": "E1",
+    "used_for": "金价区间涨幅、与国债收益率的时间重合对比"
+  },
+  {
+    "source_id": "S03",
+    "slug": "world_news",
+    "title": "国际新闻要点（2026-03-23，含原始链接的二手汇总表）",
+    "tool": "parse_xlsx",
+    "path": "source_text/raw/S03_world_news.xlsx",
+    "credibility": "E3",
+    "used_for": "背景事件的时间与出处（转述级别，未独立核实）"
+  },
+  {
+    "source_id": "S04",
+    "slug": "pdf_parse_probe",
+    "title": "真实 PDF 解析链路验证件（与本主题无关，仅用于证明 PDF 解析可用）",
+    "tool": "parse_pdf",
+    "path": "source_text/raw/S04_pdf_parse_probe.pdf",
+    "credibility": "E0",
+    "used_for": "只验证 parse_pdf 工具与 MarkItDown 链路，不作为任何事实依据"
+  }
+]

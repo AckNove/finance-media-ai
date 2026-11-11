@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 135
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "stage",
+    "type": "box",
+    "children": [
+      {
+        "id": "brand",
+        "type": "text",
+        "text": "AK 带你拆解世界",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "96px",
+          "font-weight": "900",
+          "color": "#f2f5f7",
+          "text-align": "center"
+        }
+      },
+      {
+        "id": "divider",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "0px",
+          "top": "0px",
+          "width": "220px",
+          "height": "8px",
+          "background-color": "#b6ff1f",
+          "border-radius": "4px"
+        }
+      },
+      {
+        "id": "line2",
+        "type": "text",
+        "text": "视频引擎 V2.1 · 能力演示",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "48px",
+          "font-weight": "600",
+          "color": "#35e0ff",
+          "text-align": "center"
+        }
+      },
+      {
+        "id": "line3",
+        "type": "text",
+        "text": "示意数据 · 无配音 · 待人工审核",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "400",
+          "color": "#8f9bb0",
+          "text-align": "center",
+          "margin-top": "18px"
+        }
+      }
+    ],
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "align-items": "center",
+      "justify-content": "center",
+      "width": "1080px",
+      "height": "1920px",
+      "padding": "0 96px",
+      "gap": "34px",
+      "background-color": "#151d2e"
+    }
+  },
+  "tracks": [
+    {
+      "node": "brand",
+      "property": "reveal",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          16,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "divider",
+      "property": "scale",
+      "keys": [
+        [
+          16,
+          0
+        ],
+        [
+          42,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line2",
+      "property": "opacity",
+      "keys": [
+        [
+          16,
+          0
+        ],
+        [
+          32,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line3",
+      "property": "opacity",
+      "keys": [
+        [
+          26,
+          0
+        ],
+        [
+          42,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "stage",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          1.0
+        ],
+        [
+          134,
+          1.03
+        ]
+      ],
+      "easing": "linear"
+    }
+  ]
+}

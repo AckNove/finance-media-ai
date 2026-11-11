@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 540,
+    "h": 960,
+    "fps": 30,
+    "frames": 60
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "root",
+    "type": "box",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "align-items": "center",
+      "justify-content": "flex-end",
+      "width": "540px",
+      "height": "960px",
+      "padding": "40px",
+      "box-sizing": "border-box",
+      "background-color": "#101826"
+    },
+    "children": [
+      {
+        "id": "bar",
+        "type": "box",
+        "style": {
+          "width": "200px",
+          "height": "500px",
+          "background-color": "#35e0ff",
+          "flex-shrink": "0"
+        }
+      },
+      {
+        "id": "cap",
+        "type": "text",
+        "text": "bar",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "40px",
+          "color": "#f2f5f7"
+        }
+      }
+    ]
+  },
+  "tracks": []
+}

@@ -165,7 +165,7 @@ class CallerContext:
 
 | 项 | 内容 |
 |---|---|
-| 实现方式 | **不是任意 SQL**：受控查询端点集合（`QuerySpec`），由 `backend/app/capabilities/db_read.py` 白名单实现，如 `knowledge_search`、`company_profile`、`industry_overview`、`recent_reports`、`evidence_by_finding`。 |
+| 实现方式 | **不是任意 SQL**：受控查询端点集合（`QuerySpec`），由 `backend/app/capabilities/db_query.py` 白名单实现，如 `knowledge_search`、`company_profile`、`industry_overview`、`recent_reports`、`evidence_by_finding`。 |
 | 输入 | `spec` (枚举名) + `params` (dict，按 spec 校验) + `limit` (默认 20，上限 100) |
 | 输出 | `rows[]`（仅 leaf 字段，**不序列化 ORM 对象**）+ `total` |
 | 错误处理 | 未知 spec → `invalid_argument`；越权表 → `permission_denied` |

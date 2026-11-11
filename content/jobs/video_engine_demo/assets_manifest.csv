@@ -1,0 +1,10 @@
+asset_id,path,category,media_type,origin,license,used_in,shot_ids,purpose,notes
+A01,content/jobs/video_engine_demo/project/video_engine_demo/.openkatana/compositions/5f4cec3e462d45f796da44201d6074ca/frames,B,rendered plate,OpenKatana 0.1.3 渲染本地 HTML 组合（作者脚本 build_demo.py 生成）,Apache-2.0 (OpenKatana) + 作者原创,M2.0 demo,s1_hook,开场钩子画面,105 帧 1080x1920
+A02,content/jobs/video_engine_demo/project/video_engine_demo/.openkatana/compositions/f5562479f2a3446fb691cc8bc631710d/frames,B,rendered plate,同上,同上,M2.0 demo,s2_number,数字揭示画面,120 帧
+A03,content/jobs/video_engine_demo/project/video_engine_demo/.openkatana/compositions/85824d6ad1b5430cbe2006d858e96cad/frames,B,rendered plate,同上,同上,M2.0 demo,s3_chart,柱状数据图生长动画,150 帧；数据为镜头时长示意值
+A04,content/jobs/video_engine_demo/project/video_engine_demo/.openkatana/compositions/ab9aaf1d368a47b0be865f628b40cca2/frames,B,rendered plate,同上,同上,M2.0 demo,s4_diagram,五段流程链示意,150 帧
+A05,content/jobs/video_engine_demo/project/video_engine_demo/.openkatana/compositions/32c1a7faeeba417785160e1cb382f409/frames,B,rendered plate,同上,同上,M2.0 demo,s5_plate,纯视觉氛围画面（配合镜头推入）,120 帧
+A06,content/jobs/video_engine_demo/project/video_engine_demo/.openkatana/compositions/84dee83b906f460d9b904b31ba546aa0/frames,B,rendered plate,同上,同上,M2.0 demo,s6_outro,收束与署名画面,135 帧
+A07,content/jobs/video_engine_demo/project/video_engine_demo/audio/score.m4a,B,audio,OpenKatana synthesize_score 本地振荡器合成（无模型、无采样库）,作者原创（工具 Apache-2.0）,M2.0 demo,all,背景配乐,26 秒 48kHz 转 AAC 192k；无版权素材
+A08,content/jobs/video_engine_demo/project/video_engine_demo/fonts/NotoSansSC-VF.ttf,C,font,系统已安装 C:\Windows\Fonts\NotoSansSC-VF.ttf 复制进项目,OFL-1.1,M2.0 demo,all,中文字幕与标题字形,可再分发；非内容素材
+B01,tools/openkatana,engine,tool,github.com/rk0neki/OpenKatana v0.1.3 (commit f3b09107a9828ef770f5bf63116cd418197c15c2),Apache-2.0,M2.0 demo,all,渲染与合成引擎,未修改上游源码

@@ -968,6 +968,33 @@ alembic downgrade -1 && alembic upgrade head                                    
 | B5 | Finding 级审核可写入且 `review_status` 同步；`PRAGMA index_list('script_evidence_links')` 含两条部分唯一索引 |
 | B6 | **删除演练**：在临时库插入 1 选题+1 报告+1 脚本+1 发布 → 删选题 → 脚本与发布记录**仍在**（`topic_id` 变 NULL）→ 回滚事务 |
 
+**M2.0 实测注记（2026-11-10，T11 同步；全部在临时库演练，真实开发库未动）**：
+
+1. **B1/B2/B3 已落地并逐批往返通过**：`de8148733a9b` → `b1_topic_taxonomy`（18→22）→
+   `b2_task_layer`（22→26）→ `b3_metering`（26→28）；`29` 张物理表含 `alembic_version`。
+   每批都单独 `upgrade → downgrade -1 → upgrade` 成功，全回滚后只剩 `alembic_version`。
+2. **两个部分唯一索引确认为真部分索引**：`sqlite_master.sql` 中 `uq_topic_primary_collection`
+   与 `uq_topic_current_score` 都带 `WHERE` 子句（断言写在 `tests/test_migrations.py::test_partial_unique_indexes_are_partial`）。
+3. **`topics.status` 必须有 `server_default='candidate'`**：B1 对**已有行**的库升级时，
+   SQLite 的 batch 重建会插入 NOT NULL 无默认值的新列 → `NOT NULL constraint failed:
+   _alembic_tmp_topics.status`。因此迁移与 ORM 两侧都要声明默认值
+   （`backend/app/models/types.py::enum_column(..., server_default=...)`）。
+4. **B1 的 downgrade 必须先显式丢弃两个 CHECK**：batch 重建会反射 `ck_topics_topic_status`
+   与 `ck_topics_topic_origin`，删列后 DDL 仍引用已不存在的列 →
+   `sqlite3.OperationalError: no such column: status`。删约束时**必须**用
+   `batch_op.drop_constraint(batch_op.f("ck_topics_topic_status"), type_="check")`；
+   写裸名字会被命名约定二次拼接成 `ck_topics_ck_topics_topic_status` 而报 `No such constraint`。
+5. **`agent_runs` ↔ `research_subtasks` 存在外键环**（`research_subtasks.agent_run_id` 与
+   `agent_runs.subtask_id` 互指，均为 SET NULL）。SQLAlchemy 在 `create_all`/元数据排序时会告警
+   `SAWarning: Cannot correctly sort tables ... unresolvable cycles`，但**建表与迁移都正常**
+   （`PRAGMA foreign_key_check` 为空）。这是有意的双向引用，已作为已知告警记录在交付报告中。
+6. **`model_calls.cost_estimate` 与预留字段的口径**：B3 建表但**不写任何行**；2.1 的预留-结算
+   往返测试届时随 `ModelGateway` 一起补，本文 §6.4 B3 行里的"预留-结算往返单元测试"在 2.0
+   阶段以"表结构 + `budget.evaluate()` 纯函数测试"代替（`tests/test_budget.py`）。
+7. **SQLite 批量模式无法离线生成 DDL**：`alembic upgrade --sql` 到 B1 起会抛
+   `CommandError: ... batch mode`。离线 SQL 审阅只能覆盖到 `de8148733a9b`；
+   B1–B3 的复核方式是"临时库往返 + `alembic check` 无漂移"，已写成测试。
+
 ### 6.5 备份与回滚演练（P2-13 修订：从"写了方案"变成"可执行步骤"）
 
 **前置事实（实测）**：`data/backups/` 目录**当前不存在**；`.gitignore` 已忽略 `*.db` 与 `data/*.db`，

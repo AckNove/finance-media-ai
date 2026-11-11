@@ -1,0 +1,5 @@
+source_id,title,type,credibility,origin_path,converted_path,sha256,byte_size,char_count,page_count,parser,used_for,fetched_at
+S01,日本国债收益率日线（本地数据文件，2024-01-03 至 2025-12-31）,CSV,E1,source_text/raw/S01_jgb_yields.csv,source_text/S01_jgb_yields.md,33f9ae4774a99e87774dc6ffe8213e55cbec5b49dc6cb7d51c71838d0cbc3910,28393,29490,,markitdown 0.1.9,收益率水平、涨幅倍数、峰值日期等全部量化结论,2026-11-10T13:31:11Z
+S02,国际金价日线（本地数据文件，2024-01-01 至 2025-12-31）,CSV,E1,source_text/raw/S02_gold_price.csv,source_text/S02_gold_price.md,38a3d67a99da8b4c5b89d96298ab03fdd427c074bf77abb2193011d59b7e08b2,35134,36187,,markitdown 0.1.9,金价区间涨幅、与国债收益率的时间重合对比,2026-11-10T13:31:11Z
+S03,国际新闻要点（2026-03-23，含原始链接的二手汇总表）,XLSX,E3,source_text/raw/S03_world_news.xlsx,source_text/S03_world_news.md,4ed82471ad972f9657a6afce125be4d43b93ec9a0d69ed96b74978a09cab4bbf,7179,1648,,markitdown 0.1.9,背景事件的时间与出处（转述级别，未独立核实）,2026-11-10T13:31:12Z
+S04,真实 PDF 解析链路验证件（与本主题无关，仅用于证明 PDF 解析可用）,PDF,E0,source_text/raw/S04_pdf_parse_probe.pdf,source_text/S04_pdf_parse_probe.md,80d31d166e631bf9a5df1689fde64d623054ad5b881bf211c52c20aca88c08bd,1184534,143465,36,markitdown 0.1.9,只验证 parse_pdf 工具与 MarkItDown 链路，不作为任何事实依据,2026-11-10T13:31:15Z

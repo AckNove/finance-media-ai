@@ -1,0 +1,573 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 210
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "root",
+    "type": "box",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "width": "1080px",
+      "height": "1920px",
+      "padding": "150px 90px 220px 90px",
+      "box-sizing": "border-box",
+      "background-color": "#0b1220",
+      "gap": "38px",
+      "justify-content": "center"
+    },
+    "children": [
+      {
+        "id": "kicker",
+        "type": "text",
+        "text": "MEDIA ENGINE / SELF-TEST",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "30px",
+          "font-weight": "700",
+          "color": "#b6ff1f",
+          "letter-spacing": "6px",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "title",
+        "type": "text",
+        "text": "本片分镜统计",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "86px",
+          "font-weight": "900",
+          "color": "#f2f5f7",
+          "line-height": "1.1",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "chart",
+        "type": "box",
+        "style": {
+          "display": "flex",
+          "flex-direction": "row",
+          "align-items": "flex-end",
+          "justify-content": "space-between",
+          "gap": "26px",
+          "height": "620px",
+          "padding-bottom": "18px"
+        },
+        "children": [
+          {
+            "id": "col0",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "column",
+              "align-items": "center",
+              "justify-content": "flex-end",
+              "flex": "1",
+              "height": "1000px",
+              "gap": "16px"
+            },
+            "children": [
+              {
+                "id": "val0",
+                "type": "text",
+                "text": "2",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "52px",
+                  "font-weight": "900",
+                  "color": "#35e0ff",
+                  "line-height": "1",
+                  "opacity": "0"
+                }
+              },
+              {
+                "id": "bar0",
+                "type": "box",
+                "style": {
+                  "width": "96px",
+                  "height": "220px",
+                  "background-color": "#35e0ff",
+                  "border-radius": "8px 8px 3px 3px",
+                  "transform-origin": "50% 100%",
+                  "flex-shrink": "0"
+                }
+              },
+              {
+                "id": "lab0",
+                "type": "text",
+                "text": "视频镜",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "30px",
+                  "font-weight": "500",
+                  "color": "#94a3b8",
+                  "line-height": "1.2",
+                  "text-align": "center"
+                }
+              }
+            ]
+          },
+          {
+            "id": "col1",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "column",
+              "align-items": "center",
+              "justify-content": "flex-end",
+              "flex": "1",
+              "height": "1000px",
+              "gap": "16px"
+            },
+            "children": [
+              {
+                "id": "val1",
+                "type": "text",
+                "text": "2",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "52px",
+                  "font-weight": "900",
+                  "color": "#b6ff1f",
+                  "line-height": "1",
+                  "opacity": "0"
+                }
+              },
+              {
+                "id": "bar1",
+                "type": "box",
+                "style": {
+                  "width": "96px",
+                  "height": "220px",
+                  "background-color": "#b6ff1f",
+                  "border-radius": "8px 8px 3px 3px",
+                  "transform-origin": "50% 100%",
+                  "flex-shrink": "0"
+                }
+              },
+              {
+                "id": "lab1",
+                "type": "text",
+                "text": "图片镜",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "30px",
+                  "font-weight": "500",
+                  "color": "#94a3b8",
+                  "line-height": "1.2",
+                  "text-align": "center"
+                }
+              }
+            ]
+          },
+          {
+            "id": "col2",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "column",
+              "align-items": "center",
+              "justify-content": "flex-end",
+              "flex": "1",
+              "height": "1000px",
+              "gap": "16px"
+            },
+            "children": [
+              {
+                "id": "val2",
+                "type": "text",
+                "text": "3",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "52px",
+                  "font-weight": "900",
+                  "color": "#ff2bd6",
+                  "line-height": "1",
+                  "opacity": "0"
+                }
+              },
+              {
+                "id": "bar2",
+                "type": "box",
+                "style": {
+                  "width": "96px",
+                  "height": "330px",
+                  "background-color": "#ff2bd6",
+                  "border-radius": "8px 8px 3px 3px",
+                  "transform-origin": "50% 100%",
+                  "flex-shrink": "0"
+                }
+              },
+              {
+                "id": "lab2",
+                "type": "text",
+                "text": "合成镜",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "30px",
+                  "font-weight": "500",
+                  "color": "#94a3b8",
+                  "line-height": "1.2",
+                  "text-align": "center"
+                }
+              }
+            ]
+          },
+          {
+            "id": "col3",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "column",
+              "align-items": "center",
+              "justify-content": "flex-end",
+              "flex": "1",
+              "height": "1000px",
+              "gap": "16px"
+            },
+            "children": [
+              {
+                "id": "val3",
+                "type": "text",
+                "text": "7",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "52px",
+                  "font-weight": "900",
+                  "color": "#f2f5f7",
+                  "line-height": "1",
+                  "opacity": "0"
+                }
+              },
+              {
+                "id": "bar3",
+                "type": "box",
+                "style": {
+                  "width": "96px",
+                  "height": "770px",
+                  "background-color": "#f2f5f7",
+                  "border-radius": "8px 8px 3px 3px",
+                  "transform-origin": "50% 100%",
+                  "flex-shrink": "0"
+                }
+              },
+              {
+                "id": "lab3",
+                "type": "text",
+                "text": "字幕条",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "30px",
+                  "font-weight": "500",
+                  "color": "#94a3b8",
+                  "line-height": "1.2",
+                  "text-align": "center"
+                }
+              }
+            ]
+          },
+          {
+            "id": "col4",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "column",
+              "align-items": "center",
+              "justify-content": "flex-end",
+              "flex": "1",
+              "height": "1000px",
+              "gap": "16px"
+            },
+            "children": [
+              {
+                "id": "val4",
+                "type": "text",
+                "text": "8",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "52px",
+                  "font-weight": "900",
+                  "color": "#94a3b8",
+                  "line-height": "1",
+                  "opacity": "0"
+                }
+              },
+              {
+                "id": "bar4",
+                "type": "box",
+                "style": {
+                  "width": "96px",
+                  "height": "880px",
+                  "background-color": "#94a3b8",
+                  "border-radius": "8px 8px 3px 3px",
+                  "transform-origin": "50% 100%",
+                  "flex-shrink": "0"
+                }
+              },
+              {
+                "id": "lab4",
+                "type": "text",
+                "text": "音轨条",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "30px",
+                  "font-weight": "500",
+                  "color": "#94a3b8",
+                  "line-height": "1.2",
+                  "text-align": "center"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "baseline",
+        "type": "box",
+        "style": {
+          "height": "3px",
+          "background-color": "#24304a",
+          "width": "100%"
+        }
+      },
+      {
+        "id": "note",
+        "type": "text",
+        "text": "数值取自本任务 storyboard.csv 的镜头与音轨计数，不含任何外部行情数据。",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "28px",
+          "font-weight": "400",
+          "color": "#94a3b8",
+          "line-height": "1.5",
+          "opacity": "0"
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "node": "bar0",
+      "property": "scale",
+      "keys": [
+        [
+          10,
+          0
+        ],
+        [
+          44,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val0",
+      "property": "opacity",
+      "keys": [
+        [
+          30,
+          0
+        ],
+        [
+          44,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar1",
+      "property": "scale",
+      "keys": [
+        [
+          19,
+          0
+        ],
+        [
+          53,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val1",
+      "property": "opacity",
+      "keys": [
+        [
+          39,
+          0
+        ],
+        [
+          53,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar2",
+      "property": "scale",
+      "keys": [
+        [
+          28,
+          0
+        ],
+        [
+          62,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val2",
+      "property": "opacity",
+      "keys": [
+        [
+          48,
+          0
+        ],
+        [
+          62,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar3",
+      "property": "scale",
+      "keys": [
+        [
+          37,
+          0
+        ],
+        [
+          71,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val3",
+      "property": "opacity",
+      "keys": [
+        [
+          57,
+          0
+        ],
+        [
+          71,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar4",
+      "property": "scale",
+      "keys": [
+        [
+          46,
+          0
+        ],
+        [
+          80,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val4",
+      "property": "opacity",
+      "keys": [
+        [
+          66,
+          0
+        ],
+        [
+          80,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "kicker",
+      "property": "opacity",
+      "keys": [
+        [
+          2,
+          0
+        ],
+        [
+          14,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "title",
+      "property": "opacity",
+      "keys": [
+        [
+          6,
+          0
+        ],
+        [
+          22,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "chart",
+      "property": "translateY",
+      "keys": [
+        [
+          8,
+          26
+        ],
+        [
+          26,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "note",
+      "property": "opacity",
+      "keys": [
+        [
+          70,
+          0
+        ],
+        [
+          86,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    }
+  ]
+}

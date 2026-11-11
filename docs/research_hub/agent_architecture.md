@@ -286,13 +286,13 @@ M1.1 审查发现 `module_design.md:45` 使用了 `topic.discover`，而本文�
 
 | task_type | 说明 | 候选 Agent（按优先级） | 默认工具集 | 人工闸门 |
 |---|---|---|---|---|
-| `topic.discover` | **新增**：从 RSS / 财经时事 / 知识缺口扫描发现候选选题 | orchestrator（发现）+ 领域 Agent（初判归属合集） | search, db_read, db_write(topics:候选) | 否（候选需人工立项） |
-| `research.plan` | 拆解问题 | orchestrator | llm, db_read | 否 |
+| `topic.discover` | **新增**：从 RSS / 财经时事 / 知识缺口扫描发现候选选题 | orchestrator（发现）+ 领域 Agent（初判归属合集） | search, db_query, db_write(topics:候选) | 否（候选需人工立项） |
+| `research.plan` | 拆解问题 | orchestrator | llm, db_query | 否 |
 | `research.collect` | 搜集资料（搜集即产出 sources/snapshots） | 由合集决定：`financial_knowledge`/`market_briefing`→financial；`football_finance`→football；`industry_research`→industry；`company_teardown`→industry+case；`business_cases`→case | search, fetch, parse_* | 否 |
 | `research.extract` | 从资料抽取事实与证据 | 与 collect 同域 Agent | parse_*, db_write(evidence), llm | 否 |
-| `research.analyze` | 领域机制/结构分析 | 同上 | db_read, llm | 否 |
-| `research.synthesize` | 汇总为报告骨架与五档建议 | lead_agent（通常 financial/industry/case） | db_read, db_write(findings), llm | 否 |
-| `verify.claims` | 事实核查与定档 | fact_checker（唯一） | db_read, fetch(受限), llm | **是（唯一强制门）** |
+| `research.analyze` | 领域机制/结构分析 | 同上 | db_query, llm | 否 |
+| `research.synthesize` | 汇总为报告骨架与五档建议 | lead_agent（通常 financial/industry/case） | db_query, db_write(findings), llm | 否 |
+| `verify.claims` | 事实核查与定档 | fact_checker（唯一） | db_query, fetch(受限), llm | **是（唯一强制门）** |
 | `content.script` | 脚本 | scriptwriter | llm, db_write(scripts:草案) | 是（人工审批脚本） |
 | `content.visual` | 分镜与图解 | visual_designer | llm, db_write(media_assets) | 否 |
 | `content.produce` | 制作与质检 | video_producer | qc, db_write(media_assets) | 是（发布前终审） |

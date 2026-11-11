@@ -59,16 +59,15 @@ M1.1 审查发现旧路线图把"记账表"排在 2.5、把"证据归属"排在 
 | 项 | 内容 |
 |---|---|
 | 目标 | 把"设计里的位置"变成可运行的骨架，并**先把安全机制落地**：配置、目录、CallerContext 守卫、SQLite 运行参数、租约列、记账表。**本阶段结束时仍不能真实调用任何模型/搜索** |
-| 文件范围 | 新增 `config/models.yaml`、`config/agent_routing.yaml`、`config/pipelines.yaml`；新增目录 `backend/app/execution/`（`task_types.py`、`routing.py`）、`backend/app/capabilities/`（`guard.py`、`tools.py`、`db_read.py`、`db_write.py`、`budget.py`）、`backend/app/parsers/`（仅 `__init__.py` + Protocol）；`backend/app/core/caller.py`（`CallerContext` + `require_caller`）；`backend/app/database/session.py` 增 WAL/`busy_timeout`/`synchronous`（P1-6）；`backend/app/core/config.py` 增 `execution`、`cost` 读取；`pyproject.toml` 增 `[project.optional-dependencies] research`；`backend/scripts/seed_collections.py`；**三个迁移文件** `b1_topic_taxonomy`、`b2_task_layer`、`b3_metering` |
+| 文件范围 | 新增 `config/models.yaml`、`config/agent_routing.yaml`、`config/pipelines.yaml`；新增目录 `backend/app/execution/`（`task_types.py`、`routing.py`）、`backend/app/capabilities/`（`guard.py`、`tools.py`、`db_query.py`、`db_write.py`、`budget.py`）、`backend/app/parsers/`（仅 `__init__.py` + Protocol）；`backend/app/core/caller.py`（`CallerContext` + `require_caller`）；`backend/app/database/session.py` 增 WAL/`busy_timeout`/`synchronous`（P1-6）；`backend/app/core/config.py` 增 `execution`、`cost` 读取；`pyproject.toml` 增 `[project.optional-dependencies] research`；`backend/scripts/seed_collections.py`；**三个迁移文件** `b1_topic_taxonomy`、`b2_task_layer`、`b3_metering` |
 | 依赖 | 无 |
-| 迁库 | ✅ **B1 + B2 + B3（三次独立迁移，各自可回滚）**；完成后 18 → 26 张业务表 |
+| 迁库 | ✅ **B1 + B2 + B3（三次独立迁移，各自可回滚）**；完成后 18 → **28** 张业务表（18+4+4+2，见 database_design §6.4；本文旧版本误写 26） |
 | 测试 | `tests/test_config.py` 增三份 YAML 的 schema 校验；`tests/test_routing_config.py`（agent key ⊆ roster、task_type ⊆ 注册表）；`tests/test_task_type_registry.py`（含文档正则扫描）；`tests/test_caller_context.py`（三类调用者、越权 422 + `details.reason`）；`tests/test_sqlite_pragmas.py`（实测 `journal_mode=wal`、`busy_timeout=5000`）；`tests/test_migration_batches.py`（B1–B3 各自 upgrade→downgrade→upgrade） |
 | 验收 | `pytest` 全绿；`/api/system/status` 新增 `execution`/`search`/`model` 三个 feature 键且默认 false，`database` 段增 `journal_mode`/`busy_timeout`；`topic_columns` 有 6 条且各含 `code`/`is_system=1`；`topics.column_id` 全部回填到 `topic_collections`（回填行数 = `topics where column_id is not null`）；无新增业务端点 |
 | 回滚 | 每批 `downgrade -1` 可单独回滚；三批全回滚后回到 `de8148733a9b`；迁移前必须 `.backup` 到 `data/backups/`（目录需先创建） |
 | 费用 | 0 |
 
-> **为什么记账表（B3）放在 2.0**：2.1 一接真实模型就会产生**已经扣费但本地无记录**的风险窗口。
-> 把 `model_calls` 与 `research_tasks.calls_reserved/cost_reserved` 提前到 2.0，
+> **为什么记账表（B3）放在 2.0**：2.1 一接真实模型就会产生**已经扣费但本地无记录**的风险窗口。> 把 `model_calls` 与 `research_tasks.calls_reserved/cost_reserved` 提前到 2.0，
 > 才能让 2.1 的 ModelGateway 从第一行代码起就"先预留后调用"（P0-2）。
 
 ### 2.1 模型适配层（ModelGateway，真实调用的唯一入口）

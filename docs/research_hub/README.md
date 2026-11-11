@@ -83,6 +83,12 @@
 | [`state_machine.md`](state_machine.md) | 八套状态机（含 `model_calls` 记账态）与守卫条件 | 要写状态流转代码之前必读 |
 | [`implementation_roadmap.md`](implementation_roadmap.md) | 2.0–2.9 分阶段开发计划、依赖、迁移、验收、成本 | 要排期之前必读 |
 | [`acceptance_criteria.md`](acceptance_criteria.md) | 每个阶段的客观验收标准（可测试） | 每阶段结束时对照打勾 |
+| [`m2_0_implementation_plan.md`](m2_0_implementation_plan.md) | **M2.0 实施计划**：现状审查、G-01–G-19 差距、技术裁决、T01–T12 任务卡、依赖链、验收命令、风险、待批项 | 要开工 2.0 之前必读 |
+| [`m2_0_delivery_report.md`](m2_0_delivery_report.md) | **M2.0 交付报告**：T01–T12 完成情况、文件清单、调用关系、测试与迁移演练证据、开发库未改证明、剩余风险 | 想知道"2.0 到底交付了什么" |
+| [`first_video_pipeline_report.md`](first_video_pipeline_report.md) | **V1 首条视频闭环**：MarkItDown/Anthropic Skills 复用、真实 PDF·Excel·CSV 解析、SAPI+FFmpeg 成片 | 想知道引擎最初怎么搭起来的 |
+| [`video_pipeline_v2_1_report.md`](video_pipeline_v2_1_report.md) | **V2.1 引擎能力演示**：OpenKatana 接入、动态画板、时间轴、QC、模型候选与价格 | 想知道"能不能做出动态视觉" |
+| [`video_pipeline_v2_2_report.md`](video_pipeline_v2_2_report.md) | **V2.2 Phase 1**：FFmpeg 8.1.2 独立安装、26 项能力自检、12 步真机验证 | 想知道媒体工具链的可信基线 |
+| [`phase2_media_adapter_report.md`](phase2_media_adapter_report.md) … [`phase2_decision_register.md`](phase2_decision_register.md) | **V2.2 Phase 2 八份文档**：适配层、导入测试、分镜 schema、时间轴集成、素材溯源、演示片、质检、决策登记 | 要接手视频管线之前必读 |
 | 本文 `README.md` | 总说明与索引 | 从这里开始 |
 
 ---

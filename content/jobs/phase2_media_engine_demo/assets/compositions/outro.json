@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 165
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "root",
+    "type": "box",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "width": "1080px",
+      "height": "1920px",
+      "padding": "0 96px",
+      "box-sizing": "border-box",
+      "background-color": "#0b1220",
+      "justify-content": "center",
+      "align-items": "flex-start",
+      "gap": "26px"
+    },
+    "children": [
+      {
+        "id": "line1",
+        "type": "text",
+        "text": "分镜 → 时间轴 → 成片",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "74px",
+          "font-weight": "900",
+          "color": "#f2f5f7",
+          "line-height": "1.35",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "line2",
+        "type": "text",
+        "text": "素材：NASA 公共领域影像",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "400",
+          "color": "#94a3b8",
+          "line-height": "1.35",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "line3",
+        "type": "text",
+        "text": "引擎：OpenKatana 0.1.3 · Apache-2.0",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "400",
+          "color": "#94a3b8",
+          "line-height": "1.35",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "line4",
+        "type": "text",
+        "text": "本片是引擎自检，不含财经结论",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "46px",
+          "font-weight": "700",
+          "color": "#b6ff1f",
+          "line-height": "1.35",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "stats",
+        "type": "text",
+        "text": "7 个镜头 · 6 种转场 · 5 种运镜",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "30px",
+          "font-weight": "500",
+          "color": "#94a3b8",
+          "line-height": "1.4",
+          "opacity": "0",
+          "margin-top": "26px"
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "node": "line1",
+      "property": "opacity",
+      "keys": [
+        [
+          6,
+          0
+        ],
+        [
+          22,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line1",
+      "property": "translateY",
+      "keys": [
+        [
+          6,
+          18
+        ],
+        [
+          24,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line2",
+      "property": "opacity",
+      "keys": [
+        [
+          24,
+          0
+        ],
+        [
+          40,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line2",
+      "property": "translateY",
+      "keys": [
+        [
+          24,
+          18
+        ],
+        [
+          42,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line3",
+      "property": "opacity",
+      "keys": [
+        [
+          42,
+          0
+        ],
+        [
+          58,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line3",
+      "property": "translateY",
+      "keys": [
+        [
+          42,
+          18
+        ],
+        [
+          60,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line4",
+      "property": "opacity",
+      "keys": [
+        [
+          60,
+          0
+        ],
+        [
+          76,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line4",
+      "property": "translateY",
+      "keys": [
+        [
+          60,
+          18
+        ],
+        [
+          78,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "stats",
+      "property": "opacity",
+      "keys": [
+        [
+          70,
+          0
+        ],
+        [
+          88,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    }
+  ]
+}

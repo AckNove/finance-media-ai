@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "name": "Phase 2 media engine demo",
+  "created_at": "2026-11-11T03:01:58.381211+00:00",
+  "assets": [
+    {
+      "id": "075db3868c43",
+      "name": "nasa_apollo17_earthrise.jpg",
+      "path": "media/5d21c22c43de.jpg",
+      "sha256": "13419b34c17722be52b4a71a7f0beb3ecc8673183c8a2cee8572d5cd9bbe3f93",
+      "rights": "public_domain",
+      "kind": "image",
+      "clip": {
+        "frames_dir": "plates/075db3868c43",
+        "n": 1,
+        "fps": 30,
+        "w": 1024,
+        "h": 1024,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "69015d986fc0",
+      "name": "nasa_blue_marble_starfield.jpg",
+      "path": "media/8f2774eb0281.jpg",
+      "sha256": "7dbf717a55aa845cb5446685d89cfca07e74ff3f7c05ee7b43b0c8b779b7c2ab",
+      "rights": "public_domain",
+      "kind": "image",
+      "clip": {
+        "frames_dir": "plates/69015d986fc0",
+        "n": 1,
+        "fps": 30,
+        "w": 1024,
+        "h": 576,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "49b94f6a7870",
+      "name": "nasa_earth_rotation excerpt",
+      "path": "media/644e7904835d4ef7abb8bba049cced93.mp4",
+      "sha256": "d7c7715012cff1cacb054dad9c390ec4160e87d7810861b71caffa81bc47569c",
+      "rights": "public_domain",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/49b94f6a7870",
+        "n": 180,
+        "fps": 30.0,
+        "w": 640,
+        "h": 360,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "87cfcb5d22fe",
+      "name": "nasa_earth_rotation excerpt",
+      "path": "media/6213f4bf3b40491b95f287c3b19244fe.mp4",
+      "sha256": "fa0090e66fb69604110129089a38004f78ee60339ee3fb2d424e4dbd05acba9f",
+      "rights": "public_domain",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/87cfcb5d22fe",
+        "n": 150,
+        "fps": 30.0,
+        "w": 640,
+        "h": 360,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "d9f3659e1419",
+      "name": "nasa_apollo17_earthrise.jpg",
+      "path": "media/795101d5d815.jpg",
+      "sha256": "13419b34c17722be52b4a71a7f0beb3ecc8673183c8a2cee8572d5cd9bbe3f93",
+      "rights": "public_domain",
+      "kind": "image",
+      "clip": {
+        "frames_dir": "plates/d9f3659e1419",
+        "n": 1,
+        "fps": 30,
+        "w": 1024,
+        "h": 1024,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "373f998f137a",
+      "name": "nasa_blue_marble_starfield.jpg",
+      "path": "media/eca06343d8c2.jpg",
+      "sha256": "7dbf717a55aa845cb5446685d89cfca07e74ff3f7c05ee7b43b0c8b779b7c2ab",
+      "rights": "public_domain",
+      "kind": "image",
+      "clip": {
+        "frames_dir": "plates/373f998f137a",
+        "n": 1,
+        "fps": 30,
+        "w": 1024,
+        "h": 576,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "b86e3afdbaf5",
+      "name": "nasa_earth_rotation excerpt",
+      "path": "media/24c0a29ff4d646fca4b76154583e5e92.mp4",
+      "sha256": "d7c7715012cff1cacb054dad9c390ec4160e87d7810861b71caffa81bc47569c",
+      "rights": "public_domain",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/b86e3afdbaf5",
+        "n": 180,
+        "fps": 30.0,
+        "w": 640,
+        "h": 360,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "f2cd88c060b8",
+      "name": "nasa_earth_rotation excerpt",
+      "path": "media/a134f1d1ffe445cb9bf4deaf77b085c8.mp4",
+      "sha256": "fa0090e66fb69604110129089a38004f78ee60339ee3fb2d424e4dbd05acba9f",
+      "rights": "public_domain",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/f2cd88c060b8",
+        "n": 150,
+        "fps": 30.0,
+        "w": 640,
+        "h": 360,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "2a8f4cdf9790",
+      "name": "openkatana_orbit_score excerpt",
+      "path": "media/aeb60a6a26294bf089941ff087799293.wav",
+      "sha256": "0c9a4d189bf07fca212d612c728e0868bf9a0149b65d6920c17931c52d309740",
+      "rights": "licensed",
+      "kind": "audio",
+      "duration": 8.0
+    }
+  ],
+  "reviews": [],
+  "release": "project review pending"
+}

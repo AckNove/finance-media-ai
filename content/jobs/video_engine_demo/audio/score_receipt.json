@@ -1,0 +1,10 @@
+{
+  "src": "audio/score.m4a",
+  "aac_sha256": "9123e1f0141fa8c45812815ad81cf4ee072d9a53a18fa28774fefac818065b67",
+  "source": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\video_engine_demo\\project\\video_engine_demo\\.openkatana\\scores\\1c68cea5256e4d1f807cad231d931bcd\\score.wav",
+  "sha256": "e74fbd3317e97145d97b5448353b1ee06e1357e357da7d68e105008f3dacf3b3",
+  "samples": 1248000,
+  "sample_rate": 48000,
+  "method": "Original local oscillator/noise synthesis; not an AI music model",
+  "credits_used": 0
+}

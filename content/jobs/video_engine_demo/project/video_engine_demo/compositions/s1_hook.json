@@ -1,0 +1,242 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 105
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "stage",
+    "type": "box",
+    "children": [
+      {
+        "id": "edge",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "720px",
+          "width": "10px",
+          "height": "420px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "top left"
+        }
+      },
+      {
+        "id": "stack",
+        "type": "box",
+        "children": [
+          {
+            "id": "kicker",
+            "type": "text",
+            "text": "AK · RESEARCH HUB",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "36px",
+              "font-weight": "500",
+              "letter-spacing": "10px",
+              "color": "#b6ff1f"
+            }
+          },
+          {
+            "id": "t1",
+            "type": "text",
+            "text": "视频引擎",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "150px",
+              "font-weight": "900",
+              "line-height": "1.06",
+              "color": "#f2f5f7"
+            }
+          },
+          {
+            "id": "t2",
+            "type": "text",
+            "text": "能力演示",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "150px",
+              "font-weight": "900",
+              "line-height": "1.06",
+              "color": "#ff2bd6"
+            }
+          },
+          {
+            "id": "sub",
+            "type": "text",
+            "text": "脚本 → 分镜 → 素材 → 画面 → 质检",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "40px",
+              "font-weight": "400",
+              "color": "#8f9bb0",
+              "margin-top": "28px"
+            }
+          }
+        ],
+        "style": {
+          "position": "absolute",
+          "left": "150px",
+          "top": "700px",
+          "width": "834px",
+          "display": "flex",
+          "flex-direction": "column",
+          "gap": "26px"
+        }
+      }
+    ],
+    "style": {
+      "position": "relative",
+      "width": "1080px",
+      "height": "1920px",
+      "background-color": "#151d2e"
+    }
+  },
+  "tracks": [
+    {
+      "node": "edge",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          18,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "kicker",
+      "property": "opacity",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "kicker",
+      "property": "translateY",
+      "keys": [
+        [
+          4,
+          26
+        ],
+        [
+          18,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "t1",
+      "property": "reveal",
+      "keys": [
+        [
+          2,
+          0
+        ],
+        [
+          16,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "t1",
+      "property": "translateY",
+      "keys": [
+        [
+          8,
+          44
+        ],
+        [
+          34,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "t2",
+      "property": "reveal",
+      "keys": [
+        [
+          8,
+          0
+        ],
+        [
+          24,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "t2",
+      "property": "translateY",
+      "keys": [
+        [
+          22,
+          44
+        ],
+        [
+          48,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "sub",
+      "property": "opacity",
+      "keys": [
+        [
+          20,
+          0
+        ],
+        [
+          34,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "stack",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          1.06
+        ],
+        [
+          104,
+          1.0
+        ]
+      ],
+      "easing": "linear"
+    }
+  ]
+}

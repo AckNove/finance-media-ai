@@ -1,0 +1,480 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 150
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "stage",
+    "type": "box",
+    "children": [
+      {
+        "id": "title",
+        "type": "text",
+        "text": "生产链路",
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "300px",
+          "font-family": "AKSC",
+          "font-size": "76px",
+          "font-weight": "900",
+          "color": "#f2f5f7"
+        }
+      },
+      {
+        "id": "node_0",
+        "type": "box",
+        "children": [
+          {
+            "id": "node_0_t",
+            "type": "text",
+            "text": "脚本",
+            "style": {
+              "position": "absolute",
+              "left": "54px",
+              "top": "58px",
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "800",
+              "color": "#f2f5f7"
+            }
+          }
+        ],
+        "style": {
+          "position": "absolute",
+          "left": "156px",
+          "top": "560px",
+          "width": "768px",
+          "height": "190px",
+          "background-color": "#0b1220",
+          "border": "3px solid #b6ff1f",
+          "border-radius": "26px",
+          "transform-origin": "center center"
+        }
+      },
+      {
+        "id": "link_0",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "536px",
+          "top": "750px",
+          "width": "8px",
+          "height": "62px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "center top"
+        }
+      },
+      {
+        "id": "node_1",
+        "type": "box",
+        "children": [
+          {
+            "id": "node_1_t",
+            "type": "text",
+            "text": "分镜",
+            "style": {
+              "position": "absolute",
+              "left": "54px",
+              "top": "58px",
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "800",
+              "color": "#f2f5f7"
+            }
+          }
+        ],
+        "style": {
+          "position": "absolute",
+          "left": "156px",
+          "top": "812px",
+          "width": "768px",
+          "height": "190px",
+          "background-color": "#0b1220",
+          "border": "3px solid #35e0ff",
+          "border-radius": "26px",
+          "transform-origin": "center center"
+        }
+      },
+      {
+        "id": "link_1",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "536px",
+          "top": "1002px",
+          "width": "8px",
+          "height": "62px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "center top"
+        }
+      },
+      {
+        "id": "node_2",
+        "type": "box",
+        "children": [
+          {
+            "id": "node_2_t",
+            "type": "text",
+            "text": "素材",
+            "style": {
+              "position": "absolute",
+              "left": "54px",
+              "top": "58px",
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "800",
+              "color": "#f2f5f7"
+            }
+          }
+        ],
+        "style": {
+          "position": "absolute",
+          "left": "156px",
+          "top": "1064px",
+          "width": "768px",
+          "height": "190px",
+          "background-color": "#0b1220",
+          "border": "3px solid #b6ff1f",
+          "border-radius": "26px",
+          "transform-origin": "center center"
+        }
+      },
+      {
+        "id": "link_2",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "536px",
+          "top": "1254px",
+          "width": "8px",
+          "height": "62px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "center top"
+        }
+      },
+      {
+        "id": "node_3",
+        "type": "box",
+        "children": [
+          {
+            "id": "node_3_t",
+            "type": "text",
+            "text": "画面",
+            "style": {
+              "position": "absolute",
+              "left": "54px",
+              "top": "58px",
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "800",
+              "color": "#f2f5f7"
+            }
+          }
+        ],
+        "style": {
+          "position": "absolute",
+          "left": "156px",
+          "top": "1316px",
+          "width": "768px",
+          "height": "190px",
+          "background-color": "#0b1220",
+          "border": "3px solid #35e0ff",
+          "border-radius": "26px",
+          "transform-origin": "center center"
+        }
+      },
+      {
+        "id": "link_3",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "536px",
+          "top": "1506px",
+          "width": "8px",
+          "height": "62px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "center top"
+        }
+      },
+      {
+        "id": "node_4",
+        "type": "box",
+        "children": [
+          {
+            "id": "node_4_t",
+            "type": "text",
+            "text": "质检",
+            "style": {
+              "position": "absolute",
+              "left": "54px",
+              "top": "58px",
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "800",
+              "color": "#f2f5f7"
+            }
+          }
+        ],
+        "style": {
+          "position": "absolute",
+          "left": "156px",
+          "top": "1568px",
+          "width": "768px",
+          "height": "190px",
+          "background-color": "#0b1220",
+          "border": "3px solid #b6ff1f",
+          "border-radius": "26px",
+          "transform-origin": "center center"
+        }
+      }
+    ],
+    "style": {
+      "position": "relative",
+      "width": "1080px",
+      "height": "1920px",
+      "background-color": "#05070d"
+    }
+  },
+  "tracks": [
+    {
+      "node": "title",
+      "property": "reveal",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          20,
+          1
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "node_0",
+      "property": "opacity",
+      "keys": [
+        [
+          14,
+          0
+        ],
+        [
+          32,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "node_0",
+      "property": "translateX",
+      "keys": [
+        [
+          14,
+          -70
+        ],
+        [
+          34,
+          0
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "link_0",
+      "property": "scale",
+      "keys": [
+        [
+          24,
+          0
+        ],
+        [
+          38,
+          1
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "node_1",
+      "property": "opacity",
+      "keys": [
+        [
+          28,
+          0
+        ],
+        [
+          46,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "node_1",
+      "property": "translateX",
+      "keys": [
+        [
+          28,
+          -70
+        ],
+        [
+          48,
+          0
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "link_1",
+      "property": "scale",
+      "keys": [
+        [
+          38,
+          0
+        ],
+        [
+          52,
+          1
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "node_2",
+      "property": "opacity",
+      "keys": [
+        [
+          42,
+          0
+        ],
+        [
+          60,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "node_2",
+      "property": "translateX",
+      "keys": [
+        [
+          42,
+          -70
+        ],
+        [
+          62,
+          0
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "link_2",
+      "property": "scale",
+      "keys": [
+        [
+          52,
+          0
+        ],
+        [
+          66,
+          1
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "node_3",
+      "property": "opacity",
+      "keys": [
+        [
+          56,
+          0
+        ],
+        [
+          74,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "node_3",
+      "property": "translateX",
+      "keys": [
+        [
+          56,
+          -70
+        ],
+        [
+          76,
+          0
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "link_3",
+      "property": "scale",
+      "keys": [
+        [
+          66,
+          0
+        ],
+        [
+          80,
+          1
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "node_4",
+      "property": "opacity",
+      "keys": [
+        [
+          70,
+          0
+        ],
+        [
+          88,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "node_4",
+      "property": "translateX",
+      "keys": [
+        [
+          70,
+          -70
+        ],
+        [
+          90,
+          0
+        ]
+      ],
+      "easing": "out3"
+    }
+  ]
+}

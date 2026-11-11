@@ -1,0 +1,234 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 120
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "stage",
+    "type": "box",
+    "children": [
+      {
+        "id": "halo",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "140px",
+          "top": "620px",
+          "width": "800px",
+          "height": "800px",
+          "background-color": "#0f1a12",
+          "border-radius": "50%",
+          "transform-origin": "center center"
+        }
+      },
+      {
+        "id": "stack",
+        "type": "box",
+        "children": [
+          {
+            "id": "value",
+            "type": "text",
+            "text": "75",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "430px",
+              "font-weight": "900",
+              "line-height": "1",
+              "color": "#b6ff1f",
+              "transform-origin": "center bottom"
+            }
+          },
+          {
+            "id": "unit",
+            "type": "text",
+            "text": "本地工具",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "58px",
+              "font-weight": "700",
+              "color": "#f2f5f7"
+            }
+          },
+          {
+            "id": "cap",
+            "type": "text",
+            "text": "CLI 直调 · 零云端依赖",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "38px",
+              "font-weight": "400",
+              "color": "#8f9bb0"
+            }
+          },
+          {
+            "id": "rule",
+            "type": "box",
+            "children": [],
+            "style": {
+              "position": "absolute",
+              "left": "0px",
+              "top": "0px",
+              "width": "520px",
+              "height": "8px",
+              "background-color": "#ff2bd6",
+              "transform-origin": "left center"
+            }
+          }
+        ],
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "760px",
+          "width": "888px",
+          "display": "flex",
+          "flex-direction": "column",
+          "align-items": "center",
+          "gap": "18px"
+        }
+      }
+    ],
+    "style": {
+      "position": "relative",
+      "width": "1080px",
+      "height": "1920px",
+      "background-color": "#151d2e"
+    }
+  },
+  "tracks": [
+    {
+      "node": "halo",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          0.6
+        ],
+        [
+          119,
+          1.15
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "halo",
+      "property": "opacity",
+      "keys": [
+        [
+          0,
+          0.15
+        ],
+        [
+          60,
+          0.55
+        ],
+        [
+          119,
+          0.2
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "value",
+      "property": "reveal",
+      "keys": [
+        [
+          6,
+          0
+        ],
+        [
+          46,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "value",
+      "property": "scale",
+      "keys": [
+        [
+          6,
+          0.72
+        ],
+        [
+          52,
+          1.0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "unit",
+      "property": "opacity",
+      "keys": [
+        [
+          24,
+          0
+        ],
+        [
+          36,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "unit",
+      "property": "translateY",
+      "keys": [
+        [
+          40,
+          24
+        ],
+        [
+          60,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "cap",
+      "property": "opacity",
+      "keys": [
+        [
+          32,
+          0
+        ],
+        [
+          46,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "rule",
+      "property": "scale",
+      "keys": [
+        [
+          56,
+          0
+        ],
+        [
+          86,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    }
+  ]
+}

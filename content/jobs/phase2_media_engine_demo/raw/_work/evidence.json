@@ -1,0 +1,42 @@
+{
+  "manifest": "assets_manifest.csv",
+  "manifest_rows": 10,
+  "frames": [
+    {
+      "shot_id": "sh01",
+      "at": 3.0,
+      "file": "01_sh01.png"
+    },
+    {
+      "shot_id": "sh02",
+      "at": 8.6,
+      "file": "02_sh02.png"
+    },
+    {
+      "shot_id": "sh03",
+      "at": 13.7,
+      "file": "03_sh03.png"
+    },
+    {
+      "shot_id": "sh04",
+      "at": 19.7,
+      "file": "04_sh04.png"
+    },
+    {
+      "shot_id": "sh05",
+      "at": 26.7,
+      "file": "05_sh05.png"
+    },
+    {
+      "shot_id": "sh06",
+      "at": 32.5,
+      "file": "06_sh06.png"
+    },
+    {
+      "shot_id": "sh07",
+      "at": 37.8,
+      "file": "07_sh07.png"
+    }
+  ],
+  "timeline": "project\\timeline.json"
+}

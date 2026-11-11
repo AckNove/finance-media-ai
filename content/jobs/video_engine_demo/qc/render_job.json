@@ -1,0 +1,13 @@
+{
+  "id": "f80141ef9057588a8d2550b9c06bff2a",
+  "request_id": "demo-preview-f76faad8",
+  "state": "succeeded",
+  "revision": "f76faad8fbcc1cb6b716305806fdd5e5bd897d09282511cf264ff2220ce476d4",
+  "created_at": "2026-11-10T16:54:32.082381+00:00",
+  "video": ".openkatana/jobs/f80141ef9057588a8d2550b9c06bff2a/render/video.mp4",
+  "frames": 780,
+  "sha256": "b48d0779f4a10ca252f37844c2b2002e46b0ff8eaf0a3dcbf08e30d3b695fc2b",
+  "finished_at": "2026-11-10T16:55:54.920551+00:00",
+  "project": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\video_engine_demo\\project\\video_engine_demo",
+  "video_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\video_engine_demo\\project\\video_engine_demo\\.openkatana\\jobs\\f80141ef9057588a8d2550b9c06bff2a\\render\\video.mp4"
+}

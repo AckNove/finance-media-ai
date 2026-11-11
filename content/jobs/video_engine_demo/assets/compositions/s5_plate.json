@@ -1,0 +1,368 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 120
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "stage",
+    "type": "box",
+    "children": [
+      {
+        "id": "glow_a",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "-220px",
+          "top": "180px",
+          "width": "1000px",
+          "height": "1000px",
+          "background-color": "#12452f",
+          "border-radius": "50%",
+          "filter": "blur(70px)",
+          "transform-origin": "center"
+        }
+      },
+      {
+        "id": "glow_b",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "380px",
+          "top": "900px",
+          "width": "900px",
+          "height": "900px",
+          "background-color": "#3a1030",
+          "border-radius": "50%",
+          "filter": "blur(90px)",
+          "transform-origin": "center"
+        }
+      },
+      {
+        "id": "word",
+        "type": "text",
+        "text": "无旁白 · 纯视觉",
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "820px",
+          "font-family": "AKSC",
+          "font-size": "104px",
+          "font-weight": "900",
+          "color": "#f2f5f7"
+        }
+      },
+      {
+        "id": "word2",
+        "type": "text",
+        "text": "跟随镜头推入的合成画面",
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "980px",
+          "font-family": "AKSC",
+          "font-size": "42px",
+          "font-weight": "400",
+          "color": "#8f9bb0"
+        }
+      },
+      {
+        "id": "mark",
+        "type": "text",
+        "text": "DEMO",
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "1700px",
+          "font-family": "AKSC",
+          "font-size": "34px",
+          "font-weight": "500",
+          "letter-spacing": "8px",
+          "color": "#b6ff1f",
+          "opacity": "0.85"
+        }
+      },
+      {
+        "id": "grid_0",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "0px",
+          "top": "240px",
+          "width": "1080px",
+          "height": "2px",
+          "background-color": "#1b2740"
+        }
+      },
+      {
+        "id": "grid_1",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "0px",
+          "top": "500px",
+          "width": "1080px",
+          "height": "2px",
+          "background-color": "#1b2740"
+        }
+      },
+      {
+        "id": "grid_2",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "0px",
+          "top": "760px",
+          "width": "1080px",
+          "height": "2px",
+          "background-color": "#1b2740"
+        }
+      },
+      {
+        "id": "grid_3",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "0px",
+          "top": "1020px",
+          "width": "1080px",
+          "height": "2px",
+          "background-color": "#1b2740"
+        }
+      },
+      {
+        "id": "grid_4",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "0px",
+          "top": "1280px",
+          "width": "1080px",
+          "height": "2px",
+          "background-color": "#1b2740"
+        }
+      },
+      {
+        "id": "grid_5",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "0px",
+          "top": "1540px",
+          "width": "1080px",
+          "height": "2px",
+          "background-color": "#1b2740"
+        }
+      }
+    ],
+    "style": {
+      "position": "relative",
+      "width": "1080px",
+      "height": "1920px",
+      "background-color": "#04060b"
+    }
+  },
+  "tracks": [
+    {
+      "node": "glow_a",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          0.85
+        ],
+        [
+          120,
+          1.2
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "glow_b",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          1.15
+        ],
+        [
+          120,
+          0.9
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "glow_b",
+      "property": "opacity",
+      "keys": [
+        [
+          0,
+          0.5
+        ],
+        [
+          60,
+          0.85
+        ],
+        [
+          120,
+          0.45
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "word",
+      "property": "reveal",
+      "keys": [
+        [
+          8,
+          0
+        ],
+        [
+          40,
+          1
+        ]
+      ],
+      "easing": "out3"
+    },
+    {
+      "node": "word2",
+      "property": "opacity",
+      "keys": [
+        [
+          36,
+          0
+        ],
+        [
+          58,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "mark",
+      "property": "opacity",
+      "keys": [
+        [
+          54,
+          0
+        ],
+        [
+          72,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "grid_0",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          120,
+          -120
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "grid_1",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          120,
+          -120
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "grid_2",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          120,
+          -120
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "grid_3",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          120,
+          -120
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "grid_4",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          120,
+          -120
+        ]
+      ],
+      "easing": "linear"
+    },
+    {
+      "node": "grid_5",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          120,
+          -120
+        ]
+      ],
+      "easing": "linear"
+    }
+  ]
+}

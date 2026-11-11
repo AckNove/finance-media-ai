@@ -154,17 +154,32 @@ M1.1 实测发现：开发库当前 `journal_mode=delete`、`busy_timeout=0`（�
 
 ```python
 # sqlite 专用（其他方言跳过）
-connect_args = {"check_same_thread": False, "timeout": 30}
-# 每个新连接执行：
-PRAGMA journal_mode = WAL;        # 读写不互相阻塞（-wal/-shm 文件随库一起备份）
+connect_args = {"check_same_thread": False, "timeout": 5.0}
+# 每个新连接只执行"连接级"参数（不会改动库文件本身）：
 PRAGMA busy_timeout = 5000;       # 等锁 5 秒再报错，而不是立刻失败
 PRAGMA synchronous = NORMAL;      # WAL 下的合理折中：崩溃不丢已提交事务，性能优于 FULL
 PRAGMA foreign_keys = ON;         # 已存在，保持
 ```
 
+**`journal_mode=WAL` 不在连接事件里（M2.0 专项整改）。**
+原因：该 PRAGMA 会**持久写入数据库文件头**，一旦放在 `connect` 钩子里，
+"随便连一下、查个状态、起个服务"都会把库改成 WAL 并生成 `-wal`/`-shm`，
+属于**连接即改文件**的隐式副作用。现在改为显式入口：
+
+```bash
+# 唯一入口：backend/app/database/wal.py 的 enable_wal()，CLI 为 backend/scripts/enable_wal.py
+python -m backend.scripts.enable_wal --database-url sqlite:///<目标库> --dry-run   # 只看目标
+python -m backend.scripts.enable_wal --database-url sqlite:///<目标库>             # 真正切换（幂等）
+```
+
+- 只接受**已存在的文件型** SQLite 库，不新建文件、不猜路径；
+- 默认拒绝真实开发库 `data/finance_media.db`，需显式 `--allow-development-db`；
+- 重复执行安全：已是 WAL 时返回 `changed=False already_enabled=True`。
+
 > 迁移注意：`data/finance_media.db` 一旦切到 WAL，会多出 `-wal`/`-shm` 两个文件。
 > 备份必须用 `sqlite3 .backup`（而不是 `copy`），否则可能拷到未合并的 WAL。
-> `/api/system/status` 的 `database` 段增加 `journal_mode` 与 `busy_timeout` 两个只读字段。
+> `/api/system/status` 的 `database` 段增加 `journal_mode` 与 `busy_timeout` 两个只读字段：
+> 前者如实反映**库文件当前是什么模式**，而不是"我们的代码希望它是什么模式"。
 
 #### 3.4.2 任务执行规则（硬性）
 
@@ -353,19 +368,34 @@ backend/app/
 │   ├── content_service.py       # 新增
 │   └── review_service.py        # 新增
 ├── execution/                   # 新增包：L2 执行层
-│   ├── runtime.py               # TaskRuntime
-│   ├── orchestrator.py          # DAG 调度
-│   ├── agent_executor.py        # Agent 循环
-│   └── routing.py               # task_type → agent 路由
+│   ├── __init__.py
+│   ├── task_types.py            # 十种 task_type + 人工闸门集合（M2.0 已落地）
+│   ├── routing.py               # task_type → agent 路由 + 三处一致性校验（M2.0 已落地）
+│   ├── runtime.py               # TaskRuntime（2.4）
+│   ├── orchestrator.py          # DAG 调度（2.4）
+│   └── agent_executor.py        # Agent 循环（2.4）
 ├── capabilities/                # 新增包：L3 能力层
-│   ├── model_gateway.py
-│   ├── providers/{fake,deepseek,openai_compat}.py
-│   ├── search/{none,tavily,serper}.py
-│   ├── fetch.py
-│   ├── parsers/{html,pdf,xlsx}.py
-│   └── tools/{registry,web_search,fetch_url,parse_pdf,parse_xlsx,db_query,db_write,llm_complete,task_update,handoff}.py
-└── models/                      # 新增 19 张表的 ORM
+│   ├── __init__.py
+│   ├── guard.py                 # 工具/数据域权限闸门（M2.0 已落地）
+│   ├── tools.py                 # 工具登记表 + ToolRegistry.dispatch（M2.0 已落地，全部未实现）
+│   ├── budget.py                # 价目解析 + 三道成本闸门（M2.0 已落地）
+│   ├── model_gateway.py         # 2.1
+│   ├── providers/{fake,deepseek,openai_compat}.py   # 2.1
+│   ├── search/{none,tavily,serper}.py               # 2.2
+│   ├── fetch.py                 # 2.2
+│   ├── parsers/                 # 2.3（2.0 只有 __init__.py 里的 Protocol）
+│   ├── db_query.py              # 2.2/2.5：受控只读查询（2.0 只有工具登记，无实现）
+│   └── db_write.py              # 2.5：受控写入（2.0 只有工具登记，无实现）
+└── models/                      # ORM（M2.0 后 28 张业务表）
 ```
+
+> **M2.0 实际落地情况（2026-11-10，T11 同步）**：`capabilities/` 采用**扁平文件**
+> 而不是 `tools/` 子包——2.0 只要「能登记、能鉴权、能拒绝」，把工具拆成子包属于
+> 2.2/2.3 的返工风险；`parsers/` 只有 `__init__.py` 里的 `ParsedDocument` 与
+> `DocumentParser` Protocol，**没有任何解析实现**；`db_query.py` / `db_write.py`
+> 尚未创建，工具登记表里 `db_query` / `db_write` 两个工具的 `implemented` 都是
+> `False`，调用会返回 `not_implemented`。也就是说：2.0 交付的是**闸门与账本**，
+> 不是能力本身。
 
 ---
 

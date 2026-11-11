@@ -22,7 +22,14 @@
 `docs/brand_strategy.md`、`docs/content_strategy.md`、`docs/business_model.md`。
 
 > 当前阶段状态：数据库、服务层、API、Agent 角色与协议、内容/视频流程骨架已就绪并测试通过；
-> **未接入任何模型 API、搜索工具、渲染引擎**。详见 `docs/phase1_acceptance.md` 的功能状态表。
+> **M2.0 骨架已落地**（配置层、调用者身份与工具权限闸门、task_type 注册表、
+> SQLite 连接参数与**显式** WAL 初始化、三批迁移 B1/B2/B3、启动自检、请求追踪），
+> 但仍**未接入任何模型 API、搜索工具、渲染引擎**，
+> 执行层（TaskRuntime/Orchestrator）尚未开始。详见 `docs/phase1_acceptance.md` 与
+> `docs/research_hub/m2_0_delivery_report.md` 的功能状态表。
+>
+> 注意：`journal_mode=WAL` **不会**因为启动服务或查状态而自动打开，它是显式动作——
+> `python -m backend.scripts.enable_wal --database-url <库> --dry-run` 先看清目标，再去掉 `--dry-run` 执行。
 
 ## 快速开始（Windows / PowerShell）
 
@@ -36,14 +43,21 @@ py -3.12 -m venv .venv
 # 3. 环境变量（不放真实密钥）
 Copy-Item .env.example .env
 
-# 4. 建库（Alembic 迁移）
+# 4. 建库（Alembic 迁移；动手前先备份现有库到 data/backups/）
+New-Item -ItemType Directory -Force data\backups | Out-Null
+if (Test-Path data\finance_media.db) {
+    sqlite3 data\finance_media.db ".backup data\backups/before-$(Get-Date -f yyyyMMdd-HHmmss).db"
+}
 .\.venv\Scripts\python.exe -m alembic upgrade head
 
-# 5. 启动
+# 5. 灌入六大合集（幂等；默认拒绝对 data/finance_media.db 写入，需显式放行）
+.\.venv\Scripts\python.exe -m backend.scripts.seed_collections --allow-development-db
+
+# 6. 启动
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
 #    http://127.0.0.1:8000/docs
 
-# 6. 测试
+# 7. 测试
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
@@ -69,20 +83,42 @@ Copy-Item .env.example .env
 
 统一错误响应：`{"error": {"code": "...", "message": "...", "details": ...}}`。
 
+每个响应都带 `X-Request-Id`（`req-<16 位十六进制>`，可用同名请求头透传，非法值会被替换），
+访问日志与异常日志都带同一个 id。
+
+## 调用者身份与工具权限（M2.0）
+
+- 每个路由必须显式声明允许的调用者（`backend/app/api/router.py` 的 `ROUTE_CALLERS`）：
+  `GET /health` 公开，其余 20 个操作当前**只允许 `human`**；启动自检用 `app.openapi()`
+  与这张表双向比对，任何未声明/多余的端点都会让进程拒绝启动。
+- `agent` 身份**不能由外部请求声明**：`X-Caller` 只作审计标签，非 `human` 值会被忽略并记录
+  `forged_header` 告警；agent 上下文只能由执行层在进程内构造（`CallerContext.for_executor`）。
+- `dev` 端点仅限 `/api/_dev/*` 且 `APP_ENV != production`，生产环境返回 404。
+- 越权一律 422 `domain_validation_error` + `details.reason="permission_denied"`。
+- 工具登记表 `backend/app/capabilities/tools.py` 里 10 个工具的 `implemented` **全部为
+  `False`**：现在调用任何工具都返回 `not_implemented`，这是刻意为之，不是缺陷。
+
 ## 目录结构
 
 ```
 backend/app/{api,core,models,schemas,services,database}   服务代码
-backend/migrations/                 Alembic 迁移（初始 revision de8148733a9b）
+backend/app/execution/             L2 执行层：task_types.py（十种 task_type）、routing.py（路由与一致性校验）
+backend/app/capabilities/          L3 能力层骨架：guard.py（权限闸门）、tools.py（工具登记）、budget.py（成本闸门）
+backend/app/parsers/               仅有 Protocol（ParsedDocument），无任何解析实现
+backend/app/database/              session.py（连接级 PRAGMA）、wal.py（WAL 显式初始化，默认拒绝开发库）
+backend/migrations/                Alembic 迁移（初始 de8148733a9b + B1/B2/B3 三批）
+backend/scripts/seed_collections.py  按 code upsert 六大合集（幂等；默认拒绝写开发库）
+backend/scripts/enable_wal.py     显式把库切到 WAL（默认拒绝开发库，支持 --dry-run）
 agents/                            九角色提示词 + roster.yaml + PROTOCOL.md
 knowledge/{8 个子域}/               知识条目 Markdown（规范见 knowledge/README.md）
 content/{topics,scripts,storyboards,assets,published}
 video_engine/{templates,renderers,subtitles,audio,quality_control}
 prompts/{system,research,writing,review,production}
-config/{settings,brand,content_rules,content_taxonomy,research_sources}.yaml
+config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 data/{raw,processed,exports}        本地数据（大文件不入库）
+data/backups/                     迁移前的 sqlite3 .backup 目标目录
 docs/                              战略、架构、数据模型、Agent 手册、工作流、路线图、验收报告
-tests/                             76 个 pytest 用例
+tests/                             253 个 pytest 用例
 ```
 
 ## 文档
@@ -98,7 +134,7 @@ tests/                             76 个 pytest 用例
 | `docs/agent_manual.md` | 九角色、统一协议、调度接口、新增角色步骤 |
 | `docs/workflow.md` | 十四步内容/视频工作流、状态机、四个模板、12 项质检 |
 | `docs/phase1_acceptance.md` | 12 项验收实测结果 + 功能状态（DONE/PARTIAL/NOT IMPLEMENTED） |
-| `docs/research_hub/` | **第二阶段架构设计**（10 份）：现状审计、系统架构、业务流程、数据库设计、Agent 架构、工具能力、API、状态机、路线图、验收标准 |
+| `docs/research_hub/` | **第二阶段架构设计**：13 份设计文档 + M2.0 实施计划与交付报告（现状审计、系统架构、业务流程、数据库设计、Agent 架构、工具能力、API、状态机、路线图、验收标准、决策登记、交付报告） |
 | `agents/PROTOCOL.md` | Agent 统一输入输出协议（10 字段）+ 品牌与内容规则 |
 
 ## 安全约定
@@ -111,12 +147,20 @@ tests/                             76 个 pytest 用例
 
 ## 尚未实现（避免误解）
 
-视频渲染与合成、配音与字幕生成、图表生成（matplotlib 未安装）、脚本/审核/发布接口、
-知识库 Markdown 自动同步、语义检索与向量库、Agent 真实执行器（模型 API 与搜索工具）、
-鉴权、CI 与云部署。逐项状态见 `docs/phase1_acceptance.md`。
+执行层（`TaskRuntime` / `Orchestrator` / `AgentExecutor`）、模型适配层（`ModelGateway` 与真实
+provider）、搜索与抓取、文档解析（PDF/XLSX/HTML）、证据抽取、报表生成、视频渲染与合成、
+配音与字幕生成、图表生成（matplotlib 未安装）、脚本/审核/发布接口、知识库 Markdown 自动同步、
+语义检索与向量库、真实鉴权、CI 与云部署。逐项状态见 `docs/phase1_acceptance.md`
+与 `docs/research_hub/m2_0_delivery_report.md`。
+
+M2.0 之后仍然存在的结构性事实（不是 bug，是尚未到达的阶段）：
+`model_calls` / `tool_calls` / `research_tasks` / `research_subtasks` 四张表建好了但**一行没写**；
+`capabilities/tools.py` 里十个工具全部 `implemented=False`；`config/models.yaml` 里两个模型的
+价目都是 `null`，因此任何真实模型调用都会被 `budget.evaluate_model_call()` 以
+`pricing_missing` 拒绝（M1.2 决策 Q8=B）。
 
 **另外两项已知缺口**（`docs/content_strategy.md` §3、§9 有详细说明）：
 
-- 选题的**多合集分类**尚未落到数据库——`topics` 目前只有单选 `column_id`，
-  规范已在 `config/content_taxonomy.yaml` 定义，表结构变更留待二期。
+- 选题的**多合集分类**在库里已有 `topic_collections` 表（M2.0 B1 建好），但还没有写入路径，
+  `topics.column_id` 仍在双写期；多标签 `topic_tags` 同样只有表没有接口。
 - 概念类知识条目只能落在 `knowledge_domain=general`，枚举里没有 `concepts` 取值。

@@ -1,0 +1,124 @@
+{
+  "clips": {
+    "S01": {
+      "frames_dir": "plates/d9f3659e1419",
+      "n": 1,
+      "fps": 30,
+      "w": 1024,
+      "h": 1024,
+      "pattern": "%05d.png"
+    },
+    "S02": {
+      "frames_dir": "plates/373f998f137a",
+      "n": 1,
+      "fps": 30,
+      "w": 1024,
+      "h": 576,
+      "pattern": "%05d.png"
+    },
+    "S03A": {
+      "frames_dir": "plates/b86e3afdbaf5",
+      "n": 180,
+      "fps": 30.0,
+      "w": 640,
+      "h": 360,
+      "pattern": "%05d.png"
+    },
+    "S03B": {
+      "frames_dir": "plates/f2cd88c060b8",
+      "n": 150,
+      "fps": 30.0,
+      "w": 640,
+      "h": 360,
+      "pattern": "%05d.png"
+    },
+    "C_CHART": {
+      "frames_dir": ".openkatana/compositions/2b216995eb7f4ad19b8034afe6fe9b66/frames",
+      "pattern": "%05d.png",
+      "n": 210,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "C_DIAGRAM": {
+      "frames_dir": ".openkatana/compositions/e968f873a3d64b6989d5806720b24491/frames",
+      "pattern": "%05d.png",
+      "n": 210,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "C_OUTRO": {
+      "frames_dir": ".openkatana/compositions/d57bc73ea2634ba5ae4c4a2b0f3eb2d3/frames",
+      "pattern": "%05d.png",
+      "n": 165,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    }
+  },
+  "imported": [
+    {
+      "asset_id": "S01",
+      "file": "nasa_apollo17_earthrise.jpg",
+      "sha256": "13419b34c17722be52b4a71a7f0beb3ecc8673183c8a2cee8572d5cd9bbe3f93",
+      "width": 1024,
+      "height": 1024,
+      "frames": 1,
+      "fps": 30,
+      "options": {
+        "rights": "public_domain"
+      }
+    },
+    {
+      "asset_id": "S02",
+      "file": "nasa_blue_marble_starfield.jpg",
+      "sha256": "7dbf717a55aa845cb5446685d89cfca07e74ff3f7c05ee7b43b0c8b779b7c2ab",
+      "width": 1024,
+      "height": 576,
+      "frames": 1,
+      "fps": 30,
+      "options": {
+        "rights": "public_domain"
+      }
+    },
+    {
+      "asset_id": "S03A",
+      "file": "nasa_earth_rotation.mp4",
+      "sha256": "d7c7715012cff1cacb054dad9c390ec4160e87d7810861b71caffa81bc47569c",
+      "width": 640,
+      "height": 360,
+      "frames": 180,
+      "fps": 30.0,
+      "options": {
+        "rights": "public_domain",
+        "start": 0.0,
+        "duration": 6.0,
+        "max_width": 1080
+      }
+    },
+    {
+      "asset_id": "S03B",
+      "file": "nasa_earth_rotation.mp4",
+      "sha256": "fa0090e66fb69604110129089a38004f78ee60339ee3fb2d424e4dbd05acba9f",
+      "width": 640,
+      "height": 360,
+      "frames": 150,
+      "fps": 30.0,
+      "options": {
+        "rights": "public_domain",
+        "start": 12.0,
+        "duration": 5.0,
+        "max_width": 1080
+      }
+    },
+    {
+      "asset_id": "S04",
+      "file": "openkatana_orbit_score.wav",
+      "sha256": "0c9a4d189bf07fca212d612c728e0868bf9a0149b65d6920c17931c52d309740",
+      "kind": "audio",
+      "duration": 8.0,
+      "has_audio": false
+    }
+  ]
+}

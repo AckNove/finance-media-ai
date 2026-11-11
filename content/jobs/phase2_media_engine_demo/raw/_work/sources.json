@@ -1,0 +1,41 @@
+{
+  "registered": [
+    {
+      "source_id": "S01",
+      "file": "nasa_apollo17_earthrise.jpg",
+      "sha256": "13419b34c17722be52b4a71a7f0beb3ecc8673183c8a2cee8572d5cd9bbe3f93",
+      "byte_size": 265324,
+      "license": "NASA public-domain media (media-use policy applies)",
+      "commercial_use": "allowed",
+      "credit": "Earth Science and Remote Sensing Unit, NASA Johnson Space Center"
+    },
+    {
+      "source_id": "S02",
+      "file": "nasa_blue_marble_starfield.jpg",
+      "sha256": "7dbf717a55aa845cb5446685d89cfca07e74ff3f7c05ee7b43b0c8b779b7c2ab",
+      "byte_size": 161444,
+      "license": "NASA public-domain media (media-use policy applies)",
+      "commercial_use": "allowed",
+      "credit": "NASA Scientific Visualization Studio; Cheng Zhang"
+    },
+    {
+      "source_id": "S03",
+      "file": "nasa_earth_rotation.mp4",
+      "sha256": "6f436803b09f1fc93ec648ec441921c1fd537959af3ce09561927d3800bb2ae7",
+      "byte_size": 3823126,
+      "license": "NASA public-domain media (media-use policy applies)",
+      "commercial_use": "allowed",
+      "credit": "NASA Scientific Visualization Studio; Amy Moran and Jesse Allen"
+    },
+    {
+      "source_id": "S04",
+      "file": "openkatana_orbit_score.wav",
+      "sha256": "d0c03550b432975d1432f8aa49337843c8be9b1cf9fbd1925e3bdeed3731219e",
+      "byte_size": 705644,
+      "license": "Apache-2.0",
+      "commercial_use": "allowed",
+      "credit": "OpenKatana contributors, Apache-2.0"
+    }
+  ],
+  "register": "source_register.csv"
+}

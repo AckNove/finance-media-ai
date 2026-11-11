@@ -1,0 +1,644 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 150
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "stage",
+    "type": "box",
+    "children": [
+      {
+        "id": "title",
+        "type": "text",
+        "text": "镜头时长（秒）",
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "300px",
+          "font-family": "AKSC",
+          "font-size": "76px",
+          "font-weight": "900",
+          "color": "#f2f5f7"
+        }
+      },
+      {
+        "id": "note",
+        "type": "text",
+        "text": "示意数据 · 引擎能力演示",
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "410px",
+          "font-family": "AKSC",
+          "font-size": "34px",
+          "font-weight": "400",
+          "color": "#8f9bb0"
+        }
+      },
+      {
+        "id": "axis",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "96px",
+          "top": "1506px",
+          "width": "888px",
+          "height": "4px",
+          "background-color": "#243044"
+        }
+      },
+      {
+        "id": "bar_0",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "131px",
+          "top": "602px",
+          "width": "78px",
+          "height": "898px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "center bottom",
+          "border-radius": "10px 10px 0 0"
+        }
+      },
+      {
+        "id": "val_0",
+        "type": "text",
+        "text": "3.5",
+        "style": {
+          "position": "absolute",
+          "left": "113px",
+          "top": "536px",
+          "font-family": "AKSC",
+          "font-size": "40px",
+          "font-weight": "700",
+          "color": "#b6ff1f"
+        }
+      },
+      {
+        "id": "lab_0",
+        "type": "text",
+        "text": "S1",
+        "style": {
+          "position": "absolute",
+          "left": "137px",
+          "top": "1528px",
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "500",
+          "color": "#8f9bb0"
+        }
+      },
+      {
+        "id": "bar_1",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "279px",
+          "top": "688px",
+          "width": "78px",
+          "height": "812px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "center bottom",
+          "border-radius": "10px 10px 0 0"
+        }
+      },
+      {
+        "id": "val_1",
+        "type": "text",
+        "text": "4",
+        "style": {
+          "position": "absolute",
+          "left": "261px",
+          "top": "622px",
+          "font-family": "AKSC",
+          "font-size": "40px",
+          "font-weight": "700",
+          "color": "#b6ff1f"
+        }
+      },
+      {
+        "id": "lab_1",
+        "type": "text",
+        "text": "S2",
+        "style": {
+          "position": "absolute",
+          "left": "285px",
+          "top": "1528px",
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "500",
+          "color": "#8f9bb0"
+        }
+      },
+      {
+        "id": "bar_2",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "427px",
+          "top": "860px",
+          "width": "78px",
+          "height": "640px",
+          "background-color": "#35e0ff",
+          "transform-origin": "center bottom",
+          "border-radius": "10px 10px 0 0"
+        }
+      },
+      {
+        "id": "val_2",
+        "type": "text",
+        "text": "5",
+        "style": {
+          "position": "absolute",
+          "left": "409px",
+          "top": "794px",
+          "font-family": "AKSC",
+          "font-size": "40px",
+          "font-weight": "700",
+          "color": "#35e0ff"
+        }
+      },
+      {
+        "id": "lab_2",
+        "type": "text",
+        "text": "S3",
+        "style": {
+          "position": "absolute",
+          "left": "433px",
+          "top": "1528px",
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "500",
+          "color": "#8f9bb0"
+        }
+      },
+      {
+        "id": "bar_3",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "575px",
+          "top": "860px",
+          "width": "78px",
+          "height": "640px",
+          "background-color": "#35e0ff",
+          "transform-origin": "center bottom",
+          "border-radius": "10px 10px 0 0"
+        }
+      },
+      {
+        "id": "val_3",
+        "type": "text",
+        "text": "5",
+        "style": {
+          "position": "absolute",
+          "left": "557px",
+          "top": "794px",
+          "font-family": "AKSC",
+          "font-size": "40px",
+          "font-weight": "700",
+          "color": "#35e0ff"
+        }
+      },
+      {
+        "id": "lab_3",
+        "type": "text",
+        "text": "S4",
+        "style": {
+          "position": "absolute",
+          "left": "581px",
+          "top": "1528px",
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "500",
+          "color": "#8f9bb0"
+        }
+      },
+      {
+        "id": "bar_4",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "723px",
+          "top": "688px",
+          "width": "78px",
+          "height": "812px",
+          "background-color": "#ff2bd6",
+          "transform-origin": "center bottom",
+          "border-radius": "10px 10px 0 0"
+        }
+      },
+      {
+        "id": "val_4",
+        "type": "text",
+        "text": "4",
+        "style": {
+          "position": "absolute",
+          "left": "705px",
+          "top": "622px",
+          "font-family": "AKSC",
+          "font-size": "40px",
+          "font-weight": "700",
+          "color": "#ff2bd6"
+        }
+      },
+      {
+        "id": "lab_4",
+        "type": "text",
+        "text": "S5",
+        "style": {
+          "position": "absolute",
+          "left": "729px",
+          "top": "1528px",
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "500",
+          "color": "#8f9bb0"
+        }
+      },
+      {
+        "id": "bar_5",
+        "type": "box",
+        "children": [],
+        "style": {
+          "position": "absolute",
+          "left": "871px",
+          "top": "774px",
+          "width": "78px",
+          "height": "726px",
+          "background-color": "#ff2bd6",
+          "transform-origin": "center bottom",
+          "border-radius": "10px 10px 0 0"
+        }
+      },
+      {
+        "id": "val_5",
+        "type": "text",
+        "text": "4.5",
+        "style": {
+          "position": "absolute",
+          "left": "853px",
+          "top": "708px",
+          "font-family": "AKSC",
+          "font-size": "40px",
+          "font-weight": "700",
+          "color": "#ff2bd6"
+        }
+      },
+      {
+        "id": "lab_5",
+        "type": "text",
+        "text": "S6",
+        "style": {
+          "position": "absolute",
+          "left": "877px",
+          "top": "1528px",
+          "font-family": "AKSC",
+          "font-size": "36px",
+          "font-weight": "500",
+          "color": "#8f9bb0"
+        }
+      }
+    ],
+    "style": {
+      "position": "relative",
+      "width": "1080px",
+      "height": "1920px",
+      "background-color": "#151d2e"
+    }
+  },
+  "tracks": [
+    {
+      "node": "bar_0",
+      "property": "scale",
+      "keys": [
+        [
+          8,
+          0
+        ],
+        [
+          30,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val_0",
+      "property": "opacity",
+      "keys": [
+        [
+          24,
+          0
+        ],
+        [
+          38,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "lab_0",
+      "property": "opacity",
+      "keys": [
+        [
+          18,
+          0
+        ],
+        [
+          34,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar_1",
+      "property": "scale",
+      "keys": [
+        [
+          19,
+          0
+        ],
+        [
+          41,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val_1",
+      "property": "opacity",
+      "keys": [
+        [
+          35,
+          0
+        ],
+        [
+          49,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "lab_1",
+      "property": "opacity",
+      "keys": [
+        [
+          29,
+          0
+        ],
+        [
+          45,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar_2",
+      "property": "scale",
+      "keys": [
+        [
+          30,
+          0
+        ],
+        [
+          52,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val_2",
+      "property": "opacity",
+      "keys": [
+        [
+          46,
+          0
+        ],
+        [
+          60,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "lab_2",
+      "property": "opacity",
+      "keys": [
+        [
+          40,
+          0
+        ],
+        [
+          56,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar_3",
+      "property": "scale",
+      "keys": [
+        [
+          41,
+          0
+        ],
+        [
+          63,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val_3",
+      "property": "opacity",
+      "keys": [
+        [
+          57,
+          0
+        ],
+        [
+          71,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "lab_3",
+      "property": "opacity",
+      "keys": [
+        [
+          51,
+          0
+        ],
+        [
+          67,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar_4",
+      "property": "scale",
+      "keys": [
+        [
+          52,
+          0
+        ],
+        [
+          74,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val_4",
+      "property": "opacity",
+      "keys": [
+        [
+          68,
+          0
+        ],
+        [
+          82,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "lab_4",
+      "property": "opacity",
+      "keys": [
+        [
+          62,
+          0
+        ],
+        [
+          78,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "bar_5",
+      "property": "scale",
+      "keys": [
+        [
+          63,
+          0
+        ],
+        [
+          85,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "val_5",
+      "property": "opacity",
+      "keys": [
+        [
+          79,
+          0
+        ],
+        [
+          93,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "lab_5",
+      "property": "opacity",
+      "keys": [
+        [
+          73,
+          0
+        ],
+        [
+          89,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "axis",
+      "property": "opacity",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          12,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "title",
+      "property": "reveal",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          14,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "note",
+      "property": "opacity",
+      "keys": [
+        [
+          8,
+          0
+        ],
+        [
+          20,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    }
+  ]
+}

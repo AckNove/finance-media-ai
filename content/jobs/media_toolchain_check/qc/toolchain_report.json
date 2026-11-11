@@ -1,0 +1,320 @@
+{
+  "job": "media_toolchain_check",
+  "generated_at": "2026-11-10T18:41:21+00:00",
+  "toolchain": {
+    "available": true,
+    "source": "config",
+    "ffmpeg": "C:\\Users\\25803\\finance-media-ai\\tools\\ffmpeg\\bin\\ffmpeg.exe",
+    "ffprobe": "C:\\Users\\25803\\finance-media-ai\\tools\\ffmpeg\\bin\\ffprobe.exe",
+    "version": "8.1.2",
+    "version_line": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "minimum_version": "5.1",
+    "satisfies_minimum": true,
+    "candidates": [
+      "config:C:\\Users\\25803\\finance-media-ai\\tools\\ffmpeg\\bin"
+    ]
+  },
+  "ok": true,
+  "steps": [
+    {
+      "key": "h264_aac_encode",
+      "title": "编码 H.264(libx264) + AAC 竖屏 1080×1920",
+      "required": true,
+      "ok": true,
+      "detail": "3.00s video=h264 audio=aac",
+      "artifacts": [
+        "work/clip_a.mp4"
+      ],
+      "metrics": {
+        "duration": 3.0,
+        "size": 2220473,
+        "bit_rate": 5921261,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1",
+          "pix_fmt": "yuv420p"
+        },
+        "audio": {
+          "codec": "aac",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      }
+    },
+    {
+      "key": "h264_decode",
+      "title": "完整解码 H.264 视频流",
+      "required": true,
+      "ok": true,
+      "detail": "解码 90 帧",
+      "artifacts": [],
+      "metrics": {
+        "decoded_frames": 90
+      }
+    },
+    {
+      "key": "trim",
+      "title": "视频裁剪 0.5s→1.5s",
+      "required": true,
+      "ok": true,
+      "detail": "裁剪后 1.00s",
+      "artifacts": [
+        "work/clip_trim.mp4"
+      ],
+      "metrics": {
+        "duration": 1.0,
+        "size": 597200,
+        "bit_rate": 4777600,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1",
+          "pix_fmt": "yuv420p"
+        },
+        "audio": {
+          "codec": "aac",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      }
+    },
+    {
+      "key": "fps_convert",
+      "title": "帧率转换 30fps → 24fps",
+      "required": true,
+      "ok": true,
+      "detail": "avg_frame_rate=24/1",
+      "artifacts": [
+        "work/clip_24fps.mp4"
+      ],
+      "metrics": {
+        "duration": 3.0,
+        "size": 1583739,
+        "bit_rate": 4223304,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "24/1",
+          "pix_fmt": "yuv420p"
+        },
+        "audio": null
+      }
+    },
+    {
+      "key": "concat",
+      "title": "视频拼接（concat demuxer，两段参数一致）",
+      "required": true,
+      "ok": true,
+      "detail": "拼接后 4.02s（期望 4.00s）",
+      "artifacts": [
+        "work/clip_joined.mp4"
+      ],
+      "metrics": {
+        "joined": {
+          "duration": 4.021029,
+          "size": 1943582,
+          "bit_rate": 3866835,
+          "video": {
+            "codec": "h264",
+            "width": 1080,
+            "height": 1920,
+            "avg_frame_rate": "30/1",
+            "pix_fmt": "yuv420p"
+          },
+          "audio": {
+            "codec": "aac",
+            "sample_rate": "48000",
+            "channels": 1
+          }
+        },
+        "expected_duration": 4.0
+      }
+    },
+    {
+      "key": "audio_mix",
+      "title": "音频混合（amix 440Hz + 660Hz → AAC）",
+      "required": true,
+      "ok": true,
+      "detail": "2.50s aac",
+      "artifacts": [
+        "audio/mix.m4a"
+      ],
+      "metrics": {
+        "duration": 2.5,
+        "size": 47535,
+        "bit_rate": 152112,
+        "video": null,
+        "audio": {
+          "codec": "aac",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      }
+    },
+    {
+      "key": "mux_av",
+      "title": "音视频合片（-map 视频 + 混合音轨）",
+      "required": true,
+      "ok": true,
+      "detail": "2.52s 含音视频双流",
+      "artifacts": [
+        "output/toolchain_check.mp4"
+      ],
+      "metrics": {
+        "duration": 2.517,
+        "size": 1273866,
+        "bit_rate": 4048839,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1",
+          "pix_fmt": "yuv420p"
+        },
+        "audio": {
+          "codec": "aac",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      }
+    },
+    {
+      "key": "subtitle_burn",
+      "title": "libass 字幕烧录（.ass + 微软雅黑 + 安全区内）",
+      "required": true,
+      "ok": true,
+      "detail": "烧字幕成功 2.52s（字体目录 work/fonts）",
+      "artifacts": [
+        "output/toolchain_check_subs.mp4",
+        "work/subs.ass"
+      ],
+      "metrics": {
+        "duration": 2.517,
+        "size": 1034029,
+        "bit_rate": 3286544,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1",
+          "pix_fmt": "yuv420p"
+        },
+        "audio": {
+          "codec": "aac",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      }
+    },
+    {
+      "key": "loudness",
+      "title": "响度测量（loudnorm 两遍法第一遍 print_format=json）",
+      "required": true,
+      "ok": true,
+      "detail": "integrated=-18.75 LUFS, true peak=-12.09 dBTP",
+      "artifacts": [],
+      "metrics": {
+        "input_i_lufs": "-18.75",
+        "input_tp_dbtp": "-12.09",
+        "input_lra": "0.00",
+        "target": "-14 LUFS"
+      }
+    },
+    {
+      "key": "volume_stats",
+      "title": "音量统计（volumedetect）",
+      "required": true,
+      "ok": true,
+      "detail": "mean=-18.1 dB, max=-12.1 dB",
+      "artifacts": [],
+      "metrics": {
+        "mean_volume_db": -18.1,
+        "max_volume_db": -12.1
+      }
+    },
+    {
+      "key": "qc_filters",
+      "title": "质检滤镜（blackdetect / freezedetect / silencedetect）",
+      "required": true,
+      "ok": true,
+      "detail": "black=0 freeze=0 silence=0",
+      "artifacts": [],
+      "metrics": {
+        "black_segments": 0,
+        "freeze_segments": 0,
+        "silence_segments": 0
+      }
+    },
+    {
+      "key": "metadata_read",
+      "title": "元数据读取（ffprobe JSON）",
+      "required": true,
+      "ok": true,
+      "detail": "streams=2",
+      "artifacts": [],
+      "metrics": {
+        "duration": 2.517,
+        "size": 1034029,
+        "bit_rate": 3286544,
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1",
+          "pix_fmt": "yuv420p"
+        },
+        "audio": {
+          "codec": "aac",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "work/clip_a.mp4",
+      "bytes": 2220473,
+      "sha256": "4a544eab10d16a267747d07e7859c8fd15b67e4ea70bdac135065064e29d7b0e"
+    },
+    {
+      "path": "work/clip_trim.mp4",
+      "bytes": 597200,
+      "sha256": "6a70df19d08fa05ad1d65a9b03b1adfdad03b063f0719cdfd293f70ae9f2e9ae"
+    },
+    {
+      "path": "work/clip_24fps.mp4",
+      "bytes": 1583739,
+      "sha256": "489b75c7be2b48dceb58015c840a39654815412c96a5e703a14b12506dee2346"
+    },
+    {
+      "path": "work/clip_joined.mp4",
+      "bytes": 1943582,
+      "sha256": "f9db2cfcc3e868e43d148fa6e98c314d843631990c26fcdea19f9cd3963cab41"
+    },
+    {
+      "path": "audio/mix.m4a",
+      "bytes": 47535,
+      "sha256": "1a659bc562e93f1f2372abbf1679c9f37c695102b9665d1059e178e5861e88f3"
+    },
+    {
+      "path": "output/toolchain_check.mp4",
+      "bytes": 1273866,
+      "sha256": "162c9651123401910546a42807c40574348361a92be20194d99f14fedc2b4be9"
+    },
+    {
+      "path": "output/toolchain_check_subs.mp4",
+      "bytes": 1034029,
+      "sha256": "849f4ad5ea6af19ed3320f8282934d3c7c8ba0e93cdb6a28798e26398e12dfb3"
+    }
+  ],
+  "notes": [
+    "本自检证明的是「工具链能力」，不是「真实素材剪辑工作流」。",
+    "素材来源为 lavfi 合成画面与正弦音，不含任何真实拍摄素材或历史数据。",
+    "响度与音量数字只说明测量链路可用，不代表正式作品的混音标准。"
+  ]
+}

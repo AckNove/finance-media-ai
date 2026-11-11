@@ -1,0 +1,697 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 210
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf",
+      "weight": "100 900"
+    }
+  ],
+  "root": {
+    "id": "root",
+    "type": "box",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "width": "1080px",
+      "height": "1920px",
+      "padding": "150px 90px 200px 90px",
+      "box-sizing": "border-box",
+      "background-color": "#0b1220",
+      "gap": "26px",
+      "justify-content": "center"
+    },
+    "children": [
+      {
+        "id": "kicker",
+        "type": "text",
+        "text": "PIPELINE",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "30px",
+          "font-weight": "700",
+          "color": "#35e0ff",
+          "letter-spacing": "6px",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "title",
+        "type": "text",
+        "text": "一条片子怎么来的",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "82px",
+          "font-weight": "900",
+          "color": "#f2f5f7",
+          "line-height": "1.1",
+          "opacity": "0"
+        }
+      },
+      {
+        "id": "chain",
+        "type": "box",
+        "style": {
+          "display": "flex",
+          "flex-direction": "column",
+          "gap": "0px",
+          "margin-top": "46px"
+        },
+        "children": [
+          {
+            "id": "step0",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "row",
+              "align-items": "center",
+              "gap": "24px",
+              "padding": "26px 30px",
+              "border-radius": "18px",
+              "background-color": "#141d31",
+              "border": "2px solid #b6ff1f",
+              "opacity": "0",
+              "transform": "translateY(-26px)"
+            },
+            "children": [
+              {
+                "id": "step0_num",
+                "type": "text",
+                "text": "01",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "40px",
+                  "font-weight": "900",
+                  "color": "#b6ff1f",
+                  "line-height": "1"
+                }
+              },
+              {
+                "id": "step0_txt",
+                "type": "box",
+                "style": {
+                  "display": "flex",
+                  "flex-direction": "column",
+                  "gap": "6px"
+                },
+                "children": [
+                  {
+                    "id": "step0_name",
+                    "type": "text",
+                    "text": "approved_sources",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "40px",
+                      "font-weight": "800",
+                      "color": "#f2f5f7",
+                      "line-height": "1.1"
+                    }
+                  },
+                  {
+                    "id": "step0_note",
+                    "type": "text",
+                    "text": "白名单登记的素材",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "26px",
+                      "font-weight": "400",
+                      "color": "#94a3b8",
+                      "line-height": "1.2"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "link0",
+            "type": "box",
+            "style": {
+              "width": "4px",
+              "height": "54px",
+              "background-color": "#b6ff1f",
+              "transform-origin": "50% 0%",
+              "margin-left": "60px"
+            }
+          },
+          {
+            "id": "step1",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "row",
+              "align-items": "center",
+              "gap": "24px",
+              "padding": "26px 30px",
+              "border-radius": "18px",
+              "background-color": "#141d31",
+              "border": "2px solid #24304a",
+              "opacity": "0",
+              "transform": "translateY(-26px)"
+            },
+            "children": [
+              {
+                "id": "step1_num",
+                "type": "text",
+                "text": "02",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "40px",
+                  "font-weight": "900",
+                  "color": "#b6ff1f",
+                  "line-height": "1"
+                }
+              },
+              {
+                "id": "step1_txt",
+                "type": "box",
+                "style": {
+                  "display": "flex",
+                  "flex-direction": "column",
+                  "gap": "6px"
+                },
+                "children": [
+                  {
+                    "id": "step1_name",
+                    "type": "text",
+                    "text": "import_media",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "40px",
+                      "font-weight": "800",
+                      "color": "#f2f5f7",
+                      "line-height": "1.1"
+                    }
+                  },
+                  {
+                    "id": "step1_note",
+                    "type": "text",
+                    "text": "入库并转成帧序列",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "26px",
+                      "font-weight": "400",
+                      "color": "#94a3b8",
+                      "line-height": "1.2"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "link1",
+            "type": "box",
+            "style": {
+              "width": "4px",
+              "height": "54px",
+              "background-color": "#b6ff1f",
+              "transform-origin": "50% 0%",
+              "margin-left": "60px"
+            }
+          },
+          {
+            "id": "step2",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "row",
+              "align-items": "center",
+              "gap": "24px",
+              "padding": "26px 30px",
+              "border-radius": "18px",
+              "background-color": "#141d31",
+              "border": "2px solid #24304a",
+              "opacity": "0",
+              "transform": "translateY(-26px)"
+            },
+            "children": [
+              {
+                "id": "step2_num",
+                "type": "text",
+                "text": "03",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "40px",
+                  "font-weight": "900",
+                  "color": "#b6ff1f",
+                  "line-height": "1"
+                }
+              },
+              {
+                "id": "step2_txt",
+                "type": "box",
+                "style": {
+                  "display": "flex",
+                  "flex-direction": "column",
+                  "gap": "6px"
+                },
+                "children": [
+                  {
+                    "id": "step2_name",
+                    "type": "text",
+                    "text": "storyboard.csv",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "40px",
+                      "font-weight": "800",
+                      "color": "#f2f5f7",
+                      "line-height": "1.1"
+                    }
+                  },
+                  {
+                    "id": "step2_note",
+                    "type": "text",
+                    "text": "每个镜头写清用途",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "26px",
+                      "font-weight": "400",
+                      "color": "#94a3b8",
+                      "line-height": "1.2"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "link2",
+            "type": "box",
+            "style": {
+              "width": "4px",
+              "height": "54px",
+              "background-color": "#b6ff1f",
+              "transform-origin": "50% 0%",
+              "margin-left": "60px"
+            }
+          },
+          {
+            "id": "step3",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "row",
+              "align-items": "center",
+              "gap": "24px",
+              "padding": "26px 30px",
+              "border-radius": "18px",
+              "background-color": "#141d31",
+              "border": "2px solid #24304a",
+              "opacity": "0",
+              "transform": "translateY(-26px)"
+            },
+            "children": [
+              {
+                "id": "step3_num",
+                "type": "text",
+                "text": "04",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "40px",
+                  "font-weight": "900",
+                  "color": "#b6ff1f",
+                  "line-height": "1"
+                }
+              },
+              {
+                "id": "step3_txt",
+                "type": "box",
+                "style": {
+                  "display": "flex",
+                  "flex-direction": "column",
+                  "gap": "6px"
+                },
+                "children": [
+                  {
+                    "id": "step3_name",
+                    "type": "text",
+                    "text": "timeline",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "40px",
+                      "font-weight": "800",
+                      "color": "#f2f5f7",
+                      "line-height": "1.1"
+                    }
+                  },
+                  {
+                    "id": "step3_note",
+                    "type": "text",
+                    "text": "多轨合成与转场",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "26px",
+                      "font-weight": "400",
+                      "color": "#94a3b8",
+                      "line-height": "1.2"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "link3",
+            "type": "box",
+            "style": {
+              "width": "4px",
+              "height": "54px",
+              "background-color": "#b6ff1f",
+              "transform-origin": "50% 0%",
+              "margin-left": "60px"
+            }
+          },
+          {
+            "id": "step4",
+            "type": "box",
+            "style": {
+              "display": "flex",
+              "flex-direction": "row",
+              "align-items": "center",
+              "gap": "24px",
+              "padding": "26px 30px",
+              "border-radius": "18px",
+              "background-color": "#141d31",
+              "border": "2px solid #24304a",
+              "opacity": "0",
+              "transform": "translateY(-26px)"
+            },
+            "children": [
+              {
+                "id": "step4_num",
+                "type": "text",
+                "text": "05",
+                "style": {
+                  "font-family": "AKSC",
+                  "font-size": "40px",
+                  "font-weight": "900",
+                  "color": "#b6ff1f",
+                  "line-height": "1"
+                }
+              },
+              {
+                "id": "step4_txt",
+                "type": "box",
+                "style": {
+                  "display": "flex",
+                  "flex-direction": "column",
+                  "gap": "6px"
+                },
+                "children": [
+                  {
+                    "id": "step4_name",
+                    "type": "text",
+                    "text": "draft.mp4",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "40px",
+                      "font-weight": "800",
+                      "color": "#f2f5f7",
+                      "line-height": "1.1"
+                    }
+                  },
+                  {
+                    "id": "step4_note",
+                    "type": "text",
+                    "text": "渲染出片并质检",
+                    "style": {
+                      "font-family": "AKSC",
+                      "font-size": "26px",
+                      "font-weight": "400",
+                      "color": "#94a3b8",
+                      "line-height": "1.2"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "node": "step0",
+      "property": "opacity",
+      "keys": [
+        [
+          8,
+          0
+        ],
+        [
+          22,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step0",
+      "property": "translateY",
+      "keys": [
+        [
+          8,
+          -26
+        ],
+        [
+          24,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "link0",
+      "property": "scale",
+      "keys": [
+        [
+          22,
+          0
+        ],
+        [
+          34,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step1",
+      "property": "opacity",
+      "keys": [
+        [
+          28,
+          0
+        ],
+        [
+          42,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step1",
+      "property": "translateY",
+      "keys": [
+        [
+          28,
+          -26
+        ],
+        [
+          44,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "link1",
+      "property": "scale",
+      "keys": [
+        [
+          42,
+          0
+        ],
+        [
+          54,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step2",
+      "property": "opacity",
+      "keys": [
+        [
+          48,
+          0
+        ],
+        [
+          62,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step2",
+      "property": "translateY",
+      "keys": [
+        [
+          48,
+          -26
+        ],
+        [
+          64,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "link2",
+      "property": "scale",
+      "keys": [
+        [
+          62,
+          0
+        ],
+        [
+          74,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step3",
+      "property": "opacity",
+      "keys": [
+        [
+          68,
+          0
+        ],
+        [
+          82,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step3",
+      "property": "translateY",
+      "keys": [
+        [
+          68,
+          -26
+        ],
+        [
+          84,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "link3",
+      "property": "scale",
+      "keys": [
+        [
+          82,
+          0
+        ],
+        [
+          94,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step4",
+      "property": "opacity",
+      "keys": [
+        [
+          88,
+          0
+        ],
+        [
+          102,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "step4",
+      "property": "translateY",
+      "keys": [
+        [
+          88,
+          -26
+        ],
+        [
+          104,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "kicker",
+      "property": "opacity",
+      "keys": [
+        [
+          2,
+          0
+        ],
+        [
+          12,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "title",
+      "property": "opacity",
+      "keys": [
+        [
+          4,
+          0
+        ],
+        [
+          18,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "chain",
+      "property": "translateY",
+      "keys": [
+        [
+          150,
+          0
+        ],
+        [
+          209,
+          -30
+        ]
+      ],
+      "easing": "smooth"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "generated_at": "2026-11-11T03:51:43+00:00",
+  "file": "output\\preview_30_45s.mp4",
+  "byte_size": 19868025,
+  "duration": 40.0,
+  "video": {
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "fps": "30/1",
+    "duration": 40.0,
+    "frames": "1200"
+  },
+  "audio": {
+    "codec": "aac",
+    "sample_rate": "48000",
+    "channels": 2,
+    "duration": 40.0
+  },
+  "black_segments": [],
+  "freeze_segments": [],
+  "silence_segments": [],
+  "mean_volume_db": -25.4,
+  "max_volume_db": -13.5,
+  "loudness": {
+    "input_i": "-23.63",
+    "input_tp": "-13.51",
+    "input_lra": "2.20",
+    "input_thresh": "-33.93",
+    "output_i": "-23.94",
+    "output_tp": "-14.01",
+    "output_lra": "2.10",
+    "output_thresh": "-34.22",
+    "normalization_type": "dynamic",
+    "target_offset": "-0.06"
+  },
+  "storyboard_counts": {
+    "shots": 7,
+    "real_video": 2,
+    "real_image": 2,
+    "composition": 3,
+    "generated_image": 0,
+    "subtitles": 7,
+    "transitions": 6,
+    "camera_motions": 5,
+    "sound_effects": 7
+  },
+  "checks": [
+    {
+      "check": "canvas",
+      "ok": true,
+      "detail": "1080x1920 (expected 1080x1920)"
+    },
+    {
+      "check": "frame_rate",
+      "ok": true,
+      "detail": "30/1 (expected 30/1)"
+    },
+    {
+      "check": "video_codec",
+      "ok": true,
+      "detail": "h264"
+    },
+    {
+      "check": "audio_codec",
+      "ok": true,
+      "detail": "aac"
+    },
+    {
+      "check": "duration_matches_storyboard",
+      "ok": true,
+      "detail": "40.000s vs storyboard 40.000s"
+    },
+    {
+      "check": "av_equal_length",
+      "ok": true,
+      "detail": "video 40.000s / audio 40.000s"
+    },
+    {
+      "check": "no_black_over_0.45s",
+      "ok": true,
+      "detail": "0 segment(s), longest 0.00s"
+    },
+    {
+      "check": "no_freeze_over_1.0s",
+      "ok": true,
+      "detail": "0 segment(s), longest 0.00s"
+    },
+    {
+      "check": "no_silence_over_1.5s",
+      "ok": true,
+      "detail": "0 segment(s), longest 0.00s"
+    },
+    {
+      "check": "no_clipping",
+      "ok": true,
+      "detail": "max_volume -13.5 dB"
+    },
+    {
+      "check": "audible",
+      "ok": true,
+      "detail": "mean_volume -25.4 dB"
+    },
+    {
+      "check": "shot_count",
+      "ok": true,
+      "detail": "7 shots (need >= 6)"
+    },
+    {
+      "check": "real_media",
+      "ok": true,
+      "detail": "real_video 2, real_image 2"
+    },
+    {
+      "check": "transition_variety",
+      "ok": true,
+      "detail": "6 transition types"
+    },
+    {
+      "check": "camera_variety",
+      "ok": true,
+      "detail": "5 camera motions"
+    },
+    {
+      "check": "multi_track_audio",
+      "ok": true,
+      "detail": "8 audio tracks in the timeline"
+    }
+  ],
+  "all_checks_ok": true,
+  "note": "Programmatic checks only. Whether the film is good is not measurable here."
+}

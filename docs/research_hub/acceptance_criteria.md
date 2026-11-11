@@ -52,8 +52,9 @@
 
 - [ ] `config/models.yaml`、`agent_routing.yaml`、`pipelines.yaml` 存在且被 schema 测试校验
 - [ ] `backend/app/{execution,capabilities,parsers}/__init__.py` 存在，且有 Protocol 定义（`SearchProvider`/`Fetcher`/`ModelGateway`/`Tool`）
-- [ ] **`CallerContext` + `require_caller` 已实现**，越权返回 422 + `details.reason="permission_denied"`（`tests/test_caller_context.py`）
-- [ ] **SQLite 实测 `journal_mode=wal`、`busy_timeout=5000`**（`tests/test_sqlite_pragmas.py`，读 PRAGMA 不算数，要连真实库）
+- [ ] **`CallerContext` + `require_caller` 已实现**，越权返回 422 + `details.reason="permission_denied"`；**21 个操作的权限声明与端点上实际挂载的依赖逐条一致**（`tests/test_caller_permissions.py`，由启动自检静态核对）
+- [ ] **SQLite 连接参数实测**：`busy_timeout=5000`、`synchronous=NORMAL`、`foreign_keys=1`；**`journal_mode` 不由连接事件改变**
+- [ ] **WAL 只能由显式初始化开启**：`backend.app.database.wal.enable_wal` / `python -m backend.scripts.enable_wal`；普通连接、应用启动、状态查询都不得改变库文件模式；对真实开发库默认拒绝（`tests/test_wal_initialization.py`）
 - [ ] **三个迁移批次 B1/B2/B3 各自可 `upgrade`/`downgrade -1`/`upgrade` 往返**，且每批前有 `data/backups/` 备份
 - [ ] `topic_columns` 有 6 条合集（`is_system=1`），`topics.column_id` 全部回填到 `topic_collections`
 - [ ] `task_type` 注册表三处一致（YAML / `task_types.py` / PROMPT.md），`topic.discover` 在册

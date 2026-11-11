@@ -1,0 +1,146 @@
+{
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 780,
+    "bg": "#151d2e"
+  },
+  "clips": {
+    "s1_hook": {
+      "frames_dir": ".openkatana/compositions/f79655d698644332b6be462e89d67a9e/frames",
+      "pattern": "%05d.png",
+      "n": 105,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "s2_number": {
+      "frames_dir": ".openkatana/compositions/47f35c823021437faaf21acfc3c949f1/frames",
+      "pattern": "%05d.png",
+      "n": 120,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "s3_chart": {
+      "frames_dir": ".openkatana/compositions/bba7a58bf44a403aa9f4f4f02240c4ef/frames",
+      "pattern": "%05d.png",
+      "n": 150,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "s4_diagram": {
+      "frames_dir": ".openkatana/compositions/57318c00fbaf49959ec41b5d5e86d7b7/frames",
+      "pattern": "%05d.png",
+      "n": 150,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "s5_plate": {
+      "frames_dir": ".openkatana/compositions/cef8dce4e22b402f81e3a2ea6259bee9/frames",
+      "pattern": "%05d.png",
+      "n": 120,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "s6_outro": {
+      "frames_dir": ".openkatana/compositions/f7477ec2d7d7451f887b5e359138dd56/frames",
+      "pattern": "%05d.png",
+      "n": 135,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    }
+  },
+  "shots": [
+    {
+      "f0": 0,
+      "f1": 105,
+      "clip": "s1_hook",
+      "cam": {
+        "push": {
+          "v": 0.012
+        }
+      }
+    },
+    {
+      "f0": 105,
+      "f1": 225,
+      "clip": "s2_number",
+      "cam": {
+        "z": 1.03
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.25
+      }
+    },
+    {
+      "f0": 225,
+      "f1": 375,
+      "clip": "s3_chart",
+      "cam": {
+        "pan": {
+          "dx": 0.05
+        }
+      },
+      "transition": {
+        "type": "push",
+        "d": 0.3,
+        "dir": "left"
+      }
+    },
+    {
+      "f0": 375,
+      "f1": 525,
+      "clip": "s4_diagram",
+      "cam": {
+        "push": {
+          "v": 0.016
+        }
+      },
+      "transition": {
+        "type": "wipe",
+        "d": 0.3,
+        "dir": "btt"
+      }
+    },
+    {
+      "f0": 525,
+      "f1": 645,
+      "clip": "s5_plate",
+      "cam": {
+        "push": {
+          "v": 0.02
+        }
+      },
+      "transition": {
+        "type": "glitch",
+        "d": 0.25
+      }
+    },
+    {
+      "f0": 645,
+      "f1": 780,
+      "clip": "s6_outro",
+      "cam": {
+        "z": 1.02,
+        "handheld": {
+          "amp": 3
+        }
+      },
+      "transition": {
+        "type": "dip",
+        "d": 0.35
+      }
+    }
+  ],
+  "audio": {
+    "src": "audio/score.m4a",
+    "mode": "copy"
+  }
+}
