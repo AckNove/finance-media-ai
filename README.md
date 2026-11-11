@@ -21,12 +21,13 @@
 品牌、内容分类、商业模式与合规红线的完整定义见
 `docs/brand_strategy.md`、`docs/content_strategy.md`、`docs/business_model.md`。
 
-> 当前阶段状态：数据库、服务层、API、Agent 角色与协议、内容/视频流程骨架已就绪并测试通过；
-> **M2.0 骨架已落地**（配置层、调用者身份与工具权限闸门、task_type 注册表、
-> SQLite 连接参数与**显式** WAL 初始化、三批迁移 B1/B2/B3、启动自检、请求追踪），
-> 但仍**未接入任何模型 API、搜索工具、渲染引擎**，
-> 执行层（TaskRuntime/Orchestrator）尚未开始。详见 `docs/phase1_acceptance.md` 与
-> `docs/research_hub/m2_0_delivery_report.md` 的功能状态表。
+> 当前有两条进度不同的工作线。**研究工作台停在 M2.0 骨架**：配置层、权限闸门、
+> task_type 注册表、SQLite 连接参数与**显式** WAL 初始化、B1/B2/B3 迁移、启动自检和请求追踪
+> 已落地；模型 API、搜索工具及 TaskRuntime/Orchestrator 尚未接入。
+> **视频演示管线已交付 V2.2 Phase 2**：本地 OpenKatana/FFmpeg 适配、分镜驱动、多轨合成、
+> 素材溯源及 42.5 秒演示片均有实测证据，但尚未接入研究/内容生产链，也未经对外发布所需的
+> 页面级授权审核。分别见 `docs/research_hub/m2_0_delivery_report.md` 和
+> `docs/research_hub/phase2_handover_report.md`。
 >
 > 注意：`journal_mode=WAL` **不会**因为启动服务或查状态而自动打开，它是显式动作——
 > `python -m backend.scripts.enable_wal --database-url <库> --dry-run` 先看清目标，再去掉 `--dry-run` 执行。
@@ -40,18 +41,15 @@ py -3.12 -m venv .venv
 # 2. 依赖
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
-# 3. 环境变量（不放真实密钥）
+# 3. 环境变量（不放真实密钥；示例使用独立库，不触碰受保护的开发库）
 Copy-Item .env.example .env
+$env:DATABASE_URL = "sqlite:///./data/quickstart.db"
 
-# 4. 建库（Alembic 迁移；动手前先备份现有库到 data/backups/）
-New-Item -ItemType Directory -Force data\backups | Out-Null
-if (Test-Path data\finance_media.db) {
-    sqlite3 data\finance_media.db ".backup data\backups/before-$(Get-Date -f yyyyMMdd-HHmmss).db"
-}
+# 4. 在独立示例库执行迁移
 .\.venv\Scripts\python.exe -m alembic upgrade head
 
-# 5. 灌入六大合集（幂等；默认拒绝对 data/finance_media.db 写入，需显式放行）
-.\.venv\Scripts\python.exe -m backend.scripts.seed_collections --allow-development-db
+# 5. 灌入六大合集（幂等；不使用 --allow-development-db）
+.\.venv\Scripts\python.exe -m backend.scripts.seed_collections
 
 # 6. 启动
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
@@ -104,7 +102,10 @@ if (Test-Path data\finance_media.db) {
 backend/app/{api,core,models,schemas,services,database}   服务代码
 backend/app/execution/             L2 执行层：task_types.py（十种 task_type）、routing.py（路由与一致性校验）
 backend/app/capabilities/          L3 能力层骨架：guard.py（权限闸门）、tools.py（工具登记）、budget.py（成本闸门）
-backend/app/parsers/               仅有 Protocol（ParsedDocument），无任何解析实现
+backend/app/capabilities/media/    OpenKatana 与 FFmpeg 本地媒体适配层（演示任务已实测）
+backend/app/capabilities/adapters/ 可选 MarkItDown 本地解析适配器，尚未接入研究执行链
+backend/app/media/                 分镜校验、素材清单与时间轴构建
+backend/app/parsers/               解析产物与解析器 Protocol；实现位于 capabilities/adapters/
 backend/app/database/              session.py（连接级 PRAGMA）、wal.py（WAL 显式初始化，默认拒绝开发库）
 backend/migrations/                Alembic 迁移（初始 de8148733a9b + B1/B2/B3 三批）
 backend/scripts/seed_collections.py  按 code upsert 六大合集（幂等；默认拒绝写开发库）
@@ -118,7 +119,7 @@ config/{settings,brand,content_rules,content_taxonomy,research_sources,models,ag
 data/{raw,processed,exports}        本地数据（大文件不入库）
 data/backups/                     迁移前的 sqlite3 .backup 目标目录
 docs/                              战略、架构、数据模型、Agent 手册、工作流、路线图、验收报告
-tests/                             253 个 pytest 用例
+tests/                             pytest 回归测试
 ```
 
 ## 文档
@@ -134,7 +135,7 @@ tests/                             253 个 pytest 用例
 | `docs/agent_manual.md` | 九角色、统一协议、调度接口、新增角色步骤 |
 | `docs/workflow.md` | 十四步内容/视频工作流、状态机、四个模板、12 项质检 |
 | `docs/phase1_acceptance.md` | 12 项验收实测结果 + 功能状态（DONE/PARTIAL/NOT IMPLEMENTED） |
-| `docs/research_hub/` | **第二阶段架构设计**：13 份设计文档 + M2.0 实施计划与交付报告（现状审计、系统架构、业务流程、数据库设计、Agent 架构、工具能力、API、状态机、路线图、验收标准、决策登记、交付报告） |
+| `docs/research_hub/` | 研究工作台架构与 M2.0 交付记录；另有 V2.2 Phase 2 视频管线交接、产物索引和遗留问题清单 |
 | `agents/PROTOCOL.md` | Agent 统一输入输出协议（10 字段）+ 品牌与内容规则 |
 
 ## 安全约定
@@ -147,11 +148,13 @@ tests/                             253 个 pytest 用例
 
 ## 尚未实现（避免误解）
 
-执行层（`TaskRuntime` / `Orchestrator` / `AgentExecutor`）、模型适配层（`ModelGateway` 与真实
-provider）、搜索与抓取、文档解析（PDF/XLSX/HTML）、证据抽取、报表生成、视频渲染与合成、
-配音与字幕生成、图表生成（matplotlib 未安装）、脚本/审核/发布接口、知识库 Markdown 自动同步、
+研究执行层（`TaskRuntime` / `Orchestrator` / `AgentExecutor`）、模型适配层（`ModelGateway` 与真实
+provider）、搜索与抓取、文档解析接入研究工作流、证据抽取、报表生成、
+研究/内容任务到视频渲染管线的集成、配音生成、图表生成（matplotlib 未安装）、
+脚本/审核/发布接口、知识库 Markdown 自动同步、
 语义检索与向量库、真实鉴权、CI 与云部署。逐项状态见 `docs/phase1_acceptance.md`
-与 `docs/research_hub/m2_0_delivery_report.md`。
+与 `docs/research_hub/m2_0_delivery_report.md`；视频管线的范围与发布阻断项见
+`docs/research_hub/phase2_handover_report.md` 和 `docs/research_hub/phase2_remaining_issues.md`。
 
 M2.0 之后仍然存在的结构性事实（不是 bug，是尚未到达的阶段）：
 `model_calls` / `tool_calls` / `research_tasks` / `research_subtasks` 四张表建好了但**一行没写**；
