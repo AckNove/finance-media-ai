@@ -125,3 +125,7 @@ content/jobs/media_toolchain_check/audio/
 content/jobs/media_toolchain_check/output/
 # 成片是交付物，可复现但重渲一次要十几分钟，所以显式保留（覆盖上面的 *.mp4 规则）。
 !content/jobs/*/output/*.mp4
+
+# V1 旧任务目录：含从本机桌面复制来的原始数据（csv/xlsx/pdf），
+# 与 V2.x 的「旧数据全局隔离」口径一致，不入库。本地文件保留在磁盘上。
+content/jobs/20261110_jgb_gold_repricing/

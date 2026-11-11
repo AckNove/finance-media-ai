@@ -1,5 +1,0 @@
-file 'C:/Users/25803/finance-media-ai/content/jobs/20261110_jgb_gold_repricing/_work/segments/seg_01.mp4'
-file 'C:/Users/25803/finance-media-ai/content/jobs/20261110_jgb_gold_repricing/_work/segments/seg_02.mp4'
-file 'C:/Users/25803/finance-media-ai/content/jobs/20261110_jgb_gold_repricing/_work/segments/seg_03.mp4'
-file 'C:/Users/25803/finance-media-ai/content/jobs/20261110_jgb_gold_repricing/_work/segments/seg_04.mp4'
-file 'C:/Users/25803/finance-media-ai/content/jobs/20261110_jgb_gold_repricing/_work/segments/seg_05.mp4'
