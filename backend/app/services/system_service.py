@@ -8,9 +8,9 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import make_url
 
 from backend.app import __version__
-from backend.app.core.config import Settings, get_app_config, get_settings
+from backend.app.core.config import Settings, get_app_config, get_features_settings, get_settings
 from backend.app.core.utils import utcnow
-from backend.app.database.session import get_engine
+from backend.app.database.session import get_engine, read_sqlite_pragmas
 from backend.app.schemas.system import (
     AgentRosterInfo,
     DatabaseStatus,
@@ -45,6 +45,12 @@ def build_system_status(settings: Settings | None = None) -> SystemStatus:
     settings = settings or get_settings()
     app_config = get_app_config()
     integrations = app_config.get("integrations", {}) if isinstance(app_config, dict) else {}
+    # M2.0：features 段是新增三个开关的权威来源；缺失或非法时按"关闭"处理，
+    # 不让状态接口因为配置问题 500（配置错误的拦截由启动自检负责）。
+    try:
+        feature_switches = get_features_settings()
+    except Exception:  # pragma: no cover - 启动自检会先失败
+        feature_switches = None
 
     database = DatabaseStatus(
         dialect="unknown", url=_masked_url(settings), reachable=False, error=None
@@ -58,6 +64,10 @@ def build_system_status(settings: Settings | None = None) -> SystemStatus:
             database.dialect = connection.dialect.name
             database.reachable = True
             database.table_count = len(tables)
+            if connection.dialect.name == "sqlite":
+                pragmas = read_sqlite_pragmas(connection)
+                database.journal_mode = pragmas.get("journal_mode")
+                database.busy_timeout = pragmas.get("busy_timeout")
             if "alembic_version" in tables:
                 revision = connection.execute(
                     text("SELECT version_num FROM alembic_version")
@@ -82,6 +92,9 @@ def build_system_status(settings: Settings | None = None) -> SystemStatus:
             web_search=bool(integrations.get("web_search", {}).get("enabled", False)),
             vector_store=bool(integrations.get("vector_store", {}).get("enabled", False)),
             video_rendering=bool(app_config.get("video", {}).get("rendering_enabled", False)),
+            model=bool(feature_switches.model) if feature_switches else False,
+            search=bool(feature_switches.search) if feature_switches else False,
+            execution=bool(feature_switches.execution) if feature_switches else False,
         ),
         agents=AgentRosterInfo(
             discovered=len(roster),

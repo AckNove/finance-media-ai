@@ -29,13 +29,29 @@ def test_system_status_masks_database_path(client):
 
 def test_system_status_reports_features_disabled(client):
     features = client.get("/api/system/status").json()["features"]
-    # 第一阶段没有接入任何外部能力，必须全部为 false
+    # 2.0 阶段没有接入任何外部能力，七个开关必须全部为 false
     assert features == {
         "llm_providers": False,
         "web_search": False,
         "vector_store": False,
         "video_rendering": False,
+        "model": False,
+        "search": False,
+        "execution": False,
     }
+
+
+def test_system_status_reports_sqlite_pragmas(client):
+    """T03：状态接口必须回读真实的 PRAGMA，而不是硬编码字符串。
+
+    M2.0 专项整改后，``journal_mode`` 只能由 ``backend.app.database.wal.enable_wal``
+    显式切换。本用例的测试库是新建的临时文件，从未做过 WAL 初始化，
+    因此状态接口必须如实报 ``delete`` —— 如果这里读到 ``wal``，
+    就说明"随便查一下状态就把库改了"。
+    """
+    database = client.get("/api/system/status").json()["database"]
+    assert database["journal_mode"].lower() == "delete"
+    assert database["busy_timeout"] == "5000"
 
 
 def test_system_status_discovers_nine_agents(client):

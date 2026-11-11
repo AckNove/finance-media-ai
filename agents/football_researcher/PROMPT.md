@@ -10,11 +10,19 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`topic.discover`、`research.collect`、`research.extract`、`research.analyze`、`research.synthesize`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 13 行的声明，任何不一致都拒绝启动。
+
+| task_type | 你在这件事上的目标 |
 | --- | --- |
-| `research_club_finance` | 俱乐部收入结构、成本结构、盈亏与债务 |
-| `research_transfer_case` | 单笔转会/合同的结构、支付方式与摊销处理 |
-| `collect_analogy_material` | 为某个金融概念收集可比对、可核实的足球实例 |
+| `topic.discover` | 从足球金融与商业角度提出候选选题 |
+| `research.collect` | 收集俱乐部财报、转会公告、联赛规则等资料 |
+| `research.extract` | 抽取收入结构、成本结构、转会费的金额与摊销口径 |
+| `research.analyze` | 分析俱乐部财务、单笔转会的会计与经济实质 |
+| `research.synthesize` | 产出类比材料，`holds` 与 `breaks_down` 都必须写满 |
 
 ## 3. 输入要求
 

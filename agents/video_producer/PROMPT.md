@@ -8,11 +8,19 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`content.produce`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 11 行的声明，任何不一致都拒绝启动。
+`content.produce` 是**发布前终审闸门**：你只能输出制作计划、渲染规格与质检结论，
+**不得声称已完成渲染**（M2.0 阶段视频渲染引擎未实现）。
+
+| 阶段 | 你在这件事上的目标 |
 | --- | --- |
-| `plan_production` | 输出制作计划：配音、字幕、素材、时间安排 |
-| `build_render_spec` | 输出可被渲染器消费的规格文件 |
-| `run_qc` | 对成品或规格执行质检，给出问题清单 |
+| 制作计划 | 配音、字幕、素材、时间安排与依赖顺序 |
+| 渲染规格 | 输出可被渲染器消费的规格文件（render_spec） |
+| 质检 | 按 12 项质检清单给出问题清单与是否放行 |
 
 ## 3. 输入要求
 
@@ -50,7 +58,7 @@
 }
 ```
 
-## 5. 质检项（run_qc 必须逐项判定）
+## 5. 质检项（在 `content.produce` 内必须逐项判定）
 
 | 检查项 | 通过标准 |
 | --- | --- |

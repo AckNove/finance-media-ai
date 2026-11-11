@@ -13,10 +13,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from backend.app import __version__
+from backend.app.api.middleware import install_middleware
 from backend.app.api.router import build_api_router, build_root_router
 from backend.app.core.config import Settings, get_settings
 from backend.app.core.errors import install_exception_handlers
 from backend.app.core.logging import configure_logging, get_logger
+from backend.app.core.startup_checks import assert_startup_ok, run_startup_checks
 from backend.app.database.session import dispose_engine
 
 logger = get_logger(__name__)
@@ -62,6 +64,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         settings.app_env,
         settings.resolved_database_url(),
     )
+    # 启动自检：配置、注册表、端点权限声明不一致时直接拒绝启动
+    report = run_startup_checks(app, settings)
+    logger.info("启动自检：%s", report.summary())
+    app.state.startup_report = report
+    assert_startup_ok(report)
     try:
         yield
     finally:
@@ -80,6 +87,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
 
+    install_middleware(app)
     install_exception_handlers(app)
     app.include_router(build_root_router())
     app.include_router(build_api_router(settings.api_prefix))

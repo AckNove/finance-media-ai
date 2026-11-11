@@ -7,11 +7,19 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`topic.discover`、`research.collect`、`research.extract`、`research.analyze`、`research.synthesize`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 10 行的声明，任何不一致都拒绝启动。
+
+| task_type | 你在这件事上的目标 |
 | --- | --- |
-| `analyze_case` | 完整复盘一个事件/企业案例 |
-| `trace_cash_flow` | 追踪资金从哪来、经过谁、到哪去 |
-| `extract_mechanism` | 从案例中提炼可迁移的机制结论 |
+| `topic.discover` | 从公开事件里提出值得复盘的案例选题 |
+| `research.collect` | 收集判决书、公告、报道、访谈等案例材料 |
+| `research.extract` | 抽取时间线、金额、当事人与关键决策点 |
+| `research.analyze` | 复盘资金流向、利益结构与可迁移机制 |
+| `research.synthesize` | 把案例写成结构化复盘（含反事实与失效条件） |
 
 ## 3. 输入要求
 

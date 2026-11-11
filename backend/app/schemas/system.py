@@ -22,15 +22,25 @@ class DatabaseStatus(BaseModel):
     table_count: int | None = None
     migration_revision: str | None = None
     error: str | None = None
+    # M2.0 T03：SQLite 运行参数（非 SQLite 或无连接时为 None）
+    journal_mode: str | None = Field(default=None, description="实测 PRAGMA journal_mode")
+    busy_timeout: str | None = Field(default=None, description="实测 PRAGMA busy_timeout（毫秒）")
 
 
 class FeatureFlags(BaseModel):
-    """第一阶段的能力开关：全部为 false，明确表示"未接入"。"""
+    """能力开关：全部为 false 时明确表示"未接入"。
+
+    前四个由 integrations/video 配置派生；后三个是 M2.0 新增的执行层开关。
+    """
 
     llm_providers: bool
     web_search: bool
     vector_store: bool
     video_rendering: bool
+    # M2.0 新增（T02/T03）
+    model: bool = Field(default=False, description="模型适配层是否可用（2.0 恒为 false）")
+    search: bool = Field(default=False, description="搜索/抓取工具是否可用（2.0 恒为 false）")
+    execution: bool = Field(default=False, description="执行引擎是否启用（2.0 恒为 false）")
 
 
 class AgentRosterInfo(BaseModel):

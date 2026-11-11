@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
-from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination
+from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
+from backend.app.core.caller import CallerKind
 from backend.app.schemas.common import Page
 from backend.app.schemas.source import (
     EvidenceCreate,
@@ -15,8 +16,19 @@ from backend.app.schemas.source import (
 )
 from backend.app.services.source_service import EvidenceService, SourceService
 
-sources_router = APIRouter(prefix="/sources", tags=["sources"], responses=COMMON_RESPONSES)
-evidence_router = APIRouter(prefix="/evidence", tags=["evidence"], responses=COMMON_RESPONSES)
+# 资料来源与证据都只允许人工操作者写入：Agent 侧必须走执行层与 db_write 工具
+sources_router = APIRouter(
+    prefix="/sources",
+    tags=["sources"],
+    responses=COMMON_RESPONSES,
+    dependencies=[Depends(require_caller(CallerKind.HUMAN))],
+)
+evidence_router = APIRouter(
+    prefix="/evidence",
+    tags=["evidence"],
+    responses=COMMON_RESPONSES,
+    dependencies=[Depends(require_caller(CallerKind.HUMAN))],
+)
 
 
 @sources_router.post(

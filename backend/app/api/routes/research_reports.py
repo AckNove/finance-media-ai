@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Path, status
+from fastapi import APIRouter, Depends, Path, status
 
-from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination
+from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
+from backend.app.core.caller import CallerKind
 from backend.app.schemas.common import Page
 from backend.app.schemas.research import ResearchReportCreate, ResearchReportOut
 from backend.app.services.research_service import ResearchReportService
 
-router = APIRouter(prefix="/research-reports", tags=["research"], responses=COMMON_RESPONSES)
+router = APIRouter(
+    prefix="/research-reports",
+    tags=["research"],
+    responses=COMMON_RESPONSES,
+    dependencies=[Depends(require_caller(CallerKind.HUMAN))],
+)
 
 
 @router.post(

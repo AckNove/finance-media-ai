@@ -71,6 +71,15 @@ class ResearchReport(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     reading_time_minutes: Mapped[int | None] = mapped_column(Integer)
 
+    # --- M2.0 B2 追加：把报告挂到研究任务上，并保留大纲与档位统计 ---
+    research_task_id: Mapped[int | None] = mapped_column(
+        ForeignKey("research_tasks.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    #: 报告大纲（结构化章节，供内容生产复用）
+    outline: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    #: FindingTier 五档各自的条目数，便于一眼看出这份报告有多少"证据不足"
+    tier_stats: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+
     topic: Mapped[Topic | None] = relationship(back_populates="research_reports")
     evidence_items: Mapped[list[Evidence]] = relationship(
         back_populates="research_report", cascade="all, delete-orphan"

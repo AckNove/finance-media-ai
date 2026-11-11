@@ -9,11 +9,17 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`content.visual`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 12 行的声明，任何不一致都拒绝启动。
+
+| 产出 | 你在这件事上的目标 |
 | --- | --- |
-| `design_storyboard` | 为脚本产出逐镜分镜表 |
-| `design_diagram` | 设计机制图/产业链图/资金流向图 |
-| `specify_chart` | 指定图表类型、数据、标注与配色 |
+| 分镜表 | 为脚本产出逐镜分镜：画面、字幕、时长、类比可视化 |
+| 机制图/产业链图/资金流向图 | 把抽象机制画成读者一眼能看懂的图 |
+| 图表规格 | 指定图表类型、数据来源、坐标轴、标注与配色 |
 
 ## 3. 输入要求
 

@@ -1,0 +1,120 @@
+# ============================================================
+# 内容生产流水线定义（M2.0 T02 新增）
+#
+# 本文件描述"一个选题从候选到发布要经过哪些阶段、由谁执行、在哪些点必须人工介入"。
+# 它只描述编排结构，不包含任何提示词（提示词在 prompts/ 与 agents/*/PROMPT.md）。
+#
+# 约束：
+#   1. gate 阶段的 kind 必须是 human，且 human_gate: true；
+#   2. task 阶段的 task_type 必须在 config/agent_routing.yaml 的 task_types 中登记；
+#   3. 阶段顺序即执行顺序；同一阶段内的多个产物由该阶段的执行者负责。
+#
+# 说明：M2.0 只建立配置与校验，还没有执行引擎去跑这些流水线。
+# ============================================================
+
+version: 1
+updated_at: "2026-11-10"
+
+pipelines:
+  research_to_script:
+    display_name: 选题 → 研究报告 → 脚本
+    description: 主研究流水线，对应 docs/workflow.md 的 14 步工作流前半段
+    stages:
+      - id: topic_candidate
+        name: 选题候选
+        kind: task
+        task_type: topic.discover
+        agent: orchestrator
+        produces: [topics]
+      - id: topic_scoring
+        name: 选题评分
+        kind: task
+        task_type: topic.discover
+        agent: orchestrator
+        produces: [topic_score_snapshots]
+      - id: topic_approval
+        name: 人工立项
+        kind: gate
+        human_gate: true
+        produces: [topics.status=approved]
+      - id: research_plan
+        name: 研究计划
+        kind: task
+        task_type: research.plan
+        agent: orchestrator
+        produces: [research_subtasks, research_subtask_dependencies]
+      - id: research_collect
+        name: 资料采集
+        kind: task
+        task_type: research.collect
+        agent: financial_researcher
+        produces: [sources, source_snapshots]
+      - id: research_extract
+        name: 证据提取
+        kind: task
+        task_type: research.extract
+        agent: financial_researcher
+        produces: [source_extractions, evidence]
+      - id: research_analyze
+        name: 分析
+        kind: task
+        task_type: research.analyze
+        agent: financial_researcher
+        produces: []
+      - id: research_synthesize
+        name: 结论整合
+        kind: task
+        task_type: research.synthesize
+        agent: orchestrator
+        produces: [report_findings, research_reports]
+      - id: fact_check
+        name: 事实核查（强制闸门）
+        kind: task
+        task_type: verify.claims
+        agent: fact_checker
+        produces: [review_records]
+        human_gate: true
+      - id: script_draft
+        name: 脚本撰写
+        kind: task
+        task_type: content.script
+        agent: scriptwriter
+        produces: [scripts, script_evidence_links]
+      - id: script_approval
+        name: 人工脚本审批
+        kind: gate
+        human_gate: true
+        produces: [scripts.status=approved]
+
+  script_to_video:
+    display_name: 脚本 → 分镜 → 成片
+    description: 制作流水线，对应 14 步工作流的后半段；M2.0 未实现执行引擎
+    stages:
+      - id: storyboard
+        name: 分镜设计
+        kind: task
+        task_type: content.visual
+        agent: visual_designer
+        produces: [media_assets]
+      - id: produce
+        name: 配音与合成
+        kind: task
+        task_type: content.produce
+        agent: video_producer
+        produces: [media_assets]
+      - id: qc
+        name: 自动质检
+        kind: task
+        task_type: content.produce
+        agent: video_producer
+        produces: [review_records]
+      - id: final_approval
+        name: 人工终审
+        kind: gate
+        human_gate: true
+        produces: []
+      - id: publish
+        name: 人工发布
+        kind: gate
+        human_gate: true
+        produces: [publications]

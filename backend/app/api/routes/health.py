@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from backend.app.api.deps import AppSettings
+from backend.app.api.deps import AppSettings, require_caller
+from backend.app.core.caller import CallerKind
 from backend.app.schemas.system import HealthResponse, SystemStatus
 from backend.app.services.system_service import build_health, build_system_status
 
-# 根级存活探针：不挂在 /api 前缀下，便于外部监控直接探测
+# 根级存活探针：不挂在 /api 前缀下，便于外部监控直接探测；公开端点，不要求身份
 health_router = APIRouter(tags=["system"])
 
-# 业务前缀下的系统信息
-system_router = APIRouter(prefix="/system", tags=["system"])
+# 业务前缀下的系统信息（只对人工操作者开放）
+system_router = APIRouter(
+    prefix="/system",
+    tags=["system"],
+    dependencies=[Depends(require_caller(CallerKind.HUMAN))],
+)
 
 
 @health_router.get("/health", response_model=HealthResponse, summary="存活探针")

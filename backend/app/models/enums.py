@@ -255,3 +255,112 @@ class FinancialCaseType(str, Enum):
     MARKET_EVENT = "market_event"
     FRAUD_CASE = "fraud_case"
     OTHER = "other"
+
+
+class TagNamespace(str, Enum):
+    """标签命名空间：把同名标签按语义隔离（"银行"既可能是机构类型也可能是行业）。"""
+
+    INSTRUMENT = "instrument"
+    INSTITUTION_TYPE = "institution_type"
+    INDUSTRY = "industry"
+    GEOGRAPHY = "geography"
+    PERIOD = "period"
+    MECHANISM = "mechanism"
+    OTHER = "other"
+
+
+class ScoredBy(str, Enum):
+    """选题评分来源：规则 / 模型 / 人工。"""
+
+    RULE = "rule"
+    MODEL = "model"
+    HUMAN = "human"
+
+
+class TopicOrigin(str, Enum):
+    """选题来源渠道（M2.0 B1 新增，用于区分人工与技术发现）。"""
+
+    MANUAL = "manual"
+    RSS = "rss"
+    NEWS = "news"
+    KNOWLEDGE_GAP = "knowledge_gap"
+    AI_SUGGESTED = "ai_suggested"
+
+
+class TopicStatus(str, Enum):
+    """选题生命周期主状态机（docs/research_hub/state_machine.md §2）。"""
+
+    CANDIDATE = "candidate"
+    SCORED = "scored"
+    AWAITING_REVIEW = "awaiting_review"
+    APPROVED = "approved"
+    IN_RESEARCH = "in_research"
+    RESEARCHED = "researched"
+    CONTENT_PRODUCED = "content_produced"
+    REJECTED = "rejected"
+    PARKED = "parked"
+    MERGED = "merged"
+    ARCHIVED = "archived"
+
+
+class ResearchTaskStatus(str, Enum):
+    """研究任务状态机（docs/research_hub/state_machine.md §3）。"""
+
+    CREATED = "created"
+    PLANNING = "planning"
+    RUNNING = "running"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class SubtaskStatus(str, Enum):
+    """子任务状态机（含 attempt 语义）。"""
+
+    PENDING = "pending"
+    READY = "ready"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    BLOCKED = "blocked"
+    SKIPPED = "skipped"
+    CANCELLED = "cancelled"
+
+
+class TaskEventType(str, Enum):
+    """任务事件流的事件类型（只追加表）。"""
+
+    CREATED = "created"
+    QUEUED = "queued"
+    CLAIMED = "claimed"
+    PLAN_CREATED = "plan_created"
+    SUBTASK_STARTED = "subtask_started"
+    SUBTASK_SUCCEEDED = "subtask_succeeded"
+    SUBTASK_FAILED = "subtask_failed"
+    RETRIED = "retried"
+    PAUSED = "paused"
+    RESUMED = "resumed"
+    DIRECTION_CHANGED = "direction_changed"
+    BUDGET_EXCEEDED = "budget_exceeded"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class CallStatus(str, Enum):
+    """模型调用状态（model_calls）。"""
+
+    OK = "ok"
+    ERROR = "error"
+    TIMEOUT = "timeout"
+    BUDGET_BLOCKED = "budget_blocked"
+
+
+class ToolCallStatus(str, Enum):
+    """工具调用状态（tool_calls）。"""
+
+    OK = "ok"
+    DENIED = "denied"
+    ERROR = "error"
+    TIMEOUT = "timeout"

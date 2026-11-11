@@ -18,4 +18,7 @@ PyYAML>=6.0,<7.0
 
 # --- 测试 ---
 pytest>=8.0,<9.0
-httpx>=0.27,<1.0
+# starlette 1.x 的 TestClient 默认使用 httpx2；未安装时它会回退到 httpx 并报
+# StarletteDeprecationWarning。项目代码本身不直接使用任何 HTTP 客户端，
+# 这里装 httpx2 是为了让测试客户端走官方推荐路径（而不是屏蔽警告）。
+httpx2>=2.0,<3.0

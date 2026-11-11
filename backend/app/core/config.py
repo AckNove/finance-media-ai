@@ -16,6 +16,15 @@ import yaml
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from backend.app.core.config_schema import (
+    AgentRoutingConfig,
+    CostSettings,
+    ExecutionSettings,
+    FeaturesSettings,
+    ModelsConfig,
+    PipelinesConfig,
+)
+
 # backend/app/core/config.py -> parents[3] == 项目根目录
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[3]
 DEFAULT_CONFIG_DIR: Path = PROJECT_ROOT / "config"
@@ -58,6 +67,11 @@ class Settings(BaseSettings):
     # --- 分页 ---
     page_default_limit: int = Field(default=20, ge=1, le=200)
     page_max_limit: int = Field(default=100, ge=1, le=1000)
+
+    # --- M2.0：成本闸门的部署级覆盖（唯一允许的环境变量覆盖项） ---
+    # 业务配置以 config/settings.yaml 为权威，只有"当日预算上限"允许按部署环境覆盖，
+    # 用于本机限额与临时调低额度。留空表示使用 YAML 中的值。
+    cost_daily_cap_cny: float | None = Field(default=None, gt=0)
 
     @field_validator("app_env", mode="before")
     @classmethod
@@ -108,6 +122,12 @@ def clear_settings_cache() -> None:
     """测试用：清空配置与 YAML 缓存。"""
     get_settings.cache_clear()
     load_yaml_config.cache_clear()
+    get_cost_settings.cache_clear()
+    get_execution_settings.cache_clear()
+    get_features_settings.cache_clear()
+    get_models_config.cache_clear()
+    get_agent_routing.cache_clear()
+    get_pipelines_config.cache_clear()
 
 
 def resolve_project_path(value: str | Path) -> Path:
@@ -149,3 +169,58 @@ def get_content_rules() -> dict[str, Any]:
 def get_research_sources() -> dict[str, Any]:
     """config/research_sources.yaml"""
     return load_yaml_config("research_sources.yaml")
+
+
+# --------------------------------------------------------------------------
+# M2.0：带 schema 校验的类型化配置读取
+#
+# 约定：YAML 是业务配置的唯一权威；环境变量只覆盖 Settings.cost_daily_cap_cny。
+# 全部走 lru_cache，测试用 clear_settings_cache() 统一失效。
+# --------------------------------------------------------------------------
+
+
+def get_settings_section(name: str) -> dict[str, Any]:
+    """读取 config/settings.yaml 的某一段，缺失即报错（不静默返回空字典）。"""
+    section = get_app_config().get(name)
+    if not isinstance(section, dict) or not section:
+        raise ValueError(f"config/settings.yaml 缺少 `{name}` 段或该段为空")
+    return section
+
+
+@functools.lru_cache(maxsize=1)
+def get_cost_settings() -> CostSettings:
+    """成本闸门配置（允许环境变量 COST_DAILY_CAP_CNY 覆盖当日上限）。"""
+    raw = dict(get_settings_section("cost"))
+    override = get_settings().cost_daily_cap_cny
+    if override is not None:
+        raw["daily_cap_cny"] = override
+    return CostSettings.model_validate(raw)
+
+
+@functools.lru_cache(maxsize=1)
+def get_execution_settings() -> ExecutionSettings:
+    return ExecutionSettings.model_validate(dict(get_settings_section("execution")))
+
+
+@functools.lru_cache(maxsize=1)
+def get_features_settings() -> FeaturesSettings:
+    return FeaturesSettings.model_validate(dict(get_settings_section("features")))
+
+
+@functools.lru_cache(maxsize=1)
+def get_models_config() -> ModelsConfig:
+    """config/models.yaml（模型价目表与未知价策略）。"""
+    return ModelsConfig.model_validate(load_yaml_config("models.yaml"))
+
+
+@functools.lru_cache(maxsize=1)
+def get_agent_routing() -> AgentRoutingConfig:
+    """config/agent_routing.yaml（task_type 注册表的唯一权威）。"""
+    return AgentRoutingConfig.model_validate(load_yaml_config("agent_routing.yaml"))
+
+
+@functools.lru_cache(maxsize=1)
+def get_pipelines_config() -> PipelinesConfig:
+    """config/pipelines.yaml（内容生产流水线定义）。"""
+    return PipelinesConfig.model_validate(load_yaml_config("pipelines.yaml"))
+

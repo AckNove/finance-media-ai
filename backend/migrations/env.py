@@ -22,7 +22,9 @@ import backend.app.models  # noqa: F401
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers 默认是 True：在同进程里跑迁移（测试、脚本）
+    # 会把 backend.app.* 的 logger 全部禁用，之后应用日志就哑了。
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

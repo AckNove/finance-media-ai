@@ -22,12 +22,15 @@ def enum_column(
     nullable: bool = False,
     index: bool = False,
     length: int = 40,
+    server_default: PyEnum | None = None,
 ) -> Any:
     """构造可移植的枚举列（返回可直接赋值给 Mapped 属性的 mapped_column）。
 
     - native_enum=False：使用 VARCHAR + CHECK 约束，SQLite 上真正生效；
     - values_callable：数据库里存枚举 value（小写字符串），而不是成员名；
-    - 不创建 PostgreSQL 原生 ENUM 类型，避免后续迁移中的 ALTER TYPE 复杂度。
+    - 不创建 PostgreSQL 原生 ENUM 类型，避免后续迁移中的 ALTER TYPE 复杂度；
+    - server_default：仅当该列需要给**已存在的行**提供默认值时才设置
+      （SQLite 的 ADD COLUMN ... NOT NULL 必须有默认值，否则批量重建会失败）。
     """
     return mapped_column(
         SAEnum(
@@ -42,6 +45,7 @@ def enum_column(
         default=default,
         nullable=nullable,
         index=index,
+        server_default=server_default.value if server_default is not None else None,
     )
 
 

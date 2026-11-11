@@ -8,11 +8,19 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`topic.discover`、`research.collect`、`research.extract`、`research.analyze`、`research.synthesize`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 11 行的声明，任何不一致都拒绝启动。
+
+| task_type | 你在这件事上的目标 |
 | --- | --- |
-| `research_instrument` | 讲清一个工具/产品的结构、现金流、定价与风险 |
-| `research_market_mechanism` | 讲清一个市场机制或制度安排如何运作 |
-| `explain_risk_structure` | 拆解风险来源、转移路径与承担者 |
+| `topic.discover` | 从金融工具/市场机制角度提出候选选题 |
+| `research.collect` | 收集监管文件、交易所披露、统计数据等一手资料 |
+| `research.extract` | 从资料中抽取可核对的事实、数字与时点 |
+| `research.analyze` | 拆解结构、现金流、定价机制、风险来源与承担者 |
+| `research.synthesize` | 把分析结果写成带证据引用的结论（含反方证据） |
 
 ## 3. 输入要求
 

@@ -40,10 +40,17 @@ coverage.xml
 # --- 数据库（本地 SQLite 不入库） ---
 *.db
 *.db-journal
+# WAL 模式会额外产生 -wal / -shm 文件（M2.0 起开启），同样不入库
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 data/*.db
 data/*.sqlite*
+
+# --- 数据库备份（本地生成，含真实数据，不入库） ---
+data/backups/**
+!data/backups/.gitkeep
 
 # --- 运行时日志 ---
 *.log
@@ -82,3 +89,39 @@ desktop.ini
 # --- 其他 ---
 *.tmp
 *.bak
+
+# --- 项目独立工具链（V2.2 Phase 1）---
+# 第三方二进制与运行期目录不入库；只保留来源、版本与许可证记录。
+# tools/openkatana 的 projects/ 全是渲染产物与技能副本，同样不入库。
+tools/_staging/
+tools/ffmpeg/bin/
+tools/ffmpeg/doc/
+tools/ffmpeg/presets/
+tools/openkatana/.venv/
+tools/openkatana/projects/
+tools/openkatana/**/node_modules/
+!tools/ffmpeg/VERSION.json
+!tools/ffmpeg/SOURCE.md
+!tools/ffmpeg/LICENSE
+# tools/openkatana 是固定 commit 的第三方仓库克隆（自带 .git）。
+# 直接 add 会变成没有 .gitmodules 的坏 gitlink，所以整目录不入库；
+# 版本与 commit 记录在 backend/app/capabilities/media/openkatana.py 与
+# docs/research_hub/video_pipeline_v2_1_report.md，可用 git clone + scripts/setup.py 复现。
+tools/openkatana/
+
+# --- 内容任务目录（V2.1 / V2.2）---
+# 渲染中间产物（帧序列、素材盘、字体副本）全部可再生，体积却以 GB 计，不入库。
+# 保留：storyboard/、script/、research/、output/*.mp4、project/**/timeline.json、
+#       assets/compositions/*.json、qc/*.md|json、assets_manifest.csv。
+content/jobs/*/project/*/.openkatana/
+content/jobs/*/project/*/plates/
+content/jobs/*/project/*/media/
+content/jobs/*/project/*/fonts/
+content/jobs/*/project/*/history/
+content/jobs/*/project/.openkatana_io/
+content/jobs/assets/frames/
+content/jobs/media_toolchain_check/work/
+content/jobs/media_toolchain_check/audio/
+content/jobs/media_toolchain_check/output/
+# 成片是交付物，可复现但重渲一次要十几分钟，所以显式保留（覆盖上面的 *.mp4 规则）。
+!content/jobs/*/output/*.mp4

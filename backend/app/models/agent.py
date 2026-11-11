@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
@@ -27,7 +28,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.app.core.utils import utcnow
 from backend.app.database.base import Base, TimestampMixin
 from backend.app.models.enums import AgentStatus
-from backend.app.models.types import enum_column
+from backend.app.models.types import MoneyAmount, enum_column
 
 
 class AgentRun(Base, TimestampMixin):
@@ -64,3 +65,13 @@ class AgentRun(Base, TimestampMixin):
     requested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow
     )
+
+    # --- M2.0 B2 追加：把 Agent 执行记录挂到任务层级，并记录成本估算 ---
+    research_task_id: Mapped[int | None] = mapped_column(
+        ForeignKey("research_tasks.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    subtask_id: Mapped[int | None] = mapped_column(
+        ForeignKey("research_subtasks.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    #: 本次执行的预估成本（实际值在 model_calls 逐笔记录）
+    cost_estimate: Mapped[Decimal | None] = mapped_column(MoneyAmount)

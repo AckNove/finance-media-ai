@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Path, Query, status
+from fastapi import APIRouter, Depends, Path, Query, status
 
-from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination
+from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
+from backend.app.core.caller import CallerKind
 from backend.app.schemas.common import Page
 from backend.app.schemas.knowledge import (
     KnowledgeItemCreate,
@@ -16,7 +17,12 @@ from backend.app.schemas.knowledge import (
 )
 from backend.app.services.knowledge_service import KnowledgeService
 
-router = APIRouter(prefix="/knowledge", tags=["knowledge"], responses=COMMON_RESPONSES)
+router = APIRouter(
+    prefix="/knowledge",
+    tags=["knowledge"],
+    responses=COMMON_RESPONSES,
+    dependencies=[Depends(require_caller(CallerKind.HUMAN))],
+)
 
 
 @router.post(

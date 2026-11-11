@@ -7,11 +7,19 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`topic.discover`、`research.collect`、`research.extract`、`research.analyze`、`research.synthesize`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 10 行的声明，任何不一致都拒绝启动。
+
+| task_type | 你在这件事上的目标 |
 | --- | --- |
-| `map_industry_chain` | 画出产业链环节、关键企业与流向 |
-| `analyze_profit_pool` | 说明利润池分布及其成因（议价能力） |
-| `profile_company` | 单家企业的商业模式、收入结构与利润来源 |
+| `topic.discover` | 从产业链与公司角度提出候选选题 |
+| `research.collect` | 收集年报、招股书、行业报告、政策文件 |
+| `research.extract` | 抽取产能、份额、毛利率、渠道等可比数据 |
+| `research.analyze` | 画出产业链环节、利润池分布及其议价成因 |
+| `research.synthesize` | 输出可复用的产业链结论与公司画像 |
 
 ## 3. 输入要求
 

@@ -1,0 +1,304 @@
+# ============================================================
+# Agent 路由与任务类型注册表（M2.0 T05 新增）
+#
+# 本文件是 task_type 注册表的【唯一权威】。
+# 一致性约束（启动时校验，任一不满足则拒绝启动）：
+#   1. 本文件的 task_types 键集合 == backend/app/execution/task_types.py 中的 TaskType 枚举值集合；
+#   2. 每个 task_type 的 allowed_agents ⊆ agents/roster.yaml 的 9 个角色 key；
+#   3. 每个 allowed_agents 必须在 agents/<key>/PROMPT.md 中声明支持该 task_type；
+#   4. 本文件用到的工具名 ⊆ backend/app/capabilities/tools.py 的 TOOL_NAMES。
+#
+# 禁止在本文件写散文说明（YAML 会被代码直接读取，混入 Markdown 会导致解析失败）。
+# ============================================================
+
+version: 1
+updated_at: "2026-11-10"
+# 未登记的 task_type 一律拒绝（fail-closed）
+default_deny: true
+
+task_types:
+  topic.discover:
+    display_name: 选题发现
+    description: 从 RSS、新闻与知识缺口中发现候选选题；不立项，只产出候选
+    allowed_agents:
+      - orchestrator
+      - financial_researcher
+      - football_researcher
+      - industry_researcher
+      - case_analyst
+    tools:
+      - llm_complete
+      - web_search
+      - db_query
+      - db_write
+    writes:
+      - topics
+    human_gate: false
+
+  research.plan:
+    display_name: 研究计划拆解
+    description: 把一个选题拆成带依赖的子任务 DAG
+    allowed_agents:
+      - orchestrator
+    tools:
+      - llm_complete
+      - db_query
+      - task_update
+      - handoff
+    writes:
+      - research_subtasks
+      - research_subtask_dependencies
+    human_gate: false
+
+  research.collect:
+    display_name: 资料采集
+    description: 搜索并抓取原始资料，保存来源快照
+    allowed_agents:
+      - financial_researcher
+      - football_researcher
+      - industry_researcher
+      - case_analyst
+    tools:
+      - web_search
+      - fetch_url
+      - db_query
+      - db_write
+      - task_update
+    writes:
+      - sources
+      - source_snapshots
+      - research_task_sources
+    human_gate: false
+
+  research.extract:
+    display_name: 证据提取
+    description: 从快照中抽取带字符偏移与引文哈希的证据
+    allowed_agents:
+      - financial_researcher
+      - football_researcher
+      - industry_researcher
+      - case_analyst
+    tools:
+      - parse_pdf
+      - parse_xlsx
+      - db_query
+      - db_write
+      - llm_complete
+    writes:
+      - source_extractions
+      - evidence
+    human_gate: false
+
+  research.analyze:
+    display_name: 分析
+    description: 基于证据做机制、利益与资金流向分析
+    allowed_agents:
+      - financial_researcher
+      - football_researcher
+      - industry_researcher
+      - case_analyst
+    tools:
+      - db_query
+      - llm_complete
+    writes: []
+    human_gate: false
+
+  research.synthesize:
+    display_name: 结论整合
+    description: 整合为带证据分级的研究结论（Finding）
+    allowed_agents:
+      - orchestrator
+      - financial_researcher
+      - football_researcher
+      - industry_researcher
+      - case_analyst
+    tools:
+      - db_query
+      - db_write
+      - llm_complete
+      - handoff
+    writes:
+      - report_findings
+      - finding_evidence
+      - research_reports
+    human_gate: false
+
+  verify.claims:
+    display_name: 事实核查
+    description: 核对数字、公式、来源、引文一致性与类比边界
+    allowed_agents:
+      - fact_checker
+    tools:
+      - db_query
+      - fact_check
+      - llm_complete
+      - handoff
+    writes:
+      - review_records
+      - evidence
+    human_gate: true
+
+  content.script:
+    display_name: 脚本撰写
+    description: 把已核查结论转化为视频脚本
+    allowed_agents:
+      - scriptwriter
+    tools:
+      - db_query
+      - db_write
+      - llm_complete
+      - handoff
+    writes:
+      - scripts
+      - script_evidence_links
+    human_gate: true
+
+  content.visual:
+    display_name: 视觉设计
+    description: 设计知识图解、产业链图与分镜
+    allowed_agents:
+      - visual_designer
+    tools:
+      - db_query
+      - db_write
+      - llm_complete
+    writes:
+      - media_assets
+      - storyboards
+    human_gate: false
+
+  content.produce:
+    display_name: 视频制作
+    description: 配音、字幕、合成与质检
+    allowed_agents:
+      - video_producer
+    tools:
+      - db_query
+      - db_write
+      - task_update
+    writes:
+      - media_assets
+      - publications
+    human_gate: true
+
+# 每个 Agent 的工具白名单与数据域（与 agents/roster.yaml 的职责互补：
+# roster 说明"负责什么"，这里说明"允许动什么"）。
+agents:
+  orchestrator:
+    tools:
+      - llm_complete
+      - web_search
+      - db_query
+      - db_write
+      - task_update
+      - handoff
+    db_scopes:
+      - topics
+      - research_tasks
+      - research_subtasks
+      - report_findings
+      - task_events
+  financial_researcher:
+    tools:
+      - web_search
+      - fetch_url
+      - parse_pdf
+      - parse_xlsx
+      - llm_complete
+      - db_query
+      - db_write
+      - task_update
+      - handoff
+    db_scopes:
+      - sources
+      - source_snapshots
+      - source_extractions
+      - evidence
+      - report_findings
+  football_researcher:
+    tools:
+      - web_search
+      - fetch_url
+      - parse_pdf
+      - parse_xlsx
+      - llm_complete
+      - db_query
+      - db_write
+      - task_update
+      - handoff
+    db_scopes:
+      - sources
+      - source_snapshots
+      - source_extractions
+      - evidence
+      - report_findings
+  industry_researcher:
+    tools:
+      - web_search
+      - fetch_url
+      - parse_pdf
+      - parse_xlsx
+      - llm_complete
+      - db_query
+      - db_write
+      - task_update
+      - handoff
+    db_scopes:
+      - sources
+      - source_snapshots
+      - source_extractions
+      - evidence
+      - report_findings
+  case_analyst:
+    tools:
+      - web_search
+      - fetch_url
+      - parse_pdf
+      - parse_xlsx
+      - llm_complete
+      - db_query
+      - db_write
+      - task_update
+      - handoff
+    db_scopes:
+      - sources
+      - source_snapshots
+      - source_extractions
+      - evidence
+      - report_findings
+  fact_checker:
+    tools:
+      - fact_check
+      - llm_complete
+      - db_query
+      - handoff
+    db_scopes:
+      - evidence
+      - report_findings
+      - review_records
+  scriptwriter:
+    tools:
+      - llm_complete
+      - db_query
+      - db_write
+      - handoff
+    db_scopes:
+      - scripts
+      - script_evidence_links
+      - report_findings
+  visual_designer:
+    tools:
+      - llm_complete
+      - db_query
+      - db_write
+    db_scopes:
+      - media_assets
+      - scripts
+  video_producer:
+    tools:
+      - db_query
+      - db_write
+      - task_update
+    db_scopes:
+      - media_assets
+      - publications

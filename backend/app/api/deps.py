@@ -7,12 +7,18 @@ from typing import Annotated
 from fastapi import Depends, Query
 from sqlalchemy.orm import Session
 
+from backend.app.core.caller import CallerContext, CallerKind, require_caller
 from backend.app.core.config import Settings, get_settings
 from backend.app.database.session import get_db
 from backend.app.schemas.common import PaginationParams
 
 DbSession = Annotated[Session, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
+
+# M2.0 T04：本机人类操作者身份（HTTP 唯一可能的写操作身份）
+HumanCaller = Annotated[CallerContext, Depends(require_caller(CallerKind.HUMAN))]
+# 开发/测试专用运维端点（生产环境返回 404）
+DevCaller = Annotated[CallerContext, Depends(require_caller(CallerKind.DEV))]
 
 # 与 config/settings.yaml 的 pagination.page_max_limit 保持一致
 MAX_PAGE_LIMIT = 100

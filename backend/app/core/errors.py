@@ -65,6 +65,35 @@ class DomainValidationError(AppError):
     default_message = "数据未通过业务校验"
 
 
+class PermissionDeniedError(DomainValidationError):
+    """权限不足（M2.0 T04）。
+
+    沿用 422 + ``domain_validation_error``，但必须带
+    ``details.reason="permission_denied"``，便于前端与审计区分"没权限"和"数据不合法"。
+    """
+
+    default_message = "调用者没有执行该操作的权限"
+
+    def __init__(
+        self,
+        message: str | None = None,
+        *,
+        required: list[str] | None = None,
+        caller: str | None = None,
+        reason: str = "permission_denied",
+        details: Any = None,
+    ) -> None:
+        payload: dict[str, Any] = {"reason": reason}
+        if required:
+            payload["required"] = required
+        if caller:
+            payload["caller"] = caller
+        if details:
+            payload.update(details if isinstance(details, dict) else {"detail": details})
+        super().__init__(message, details=payload)
+
+
+
 class DependencyUnavailableError(AppError):
     status_code = HTTP_503_SERVICE_UNAVAILABLE
     code = "dependency_unavailable"

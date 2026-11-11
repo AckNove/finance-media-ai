@@ -1,0 +1,59 @@
+# ============================================================
+# 模型与价目表（M2.0 T02 新增）
+# 原则：
+#   1. 本文件不含任何密钥。API Key / base_url 一律走环境变量。
+#   2. 价目缺失（pricing_status=missing）时按决策 Q8=B 默认拒绝调用。
+#   3. 所有模型默认 enabled: false，2.1 阶段由人工启用并填写真实价目。
+# 读取方：backend/app/core/config_schema.py（schema 校验）
+#         backend/app/capabilities/budget.py（2.1 起用于成本估算）
+# ============================================================
+
+version: 1
+updated_at: "2026-11-10"
+
+cost:
+  currency: CNY
+  # 未知价模型的默认策略：拒绝（M1.2 决策 Q8=B，人工确认）
+  # reject_unknown = 价目缺失即 budget_blocked，不发请求、不落 reserved 行、不计费
+  pricing_policy: reject_unknown
+  # 只有在此显式登记的模型才允许在"价目未知"时按上界预留调用
+  approved_exceptions: []
+  # 同一请求哈希的结果缓存时长（命中不计费，billable=false）
+  cache_ttl_hours: 24
+
+providers:
+  deepseek:
+    display_name: DeepSeek
+    base_url_env: DEEPSEEK_BASE_URL
+    api_key_env: DEEPSEEK_API_KEY
+    enabled: false
+  openai:
+    display_name: OpenAI
+    base_url_env: OPENAI_BASE_URL
+    api_key_env: OPENAI_API_KEY
+    enabled: false
+  local:
+    display_name: 本地模型（Ollama 等）
+    base_url_env: LOCAL_MODEL_BASE_URL
+    api_key_env: null
+    enabled: false
+
+# 价目单位：人民币元 / 千 token。
+# 未填写的价格视为"未知"（pricing_status=missing），不得默认为 0。
+models:
+  - provider: deepseek
+    model: deepseek-chat
+    display_name: DeepSeek Chat
+    context_window: 65536
+    input_price_per_1k_cny: null
+    output_price_per_1k_cny: null
+    enabled: false
+    note: 2.1 阶段由人工填写价目后启用
+  - provider: deepseek
+    model: deepseek-reasoner
+    display_name: DeepSeek Reasoner
+    context_window: 65536
+    input_price_per_1k_cny: null
+    output_price_per_1k_cny: null
+    enabled: false
+    note: 推理模型，成本更高，默认不用于批量任务

@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Path, status
+from fastapi import APIRouter, Depends, Path, status
 
-from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination
+from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
+from backend.app.core.caller import CallerKind
 from backend.app.schemas.common import Page
 from backend.app.schemas.topic import TopicColumnOut, TopicCreate, TopicOut, TopicUpdate
 from backend.app.services.topic_service import TopicService
 
-router = APIRouter(prefix="/topics", tags=["topics"], responses=COMMON_RESPONSES)
+router = APIRouter(
+    prefix="/topics",
+    tags=["topics"],
+    responses=COMMON_RESPONSES,
+    dependencies=[Depends(require_caller(CallerKind.HUMAN))],
+)
 
 
 @router.post(

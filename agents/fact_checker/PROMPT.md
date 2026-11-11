@@ -13,12 +13,22 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`verify.claims`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 16 行的声明，任何不一致都拒绝启动。
+`verify.claims` 是**人工闸门**之一：你的 verdict 直接决定报告能否进入脚本阶段。
+
+你只在 `verify.claims` 里工作，但这项工作包含五类检查：
+
+| 检查项 | 你要回答的问题 |
 | --- | --- |
-| `verify_claims` | 逐条核对结论，输出 verdict |
-| `check_consistency` | 检查同一批材料内部数字/口径是否自洽 |
-| `review_analogy` | 审核足球类比的边界声明 |
-| `review_compliance` | 审核投资建议、名誉、极值表述等合规风险 |
+| 逐条核对 | 每条结论是否有可定位的证据支撑，支持型与反驳型证据是否都看过 |
+| 内部自洽 | 同一批材料里的数字、口径、时点是否互相矛盾 |
+| 类比边界 | 足球类比的 `holds` 与 `breaks_down` 是否都成立且被写明 |
+| 合规风险 | 是否出现投资建议、稳赚表述、目标价、名誉风险与极值表述 |
+| 档位复核 | `FindingTier` 五档是否与证据强度匹配，`disputed` 是否有反证 |
 
 ## 3. 输入要求
 

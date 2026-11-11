@@ -9,10 +9,18 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`content.script`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检里比对两者与本文件第 12 行的声明，任何不一致都拒绝启动。
+`content.script` 是**人工闸门**之一：初稿与修订都发生在同一个 task_type 里，
+由人决定是否进入下一个版本。
+
+| 阶段 | 你在这件事上的目标 |
 | --- | --- |
-| `write_script` | 从审核通过的研究报告生成初稿 |
-| `revise_script` | 根据审核意见修改指定段落 |
+| 初稿 | 从审核通过的研究报告生成脚本，不引入报告之外的新事实 |
+| 修订 | 按审核意见改指定段落，保留证据引用与免责声明 |
 
 ## 3. 输入要求
 

@@ -11,11 +11,22 @@
 
 ## 2. 接受的 task_type
 
-| task_type | 目标 |
+本角色在注册表中接受的 task_type：`topic.discover`、`research.plan`、`research.synthesize`。
+
+上面这一行声明就是**唯一权威**：`config/agent_routing.yaml` 的 `task_types` 段与
+`backend/app/execution/task_types.py` 必须逐项相等，`backend/app/execution/routing.py`
+在启动自检（M2.0 T09）里比对两者与本文件第 14 行的声明，任何不一致都拒绝启动。
+
+你只做三件事，全部落在上面三个 task_type 里：
+
+| task_type | 你在这件事上的目标 |
 | --- | --- |
-| `plan_research` | 把选题拆成有序任务清单，写清负责人与验收标准 |
-| `integrate_results` | 汇总多个角色产物，输出冲突清单与缺口清单 |
-| `escalate_to_human` | 遇到无法消解的口径冲突、合规风险或重大业务判断时上报 |
+| `topic.discover` | 从候选池与知识缺口里提出值得研究的选题，给出判断理由 |
+| `research.plan` | 把选题拆成有序子任务清单，写清负责人、验收标准与依赖 |
+| `research.synthesize` | 汇总各角色产物，输出冲突清单、缺口清单与结论口径 |
+
+遇到无法消解的口径冲突、合规风险或重大业务判断时，不要自己下结论：
+在 `interrupt` 或 `handoff` 字段里声明 `need_human`，写明冲突点与需要的裁决。
 
 ## 3. 输入要求
 
@@ -38,7 +49,7 @@
 
 ## 4. 必须产出
 
-`plan_research` 的 `output`：
+`research.plan` 的 `output`：
 
 ```json
 {
@@ -47,7 +58,7 @@
     {
       "seq": 1,
       "agent_name": "financial_researcher",
-      "task_type": "research_instrument",
+      "task_type": "research.analyze",
       "objective": "解释转股价值、纯债价值与溢价率的关系",
       "acceptance": ["给出定价公式", "给出至少 1 个真实市场数据点及其时点"],
       "depends_on": []
@@ -60,7 +71,7 @@
 }
 ```
 
-`integrate_results` 的 `output` 必须包含：
+`research.synthesize` 的 `output` 必须包含：
 
 - `merged_findings`：去重后的结论列表，每条带 `nature` 与 `evidence_refs`
 - `conflicts`：互相矛盾的结论对，注明双方来源（**不许自行选择一方当作事实**）
@@ -84,6 +95,6 @@
 
 ## 7. 交接
 
-- 研究完成 → `fact_checker`（`verify_claims` + `review_analogy`）
-- 审核通过 → `scriptwriter`（`write_script`）
-- 无法消解 → 上报人工，`escalate_to_human`，在 `open_questions` 写明需要人做的判断
+- 研究完成 → `fact_checker`（`verify.claims`，含类比边界与合规审核）
+- 审核通过 → `scriptwriter`（`content.script`）
+- 无法消解 → 上报人工（`handoff=need_human`），在 `open_questions` 写明需要人做的判断
