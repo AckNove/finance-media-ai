@@ -1,0 +1,41 @@
+{
+  "tool": "ffmpeg",
+  "kind": "project-local full build (not on PATH, does not replace system ffmpeg)",
+  "version": "8.1.2-full_build-www.gyan.dev",
+  "ffmpeg_version_line": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "ffprobe_version_line": "ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers",
+  "upstream_commit": "38b88335f9",
+  "built_with": "gcc 16.1.0 (Rev2, Built by MSYS2 project)",
+  "license": "GPL-3.0-or-later",
+  "license_url": "https://www.gnu.org/licenses/gpl-3.0.txt",
+  "license_note": "该构建启用 --enable-gpl --enable-version3，因此整体按 GPLv3 分发。本项目只把它当作独立可执行文件调用（不链接其库），分发本仓库时不需要附带该二进制；如需分发，必须同时满足 GPLv3 条款。",
+  "source_page": "https://www.gyan.dev/ffmpeg/builds/",
+  "archive": {
+    "name": "ffmpeg-8.1.2-full_build.7z",
+    "url": "https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-8.1.2-full_build.7z",
+    "bytes": 166721853,
+    "sha256": "0fff188997a499b5382e0f66e845d4556c48c54f0113ebed4853d556dbdd7059"
+  },
+  "archive_local_copy": null,
+  "target_dir": "C:\\Users\\25803\\finance-media-ai\\tools\\ffmpeg",
+  "declared_bytes": 166721853,
+  "declared_sha256": "0fff188997a499b5382e0f66e845d4556c48c54f0113ebed4853d556dbdd7059",
+  "hash_matches_declared": true,
+  "installed_at": "2026-11-10T18:39:03+00:00",
+  "kept_entries": [
+    "bin",
+    "doc",
+    "presets",
+    "LICENSE",
+    "README.txt"
+  ],
+  "not_on_path": true,
+  "system_ffmpeg_untouched": true,
+  "archive_retained": false,
+  "archive_retained_reason": "下载包约 159 MB，安装校验完成后删除以保持仓库体积；需要重装时执行 python -m backend.scripts.install_ffmpeg --download，脚本按 archive.sha256 校验",
+  "verify_commands": [
+    "python -m backend.scripts.install_ffmpeg --verify",
+    "python -m backend.scripts.check_media_toolchain --text --require-project",
+    "python -m backend.scripts.media_selftest"
+  ]
+}
