@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Mapping
 
-from backend.app.media.storyboard import Shot, Storyboard
+from backend.app.media.storyboard import Shot, SoundEffectEvent, Storyboard
 
 #: Keys we emit on a shot. Anything else is a bug in this module, not a feature.
 SUPPORTED_SHOT_KEYS = frozenset(
@@ -26,6 +26,15 @@ SUPPORTED_CLIP_KEYS = frozenset({"frames_dir", "pattern", "n", "fps", "w", "h"})
 SUPPORTED_AUDIO_KEYS = frozenset({"mode", "tracks", "gain", "loudness", "duck", "limiter"})
 SUPPORTED_TRACK_KEYS = frozenset({"src", "start", "at", "duration", "volume", "fade_in", "fade_out", "speed"})
 SUPPORTED_TOP_KEYS = frozenset({"canvas", "clips", "shots", "audio", "fonts", "text", "palette", "beat"})
+
+#: Which storyboard column may become an on-screen caption.
+#:
+#: ``subtitle`` is the default and the only source this pipeline uses: the
+#: storyboard's ``narration`` column is a *spoken script* for a voice that does not
+#: exist yet, so turning it into captions would silently invent a second, unreviewed
+#: text track. Generating captions from narration is therefore an explicit request
+#: (``source="narration"``), never a fallback.
+SUBTITLE_SOURCES = ("subtitle", "narration", "none")
 
 
 class TimelineError(ValueError):
@@ -189,15 +198,27 @@ def subtitle_events(
     color: str = "#f6f8fa",
     stroke: str = "#0b1220",
     pos: tuple[float, float] = (0.5, 0.84),
+    source: str = "subtitle",
 ) -> list[dict[str, Any]]:
-    """One caption event per shot that declares a subtitle.
+    """One caption event per shot, read from ``source`` (``subtitle`` by default).
 
     ``safety_zone`` moves the baseline: ``top`` 0.16, ``center`` 0.5, ``bottom`` 0.84.
+
+    ``source="none"`` draws nothing. ``source="narration"`` is opt-in and exists
+    only for a future build that has a reviewed voice-over track; it is never
+    chosen implicitly, and this pipeline does not use it.
     """
+    if source not in SUBTITLE_SOURCES:
+        raise TimelineError(
+            "unsupported_source",
+            f"subtitle source {source!r} is not one of {SUBTITLE_SOURCES}",
+        )
+    if source == "none":
+        return []
     zones = {"top": 0.16, "center": 0.5, "bottom": 0.84}
     events: list[dict[str, Any]] = []
     for shot in storyboard.shots:
-        text = shot.subtitle.strip()
+        text = (shot.narration if source == "narration" else shot.subtitle).strip()
         if not text:
             continue
         f0, f1 = shot.frame_range(storyboard.fps)
@@ -218,6 +239,100 @@ def subtitle_events(
             }
         )
     return events
+
+
+def audio_consistency(
+    *,
+    events: Iterable[SoundEffectEvent],
+    generated: Mapping[str, str],
+    music_srcs: Iterable[str],
+    audio: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove that a sound-effect count means one thing everywhere.
+
+    Four numbers are easy to confuse, so they are reported separately and then
+    checked against each other:
+
+    * ``events`` — cues the storyboard asks for;
+    * ``distinct_effects`` — different effect names among those cues;
+    * ``generated_files`` — audio files the builder actually produced;
+    * ``music_tracks`` — beds that run for the whole film;
+    * ``effect_tracks`` + ``total_tracks`` — what the timeline really mixes.
+
+    ``generated`` maps an effect name to the timeline-relative ``src`` written for
+    it. Every cue must have a generated file, every generated file must have a cue,
+    and every cue must appear exactly once at the right second. ``ok`` is false and
+    ``problems`` is non-empty whenever those statements do not hold — the point is
+    that a report cannot claim a count the timeline does not support.
+    """
+    event_list = list(events)
+    music = list(music_srcs)
+    tracks = list(audio.get("tracks", []))
+    by_src: dict[str, list[Mapping[str, Any]]] = {}
+    for track in tracks:
+        by_src.setdefault(str(track.get("src", "")), []).append(track)
+
+    problems: list[dict[str, str]] = []
+
+    def problem(code: str, detail: str) -> None:
+        problems.append({"code": code, "detail": detail})
+
+    used_names: set[str] = set()
+    effect_srcs: set[str] = set()
+    for event in event_list:
+        src = generated.get(event.name)
+        if not src:
+            problem("missing_generated", f"{event.shot_id}: no audio was generated for {event.name!r}")
+            continue
+        used_names.add(event.name)
+        effect_srcs.add(src)
+        matches = by_src.get(src, [])
+        if not matches:
+            problem("missing_track", f"{event.shot_id}: {src} is not in the timeline")
+            continue
+        if len(matches) > 1:
+            problem("duplicate_track", f"{event.shot_id}: {src} appears {len(matches)} times")
+            continue
+        try:
+            at = float(matches[0].get("at", 0.0))
+        except (TypeError, ValueError):
+            at = -1.0
+        if abs(at - event.at) > 1e-6:
+            problem("wrong_time", f"{event.shot_id}: {event.name} sits at {at}s, cue says {event.at}s")
+
+    for name, src in generated.items():
+        if name not in used_names:
+            problem("unused_generated", f"{name} was generated but no shot asks for it ({src})")
+
+    for src in music:
+        if src not in by_src:
+            problem("missing_music", f"music bed {src} is not in the timeline")
+
+    for src in by_src:
+        if src in music or src in effect_srcs:
+            continue
+        problem("unexpected_track", f"{src} is in the timeline but neither music nor a cue")
+
+    if len(tracks) != len(music) + len(event_list):
+        problem(
+            "count_mismatch",
+            f"timeline mixes {len(tracks)} tracks, expected {len(music)} music + "
+            f"{len(event_list)} effects",
+        )
+
+    return {
+        "events": len(event_list),
+        "distinct_effects": len(used_names),
+        "generated_files": len(generated),
+        "music_tracks": len(music),
+        "effect_tracks": sum(len(by_src.get(src, [])) for src in effect_srcs),
+        "total_tracks": len(tracks),
+        "event_detail": [event.as_dict() for event in event_list],
+        "generated": dict(generated),
+        "music_srcs": music,
+        "ok": not problems,
+        "problems": problems,
+    }
 
 
 def audio_mix(tracks: Iterable[Mapping[str, Any]], *, gain: float = 1.0) -> dict[str, Any]:
@@ -243,12 +358,14 @@ def _require_keys(payload: Mapping[str, Any], allowed: frozenset[str], where: st
 
 
 __all__ = [
+    "SUBTITLE_SOURCES",
     "SUPPORTED_AUDIO_KEYS",
     "SUPPORTED_CLIP_KEYS",
     "SUPPORTED_SHOT_KEYS",
     "SUPPORTED_TOP_KEYS",
     "SUPPORTED_TRACK_KEYS",
     "TimelineError",
+    "audio_consistency",
     "audio_mix",
     "build_timeline",
     "camera_block",

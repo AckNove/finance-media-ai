@@ -117,12 +117,19 @@ def build_manifest(
         kind = kinds.get(source_id, "unknown")
         if require_commercial and asset_class in {"A", "B"}:
             sources.assert_renderable(source_id)
+        # Publish the path the reviewer can open: job-relative when the file lives
+        # inside the job, otherwise the registered filename. A bare filename would
+        # force the reader to guess which directory it belongs to.
+        try:
+            file_value = str(entry.path.relative_to(sources.job_root)).replace("\\", "/")
+        except ValueError:
+            file_value = entry.original_filename
         rows.append(
             ManifestRow(
                 asset_id=source_id,
                 asset_class=asset_class,
                 kind=kind,
-                file=entry.original_filename,
+                file=file_value,
                 source_id=source_id,
                 publisher=entry.publisher,
                 source_url=entry.source_url,

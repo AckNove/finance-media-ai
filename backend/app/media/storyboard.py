@@ -20,6 +20,19 @@ Rules enforced here (each one is a failure we would otherwise ship):
   fixed vocabularies that match what the engine actually supports;
 * ``start_time``/``end_time`` are seconds and must match ``fps`` frame math, so a
   shot cannot end mid-frame.
+
+Two columns here name audio/text that different consumers own, and confusing them
+is how a voice-over script silently becomes on-screen text:
+
+* ``narration`` is the **spoken script** — what a future human recording or a TTS
+  engine will read out. This demo has no recording, so this column is the script
+  for a voice that does not exist yet; nothing renders it.
+* ``subtitle`` is the **on-screen caption** — the only text the timeline draws.
+
+There is deliberately no implicit mapping from one to the other. A caption is
+emitted only from ``subtitle`` unless a caller asks for something else explicitly
+(see :func:`backend.app.media.timeline.subtitle_events`), and an empty
+``subtitle`` means "this shot has no caption", not "reuse the narration".
 """
 
 from __future__ import annotations
@@ -73,6 +86,11 @@ TRANSITIONS = ("none", "dissolve", "fade", "dip", "flash", "glitch", "push", "sl
                "luma", "liquid", "datamosh")
 
 SAFETY_ZONES = ("top", "center", "bottom")
+
+#: The literal that means "this shot is scored by the music only". It is a value,
+#: not an empty cell, so that a deliberate silence is distinguishable from a
+#: forgotten field — and it must never be counted as a sound effect.
+SOUND_EFFECT_NONE = "none"
 
 DEFAULT_FPS = 30
 
@@ -149,6 +167,24 @@ class Shot:
 
 
 @dataclass(frozen=True)
+class SoundEffectEvent:
+    """One sound-effect cue the storyboard asks for.
+
+    ``at`` is the shot's start time: an effect marks a cut, so it lands where the
+    cut lands. The event is a *request*; whether a file was generated for it is a
+    separate fact owned by the builder (see
+    :func:`backend.app.media.timeline.audio_consistency`).
+    """
+
+    shot_id: str
+    name: str
+    at: float
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"shot_id": self.shot_id, "name": self.name, "at": self.at}
+
+
+@dataclass(frozen=True)
 class Storyboard:
     """A validated sheet plus the canvas it renders onto."""
 
@@ -178,8 +214,36 @@ class Storyboard:
                 seen.append(shot.asset_id)
         return tuple(seen)
 
+    def sound_effect_events(self) -> tuple[SoundEffectEvent, ...]:
+        """Every cue that actually asks for a sound, in shot order.
+
+        ``sound_effect = none`` is a decision, not a gap, so it produces no event;
+        a blank cell is treated the same way. One event per shot, named by the
+        shot's own start time — the builder is not allowed to invent extra cues.
+        """
+        events: list[SoundEffectEvent] = []
+        for shot in self.shots:
+            name = shot.sound_effect.strip()
+            if not name or name == SOUND_EFFECT_NONE:
+                continue
+            events.append(SoundEffectEvent(shot_id=shot.shot_id, name=name, at=shot.start_time))
+        return tuple(events)
+
+    def sound_effect_names(self) -> tuple[str, ...]:
+        """Distinct effect identifiers, in first-use order."""
+        seen: list[str] = []
+        for event in self.sound_effect_events():
+            if event.name not in seen:
+                seen.append(event.name)
+        return tuple(seen)
+
     def counts(self) -> dict[str, int]:
-        """Tally the V2.2 acceptance facts straight from the sheet."""
+        """Tally the V2.2 acceptance facts straight from the sheet.
+
+        ``sound_effects`` counts *cues* (one per non-``none`` shot) and
+        ``sound_effect_names`` counts *distinct effect files*; they differ as soon
+        as one effect is reused, which is why both are reported.
+        """
         counts = {
             "shots": len(self.shots),
             "real_video": 0,
@@ -190,6 +254,7 @@ class Storyboard:
             "transitions": 0,
             "camera_motions": 0,
             "sound_effects": 0,
+            "sound_effect_names": 0,
         }
         motions: set[str] = set()
         transitions: set[str] = set()
@@ -202,8 +267,8 @@ class Storyboard:
                 transitions.add(shot.transition)
             if shot.camera_motion not in {"", "static"}:
                 motions.add(shot.camera_motion)
-            if shot.sound_effect.strip():
-                counts["sound_effects"] += 1
+        counts["sound_effects"] = len(self.sound_effect_events())
+        counts["sound_effect_names"] = len(self.sound_effect_names())
         counts["transitions"] = len(transitions)
         counts["camera_motions"] = len(motions)
         return counts
@@ -407,8 +472,10 @@ __all__ = [
     "OPTIONAL_COLUMNS",
     "REQUIRED_COLUMNS",
     "SAFETY_ZONES",
+    "SOUND_EFFECT_NONE",
     "TRANSITIONS",
     "Shot",
+    "SoundEffectEvent",
     "Storyboard",
     "StoryboardError",
     "load_storyboard",

@@ -89,6 +89,33 @@ def test_counts_report_the_acceptance_facts() -> None:
     assert counts["camera_motions"] == 2
 
 
+def test_sound_effect_events_are_derived_from_the_rows() -> None:
+    """A count of "sound effects" must come from the sheet, not from a list in code."""
+    rows = [
+        _row(sound_effect="whoosh_low"),
+        _row(shot_id="sh02", start_time="4.0", end_time="8.0", sound_effect="none"),
+        _row(shot_id="sh03", start_time="8.0", end_time="12.0", sound_effect=""),
+        _row(shot_id="sh04", start_time="12.0", end_time="16.0", sound_effect="soft_hit"),
+    ]
+    storyboard = _parse(rows)
+    events = storyboard.sound_effect_events()
+    assert [(event.shot_id, event.name, event.at) for event in events] == [
+        ("sh01", "whoosh_low", 0.0),
+        ("sh04", "soft_hit", 12.0),
+    ]
+    assert storyboard.sound_effect_names() == ("whoosh_low", "soft_hit")
+    counts = storyboard.counts()
+    assert counts["sound_effects"] == 2
+    assert counts["sound_effect_names"] == 2
+
+
+def test_a_shot_can_explicitly_declare_no_sound_effect() -> None:
+    """`none` is a statement ("this shot has no cue"), not a cue named "none"."""
+    storyboard = _parse([_row(sound_effect="none")])
+    assert storyboard.sound_effect_events() == ()
+    assert storyboard.counts()["sound_effects"] == 0
+
+
 def test_missing_column_is_rejected() -> None:
     columns = [column for column in HEADER if column != "license"]
     with pytest.raises(StoryboardError) as error:

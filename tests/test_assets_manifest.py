@@ -57,7 +57,8 @@ def test_build_manifest_joins_registry_and_usage(tmp_path: Path) -> None:
     assert row.asset_id == "S01"
     assert row.asset_class == "A"
     assert row.kind == "image"
-    assert row.file == "earth.jpg"
+    # The manifest publishes a path a reviewer can open, not a bare filename.
+    assert row.file == "input/approved_sources/earth.jpg"
     assert row.license == "NASA public-domain media"
     assert row.commercial_use == "allowed"
     assert row.verification_status == "verified"

@@ -4,11 +4,18 @@ from __future__ import annotations
 
 import pytest
 
-from backend.app.media.storyboard import REQUIRED_COLUMNS, Shot, parse_storyboard
+from backend.app.media.storyboard import (
+    REQUIRED_COLUMNS,
+    Shot,
+    SoundEffectEvent,
+    parse_storyboard,
+)
 from backend.app.media.timeline import (
+    SUBTITLE_SOURCES,
     SUPPORTED_CLIP_KEYS,
     SUPPORTED_SHOT_KEYS,
     TimelineError,
+    audio_consistency,
     audio_mix,
     build_timeline,
     camera_block,
@@ -178,3 +185,125 @@ def test_audio_and_fonts_are_passed_through_when_supplied() -> None:
     assert timeline["audio"]["mode"] == "mix"
     assert timeline["fonts"][0]["url"].endswith("NotoSansSC-VF.ttf")
     assert timeline["text"][0]["type"] == "caption"
+
+
+# ------------------------------------------------------- narration vs subtitle
+def test_captions_read_the_subtitle_column_only() -> None:
+    """A narration line is a voice-over script; it must not leak onto the screen."""
+    storyboard = _storyboard(_row(narration="这是旁白，念给配音听", subtitle="这是字幕，出现在画面上"))
+    events = subtitle_events(storyboard, family="AKSC", size=54)
+    assert len(events) == 1
+    assert events[0]["text"] == "这是字幕，出现在画面上"
+
+
+def test_empty_subtitle_renders_nothing_even_when_narration_exists() -> None:
+    storyboard = _storyboard(_row(narration="只有旁白", subtitle=""))
+    assert subtitle_events(storyboard, family="AKSC", size=54) == []
+
+
+def test_narration_becomes_captions_only_when_explicitly_asked() -> None:
+    storyboard = _storyboard(_row(narration="只有旁白", subtitle=""))
+    events = subtitle_events(storyboard, family="AKSC", size=54, source="narration")
+    assert len(events) == 1
+    assert events[0]["text"] == "只有旁白"
+
+
+def test_both_columns_filled_with_different_text_yields_one_caption() -> None:
+    """No double captions: the screen shows one line, not narration + subtitle."""
+    storyboard = _storyboard(
+        _row(narration="第一句旁白", subtitle="第一句字幕"),
+        _row(shot_id="sh02", start_time="4.0", end_time="8.0",
+             narration="第二句旁白", subtitle="第二句字幕"),
+    )
+    events = subtitle_events(storyboard, family="AKSC", size=54)
+    assert [event["text"] for event in events] == ["第一句字幕", "第二句字幕"]
+
+
+def test_both_columns_empty_yields_no_caption() -> None:
+    storyboard = _storyboard(_row(narration="", subtitle=""))
+    assert subtitle_events(storyboard, family="AKSC", size=54) == []
+
+
+def test_subtitle_source_none_is_an_off_switch() -> None:
+    storyboard = _storyboard(_row(narration="旁白", subtitle="字幕"))
+    assert subtitle_events(storyboard, family="AKSC", size=54, source="none") == []
+
+
+def test_unknown_subtitle_source_is_rejected() -> None:
+    with pytest.raises(TimelineError) as error:
+        subtitle_events(_storyboard(), family="AKSC", size=54, source="automatic")
+    assert error.value.code == "unsupported_source"
+    assert set(SUBTITLE_SOURCES) == {"subtitle", "narration", "none"}
+
+
+# ----------------------------------------------------------- audio bookkeeping
+def _tracks_for(events: list[SoundEffectEvent], music: list[str]) -> dict:
+    tracks = [{"src": src, "at": 0.0, "volume": 0.5} for src in music]
+    tracks += [{"src": f"audio/{event.name}.m4a", "at": event.at, "volume": 0.5} for event in events]
+    return {"mode": "mix", "tracks": tracks}
+
+
+def test_audio_consistency_accepts_a_fully_traceable_mix() -> None:
+    events = [SoundEffectEvent("sh02", "whoosh_low", 5.0), SoundEffectEvent("sh03", "impact_soft", 11.0)]
+    music = ["audio/score_bed.m4a", "audio/orbit_loop.m4a"]
+    report = audio_consistency(
+        events=events,
+        generated={"whoosh_low": "audio/whoosh_low.m4a", "impact_soft": "audio/impact_soft.m4a"},
+        music_srcs=music,
+        audio=_tracks_for(events, music),
+    )
+    assert report["ok"] is True, report["problems"]
+    assert report["events"] == 2
+    assert report["distinct_effects"] == 2
+    assert report["generated_files"] == 2
+    assert report["music_tracks"] == 2
+    assert report["effect_tracks"] == 2
+    assert report["total_tracks"] == 4
+
+
+def test_audio_consistency_flags_a_cue_with_no_generated_file() -> None:
+    events = [SoundEffectEvent("sh01", "room_tone", 0.0)]
+    report = audio_consistency(events=events, generated={}, music_srcs=["audio/score_bed.m4a"],
+                               audio=_tracks_for([], ["audio/score_bed.m4a"]))
+    assert report["ok"] is False
+    codes = [problem["code"] for problem in report["problems"]]
+    assert "missing_generated" in codes
+    # The mix is also one track short, and that is reported separately rather than
+    # being folded into the same message.
+    assert "count_mismatch" in codes
+
+
+def test_audio_consistency_flags_a_cue_that_never_reached_the_timeline() -> None:
+    events = [SoundEffectEvent("sh02", "whoosh_low", 5.0)]
+    report = audio_consistency(events=events, generated={"whoosh_low": "audio/whoosh_low.m4a"},
+                               music_srcs=["audio/score_bed.m4a"],
+                               audio=_tracks_for([], ["audio/score_bed.m4a"]))
+    codes = [problem["code"] for problem in report["problems"]]
+    assert report["ok"] is False
+    assert "missing_track" in codes
+
+
+def test_audio_consistency_flags_a_cue_at_the_wrong_second() -> None:
+    events = [SoundEffectEvent("sh02", "whoosh_low", 5.0)]
+    audio = {"mode": "mix", "tracks": [{"src": "audio/score_bed.m4a", "at": 0.0},
+                                       {"src": "audio/whoosh_low.m4a", "at": 9.0}]}
+    report = audio_consistency(events=events, generated={"whoosh_low": "audio/whoosh_low.m4a"},
+                               music_srcs=["audio/score_bed.m4a"], audio=audio)
+    assert [problem["code"] for problem in report["problems"]] == ["wrong_time"]
+
+
+def test_audio_consistency_flags_an_orphan_effect_and_a_missing_bed() -> None:
+    events = [SoundEffectEvent("sh02", "whoosh_low", 5.0)]
+    audio = {"mode": "mix", "tracks": [
+        {"src": "audio/whoosh_low.m4a", "at": 5.0},
+        {"src": "audio/unused.m4a", "at": 1.0},
+    ]}
+    report = audio_consistency(
+        events=events,
+        generated={"whoosh_low": "audio/whoosh_low.m4a", "unused": "audio/unused.m4a"},
+        music_srcs=["audio/score_bed.m4a"],
+        audio=audio,
+    )
+    codes = {problem["code"] for problem in report["problems"]}
+    assert {"unused_generated", "missing_music", "unexpected_track"} <= codes
+    assert report["ok"] is False
