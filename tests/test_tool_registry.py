@@ -44,12 +44,13 @@ def test_only_parser_tools_are_claimed_as_implemented():
     """诚实边界：声明"已实现"的工具必须真的能在默认注册表里派发。
 
     M2.0 交付时十个工具全部 ``implemented=False``；随后 MarkItDown 适配器让
-    ``parse_pdf`` / ``parse_xlsx`` 变成真实现，V5.0 M2 又让 ``llm_complete``
-    接到统一模型网关，其余七个仍然没有。
+    ``parse_pdf`` / ``parse_xlsx`` 变成真实现，V5.0 M2 让 ``llm_complete``
+    接到统一模型网关，V5.0 M3 又让 ``web_search`` / ``fetch_url`` 接到真实
+    搜索与抓取，其余五个仍然没有。
     这条断言的两半都必须成立，防止有人只改标记不改实现（或反之）。
     """
     claimed = sorted(name for name, spec in TOOL_SPECS.items() if spec.implemented)
-    assert claimed == ["llm_complete", "parse_pdf", "parse_xlsx"], (
+    assert claimed == ["fetch_url", "llm_complete", "parse_pdf", "parse_xlsx", "web_search"], (
         f"声称已实现的工具集合变了: {claimed}"
     )
 
@@ -151,10 +152,10 @@ def test_registry_dispatches_to_registered_provider():
 
 
 def test_default_registry_matches_declared_implementations():
-    """默认注册表里能派发的工具，必须恰好等于 ``implemented=True`` 的那三个。"""
+    """默认注册表里能派发的工具，必须恰好等于 ``implemented=True`` 的那五个。"""
     registry = get_tool_registry()
     implemented = sorted(name for name in TOOL_NAMES if registry.is_implemented(name))
-    assert implemented == ["llm_complete", "parse_pdf", "parse_xlsx"]
+    assert implemented == ["fetch_url", "llm_complete", "parse_pdf", "parse_xlsx", "web_search"]
 
 
 def test_parser_tool_reaches_real_adapter_through_default_registry():

@@ -4,9 +4,10 @@
 ``parse_pdf`` / ``parse_xlsx`` 由 ``capabilities.adapters.markitdown_adapter``
 提供**真实实现**（本地 MarkItDown，无网络、无模型）；``llm_complete`` 由
 ``capabilities.model.tool`` 接到统一模型网关（真实 HTTP，无密钥即
-``not_configured``）。其余 7 个仍只有契约（``implemented=False``），
-``ToolRegistry.dispatch()`` 对它们返回 ``status="not_implemented"``，
-绝不返回伪造的成功结果。
+``not_configured``）；``web_search`` / ``fetch_url`` 由
+``capabilities.search.tool`` 接到真实搜索与抓取（零费用、带 SSRF 与 robots 闸门）。
+其余 5 个仍只有契约（``implemented=False``），``ToolRegistry.dispatch()`` 对它们
+返回 ``status="not_implemented"``，绝不返回伪造的成功结果。
 
 未实现 ≠ 不存在：契约（输入/输出/错误码/权限/离线测试方法）已在
 ``docs/research_hub/tooling_architecture.md`` 中定义，按契约逐步实现。
@@ -65,16 +66,18 @@ TOOL_SPECS: dict[str, ToolSpec] = {
         name="web_search",
         category="retrieval",
         agent_only=True,
-        implemented=False,
-        notes="需要搜索服务商；默认离线，未配置时返回 not_configured",
+        implemented=True,
+        notes="已由 capabilities/search/tool.py 实现（V5.0 M3）：直接请求搜狗/360/必应"
+        "公开结果页，零费用、零 API Key；全部源失败返回 search_unavailable，不伪造结果",
     ),
     "fetch_url": ToolSpec(
         name="fetch_url",
         category="retrieval",
         required_scope="sources",
         agent_only=True,
-        implemented=False,
-        notes="抓取网页并落 source_snapshots；禁止抓取 robots 禁止的页面",
+        implemented=True,
+        notes="已由 capabilities/search/tool.py 实现（V5.0 M3）：逐跳校验 SSRF、遵从 "
+        "robots.txt、卡字节上限，正文/标题/时间/作者 + 快照 SHA-256",
     ),
     "parse_pdf": ToolSpec(
         name="parse_pdf",
@@ -201,18 +204,21 @@ _default_registry: ToolRegistry | None = None
 def get_tool_registry() -> ToolRegistry:
     """进程内默认注册表。
 
-    首次创建时挂上**已真实实现**的适配器（MarkItDown 解析器 + 统一模型网关）；
-    其余工具保持"未实现"，dispatch 返回 ``not_implemented``。
-    适配器的导入放在函数内部，避免 ``adapters``/``model`` ↔ ``tools`` 的循环导入。
+    首次创建时挂上**已真实实现**的适配器（MarkItDown 解析器 + 统一模型网关 +
+    真实搜索/抓取）；其余工具保持"未实现"，dispatch 返回 ``not_implemented``。
+    适配器的导入放在函数内部，避免 ``adapters``/``model``/``search`` ↔ ``tools``
+    的循环导入。
     """
     global _default_registry
     if _default_registry is None:
         registry = ToolRegistry()
         from backend.app.capabilities.adapters import register_parser_adapters
         from backend.app.capabilities.model.tool import register_model_adapters
+        from backend.app.capabilities.search.tool import register_search_adapters
 
         register_parser_adapters(registry)
         register_model_adapters(registry)
+        register_search_adapters(registry)
         _default_registry = registry
     return _default_registry
 
