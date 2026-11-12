@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.core.errors import DomainValidationError, NotFoundError
-from backend.app.models.enums import ContentStatus, ResearchStatus
-from backend.app.models.taxonomy import TopicCollection
+from backend.app.models.enums import ContentStatus, ResearchStatus, TagNamespace
+from backend.app.models.taxonomy import Tag, TopicCollection, TopicTag
 from backend.app.models.topic import Topic, TopicColumn
 from backend.app.schemas.topic import TopicCreate, TopicUpdate
 from backend.app.services.base import BaseService, make_unique_slug
@@ -163,6 +165,90 @@ class TopicService(BaseService):
         self.db.delete(link)
         self.db.commit()
 
+    # --- 标签（tags / topic_tags）------------------------------------------
+
+    def list_tags(self, topic_id: int) -> list[TopicTag]:
+        """选题上的标签，按权重降序、标签名升序。"""
+        self.get(topic_id)
+        stmt = (
+            select(TopicTag)
+            .join(Tag, Tag.id == TopicTag.tag_id)
+            .where(TopicTag.topic_id == topic_id)
+            .order_by(TopicTag.weight.desc(), Tag.name.asc())
+        )
+        return list(self.db.scalars(stmt))
+
+    def attach_tag(
+        self,
+        topic_id: int,
+        *,
+        name: str,
+        namespace: TagNamespace = TagNamespace.OTHER,
+        weight: float = 1.0,
+        create_missing: bool = True,
+    ) -> TopicTag:
+        """给选题打一个标签。
+
+        `name` 在 `namespace` 内唯一（表上 `uq_tag_namespace_name` 兜底）；
+        标签不存在时按名字现造一个（`create_missing=False` 则报 422），
+        已经打过就是更新权重，不重复插入。
+        """
+        self.get(topic_id)
+        cleaned = name.strip()
+        if not cleaned:
+            raise DomainValidationError("标签名不能为空", details={"field": "name"})
+
+        tag = self.db.scalar(
+            select(Tag).where(Tag.namespace == namespace, Tag.name == cleaned)
+        )
+        if tag is None:
+            if not create_missing:
+                raise DomainValidationError(
+                    f"标签 {namespace.value}:{cleaned} 不存在，且本次不允许新建",
+                    details={"field": "name", "namespace": namespace.value},
+                )
+            tag = Tag(
+                namespace=namespace,
+                name=cleaned,
+                slug=make_unique_slug(self.db, Tag, cleaned),
+            )
+            self.db.add(tag)
+            self.db.flush()
+
+        link = self.db.scalar(
+            select(TopicTag).where(
+                TopicTag.topic_id == topic_id,
+                TopicTag.tag_id == tag.id,
+            )
+        )
+        if link is None:
+            link = TopicTag(
+                topic_id=topic_id, tag_id=tag.id, created_at=datetime.now(UTC)
+            )
+            self.db.add(link)
+            tag.usage_count = (tag.usage_count or 0) + 1
+        link.weight = weight
+        return self._commit(link, "选题标签写入冲突")
+
+    def detach_tag(self, topic_id: int, tag_id: int) -> None:
+        """把一个标签从选题上摘下来；没打过则报 404，不假装删成功。"""
+        self.get(topic_id)
+        link = self.db.scalar(
+            select(TopicTag).where(
+                TopicTag.topic_id == topic_id, TopicTag.tag_id == tag_id
+            )
+        )
+        if link is None:
+            raise NotFoundError(
+                f"选题 {topic_id} 没有打过标签 {tag_id}",
+                details={"topic_id": topic_id, "tag_id": tag_id},
+            )
+        tag = self.db.get(Tag, tag_id)
+        if tag is not None and (tag.usage_count or 0) > 0:
+            tag.usage_count -= 1
+        self.db.delete(link)
+        self.db.commit()
+
     def create_column(
         self, *, code: str, name: str, description: str | None = None, display_order: int = 0
     ) -> TopicColumn:
@@ -171,3 +257,4 @@ class TopicService(BaseService):
         )
         self.db.add(column)
         return self._commit(column, f"栏目 code={code!r} 已存在")
+

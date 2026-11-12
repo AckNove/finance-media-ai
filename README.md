@@ -133,7 +133,7 @@ $env:DATABASE_URL = "sqlite:///./data/quickstart.db"
 | GET | `/api/workspace/search?q=` | 真实搜索（受 `features.search` 开关约束） |
 | GET | `/api/workspace/config` | 配置快照（features / cost / execution / models 价目状态） |
 
-共 **39 个路径 / 51 个操作**，全部登记在 `backend/app/api/router.py` 的 `ROUTE_CALLERS`，
+共 **41 个路径 / 54 个操作**，全部登记在 `backend/app/api/router.py` 的 `ROUTE_CALLERS`，
 启动自检会逐条比对「清单 vs 真实挂载」，不一致就拒绝启动。
 
 统一错误响应：`{"error": {"code": "...", "message": "...", "details": ...}}`。
@@ -209,7 +209,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（757 例）
+tests/                            pytest 回归测试（766 例）
 ```
 
 ## 文档
@@ -250,17 +250,22 @@ tests/                            pytest 回归测试（757 例）
 
 - 语义检索与向量库；知识库 Markdown 的自动同步（只能人工按 `knowledge/README.md` 落条目）。
 - 真实鉴权/多用户、限流、CI 与云部署（当前是本地单机，`networkExposure: loopback`）。
-- 选题标签（`topic_tags`）的写入接口；概念类知识条目还只能落 `knowledge_domain=general`。
+- 按标签反查选题（标签能打、能摘，但还没有"某标签下有哪些选题"的列表接口）；
+  概念类知识条目还只能落 `knowledge_domain=general`。
 - 发布接口：合成与审核都在本地完成，**系统按设计不会自动发布**到任何平台。
 
 已经做完、别再列成缺口的（本轮补齐）：
 
 - 选题多合集：`GET/POST /api/topics/{id}/collections`、`DELETE .../{column_id}`，
   一个选题可有多个合集、只有一个主合集（部分唯一索引兜底）。
+- 选题标签：`GET/POST /api/topics/{id}/tags`、`DELETE .../{tag_id}`；标签按
+  `namespace+name` 复用（同名标签挂到第二个选题时复用同一行、`usage_count` 递增），
+  摘干净后重新挂回来计数会回到 1；`create_missing=false` 时不会顺手造新标签。
 - 脚本与审核：`POST/GET /api/scripts`、`PATCH /api/scripts/{id}/status`（状态机
   `draft → in_review → approved|rejected`，批准时写 `approved_at/approved_by`）、
   `POST/GET /api/reviews`（结论回写到报告：pass→verified / needs_revision→disputed /
-  reject→refuted；`needs_revision` 必须写清要改什么）。
+  reject→refuted；`needs_revision` 必须写清要改什么）。工作台的脚本页与审核页已经
+  接上这些接口，按钮都打真请求。
 
 数据层面的现状（`data/finance_media.db` 只读，所有真实跑都在临时库）：
 `model_calls` 仍是 0 行（没有一次真实模型调用发生过，这是实话不是漏记）；

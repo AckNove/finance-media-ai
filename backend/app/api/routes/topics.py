@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Path, Response, status
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
-from backend.app.models.taxonomy import TopicCollection
+from backend.app.models.taxonomy import TopicCollection, TopicTag
 from backend.app.schemas.common import Page
 from backend.app.schemas.topic import (
     TopicCollectionCreate,
@@ -14,6 +14,8 @@ from backend.app.schemas.topic import (
     TopicColumnOut,
     TopicCreate,
     TopicOut,
+    TopicTagCreate,
+    TopicTagOut,
     TopicUpdate,
 )
 from backend.app.services.topic_service import TopicService
@@ -123,4 +125,57 @@ def detach_topic_collection(
     db: DbSession, topic_id: int = Path(ge=1), column_id: int = Path(ge=1)
 ) -> Response:
     TopicService(db).detach_collection(topic_id, column_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def _tag_out(link: TopicTag) -> TopicTagOut:
+    tag = link.tag
+    return TopicTagOut(
+        topic_id=link.topic_id,
+        tag_id=link.tag_id,
+        weight=link.weight,
+        namespace=tag.namespace,
+        name=tag.name,
+        slug=tag.slug,
+        usage_count=tag.usage_count,
+    )
+
+
+@router.get(
+    "/{topic_id}/tags",
+    response_model=list[TopicTagOut],
+    summary="选题上的标签",
+)
+def list_topic_tags(db: DbSession, topic_id: int = Path(ge=1)) -> list[TopicTagOut]:
+    return [_tag_out(link) for link in TopicService(db).list_tags(topic_id)]
+
+
+@router.post(
+    "/{topic_id}/tags",
+    response_model=TopicTagOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="给选题打标签（标签不存在则按名字新建）",
+)
+def attach_topic_tag(
+    payload: TopicTagCreate, db: DbSession, topic_id: int = Path(ge=1)
+) -> TopicTagOut:
+    link = TopicService(db).attach_tag(
+        topic_id,
+        name=payload.name,
+        namespace=payload.namespace,
+        weight=payload.weight,
+        create_missing=payload.create_missing,
+    )
+    return _tag_out(link)
+
+
+@router.delete(
+    "/{topic_id}/tags/{tag_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="摘掉选题上的标签",
+)
+def detach_topic_tag(
+    db: DbSession, topic_id: int = Path(ge=1), tag_id: int = Path(ge=1)
+) -> Response:
+    TopicService(db).detach_tag(topic_id, tag_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

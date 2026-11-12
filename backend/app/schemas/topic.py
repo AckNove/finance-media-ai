@@ -6,7 +6,13 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-from backend.app.models.enums import AudienceLevel, ContentStatus, KnowledgeDomain, ResearchStatus
+from backend.app.models.enums import (
+    AudienceLevel,
+    ContentStatus,
+    KnowledgeDomain,
+    ResearchStatus,
+    TagNamespace,
+)
 from backend.app.schemas.common import ORMBase
 
 
@@ -82,3 +88,24 @@ class TopicCollectionOut(ORMBase):
     weight: float
     column_code: str = ""
     column_name: str = ""
+
+
+class TopicTagCreate(BaseModel):
+    """给选题打一个标签。标签不存在时按名字新建（`create_missing=False` 则报 422）。"""
+
+    name: str = Field(min_length=1, max_length=64)
+    namespace: TagNamespace = TagNamespace.OTHER
+    weight: float = Field(default=1.0, ge=0.0, le=1.0)
+    create_missing: bool = True
+
+
+class TopicTagOut(ORMBase):
+    """标签挂在选题上的样子：带上标签自身的命名空间与名称，省得前端再查一次。"""
+
+    topic_id: int
+    tag_id: int
+    weight: float
+    namespace: TagNamespace
+    name: str
+    slug: str
+    usage_count: int = 0
