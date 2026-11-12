@@ -40,6 +40,9 @@ def _plan(args: argparse.Namespace) -> int:
         files=args.file or None,
         budget_max_calls=args.max_calls,
         budget_max_cost_cny=args.max_cost,
+        skip=tuple(args.skip or ()),
+        skip_reason=args.skip_reason,
+        start=not args.no_start,
     )
     _print(result.as_dict())
     return 0
@@ -94,6 +97,10 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--pipeline", default="research_to_script")
     plan.add_argument("--query", action="append", help="采集阶段的检索词，可重复")
     plan.add_argument("--file", action="append", help="抽取阶段的本地文件，可重复")
+    plan.add_argument("--skip", action="append", default=[], metavar="STAGE_ID",
+                      help="跳过某个阶段（例如没有模型时跳过 topic_scoring），可重复")
+    plan.add_argument("--skip-reason", default="", help="跳过原因，会写进任务计划里")
+    plan.add_argument("--no-start", action="store_true", help="只建任务不启动（默认建完即启动）")
     plan.add_argument("--max-calls", type=int, default=None)
     plan.add_argument("--max-cost", type=float, default=None)
     plan.set_defaults(func=_plan)

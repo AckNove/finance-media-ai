@@ -711,28 +711,47 @@ async function pageVideo(view) {
     <div class="card"><h2>质检报告</h2>
       ${qc ? `<pre>${esc(qc)}</pre>` : '<div class="empty">没有 qc/qc_report.md</div>'}
     </div>
-    <div class="card"><h2>重新生成时间轴</h2>
-      <p class="muted">读取该任务的 storyboard/storyboard.csv 与素材清单，交给引擎校验并写出时间轴。
-        默认只做时间轴（秒级）；真渲染一条长片要十几分钟，需要用命令行或等待后续排期。</p>
-      <div class="row"><button class="btn" id="build-timeline">生成时间轴</button></div>
+    <div class="card"><h2>流水线</h2>
+      <p class="muted">读取该任务的 storyboard/storyboard.csv 与素材清单，交给引擎产出时间轴；
+        「渲染成片」会真的调用引擎渲染整条片子，一条 40 秒的竖屏要十几分钟，期间不要关页面。</p>
+      <div class="row">
+        <button class="btn" id="build-timeline">只生成时间轴</button>
+        <button class="btn ghost" id="render-film">渲染成片（十几分钟）</button>
+      </div>
       <div id="pipeline-out"></div>
     </div>`;
 
-  document.getElementById('build-timeline').onclick = async () => {
+  const runPipeline = async (render) => {
     const out = document.getElementById('pipeline-out');
-    out.innerHTML = '<div class="note">正在校验分镜并把素材交给引擎…</div>';
+    if (render && !window.confirm('真的开始渲染吗？这一步会占用本机 CPU 十几分钟。')) return;
+    out.innerHTML = render
+      ? '<div class="note">正在导入素材、渲染镜头并合成成片，请勿关闭页面…</div>'
+      : '<div class="note">正在校验分镜并把素材交给引擎…</div>';
+    const buttons = [document.getElementById('build-timeline'), document.getElementById('render-film')];
+    buttons.forEach((button) => { if (button) button.disabled = true; });
     const result = await api(`/workspace/jobs/${job.job_id}/pipeline`, {
       method: 'POST',
-      body: JSON.stringify({ render: false }),
+      body: JSON.stringify({ render, output_name: 'output/final.mp4' }),
     });
+    buttons.forEach((button) => { if (button) button.disabled = false; });
     if (!result.ok) { out.innerHTML = failure(result); return; }
     const data = result.data;
-    out.innerHTML = data.blocked
-      ? `<div class="note warn">${esc(data.message || data.blocked_reason || '被阻塞')}</div>`
-      : `<div class="note ok">时间轴已写入：${esc(data.timeline_path || '')}
-          · ${data.storyboard_shots} 个镜头 · ${data.frames} 帧 · ${data.canvas.w}×${data.canvas.h}</div>
-         <pre>${esc((data.engine_calls || []).join('\n'))}</pre>`;
+    if (data.blocked) {
+      out.innerHTML = `<div class="note warn">${esc(data.message || data.blocked_reason || '被阻塞')}</div>`;
+      return;
+    }
+    const qc = data.qc && data.qc.checks
+      ? `<pre>${esc(data.qc.checks.map((item) => `${item.ok ? '✓' : '✗'} ${item.name}: ${item.detail}`).join('\n'))}</pre>`
+      : '';
+    out.innerHTML = `<div class="note ok">${esc(data.stage)}：${data.storyboard_shots} 个镜头 · ${data.frames} 帧 · ${data.canvas.w}×${data.canvas.h}
+        ${data.output_path ? `· 成片 ${esc(data.output_path)}（${(data.output_byte_size / 1048576).toFixed(2)} MB）` : `· 时间轴 ${esc(data.timeline_path || '')}`}</div>
+      ${qc}
+      <pre>${esc((data.engine_calls || []).join('\n'))}</pre>
+      ${data.notes && data.notes.length ? `<p class="muted">${data.notes.map(esc).join(' ')}</p>` : ''}`;
   };
+
+  document.getElementById('build-timeline').onclick = () => runPipeline(false);
+  document.getElementById('render-film').onclick = () => runPipeline(true);
 }
 
 async function pageReview(view) {
