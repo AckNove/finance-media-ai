@@ -4,7 +4,7 @@
     "w": 1080,
     "h": 1920,
     "fps": 30,
-    "frames": 135
+    "frames": 499
   },
   "fonts": [
     {
@@ -44,7 +44,7 @@
       {
         "id": "number",
         "type": "text",
-        "text": "21",
+        "text": "1.69%",
         "style": {
           "font-family": "AKSC",
           "font-size": "176px",
@@ -57,7 +57,7 @@
       {
         "id": "caption",
         "type": "text",
-        "text": "21深度ㅣ万亿信用卡之变：监管明确分",
+        "text": "…净息差环比下降4个基点至1.69%",
         "style": {
           "font-family": "AKSC",
           "font-size": "50px",
@@ -70,7 +70,7 @@
       {
         "id": "source",
         "type": "text",
-        "text": "来源 S03",
+        "text": "来源 S01",
         "style": {
           "font-family": "AKSC",
           "font-size": "32px",
@@ -107,7 +107,7 @@
           0.86
         ],
         [
-          134,
+          498,
           1.06
         ]
       ],
@@ -152,7 +152,7 @@
           26
         ],
         [
-          134,
+          498,
           -6
         ]
       ],

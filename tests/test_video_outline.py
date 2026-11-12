@@ -104,12 +104,12 @@ def test_a_single_source_may_not_dominate_the_whole_film(tmp_path: Path) -> None
 
 def test_long_sentences_are_truncated_on_screen_but_not_in_the_script(tmp_path: Path) -> None:
     base = _digest()
-    long_text = "这是一句很长很长的原文，" * 5
+    long_text = "这是一句很长很长的原文，净息差降到了1.52%，" * 3
     digest = Digest(
         title=base.title,
         objective=base.objective,
         sources=base.sources,
-        data_points=(DataPoint(source_id="S01", text=long_text, numbers=("1.0",)),)
+        data_points=(DataPoint(source_id="S01", text=long_text, numbers=("1.52",)),)
         + base.data_points,
     )
     result = build_outline(digest, job_root=tmp_path / "job")
@@ -118,13 +118,52 @@ def test_long_sentences_are_truncated_on_screen_but_not_in_the_script(tmp_path: 
     first_data = board.shots[1]
     # 口播稿一个字都不改
     assert first_data.narration == " ".join(long_text.split())
-    # 屏幕上那行说明在标点处断开、长度受限，而且写在数据卡里
+    # 屏幕上那行说明写进数据卡里，底部不再叠同一条字幕
     assert first_data.subtitle == ""
     card = json.loads((tmp_path / "job" / first_data.asset_source).read_text(encoding="utf-8"))
     caption = next(node["text"] for node in card["root"]["children"] if node["id"] == "caption")
-    assert caption.endswith("，")
-    assert len(caption) <= MAX_CAPTION_CHARS
+    # 卡面说明：数字与单位完整、长度受限、比口播稿短
+    assert "1.52%" in caption
+    assert len(caption) <= MAX_CAPTION_CHARS + 1  # 允许开头一个省略号
     assert len(caption) < len(first_data.narration)
+
+
+def test_numbers_that_are_really_dates_never_become_the_headline(tmp_path: Path) -> None:
+    """「11月2日，多家电商平台…」里的 11 是日历，不是量，绝不能顶到卡面正中。"""
+    base = _digest()
+    digest = Digest(
+        title=base.title,
+        objective=base.objective,
+        sources=base.sources,
+        data_points=(DataPoint(source_id="S01", text="11月2日，多家电商平台的尾款支付活动开始。"),)
+        + base.data_points,
+    )
+    result = build_outline(digest, job_root=tmp_path / "job")
+    dated = next(shot for shot in result.shots if "尾款支付" in shot.narration)
+    assert dated.number == ""
+    board = load_storyboard(result.storyboard_path)
+    row = next(shot for shot in board.shots if "尾款支付" in shot.narration)
+    assert row.asset_type == "solid"
+
+
+def test_a_number_without_any_unit_does_not_get_a_card(tmp_path: Path) -> None:
+    """「21深度」这种只有裸数字的句子不排数据卡，退成底板镜头。"""
+    base = _digest()
+    digest = Digest(
+        title=base.title,
+        objective=base.objective,
+        sources=base.sources,
+        data_points=(
+            DataPoint(source_id="S01", text="21深度：信用卡分期收入属于利息，不是手续费。"),
+        )
+        + base.data_points,
+    )
+    result = build_outline(digest, job_root=tmp_path / "job")
+    plain = next(shot for shot in result.shots if "信用卡分期" in shot.narration)
+    assert plain.number == ""
+    board = load_storyboard(result.storyboard_path)
+    row = next(shot for shot in board.shots if "信用卡分期" in shot.narration)
+    assert row.asset_type == "solid"
 
 
 def test_the_sheet_is_validated_before_it_is_returned(tmp_path: Path) -> None:

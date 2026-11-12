@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "name": "v5_flow_acceptance_v2",
+  "created_at": "2026-11-12T15:19:00.104160+00:00",
+  "assets": [
+    {
+      "id": "a23fab5d2c0b",
+      "name": "solid_1d2a44.mp4",
+      "path": "media/b8fe2c572654.mp4",
+      "sha256": "d55729fa29b4b395a924982f43b0aa239a2da7247889ff2da62faad3c8b1abbc",
+      "rights": "self-generated",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/a23fab5d2c0b",
+        "n": 120,
+        "fps": 30.0,
+        "w": 1080,
+        "h": 1920,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "0082249f77fc",
+      "name": "solid_1d2a44.mp4",
+      "path": "media/533e9defae69.mp4",
+      "sha256": "d55729fa29b4b395a924982f43b0aa239a2da7247889ff2da62faad3c8b1abbc",
+      "rights": "self-generated",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/0082249f77fc",
+        "n": 120,
+        "fps": 30.0,
+        "w": 1080,
+        "h": 1920,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "fade062743b0",
+      "name": "solid_1d2a44.mp4",
+      "path": "media/6f0345bdb595.mp4",
+      "sha256": "d55729fa29b4b395a924982f43b0aa239a2da7247889ff2da62faad3c8b1abbc",
+      "rights": "self-generated",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/fade062743b0",
+        "n": 120,
+        "fps": 30.0,
+        "w": 1080,
+        "h": 1920,
+        "pattern": "%05d.png"
+      }
+    }
+  ],
+  "reviews": [],
+  "release": "project review pending"
+}

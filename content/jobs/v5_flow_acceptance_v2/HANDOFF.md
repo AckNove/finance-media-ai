@@ -27,4 +27,4 @@
 
 ## 下一步
 
-分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。先人工看一遍分镜，然后跑 python -m backend.scripts.render_job --job v5_flow_acceptance --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。
+分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。先人工看一遍分镜，然后跑 python -m backend.scripts.render_job --job v5_flow_acceptance_v2 --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。

@@ -1,0 +1,174 @@
+{
+  "ok": true,
+  "provider": "edge",
+  "voice": "zh-CN-YunxiNeural",
+  "clip_count": 8,
+  "total_seconds": 86.496,
+  "overrun_count": 0,
+  "clips": [
+    {
+      "shot_id": "sh01",
+      "file": "audio/narration/sh01.mp3",
+      "duration_seconds": 9.048,
+      "shot_seconds": 9.4,
+      "overrun_seconds": 0.0,
+      "sha256": "95da5215583da0904cae9e389497814768a02b9c31b13d28153c7bd2899bd15c",
+      "byte_size": 54525,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 22,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "这一条讲的是：分析：商业银行靠什么赚钱、净息差为什么下降。下面每一句话都能追到原文。"
+    },
+    {
+      "shot_id": "sh02",
+      "file": "audio/narration/sh02.mp3",
+      "duration_seconds": 7.416,
+      "shot_seconds": 7.767,
+      "overrun_seconds": 0.0,
+      "sha256": "664c49bd767b9f3c868a6e1b2f5ea5c94b2682d9b48d52b9fb63f1187678ad2d",
+      "byte_size": 44733,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 15,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "近日，国家金融监督管理总局公布2023年第四季度商业银行主要监管指标情况。"
+    },
+    {
+      "shot_id": "sh03",
+      "file": "audio/narration/sh03.mp3",
+      "duration_seconds": 16.296,
+      "shot_seconds": 16.633,
+      "overrun_seconds": 0.0,
+      "sha256": "2c88349a3aebe24374dfeb00c2f84e5bcf29cfa891b418e10de9bf67e655559d",
+      "byte_size": 98013,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 39,
+      "cue_count": 5,
+      "estimated_timing": false,
+      "text": "数据显示，2023年，衡量商业银行盈利能力的重要指标之一净息差整体仍在下行，第四季度的净息差环比下降4个基点至1.69%，跌破1.7%，创2010年有统计数据以来新低。"
+    },
+    {
+      "shot_id": "sh04",
+      "file": "audio/narration/sh04.mp3",
+      "duration_seconds": 8.88,
+      "shot_seconds": 9.233,
+      "overrun_seconds": 0.0,
+      "sha256": "ebf9d1fe5066c81b188334f0d599f7e911144c392ca8af65112652b3475f6765",
+      "byte_size": 53517,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 20,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "三季度商业银行净息差降至1.53% 城商行净息差最低 商业银行盈利增长和息差收窄压力仍然较大"
+    },
+    {
+      "shot_id": "sh05",
+      "file": "audio/narration/sh05.mp3",
+      "duration_seconds": 17.664,
+      "shot_seconds": 18.0,
+      "overrun_seconds": 0.0,
+      "sha256": "5d2bba6ab876271ea84ec8705d9dd657e830e749b104958763516a5362f71399",
+      "byte_size": 106221,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 44,
+      "cue_count": 5,
+      "estimated_timing": false,
+      "text": "今日，国家金融监督管理总局发布2024年三季度银行业保险业主要监管指标数据情况，从数据来看，三季度末银行业总资产和净利润同比较上半年稳中有升，不良率维持低位，银行业经营状况略有改善。"
+    },
+    {
+      "shot_id": "sh06",
+      "file": "audio/narration/sh06.mp3",
+      "duration_seconds": 6.12,
+      "shot_seconds": 6.467,
+      "overrun_seconds": 0.0,
+      "sha256": "1687478c6fef452f2ea8dfa63824aceefa7e834f8c7904b5d689c84680fe6184",
+      "byte_size": 36957,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 14,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "21深度ㅣ万亿信用卡之变：监管明确分期收入属于利息，不是手续费"
+    },
+    {
+      "shot_id": "sh07",
+      "file": "audio/narration/sh07.mp3",
+      "duration_seconds": 12.336,
+      "shot_seconds": 12.7,
+      "overrun_seconds": 0.0,
+      "sha256": "7c1126a6c94ce15ccbd21da051aac3b6e77303ef62b67356a72d6834c984b293",
+      "byte_size": 74253,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 30,
+      "cue_count": 4,
+      "estimated_timing": false,
+      "text": "11月2日，多家电商平台的尾款支付活动继续，不少网友“转战”在各大直播间，纷纷计算着哪种满减活动、消费分期以及支付优惠最为划算。"
+    },
+    {
+      "shot_id": "sh08",
+      "file": "audio/narration/sh08.mp3",
+      "duration_seconds": 8.736,
+      "shot_seconds": 9.1,
+      "overrun_seconds": 0.0,
+      "sha256": "f0d1062d734052abfc7c0ffd812d75a5c112c21d25581dcb2488167e257afbd7",
+      "byte_size": 52653,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 19,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "以上 6 个数字来自 4 份资料（S01、S02、S03）。这只是资料汇编，不是投资建议。"
+    }
+  ],
+  "tracks": [
+    {
+      "src": "audio/narration/sh01.mp3",
+      "at": 0.0,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh02.mp3",
+      "at": 9.4,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh03.mp3",
+      "at": 17.167,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh04.mp3",
+      "at": 33.8,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh05.mp3",
+      "at": 43.033,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh06.mp3",
+      "at": 61.033,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh07.mp3",
+      "at": 67.5,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh08.mp3",
+      "at": 80.2,
+      "volume": 1.0
+    }
+  ],
+  "srt": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\audio\\narration\\narration.srt",
+  "problems": []
+}

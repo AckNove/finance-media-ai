@@ -1,15 +1,15 @@
 {
- "job_id": "v5_flow_acceptance",
- "created_at": "2026-11-12T14:46:21.359487+00:00",
+ "job_id": "v5_flow_acceptance_v2",
+ "created_at": "2026-11-12T15:18:58.696157+00:00",
  "stage": "storyboard_ready",
  "next_stage": "render",
  "blocked": false,
  "blocked_reason": "",
  "model_provider": "model_not_configured",
  "outline": {
-  "job_id": "v5_flow_acceptance",
-  "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance\\storyboard\\storyboard.csv",
-  "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance\\storyboard\\OUTLINE.md",
+  "job_id": "v5_flow_acceptance_v2",
+  "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\storyboard\\storyboard.csv",
+  "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\storyboard\\OUTLINE.md",
   "shots": [
    {
     "shot_id": "sh01",
@@ -57,7 +57,7 @@
     "narration": "21深度ㅣ万亿信用卡之变：监管明确分期收入属于利息，不是手续费",
     "subtitle": "21深度ㅣ万亿信用卡之变：",
     "source_id": "S03",
-    "number": "21"
+    "number": ""
    },
    {
     "shot_id": "sh07",
@@ -65,7 +65,7 @@
     "narration": "11月2日，多家电商平台的尾款支付活动继续，不少网友“转战”在各大直播间，纷纷计算着哪种满减活动、消费分期以及支付优惠最为划算。",
     "subtitle": "11月2日，多家电商平台的尾款支付…",
     "source_id": "S03",
-    "number": "11"
+    "number": ""
    },
    {
     "shot_id": "sh08",

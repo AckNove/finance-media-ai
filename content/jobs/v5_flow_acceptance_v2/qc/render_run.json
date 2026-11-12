@@ -1,0 +1,314 @@
+{
+ "job_id": "v5_flow_acceptance_v2",
+ "status": "done",
+ "stage": "rendered",
+ "started_at": "2026-11-12T15:20:51Z",
+ "updated_at": "2026-11-12T15:28:19Z",
+ "finished_at": "2026-11-12T15:28:19Z",
+ "render": true,
+ "narration": true,
+ "output_name": "output/final.mp4",
+ "log": [
+  "进程已启动，正在读分镜与素材清单",
+  "完成：rendered"
+ ],
+ "report": {
+  "job_id": "v5_flow_acceptance_v2",
+  "stage": "rendered",
+  "blocked": false,
+  "blocked_reason": "",
+  "storyboard_shots": 8,
+  "frames": 2679,
+  "fps": 30,
+  "canvas": {
+   "w": 1080,
+   "h": 1920
+  },
+  "assets": [
+   {
+    "asset_id": "solid_1d2a44",
+    "registered_as": "solid_1d2a44",
+    "file": "assets/plates/solid_1d2a44.mp4",
+    "sha256": "d55729fa29b4b395a924982f43b0aa239a2da7247889ff2da62faad3c8b1abbc",
+    "asset_class": "B",
+    "license": "self-generated",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 120
+   },
+   {
+    "asset_id": "CARD_sh03",
+    "registered_as": "CARD_sh03",
+    "file": "assets/compositions/card_sh03.json",
+    "sha256": "b0e92721483e68cd448bdf03aca6793d4d296f95ce10c261a3036d6be791f12e",
+    "asset_class": "B",
+    "license": "self-generated",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 499
+   },
+   {
+    "asset_id": "CARD_sh04",
+    "registered_as": "CARD_sh04",
+    "file": "assets/compositions/card_sh04.json",
+    "sha256": "57677e742174308e941c8a5fb857d47c271eea0c6a524cf340325e614bc87d11",
+    "asset_class": "B",
+    "license": "self-generated",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 277
+   }
+  ],
+  "timeline_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\project\\timeline.render.json",
+  "timeline_revision": "0dff409303a12212f95ef41b282a7674d46764f1944c6f7e896282d619ab32a4",
+  "output_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\output\\final.mp4",
+  "output_sha256": "12261d5dd381fcbfac15b390f9a4af2a256a394144d908fdcb70741f58144de2",
+  "output_byte_size": 19181193,
+  "engine_calls": [
+   "import_media:solid_1d2a44",
+   "render_composition:CARD_sh03",
+   "render_composition:CARD_sh04",
+   "validate_timeline",
+   "save_timeline",
+   "render"
+  ],
+  "qc": {
+   "media": {
+    "duration": 89.3,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "streams": 2,
+    "has_audio": true,
+    "byte_size": 19181193
+   },
+   "scan": {
+    "black_segments": 1,
+    "black_seconds": 0.3,
+    "black_longest": 0.3,
+    "freeze_segments": 13,
+    "freeze_seconds": 8.833,
+    "freeze_longest": 1.033,
+    "silence_segments": 0,
+    "silence_seconds": 0,
+    "silence_longest": 0.0
+   },
+   "checks": {
+    "canvas_matches_storyboard": true,
+    "fps_matches_storyboard": true,
+    "duration_matches_storyboard": true,
+    "has_audio_stream": true,
+    "no_long_black": true,
+    "no_long_freeze": true,
+    "no_long_silence": true
+   },
+   "failures": [],
+   "ok": true,
+   "thresholds": {
+    "max_black_seconds": 0.45,
+    "max_freeze_seconds": 1.5,
+    "max_silence_seconds": 2.0,
+    "clip_warn_db": -1.0
+   },
+   "note": "这里只判技术指标（尺寸/帧率/时长/黑帧/冻结/静音），画面好不好看要人看"
+  },
+  "notes": [
+   "旁白：8/8 个镜头有配音，共 86.5 秒（edge / zh-CN-YunxiNeural）",
+   "其中 8 段比镜头长（sh01 超 5.05s、sh02 超 2.92s、sh03 超 11.80s、sh04 超 4.38s、sh05 超 13.16s、sh06 超 1.62s、sh07 超 7.84s、sh08 超 3.74s）：没有拉伸镜头，需改稿或改分镜",
+   "分镜已按配音重排（8 个镜头加长），总时长 89.3 秒；改的是时间，不改文案与素材",
+   "按新时长重写了 2 张数据卡画板",
+   "旁白音轨已复制进工程目录：8 个文件",
+   "project/timeline.json 已存在且内容不同，本次写到 timeline.render.json，没有覆盖原文件",
+   "时间轴已写入 C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\project\\timeline.render.json",
+   "成片已复制到 C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\output\\final.mp4"
+  ],
+  "narration": {
+   "ok": true,
+   "provider": "edge",
+   "voice": "zh-CN-YunxiNeural",
+   "clip_count": 8,
+   "total_seconds": 86.496,
+   "overrun_count": 8,
+   "clips": [
+    {
+     "shot_id": "sh01",
+     "file": "audio/narration/sh01.mp3",
+     "duration_seconds": 9.048,
+     "shot_seconds": 4.0,
+     "overrun_seconds": 5.048,
+     "sha256": "95da5215583da0904cae9e389497814768a02b9c31b13d28153c7bd2899bd15c",
+     "byte_size": 54525,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 22,
+     "cue_count": 3,
+     "estimated_timing": false,
+     "text": "这一条讲的是：分析：商业银行靠什么赚钱、净息差为什么下降。下面每一句话都能追到原文。"
+    },
+    {
+     "shot_id": "sh02",
+     "file": "audio/narration/sh02.mp3",
+     "duration_seconds": 7.416,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 2.916,
+     "sha256": "664c49bd767b9f3c868a6e1b2f5ea5c94b2682d9b48d52b9fb63f1187678ad2d",
+     "byte_size": 44733,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 15,
+     "cue_count": 2,
+     "estimated_timing": false,
+     "text": "近日，国家金融监督管理总局公布2023年第四季度商业银行主要监管指标情况。"
+    },
+    {
+     "shot_id": "sh03",
+     "file": "audio/narration/sh03.mp3",
+     "duration_seconds": 16.296,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 11.796,
+     "sha256": "2c88349a3aebe24374dfeb00c2f84e5bcf29cfa891b418e10de9bf67e655559d",
+     "byte_size": 98013,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 39,
+     "cue_count": 5,
+     "estimated_timing": false,
+     "text": "数据显示，2023年，衡量商业银行盈利能力的重要指标之一净息差整体仍在下行，第四季度的净息差环比下降4个基点至1.69%，跌破1.7%，创2010年有统计数据以来新低。"
+    },
+    {
+     "shot_id": "sh04",
+     "file": "audio/narration/sh04.mp3",
+     "duration_seconds": 8.88,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 4.38,
+     "sha256": "ebf9d1fe5066c81b188334f0d599f7e911144c392ca8af65112652b3475f6765",
+     "byte_size": 53517,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 20,
+     "cue_count": 3,
+     "estimated_timing": false,
+     "text": "三季度商业银行净息差降至1.53% 城商行净息差最低 商业银行盈利增长和息差收窄压力仍然较大"
+    },
+    {
+     "shot_id": "sh05",
+     "file": "audio/narration/sh05.mp3",
+     "duration_seconds": 17.664,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 13.164,
+     "sha256": "5d2bba6ab876271ea84ec8705d9dd657e830e749b104958763516a5362f71399",
+     "byte_size": 106221,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 44,
+     "cue_count": 5,
+     "estimated_timing": false,
+     "text": "今日，国家金融监督管理总局发布2024年三季度银行业保险业主要监管指标数据情况，从数据来看，三季度末银行业总资产和净利润同比较上半年稳中有升，不良率维持低位，银行业经营状况略有改善。"
+    },
+    {
+     "shot_id": "sh06",
+     "file": "audio/narration/sh06.mp3",
+     "duration_seconds": 6.12,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 1.62,
+     "sha256": "1687478c6fef452f2ea8dfa63824aceefa7e834f8c7904b5d689c84680fe6184",
+     "byte_size": 36957,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 14,
+     "cue_count": 2,
+     "estimated_timing": false,
+     "text": "21深度ㅣ万亿信用卡之变：监管明确分期收入属于利息，不是手续费"
+    },
+    {
+     "shot_id": "sh07",
+     "file": "audio/narration/sh07.mp3",
+     "duration_seconds": 12.336,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 7.836,
+     "sha256": "7c1126a6c94ce15ccbd21da051aac3b6e77303ef62b67356a72d6834c984b293",
+     "byte_size": 74253,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 30,
+     "cue_count": 4,
+     "estimated_timing": false,
+     "text": "11月2日，多家电商平台的尾款支付活动继续，不少网友“转战”在各大直播间，纷纷计算着哪种满减活动、消费分期以及支付优惠最为划算。"
+    },
+    {
+     "shot_id": "sh08",
+     "file": "audio/narration/sh08.mp3",
+     "duration_seconds": 8.736,
+     "shot_seconds": 5.0,
+     "overrun_seconds": 3.736,
+     "sha256": "f0d1062d734052abfc7c0ffd812d75a5c112c21d25581dcb2488167e257afbd7",
+     "byte_size": 52653,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 19,
+     "cue_count": 3,
+     "estimated_timing": false,
+     "text": "以上 6 个数字来自 4 份资料（S01、S02、S03）。这只是资料汇编，不是投资建议。"
+    }
+   ],
+   "tracks": [
+    {
+     "src": "audio/narration/sh01.mp3",
+     "at": 0.0,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh02.mp3",
+     "at": 4.0,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh03.mp3",
+     "at": 8.5,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh04.mp3",
+     "at": 13.0,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh05.mp3",
+     "at": 17.5,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh06.mp3",
+     "at": 22.0,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh07.mp3",
+     "at": 26.5,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh08.mp3",
+     "at": 31.0,
+     "volume": 1.0
+    }
+   ],
+   "srt": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance_v2\\audio\\narration\\narration.srt",
+   "problems": [],
+   "retimed": [
+    "sh01: 4s → 9.40s（配音 9.05s）",
+    "sh02: 4.5s → 7.77s（配音 7.42s）",
+    "sh03: 4.5s → 16.63s（配音 16.30s）",
+    "sh04: 4.5s → 9.23s（配音 8.88s）",
+    "sh05: 4.5s → 18.00s（配音 17.66s）",
+    "sh06: 4.5s → 6.47s（配音 6.12s）",
+    "sh07: 4.5s → 12.70s（配音 12.34s）",
+    "sh08: 5s → 9.10s（配音 8.74s）"
+   ]
+  },
+  "ok": true
+ },
+ "error": ""
+}

@@ -52,6 +52,18 @@ _PLATE_CAMERAS = ("push", "push", "push", "push")
 _CARD_CAMERAS = ("push", "pan_right", "punch", "pan_up", "push")
 _TRANSITIONS = ("none", "dissolve", "slide", "dissolve", "wipe", "dip")
 
+#: 数字后面紧跟这些词时它是日历的一部分（"11月2日"、"2024年"、"第三季度"），
+#: 不是可上卡面的"量"。
+_CALENDAR_SUFFIXES = ("月", "日", "号", "年", "季度", "月份", "财年", "年期")
+
+#: 数字后面跟着这些才算"带单位"，卡面要把单位一起写出来。
+_UNITS = ("个百分点", "亿元", "万元", "亿美元", "万亿", "亿", "倍", "%", "％")
+
+#: 正则里的单位分支（长的写在前面，否则"亿元"会被"亿"抢先吃掉一半）。
+#: 只认"量"的单位：家/人/之类会把"42家A股上市银行…营业收入4.28万亿元"的 42
+#: 顶到卡面，而那句话真正要讲的是 4.28 万亿元。
+_UNIT_PATTERN = r"\s*(%|％|个百分点|亿美元|亿元|万元|万亿|亿|倍)"
+
 
 class OutlineError(ValueError):
     """分镜草稿生成失败。``reason`` 稳定，供接口与测试判断。
@@ -129,8 +141,31 @@ def _caption(text: str) -> str:
     return clean[: MAX_CAPTION_CHARS - 1] + "…"
 
 
+def _is_calendar_number(text: str, number: str) -> bool:
+    """这个数字是不是"日期/年份"的一部分（11月2日、2024年、第三季度…）。
+
+    卡面主数字要的是"量"（1.69%、1362.90亿元），不是日历。真实素材里
+    「11月2日，多家电商平台的尾款支付…」这种句子会把 11 顶到卡面正中，
+    写成一个巨大的、毫无含义的"11"——所以日期数字必须排除。
+
+    判定规则：这个数字在原文里出现过的**每一处**后面都紧跟日历词，才算日历数字；
+    只要有一处是当量用的（"11亿" "11%"），就仍然算数字。
+    """
+    start = 0
+    seen = False
+    while True:
+        index = text.find(number, start)
+        if index < 0:
+            return seen
+        rest = text[index + len(number) :].lstrip()
+        if not rest[:1] or rest[:1] not in _CALENDAR_SUFFIXES:
+            return False
+        seen = True
+        start = index + len(number)
+
+
 def _number_set(point: Any) -> tuple[str, ...]:
-    """一句话里的关键数字（去掉年份）。用来挡住"同一组数字换个说法再来一遍"。
+    """一句话里的关键数字（去掉年份与日期）。用来挡住"同一组数字换个说法再来一遍"。
 
     注意：从数据库行还原的底稿（`handoff._digest_from_rows`）只有 `text`，`numbers` 是空的。
     这时必须自己从原文里抠数字，否则卡面数字全是空、整条片子退化成纯色底。
@@ -147,36 +182,37 @@ def _number_set(point: Any) -> tuple[str, ...]:
     from backend.app.research.corroborate import _YEAR
 
     text = str(getattr(point, "text", "") or "")
-    return tuple(sorted({number for number in _numbers_in(text) if not _YEAR.match(number)}))
+    return tuple(
+        sorted(
+            {
+                number
+                for number in _numbers_in(text)
+                if not _YEAR.match(number) and not _is_calendar_number(text, number)
+            }
+        )
+    )
 
 
 def _number_with_unit(text: str, numbers: Sequence[str]) -> str:
-    """取第一个带单位的数字（"1.52%" 而不是 "1.52"），找不到就退回裸数字。
+    """取第一个带单位的数字（"1.52%" 而不是 "1.52"）；没有任何带单位的数字就返回空串。
 
     卡片上只写 "1.52" 会被读成"1.52 个什么东西"，单位必须在场；而单位是原文里
     紧跟在数字后面的那部分，所以直接回原文里抓，不自造映射表。
+
+    **没有单位就不上卡**：真实抓到的句子里还有「21深度」「11月2日」这种，把 21 或 11
+    写成巨大的标题数字纯属误导。宁可让这个镜头用底板，也不让错的数字上屏。
 
     "第一个"按**原文出现位置**算，不按数字大小：一句话里同时有 "降至1.52%" 和
     "收窄0.03个百分点" 时，卡面要的是先说的那个主数字，不是排序后最小的那个。
     """
     best: tuple[int, str] | None = None
     for number in numbers:
-        pattern = re.escape(number) + r"\s*(%|％|亿元|万元|亿美元|个百分点|万亿|亿|倍)"
-        match = re.search(pattern, text)
+        match = re.search(re.escape(number) + _UNIT_PATTERN, text)
         if match is None:
             continue
         if best is None or match.start() < best[0]:
             best = (match.start(), f"{number}{match.group(1)}")
-    if best is not None:
-        return best[1]
-    if not numbers:
-        return ""
-    # 谁都没有单位：退回原文里最先出现的那个数字
-    first = min(
-        ((text.find(number), number) for number in numbers if text.find(number) >= 0),
-        default=None,
-    )
-    return first[1] if first is not None else numbers[0]
+    return best[1] if best is not None else ""
 
 
 def _caption_around(text: str, number: str) -> str:
@@ -184,41 +220,48 @@ def _caption_around(text: str, number: str) -> str:
 
     "2024年第四季度，净息差环比下降0.01个百分点" 的关键信息在数字附近；直接截
     前 18 个字只会得到"2024年第四季度，"，卡片上就只剩一个孤零零的数字。
+
+    两条硬规矩：**数字与单位必须完整**（不能切出"1362."这种半截数），**从句子
+    中间切进来必须加前导省略号**（否则读成"度的净息差环比下降"莫名其妙）。
     """
     bare = number
-    for unit in ("个百分点", "亿元", "万元", "亿美元", "万亿", "亿", "倍", "%", "％"):
+    for unit in _UNITS:
         if bare.endswith(unit):
             bare = bare[: -len(unit)]
             break
     bare = bare.strip()
-    if bare:
-        index = text.find(bare)
-        if index >= 0:
-            start = 0
-            for mark in "，,；;。！？：｜| ":
-                position = text.rfind(mark, 0, index)
-                if position >= 0:
-                    start = max(start, position + 1)
-            # 不要把年份切成"24年"这种半截：起点落在数字串里就把整串带上
-            while start > 0 and text[start].isdigit() and text[start - 1].isdigit():
-                start -= 1
-            # 从数字前面那一段的起点开始，保证整段不超过一行
-            window = text[start : start + MAX_CAPTION_CHARS].strip(" ，,；;。！？：｜|")
-            if bare not in window:
-                # 一行装不下"起点到数字"时，改成让数字收在行尾，数字本身必须完整
-                tail = index + len(bare)
-                head = max(0, tail - MAX_CAPTION_CHARS)
-                while head > 0 and text[head].isdigit() and text[head - 1].isdigit():
-                    head -= 1
-                window = text[head:head + MAX_CAPTION_CHARS].strip(" ，,；;。！？：｜|")
-            if bare in window:
-                # 行尾正好切在数字后面时，把单位也带上（"1.52" → "1.52%"）
-                if window.endswith(bare):
-                    follow = text[text.find(window) + len(window) :][:1]
-                    if follow in ("%", "％", "亿", "万", "倍"):
-                        window += follow
-                return window
-    return _caption(text)
+    if not bare:
+        return _caption(text)
+    index = text.find(bare)
+    if index < 0:
+        return _caption(text)
+    end = index + len(bare)
+    for unit in _UNITS:  # 数字后面的单位一并算进"必须完整"的范围
+        if text.startswith(unit, end):
+            end += len(unit)
+            break
+    start = 0
+    for mark in "，,；;。！？：｜| \n":
+        position = text.rfind(mark, 0, index)
+        if position >= 0:
+            start = max(start, position + 1)
+    # 不要把年份切成"24年"这种半截：起点落在数字串里就把整串带上
+    while start > 0 and text[start].isdigit() and text[start - 1].isdigit():
+        start -= 1
+    if end - start <= MAX_CAPTION_CHARS:
+        return text[start:end].strip(" ，,；;。！？：｜|")
+    # 一行装不下"起点到数字"：让数字收在行尾，数字本身必须完整
+    head = max(0, end - MAX_CAPTION_CHARS)
+    while head > 0 and text[head].isdigit() and text[head - 1].isdigit():
+        head -= 1
+    window = text[head:end].strip(" ，,；;。！？：｜|")
+    if head > 0:
+        # 从句子中间切进来必须留省略号；但"…的净息差"这种以虚词打头仍然难读，
+        # 再往前吃掉一两个虚词，读起来才像"…净息差环比下降"。
+        while window[:1] in ("的", "地", "得", "了", "是", "在", "为", "与", "和", "、"): 
+            window = window[1:]
+        window = "…" + window
+    return window
 
 
 def _points(digest: Any, limit: int) -> list[Any]:

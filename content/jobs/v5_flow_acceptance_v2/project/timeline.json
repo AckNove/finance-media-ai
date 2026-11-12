@@ -1,0 +1,320 @@
+{
+ "canvas": {
+  "w": 1080,
+  "h": 1920,
+  "fps": 30,
+  "frames": 1080,
+  "bg": "#1d2a44"
+ },
+ "clips": {
+  "solid_1d2a44": {
+   "frames_dir": "plates/a23fab5d2c0b",
+   "n": 120,
+   "fps": 30.0,
+   "w": 1080,
+   "h": 1920,
+   "pattern": "%05d.png"
+  },
+  "CARD_sh03": {
+   "frames_dir": ".openkatana/compositions/86c505b902224062a7ab0ea6758f5e2f/frames",
+   "pattern": "%05d.png",
+   "n": 135,
+   "fps": 30,
+   "w": 1080,
+   "h": 1920
+  },
+  "CARD_sh04": {
+   "frames_dir": ".openkatana/compositions/35ebe2d119a844f7abc77e8c19092b31/frames",
+   "pattern": "%05d.png",
+   "n": 135,
+   "fps": 30,
+   "w": 1080,
+   "h": 1920
+  }
+ },
+ "shots": [
+  {
+   "f0": 0,
+   "f1": 120,
+   "bg": "#1d2a44",
+   "clip": "solid_1d2a44",
+   "src": 0,
+   "speed": 1,
+   "loop": "loop",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 120,
+   "f1": 255,
+   "bg": "#1d2a44",
+   "clip": "solid_1d2a44",
+   "src": 0,
+   "speed": 1,
+   "loop": "loop",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "transition": {
+    "type": "dissolve",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 255,
+   "f1": 390,
+   "clip": "CARD_sh03",
+   "src": 0,
+   "speed": 1,
+   "cam": {
+    "punch": {
+     "v": 0.06,
+     "d": 0.25
+    },
+    "fit": "cover",
+    "cover": true
+   },
+   "transition": {
+    "type": "slide",
+    "d": 0.4,
+    "dir": "up"
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 390,
+   "f1": 525,
+   "clip": "CARD_sh04",
+   "src": 0,
+   "speed": 1,
+   "cam": {
+    "pan": {
+     "dy": 0.05
+    },
+    "fit": "cover",
+    "cover": true
+   },
+   "transition": {
+    "type": "dissolve",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 525,
+   "f1": 660,
+   "bg": "#1d2a44",
+   "clip": "solid_1d2a44",
+   "src": 0,
+   "speed": 1,
+   "loop": "loop",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "transition": {
+    "type": "wipe",
+    "d": 0.4,
+    "dir": "ltr"
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 660,
+   "f1": 795,
+   "bg": "#1d2a44",
+   "clip": "solid_1d2a44",
+   "src": 0,
+   "speed": 1,
+   "loop": "loop",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "transition": {
+    "type": "dip",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 795,
+   "f1": 930,
+   "bg": "#1d2a44",
+   "clip": "solid_1d2a44",
+   "src": 0,
+   "speed": 1,
+   "loop": "loop",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 930,
+   "f1": 1080,
+   "bg": "#1d2a44",
+   "clip": "solid_1d2a44",
+   "src": 0,
+   "speed": 1,
+   "loop": "loop",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "transition": {
+    "type": "dissolve",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  }
+ ],
+ "fonts": [
+  {
+   "family": "AKSC",
+   "url": "fonts/NotoSansSC-VF.ttf"
+  }
+ ],
+ "text": [
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "分析：商业银行靠什么赚钱、净息差为什",
+   "f0": 0,
+   "f1": 120,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "近日，国家金融监督管理总局公布20…",
+   "f0": 120,
+   "f1": 255,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "今日，国家金融监督管理总局发布20…",
+   "f0": 525,
+   "f1": 660,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "21深度ㅣ万亿信用卡之变：",
+   "f0": 660,
+   "f1": 795,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "11月2日，多家电商平台的尾款支付…",
+   "f0": 795,
+   "f1": 930,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "资料汇编 · 不是投资建议",
+   "f0": 930,
+   "f1": 1080,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  }
+ ]
+}

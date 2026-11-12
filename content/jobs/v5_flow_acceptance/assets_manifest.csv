@@ -1,5 +1,0 @@
-asset_id,asset_class,kind,file,source_id,publisher,source_url,retrieved_at,sha256,license,commercial_use,credit,verification_status,used_in_shots,purpose
-CARD_sh03,B,composition,assets/compositions/card_sh03.json,CARD_sh03,本仓库,,,a2938495f51715b7a86f712b156baa9e1ec632f1d12568466ad06cf891ff6149,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,CARD_sh03,数据卡 CARD_sh03
-CARD_sh04,B,composition,assets/compositions/card_sh04.json,CARD_sh04,本仓库,,,7af097fd196c2988f456ea07ab64cb20a355680622370777a1219f8cbe11d432,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,CARD_sh04,数据卡 CARD_sh04
-CARD_sh06,B,composition,assets/compositions/card_sh06.json,CARD_sh06,本仓库,,,57130802a2db854e15569da1040d00fbec6227d1f2bace7b17580b5fb2692509,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,CARD_sh06,数据卡 CARD_sh06
-CARD_sh07,B,composition,assets/compositions/card_sh07.json,CARD_sh07,本仓库,,,0f6d2fadb93e75bf11ec4a9244613c76d87fb1792772f8ccd0c47b22800f23f4,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,CARD_sh07,数据卡 CARD_sh07

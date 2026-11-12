@@ -1,4 +1,4 @@
-# v5_flow_acceptance 分镜草稿（规则生成）
+# v5_flow_acceptance_v2 分镜草稿（规则生成）
 
 - 标题：分析：商业银行靠什么赚钱、净息差为什么下降
 - 生成方式：**纯规则**（`backend/app/video/outline.py`），没有调用任何模型。
