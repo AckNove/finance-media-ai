@@ -50,9 +50,18 @@ def test_only_parser_tools_are_claimed_as_implemented():
     这条断言的两半都必须成立，防止有人只改标记不改实现（或反之）。
     """
     claimed = sorted(name for name, spec in TOOL_SPECS.items() if spec.implemented)
-    assert claimed == ["fetch_url", "llm_complete", "parse_pdf", "parse_xlsx", "web_search"], (
-        f"声称已实现的工具集合变了: {claimed}"
-    )
+    assert claimed == [
+        "db_query",
+        "db_write",
+        "fact_check",
+        "fetch_url",
+        "handoff",
+        "llm_complete",
+        "parse_pdf",
+        "parse_xlsx",
+        "task_update",
+        "web_search",
+    ], f"声称已实现的工具集合变了: {claimed}"
 
     registry = get_tool_registry()
     assert sorted(name for name in TOOL_NAMES if registry.is_implemented(name)) == claimed
@@ -121,9 +130,13 @@ def test_dispatch_returns_denied_for_out_of_whitelist_tool():
     assert result.error_code == "tool_not_in_whitelist"
 
 
-def test_dispatch_returns_not_implemented_for_registered_tool():
-    """登记了契约但没有实现 → not_implemented（不是 ok、不是 error）。"""
-    result = get_tool_registry().dispatch(CallerContext.human(), "db_query")
+def test_dispatch_returns_not_implemented_for_tool_without_provider():
+    """登记了契约但注册表里没挂实现 → not_implemented（不是 ok、不是 error）。
+
+    默认注册表现在把十个工具都挂上了，所以这里用一个空注册表来验证"没实现就是
+    没实现"，而不是靠某个具体工具还欠着。
+    """
+    result = ToolRegistry().dispatch(CallerContext.human(), "db_query")
     assert result.status == "not_implemented"
     assert result.error_code == "not_implemented"
     assert result.data is None
@@ -152,10 +165,21 @@ def test_registry_dispatches_to_registered_provider():
 
 
 def test_default_registry_matches_declared_implementations():
-    """默认注册表里能派发的工具，必须恰好等于 ``implemented=True`` 的那五个。"""
+    """默认注册表里能派发的工具，必须恰好等于 ``implemented=True`` 的那些。"""
     registry = get_tool_registry()
     implemented = sorted(name for name in TOOL_NAMES if registry.is_implemented(name))
-    assert implemented == ["fetch_url", "llm_complete", "parse_pdf", "parse_xlsx", "web_search"]
+    assert implemented == [
+        "db_query",
+        "db_write",
+        "fact_check",
+        "fetch_url",
+        "handoff",
+        "llm_complete",
+        "parse_pdf",
+        "parse_xlsx",
+        "task_update",
+        "web_search",
+    ]
 
 
 def test_parser_tool_reaches_real_adapter_through_default_registry():

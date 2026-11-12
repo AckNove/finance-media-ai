@@ -100,16 +100,19 @@ TOOL_SPECS: dict[str, ToolSpec] = {
     "db_query": ToolSpec(
         name="db_query",
         category="storage",
-        implemented=False,
-        notes="只读查询；等价能力目前散在服务层，尚无统一的工具实现",
+        implemented=True,
+        notes="已由 capabilities/storage/tool.py 实现（V5.0 M11）：SQLAlchemy Core 组语句，"
+        "表/列只能是 ORM 里真实存在的对象，强制 LIMIT（默认 50、上限 200），无原始 SQL 入口",
     ),
     "db_write": ToolSpec(
         name="db_write",
         category="storage",
         required_scope="evidence",
         agent_only=True,
-        implemented=False,
-        notes="写操作必须过 CallerContext 的 db_scopes，禁止写 model_calls 金额字段",
+        implemented=True,
+        notes="已由 capabilities/storage/tool.py 实现（V5.0 M11）：三层约束——表白名单"
+        "（不含 model_calls/tool_calls/调度表）、Agent 的 db_scopes 必须含该表、列黑名单"
+        "（金额与租约字段）",
     ),
     "llm_complete": ToolSpec(
         name="llm_complete",
@@ -124,23 +127,26 @@ TOOL_SPECS: dict[str, ToolSpec] = {
         category="orchestration",
         required_scope="research_tasks",
         agent_only=True,
-        implemented=False,
-        notes="推进子任务状态；非法迁移返回 422 并带 details.allowed",
+        implemented=True,
+        notes="已由 backend/app/execution/tools.py 实现（V5.0 M11）：动作只有 heartbeat/"
+        "complete/fail/release/request_human_review，全部经 TaskRuntime（租约 + 令牌校验），"
+        "过期令牌返回 stale_attempt",
     ),
     "handoff": ToolSpec(
         name="handoff",
         category="orchestration",
-        implemented=False,
-        notes="五型交接：request_subtask/request_revision/need_human/"
-        "insufficient_evidence/request_asset",
+        implemented=True,
+        notes="已由 backend/app/execution/tools.py 实现（V5.0 M11）：五型交接里只有 "
+        "need_human 改状态（转人工复核），其余四型写 direction_changed 事件待平台处理",
     ),
     "fact_check": ToolSpec(
         name="fact_check",
         category="verification",
         required_scope="evidence",
         agent_only=True,
-        implemented=False,
-        notes="核对引文与原文快照一致性（quote_hash），不可搜索新资料",
+        implemented=True,
+        notes="已由 capabilities/verification/tool.py 实现（V5.0 M11）：只核对已落盘快照、"
+        "逐字包含、校验快照 SHA-256；不联网、不做模糊匹配，找不到只说需人工复核",
     ),
 }
 
@@ -205,9 +211,9 @@ def get_tool_registry() -> ToolRegistry:
     """进程内默认注册表。
 
     首次创建时挂上**已真实实现**的适配器（MarkItDown 解析器 + 统一模型网关 +
-    真实搜索/抓取）；其余工具保持"未实现"，dispatch 返回 ``not_implemented``。
-    适配器的导入放在函数内部，避免 ``adapters``/``model``/``search`` ↔ ``tools``
-    的循环导入。
+    真实搜索/抓取 + 存储读写 + 证据核查 + 编排推进）；十个工具现在全部有实现。
+    适配器的导入放在函数内部，避免 ``adapters``/``model``/``search``/``storage``/
+    ``verification``/``execution`` ↔ ``tools`` 的循环导入。
     """
     global _default_registry
     if _default_registry is None:
@@ -215,10 +221,18 @@ def get_tool_registry() -> ToolRegistry:
         from backend.app.capabilities.adapters import register_parser_adapters
         from backend.app.capabilities.model.tool import register_model_adapters
         from backend.app.capabilities.search.tool import register_search_adapters
+        from backend.app.capabilities.storage.tool import register_storage_adapters
+        from backend.app.capabilities.verification.tool import (
+            register_verification_adapters,
+        )
+        from backend.app.execution.tools import register_execution_adapters
 
         register_parser_adapters(registry)
         register_model_adapters(registry)
         register_search_adapters(registry)
+        register_storage_adapters(registry)
+        register_verification_adapters(registry)
+        register_execution_adapters(registry)
         _default_registry = registry
     return _default_registry
 

@@ -590,6 +590,76 @@ class TaskRuntime:
                 budget_max_cost_cny=task.budget_max_cost,
             )
 
+    def claim_for(self, task_id: int, subtask_id: int, attempt_token: str) -> Claim:
+        """按令牌重建一次抢占（供工具层使用：Agent 只带身份来，不携带 Claim 对象）。
+
+        校验规则与 `heartbeat` 一致：令牌不符即 `stale_attempt`——过期的 worker
+        拿着旧令牌永远推不动任何状态，这正是我们要的。
+        """
+        if not attempt_token:
+            raise TaskRuntimeError("missing_token", "缺少抢占令牌")
+        with self._session() as session:
+            task = session.get(ResearchTask, task_id)
+            if task is None:
+                raise TaskRuntimeError("unknown_task", f"任务 {task_id} 不存在")
+            subtask = session.get(ResearchSubtask, subtask_id)
+            if subtask is None or subtask.research_task_id != task_id:
+                raise TaskRuntimeError(
+                    "unknown_subtask", f"子任务 {subtask_id} 不属于任务 {task_id}"
+                )
+            claim = Claim(
+                task_id=task_id,
+                subtask_id=subtask_id,
+                sequence=subtask.sequence,
+                task_type=subtask.task_type,
+                assignee=subtask.assignee,
+                question=subtask.question,
+                attempt=subtask.attempts,
+                max_attempts=subtask.max_attempts,
+                attempt_token=attempt_token,
+                lease_until=_as_utc(task.lease_until),
+                input_payload=_with_upstream(
+                    subtask.input_payload, session=session, subtask=subtask
+                ),
+                budget_max_calls=task.budget_max_calls,
+                budget_max_cost_cny=task.budget_max_cost,
+            )
+            self._require_token(session, claim)
+            return claim
+
+    def record_handoff(
+        self,
+        claim: Claim,
+        *,
+        kind: str,
+        reason: str,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """记录一次"交接"（Agent 要求新建子任务 / 改稿 / 补素材 / 证据不足）。
+
+        只写事件不改状态机：状态推进必须由 `complete`/`fail`/`request_human_review`
+        这些显式动作完成，否则审计链会出现"没人知道谁把它改了"的空档。
+        """
+        with self._session() as session:
+            task = self._require_token(session, claim)
+            event = self._event(
+                session,
+                task,
+                TaskEventType.DIRECTION_CHANGED,
+                subtask=session.get(ResearchSubtask, claim.subtask_id),
+                actor=claim.assignee or "agent",
+                payload={"kind": kind, "reason": reason, "request": payload or {}},
+            )
+            session.commit()
+            return {
+                "kind": kind,
+                "reason": reason,
+                "task_id": claim.task_id,
+                "subtask_id": claim.subtask_id,
+                "event_seq": event.event_seq,
+                "event_type": event.event_type.value,
+            }
+
     def heartbeat(self, claim: Claim, *, worker: str | None = None) -> Claim:
         """续租。令牌不符直接拒绝——防止过期 worker 继续推进。"""
         with self._session() as session:
