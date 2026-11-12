@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -40,6 +41,8 @@ from backend.app.models.enums import AgentStatus
 
 if TYPE_CHECKING:
     from backend.app.capabilities.search.engine import SearchHit
+
+logger = logging.getLogger(__name__)
 
 OutcomeStatus = Literal["completed", "blocked", "failed", "retry"]
 
@@ -308,7 +311,31 @@ class AgentExecutor:
             "errors": errors,
             "note": "检索词由关键词规则拆分，未使用模型；如需多角度拆解请配置模型后走 research.plan",
         }
+        recorded = self._persist_sources(output)
+        if recorded is not None:
+            output["recorded_sources"] = recorded
         return ExecutionOutcome(status="completed", output=output, tool_calls=tuple(tool_calls))
+
+    def _persist_sources(self, output: dict[str, Any]) -> dict[str, Any] | None:
+        """把这一轮抓到的页面写进 ``sources`` 表，供资料库与证据链引用。"""
+        from backend.app.research.digest import sources_from_collect
+        from backend.app.research.persistence import record_sources
+
+        try:
+            refs = sources_from_collect([output])
+            if not refs:
+                return None
+            with self._session_factory() as session:
+                recorded = record_sources(session, refs)
+                session.commit()
+            return {
+                "created": recorded.created,
+                "updated": recorded.updated,
+                "source_ids": dict(recorded.mapping),
+            }
+        except Exception as error:  # noqa: BLE001 - 入库失败不该让整轮采集白跑
+            logger.warning("来源入库失败（抓取结果仍保留在输出里）：%s", error)
+            return None
 
     def _extract(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """对已登记的本地文件做带定位的结构化抽取。"""
@@ -322,9 +349,15 @@ class AgentExecutor:
         payload = claim.input_payload if isinstance(claim.input_payload, dict) else {}
         files = payload.get("files") or []
         if not isinstance(files, list) or not files:
+            # 没有本地文件不是错误：这条研究线本来就是"只靠网页资料"。
+            # 如实记一笔"跳过了"，让后面的阶段继续跑；真给了路径却抽不出来才失败。
             return ExecutionOutcome(
-                status="failed",
-                reason="bad_arguments:input_payload.files 为空（需要已登记的文件路径）",
+                status="completed",
+                output={
+                    "documents": [],
+                    "skipped": True,
+                    "note": "本次没有已登记的本地文件，抽取阶段空跑（不是失败）",
+                },
             )
         documents: list[dict[str, Any]] = []
         tool_calls: list[dict[str, Any]] = []
@@ -433,7 +466,11 @@ class AgentExecutor:
 
     def _analyze(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """把上游资料汇编成"候选数据点表"，并在没有模型时如实标 blocked。"""
+        from backend.app.research.verify import verify_points
+
         digest, _payload, paths = self._digest_for(claim)
+        # 即使是草稿也先落库：证据链不能等"有模型了"才存在
+        persisted = self._persist_report(claim, digest, verify_points(digest))
         blocked = self._model_blocked(claim)
         output = {
             "generated_by": "rules",
@@ -448,6 +485,8 @@ class AgentExecutor:
                 "（对比、归因、趋势判断都需要模型）。"
             ),
         }
+        if persisted is not None:
+            output["report"] = persisted
         if blocked.status == "blocked":
             output["next_step"] = (blocked.output or {}).get("next_step", "")
             return ExecutionOutcome(
@@ -459,7 +498,11 @@ class AgentExecutor:
 
     def _synthesize(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """汇总成研究底稿；分析小结需要模型，缺模型时标 blocked 并保留底稿。"""
+        from backend.app.research.verify import verify_points
+
         digest, _payload, paths = self._digest_for(claim)
+        verification = verify_points(digest)
+        persisted = self._persist_report(claim, digest, verification)
         blocked = self._model_blocked(claim)
         output = {
             "generated_by": "rules",
@@ -474,6 +517,8 @@ class AgentExecutor:
                 "结论必须由模型基于这些证据写，脚本化模板不算研究报告。"
             ),
         }
+        if persisted is not None:
+            output["report"] = persisted
         if blocked.status == "blocked":
             output["next_step"] = (blocked.output or {}).get("next_step", "")
             return ExecutionOutcome(
@@ -482,6 +527,52 @@ class AgentExecutor:
                 output=output,
             )
         return ExecutionOutcome(status="completed", output=output)
+
+    def _persist_report(
+        self, claim: Claim, digest: Any, verification: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """把来源、报告骨架与证据行写进库——证据链必须是**库里的数据**。"""
+        from backend.app.research.persistence import (
+            digest_fingerprint,
+            record_evidence,
+            record_report,
+            record_sources,
+        )
+
+        try:
+            with self._session_factory() as session:
+                recorded = record_sources(session, digest.sources)
+                report = record_report(
+                    session,
+                    digest=digest,
+                    research_task_id=claim.task_id,
+                    outline=[
+                        {"source_id": ref.source_id, "title": ref.title, "url": ref.url}
+                        for ref in digest.sources
+                    ],
+                )
+                rows = record_evidence(
+                    session,
+                    report=report,
+                    digest=digest,
+                    source_ids=recorded.mapping,
+                    verification=verification,
+                )
+                session.commit()
+                return {
+                    "report_id": report.id,
+                    "evidence_rows": len(rows),
+                    "verified_rows": sum(
+                        1 for row in rows if row.verification_status.value == "verified"
+                    ),
+                    "sources_created": recorded.created,
+                    "sources_updated": recorded.updated,
+                    "source_ids": dict(recorded.mapping),
+                    "fingerprint": digest_fingerprint(digest),
+                }
+        except Exception as error:  # noqa: BLE001 - 落库失败要如实说，但不能丢底稿
+            logger.warning("报告/证据入库失败（底稿已落盘）：%s", error)
+            return None
 
     def _verify_claims(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """在原文里核对候选数据点是否真的出现过（可自动做的那部分）。"""

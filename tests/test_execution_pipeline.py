@@ -31,6 +31,7 @@ from backend.app.execution.runtime import TaskRuntime, TaskRuntimeError
 from backend.app.execution.worker import Worker
 from backend.app.models.agent import AgentRun
 from backend.app.models.enums import AgentStatus
+from backend.app.models.execution import ResearchTask
 
 
 @pytest.fixture(scope="module")
@@ -224,6 +225,44 @@ def test_unknown_pipeline_is_rejected(runtime: TaskRuntime) -> None:
     assert error.value.reason == "unknown_pipeline"
 
 
+def test_skipping_named_stages_is_recorded_with_the_reason(factory) -> None:
+    runtime = TaskRuntime(factory)
+    plan = Orchestrator(runtime).plan_task(
+        title="规则模式",
+        objective="没有模型时先跑采集",
+        skip=["topic_candidate", "topic_scoring", "research_plan"],
+        skip_reason="当前没有模型密钥，先跑不需要模型的阶段",
+    )
+    assert plan.skipped_stages == ["topic_candidate", "topic_scoring", "research_plan"]
+    assert plan.task.status == "running", "默认建完就启动"
+    task_types = [stage.task_type for stage in plan.stages]
+    assert "topic.discover" not in task_types
+    assert task_types[0] == "research.collect", "跳过之后采集是第一格"
+    with factory() as session:
+        row = session.get(ResearchTask, plan.task.id)
+        assert row is not None
+        assert row.plan["skip_reason"] == "当前没有模型密钥，先跑不需要模型的阶段"
+        assert row.plan["skipped_stages"] == [
+            "topic_candidate",
+            "topic_scoring",
+            "research_plan",
+        ]
+
+
+def test_skipping_an_unknown_stage_is_rejected(factory) -> None:
+    with pytest.raises(TaskRuntimeError) as error:
+        Orchestrator(TaskRuntime(factory)).plan_task(title="x", skip=["不存在的阶段"])
+    assert error.value.reason == "unknown_stage"
+
+
+def test_planning_without_starting_keeps_the_task_created(factory) -> None:
+    runtime = TaskRuntime(factory)
+    plan = Orchestrator(runtime).plan_task(title="先看计划", start=False)
+    assert plan.task.status == "created"
+    assert plan.stages, "计划照样要落库"
+    assert runtime.claim_next(worker="w") is None, "没启动就抢不到活"
+
+
 # ---------------------------------------------------------------- 执行器
 
 
@@ -307,7 +346,10 @@ def test_collect_turns_a_tool_exception_into_retry(runtime: TaskRuntime, factory
     assert outcome.reason.startswith("exception:RuntimeError")
 
 
-def test_extract_needs_registered_files(runtime: TaskRuntime, factory) -> None:
+def test_extract_without_files_is_an_empty_pass_not_a_failure(
+    runtime: TaskRuntime, factory
+) -> None:
+    """只靠网页资料的研究线不该因为"没有本地文件"就断掉整条链。"""
     task = runtime.create_task(title="证据提取", objective="从财报里提证据")
     runtime.add_subtask(
         task.id, sequence=1, question="提取利润表", task_type="research.extract"
@@ -316,8 +358,29 @@ def test_extract_needs_registered_files(runtime: TaskRuntime, factory) -> None:
     claim = runtime.claim_next(worker="worker-1")
     assert claim is not None
     outcome = AgentExecutor(tools=FakeTools(), session_factory=factory).execute(claim)
+    assert outcome.status == "completed"
+    assert outcome.output["skipped"] is True
+    assert outcome.output["documents"] == []
+    assert "不是失败" in outcome.output["note"]
+
+
+def test_extract_fails_when_given_paths_but_nothing_could_be_read(
+    runtime: TaskRuntime, factory, tmp_path
+) -> None:
+    task = runtime.create_task(title="证据提取", objective="从财报里提证据")
+    runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="提取利润表",
+        task_type="research.extract",
+        input_payload={"files": [str(tmp_path / "不存在.csv")]},
+    )
+    runtime.start_task(task.id)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+    outcome = AgentExecutor(tools=FakeTools(), session_factory=factory).execute(claim)
     assert outcome.status == "failed"
-    assert outcome.reason.startswith("bad_arguments")
+    assert outcome.reason == "no_document_extracted"
 
 
 def test_extract_reads_a_real_csv_with_row_locations(

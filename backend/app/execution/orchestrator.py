@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Any
+from typing import Any, Sequence
 
 from backend.app.core.config import get_agent_routing, get_pipelines_config
 from backend.app.execution.runtime import (
@@ -127,8 +127,18 @@ class Orchestrator:
         budget_max_cost_cny: Decimal | float | None = None,
         max_attempts: int = 2,
         requested_by: str = "human",
+        skip: Sequence[str] = (),
+        skip_reason: str = "",
+        start: bool = True,
     ) -> PlanResult:
-        """建任务 + 按流水线落子任务 + 记人工闸门。"""
+        """建任务 + 按流水线落子任务 + 记人工闸门。
+
+        ``skip`` 是**显式跳过**某些阶段 id（不是自动降级）：例如当前没有模型密钥，
+        就跳过 ``topic.discover``/``research.plan``，先跑不需要模型的采集阶段。
+        跳过会写进计划里并带上 ``skip_reason``，事后能看出"这一跑少了什么、为什么"。
+
+        ``start=False`` 时只建计划不启动，便于人先看计划再放行。
+        """
         stages = self.pipeline_stages(pipeline)
         task = self.runtime.create_task(
             title=title,
@@ -143,6 +153,13 @@ class Orchestrator:
         planned: list[PlannedStage] = []
         gates: list[dict[str, str]] = []
         skipped: list[str] = []
+        skipped_ids = {str(item) for item in skip}
+        unknown = skipped_ids - {str(getattr(stage, "id", "")) for stage in stages}
+        if unknown:
+            raise TaskRuntimeError(
+                "unknown_stage",
+                f"流水线 {pipeline} 没有这些阶段：{', '.join(sorted(unknown))}",
+            )
         # 先把"每个 gate 挂在哪个 task 阶段**之后**"算出来，再建子任务。
         # 语义：gate 是"看完成果再放行"，所以标记落在前一个 task 阶段上，
         # worker 在它完成之后把任务置为 paused，等人审批再 resume。
@@ -167,11 +184,21 @@ class Orchestrator:
 
         previous_id: int | None = None
         counter: dict[str, int] = {}
+        skipped_gates: list[dict[str, str]] = []
         for stage in stages:
             kind = str(getattr(stage, "kind", "task"))
             if kind == "gate":
                 continue
             task_type = str(stage.task_type)
+            if str(stage.id) in skipped_ids:
+                # 显式跳过：不建子任务，也不占用 depends_on 链
+                skipped.append(str(stage.id))
+                coerce_task_type(task_type)  # 跳过的阶段也要是合法 task_type
+                counter[task_type] = counter.get(task_type, 0) + 1
+                gate = gate_after.get(f"{task_type}#{counter[task_type]}")
+                if gate is not None:
+                    skipped_gates.append(gate)
+                continue
             coerce_task_type(task_type)  # 未登记的 task_type 立刻拒绝
             counter[task_type] = counter.get(task_type, 0) + 1
             key = f"{task_type}#{counter[task_type]}"
@@ -223,6 +250,8 @@ class Orchestrator:
             "stages": [stage.as_dict() for stage in planned],
             "human_gates": gates,
             "skipped_stages": skipped,
+            "skipped_gates": skipped_gates,
+            "skip_reason": skip_reason,
             "input": {"queries": queries or [], "files": files or []},
             "note": (
                 "阶段顺序来自 config/pipelines.yaml；人工闸门以 require_human_review "
@@ -230,6 +259,8 @@ class Orchestrator:
             ),
         }
         updated = self.runtime.set_plan(task.id, plan, planner="pipeline:" + pipeline)
+        if start:
+            updated = self.runtime.start_task(task.id)
         return PlanResult(
             task=updated, stages=planned, human_gates=gates, skipped_stages=skipped
         )

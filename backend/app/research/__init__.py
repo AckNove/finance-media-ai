@@ -14,15 +14,31 @@ from backend.app.research.digest import (
     sources_from_collect,
     write_digest,
 )
+from backend.app.research.persistence import (
+    RecordedSources,
+    classify_source_type,
+    credibility_for,
+    digest_fingerprint,
+    record_evidence,
+    record_report,
+    record_sources,
+)
 from backend.app.research.verify import verify_points
 
 __all__ = [
     "SCHEMA_VERSION",
     "DataPoint",
     "Digest",
+    "RecordedSources",
     "SourceRef",
     "build_digest",
+    "classify_source_type",
+    "credibility_for",
+    "digest_fingerprint",
     "extract_data_points",
+    "record_evidence",
+    "record_report",
+    "record_sources",
     "sources_from_collect",
     "verify_points",
     "write_digest",

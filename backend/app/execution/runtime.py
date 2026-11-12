@@ -112,34 +112,57 @@ def _with_upstream(
 
     为什么要这么做：研究流水线是链式的——综述要读采集到的正文，脚本要读综述，
     事实核查要读脚本。如果每一格都靠调用方自己拼 payload，编排器就得预知所有下游
-    需要什么，写出来的依赖会越来越脆。这里统一按 ``research_subtask_dependencies``
-    取**已成功**的直接前驱输出，附带序号与 task_type，让处理器自己挑。
+    需要什么，写出来的依赖会越来越脆。
 
-    只放直接前驱：整条链的输出都塞进来会让 payload 随流程线性膨胀。
+    取的是**全部已成功的祖先**（不是只有直接前驱）：整条链是
+    collect → extract → analyze → synthesize，如果只传直接前驱，
+    analyze 就只能看到 extract 的空结果、看不到 collect 抓到的正文。
+    按序号升序排列，让下游"越靠前越原始"。
     """
     base: dict[str, Any] = dict(payload) if isinstance(payload, Mapping) else {}
     if session is None or subtask is None:
         return base
     upstream: list[dict[str, Any]] = []
-    dependencies = session.execute(
-        select(ResearchSubtaskDependency.depends_on_subtask_id).where(
-            ResearchSubtaskDependency.subtask_id == subtask.id
+    seen: set[int] = set()
+    frontier = list(
+        session.execute(
+            select(ResearchSubtaskDependency.depends_on_subtask_id).where(
+                ResearchSubtaskDependency.subtask_id == subtask.id
+            )
         )
-    ).scalars().all()
-    for dependency_id in dependencies:
-        previous = session.get(ResearchSubtask, dependency_id)
-        if previous is None or previous.status != SubtaskStatus.SUCCEEDED:
+        .scalars()
+        .all()
+    )
+    while frontier:
+        dependency_id = frontier.pop()
+        if dependency_id in seen:
             continue
-        upstream.append(
-            {
-                "subtask_id": previous.id,
-                "sequence": previous.sequence,
-                "task_type": previous.task_type,
-                "question": previous.question,
-                "output": previous.output_payload,
-            }
+        seen.add(dependency_id)
+        previous = session.get(ResearchSubtask, dependency_id)
+        if previous is None:
+            continue
+        if previous.status == SubtaskStatus.SUCCEEDED:
+            upstream.append(
+                {
+                    "subtask_id": previous.id,
+                    "sequence": previous.sequence,
+                    "task_type": previous.task_type,
+                    "question": previous.question,
+                    "output": previous.output_payload,
+                }
+            )
+        # 继续往上找：即使中间某格失败，它的更早产物仍可能有用
+        frontier.extend(
+            session.execute(
+                select(ResearchSubtaskDependency.depends_on_subtask_id).where(
+                    ResearchSubtaskDependency.subtask_id == dependency_id
+                )
+            )
+            .scalars()
+            .all()
         )
     if upstream:
+        upstream.sort(key=lambda item: item["sequence"])
         base["_upstream"] = upstream
     return base
 
