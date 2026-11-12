@@ -19,6 +19,7 @@ EXPECTED_CHECK_NAMES = {
     "task_type_registry",
     "agent_roster",
     "tool_specs",
+    "skill_registry",
     "route_callers",
     "pricing",
     "database",
@@ -113,6 +114,14 @@ def test_tool_spec_mismatch_is_reported(monkeypatch: pytest.MonkeyPatch):
     tool_check = next(r for r in report.results if r.name == "tool_specs")
     assert tool_check.ok is False
     assert "ghost_tool" in tool_check.detail
+
+
+def test_skill_registry_is_checked_at_startup():
+    report = run_startup_checks(_app())
+    skill_check = next(r for r in report.results if r.name == "skill_registry")
+
+    assert skill_check.ok is True
+    assert "5" in skill_check.detail
 
 
 def test_startup_report_is_attached_to_app_state():

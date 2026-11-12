@@ -23,6 +23,7 @@ from backend.app.api.router import ROUTE_CALLERS
 from backend.app.capabilities.tools import TOOL_NAMES, TOOL_SPECS
 from backend.app.core.caller import CallerKind
 from backend.app.core.config import (
+    PROJECT_ROOT,
     Settings,
     get_agent_routing,
     get_cost_settings,
@@ -35,6 +36,7 @@ from backend.app.core.logging import get_logger
 from backend.app.execution.routing import validate_registry
 from backend.app.execution.task_types import TASK_TYPES
 from backend.app.services.agent_registry import load_roster, roster_keys_missing_prompts
+from backend.app.skills.registry import SkillRegistry
 
 logger = get_logger(__name__)
 
@@ -137,6 +139,15 @@ def _check_tool_specs() -> CheckResult:
         diff = sorted(set(TOOL_NAMES) ^ set(TOOL_SPECS))
         return CheckResult("tool_specs", False, "error", f"工具名与规格不一致：{diff}")
     return CheckResult("tool_specs", True, "error", f"{len(TOOL_NAMES)} 个工具已登记")
+
+
+def _check_skill_registry() -> CheckResult:
+    """Skill 文件与固定摘要、权限路由必须一致；不加载工具或写日志。"""
+    try:
+        skills = SkillRegistry(PROJECT_ROOT / "skills").skills
+    except Exception as exc:  # noqa: BLE001 - 自检需汇报登记错误
+        return CheckResult("skill_registry", False, "error", f"{type(exc).__name__}: {exc}")
+    return CheckResult("skill_registry", True, "error", f"{len(skills)} 个 Skill 已固定登记")
 
 
 @dataclass(frozen=True)
@@ -337,6 +348,7 @@ def run_startup_checks(app: FastAPI, settings: Settings | None = None) -> Startu
         _check_task_type_registry(),
         _check_agent_roster(),
         _check_tool_specs(),
+        _check_skill_registry(),
         _check_route_callers(app),
         _check_pricing(settings),
         _check_database(settings),

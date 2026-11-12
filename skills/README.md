@@ -4,12 +4,14 @@
 目录里至少有一个 `SKILL.md`，开头是 YAML frontmatter（`name`、`description`，可选 `license` 等），
 正文是给 Agent 的操作说明。
 
-**我们不自己发明技能格式，也不建技能管理平台。** 目录即技能，`SKILL.md` 即契约。
+**不发明新的 Skill 文件格式。** 目录仍遵循开放规范；`registry.yaml` 为运行时增加固定摘要、
+来源、版本、任务类型、Agent、依赖和工具权限的机器可读登记。
 
 ## 目录结构
 
 ```
 skills/
+├── registry.yaml            # 固定摘要与权限映射
 ├── ak/                      # AK 自有技能（本仓库原创，随仓库发布）
 │   ├── accessible-explainer/SKILL.md
 │   ├── investigative-storytelling/SKILL.md
@@ -34,6 +36,9 @@ skills/
 - **Skill 负责"怎么做"**（方法、结构、判据），**Tool 负责"能做"**（真实 I/O）。
 - 技能目录本身不执行任何东西；它由 Agent（或人）在写研究笔记 / 写脚本 / 做分镜时读取并遵守。
 - 工具侧的落点是 `backend/app/capabilities/tools.py` 的 `ToolRegistry`，与技能目录解耦。
+- `backend/app/skills/registry.py` 负责发现、校验和按任务加载 Skill；解析类工具通过
+  `ApprovedSources` 再验一次 job 白名单与哈希。加载/工具调用只写状态审计日志，
+  不记录输入或凭据。Skill 本身不是模型执行器；真实 Agent 执行仍需后续接入。
 
 ## 使用纪律
 

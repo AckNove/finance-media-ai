@@ -1,0 +1,55 @@
+# Pinned Skill files. Methods stay separate from executable ToolRegistry providers.
+version: 1
+skills:
+  - name: accessible-explainer
+    path: ak/accessible-explainer/SKILL.md
+    sha256: 86f983f3ae7ed8a88dfe59eddde2ee5dd5480299044226a9a1e2564f7dac9668
+    version: '1'
+    source: local
+    license: Proprietary
+    agents: [financial_researcher, scriptwriter]
+    task_types: [research.analyze, content.script]
+    tools: []
+    dependencies: []
+  - name: investigative-storytelling
+    path: ak/investigative-storytelling/SKILL.md
+    sha256: 3a02c9f4fe9f961925e63ec6be7447598c83285ee6ded42027f727c09b8eb874
+    version: '1'
+    source: local
+    license: Proprietary
+    agents: [orchestrator, scriptwriter]
+    task_types: [research.synthesize, content.script]
+    tools: []
+    dependencies: []
+  - name: ak-signature
+    path: ak/ak-signature/SKILL.md
+    sha256: 0cbd1527a9bb2198ab4a21505f7fe0fbf46868ca4acc0530ed2c05565c1bea86
+    version: '1'
+    source: local
+    license: Proprietary
+    agents: [scriptwriter]
+    task_types: [content.script]
+    tools: []
+    dependencies: []
+  - name: pdf
+    path: vendor/anthropic/pdf/SKILL.md
+    sha256: 10f158ac9e24070fe88d7c31fbc3d2b515f2fb0b85baadc2838e2e2935ed9c9d
+    version: '2c5958e'
+    source: https://github.com/anthropics/skills
+    upstream_commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+    license: Apache-2.0
+    agents: [financial_researcher, football_researcher, industry_researcher, case_analyst]
+    task_types: [research.extract]
+    tools: [parse_pdf]
+    dependencies: [markitdown]
+  - name: xlsx
+    path: vendor/anthropic/xlsx/SKILL.md
+    sha256: 8ea4c55a2997dc8d2352eeb80c62ca40108ef68a52be377be26512c7d38ba40c
+    version: '2c5958e'
+    source: https://github.com/anthropics/skills
+    upstream_commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+    license: Apache-2.0
+    agents: [financial_researcher, football_researcher, industry_researcher, case_analyst]
+    task_types: [research.extract]
+    tools: [parse_xlsx]
+    dependencies: [markitdown]
