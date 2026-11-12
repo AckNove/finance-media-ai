@@ -179,7 +179,7 @@ def test_every_openapi_operation_has_a_caller_declaration(client):
     # 21 个既有操作 + 8 个研究任务 + 3 个监控 + 5 个工作台 + 1 个视频交接
     # + 1 个渲染流水线 + 2 个后台渲染（起进程 / 看进度）= 41。
     # 这个数字是刻意的"绊线"：新增端点必须同步改这里，逼人确认权限声明也补上了。
-    assert len(operations) == 41
+    assert len(operations) == 44
 
 
 def test_only_health_is_public():
@@ -284,8 +284,8 @@ def test_route_walk_finds_every_operation_and_its_attached_dependency(client):
     routes = iter_api_routes(app)
     seen = {(method, route.path): route for route in routes for method in route.methods}
 
-    # 41 个 API 操作 + 1 个豁免端点（GET /）
-    assert len(seen) == 42
+    # 44 个 API 操作 + 1 个豁免端点（GET /）
+    assert len(seen) == 45
     for key, allowed in ROUTE_CALLERS.items():
         if allowed == PUBLIC:
             assert seen[key].allowed is None, f"{key} 是公开端点，不应挂 require_caller"

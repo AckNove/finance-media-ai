@@ -65,3 +65,20 @@ class TopicOut(ORMBase):
     estimated_duration: int | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class TopicCollectionCreate(BaseModel):
+    """把一个选题挂进某个合集。一个选题最多一个主合集。"""
+
+    column_id: int = Field(ge=1)
+    is_primary: bool = False
+    weight: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
+class TopicCollectionOut(ORMBase):
+    topic_id: int
+    column_id: int
+    is_primary: bool
+    weight: float
+    column_code: str = ""
+    column_name: str = ""
