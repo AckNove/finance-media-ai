@@ -62,7 +62,7 @@ REQUIRED_COLUMNS = (
 )
 
 #: Optional columns; when present they must be identical on every row.
-OPTIONAL_COLUMNS = ("fps", "canvas_width", "canvas_height", "notes")
+OPTIONAL_COLUMNS = ("fps", "canvas_width", "canvas_height", "notes", "source_start")
 
 #: What a shot's picture comes from. A and B are documented in the V2.1 report:
 #: ``real_*`` is licensed real media, ``generated_*`` is authored by us, and a
@@ -133,6 +133,9 @@ class Shot:
     sound_effect: str
     safety_zone: str
     notes: str = ""
+    #: 从素材内部第几秒开始取画（只对视频/音频有意义）。
+    #: 同一份登记素材可以在不同镜头用不同入点，比如 S03 的第 0 秒与第 12 秒。
+    source_start: float = 0.0
 
     @property
     def duration(self) -> float:
@@ -163,6 +166,7 @@ class Shot:
             "subtitle": self.subtitle,
             "sound_effect": self.sound_effect,
             "safety_zone": self.safety_zone,
+            "source_start": self.source_start,
         }
 
 
@@ -407,6 +411,7 @@ def parse_storyboard(
                 sound_effect=row.get("sound_effect", ""),
                 safety_zone=safety,
                 notes=row.get("notes", ""),
+                source_start=_optional_seconds(row, "source_start", shot_id),
             )
         )
     return Storyboard(shots=tuple(shots), fps=fps_value, width=width, height=height)
@@ -442,6 +447,27 @@ def _seconds(row: dict[str, str], column: str, shot_id: str) -> float:
     if value < 0:
         raise StoryboardError(
             "bad_number", f"{shot_id}: {column} must be >= 0", shot_id=shot_id, column=column)
+    return round(value, 6)
+
+
+def _optional_seconds(row: dict[str, str], column: str, shot_id: str) -> float:
+    """可选的时间列：留空就是 0，写了就必须是非负数字。"""
+    raw = (row.get(column) or "").strip()
+    if not raw:
+        return 0.0
+    try:
+        value = float(raw)
+    except (TypeError, ValueError) as error:
+        raise StoryboardError(
+            "bad_number",
+            f"{shot_id}: {column} {raw!r} is not a number",
+            shot_id=shot_id,
+            column=column,
+        ) from error
+    if value < 0:
+        raise StoryboardError(
+            "bad_number", f"{shot_id}: {column} must be >= 0", shot_id=shot_id, column=column
+        )
     return round(value, 6)
 
 

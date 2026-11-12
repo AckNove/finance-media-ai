@@ -185,7 +185,7 @@ def test_round_trip_through_disk_keeps_chinese_text(tmp_path: Path) -> None:
     assert storyboard.shots[0].subtitle == "字幕一"
     with target.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
-        assert reader.fieldnames == list(REQUIRED_COLUMNS) + ["fps", "canvas_width", "canvas_height", "notes"]
+        assert reader.fieldnames == list(REQUIRED_COLUMNS) + ["fps", "canvas_width", "canvas_height", "notes", "source_start"]
 
 
 def test_missing_file_raises(tmp_path: Path) -> None:

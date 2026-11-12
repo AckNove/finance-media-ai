@@ -125,6 +125,10 @@ content/jobs/media_toolchain_check/audio/
 content/jobs/media_toolchain_check/output/
 # 引擎每次保存时间轴留下的历史快照（timeline-<hash>.json）同样可再生，不入库。
 content/jobs/*/project/*/timeline-*.json
+# 渲染流水线在引擎工程目录里生成的副本：组合文档被引擎重存后的 assets/，
+# 以及"project/timeline.json 已存在且内容不同"时另存的时间轴。都是产物，不入库。
+content/jobs/*/project/*/assets/
+content/jobs/*/project/timeline.render.json
 # 成片改由本地保留：Phase 2 冻结轮按"不把 MP4 等大体积可再生资产提交到 Git"的口径，
 # 取消了原先的 !content/jobs/*/output/*.mp4 例外。文件仍在磁盘上，路径与 SHA-256 记在
 # docs/research_hub/phase2_artifact_index.md。需要重新入库时删除本节注释并 git add -f 即可。

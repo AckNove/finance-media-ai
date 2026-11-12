@@ -49,7 +49,7 @@ STORYBOARD_ROWS = [
         "narration": "利息净收入占七成",
         "visual_description": "柱状图卡片",
         "asset_id": "C_CHART",
-        "asset_type": "composition",
+        "asset_type": "generated_image",
         "asset_source": "generated",
         "license": "原创",
         "animation": "bar_grow",
@@ -68,7 +68,7 @@ MANIFEST_ROWS = [
     {
         "asset_id": "C_CHART",
         "asset_class": "B",
-        "kind": "composition",
+        "kind": "image",
         "file": "assets/chart.png",
         "source_id": "",
         "publisher": "本仓库程序生成",
@@ -91,7 +91,10 @@ def _write_job(root: Path, *, storyboard_rows=None, manifest_rows=None, with_sto
     (job / "storyboard").mkdir(parents=True, exist_ok=True)
     (job / "assets").mkdir(parents=True, exist_ok=True)
     (job / "project").mkdir(parents=True, exist_ok=True)
+    (job / "fonts").mkdir(parents=True, exist_ok=True)
     (job / "assets" / "chart.png").write_bytes(b"\x89PNG\r\n\x1a\nfake")
+    # 字体只要存在就行：替身引擎不真的排版，但真实引擎会因为缺字体拒收时间轴。
+    (job / "fonts" / "NotoSansSC-VF.ttf").write_bytes(b"fake-font")
 
     if with_storyboard:
         rows = storyboard_rows if storyboard_rows is not None else STORYBOARD_ROWS
@@ -117,13 +120,27 @@ class _FakeEngine:
     def __init__(self, media_path: Path, *, valid: bool = True) -> None:
         self.media_path = media_path
         self.calls: list[str] = []
+        self.import_windows: list[dict] = []
         self._valid = valid
+
+    def save_composition_reloading(self, path: str, document: dict) -> dict:
+        self.calls.append(f"save_composition:{path}")
+        return {"revision": "comp-1"}
+
+    def render_composition(self, path: str, *, width: int | None = None,
+                           height: int | None = None, video: bool = True) -> dict:
+        self.calls.append(f"render_composition:{path}")
+        return {"clip": {"frames_dir": "compositions/comp-1/frames", "pattern": "%05d.png",
+                         "n": 120, "fps": 30, "w": 1080, "h": 1920}}
 
     def version(self) -> EngineVersion:
         return EngineVersion(name="fake", version="0.1.3", ffmpeg="ffmpeg 8.1.2", ffprobe="ffprobe")
 
-    def import_media(self, source: Path, *, rights: str | None = None) -> ImportResult:
-        self.calls.append(f"import_media:{source.name}")
+    def import_media(self, source: Path, *, rights: str | None = None,
+                     start: float | None = None, duration: float | None = None) -> ImportResult:
+        suffix = "" if start in (None, 0) else f"@{start:g}s"
+        self.calls.append(f"import_media:{source.name}{suffix}")
+        self.import_windows.append({"source": source.name, "start": start, "duration": duration})
         return ImportResult(
             kind="image",
             path=source,
@@ -202,6 +219,71 @@ def test_invalid_storyboard_surfaces_the_validator_code(tmp_path: Path) -> None:
     with pytest.raises(RenderError) as error:
         render_job(job, engine=_FakeEngine(tmp_path / "out.mp4"))
     assert error.value.reason == "invalid_storyboard"
+
+
+def _video_manifest(asset_id: str = "S03") -> list[dict]:
+    return [
+        dict(
+            MANIFEST_ROWS[0],
+            asset_id=asset_id,
+            kind="video",
+            file="assets/earth.mp4",
+            license="NASA public domain",
+            commercial_use="allowed",
+        )
+    ]
+
+
+def _write_video_job(root: Path, *, storyboard_rows: list[dict]) -> Path:
+    job = _write_job(root, storyboard_rows=storyboard_rows, manifest_rows=_video_manifest())
+    (job / "assets" / "earth.mp4").write_bytes(b"fake-video")
+    return job
+
+
+def test_one_registered_video_can_be_used_for_two_entry_points(tmp_path: Path) -> None:
+    """分镜里的 S03A / S03B 是同一份登记素材的两个入点，不该被当成未登记素材。"""
+    rows = [
+        dict(STORYBOARD_ROWS[0], asset_id="S03A", asset_type="real_video",
+             source_start="0", end_time="3"),
+        dict(STORYBOARD_ROWS[1], asset_id="S03B", asset_type="real_video",
+             source_start="12", start_time="3", end_time="7"),
+    ]
+    job = _write_video_job(tmp_path, storyboard_rows=rows)
+    engine = _FakeEngine(tmp_path / "out.mp4")
+    report = render_job(job, engine=engine, do_render=False, do_qc=False)
+
+    assert [row["asset_id"] for row in report.assets] == ["S03A", "S03B"]
+    assert {row["registered_as"] for row in report.assets} == {"S03"}
+    assert engine.import_windows == [
+        {"source": "earth.mp4", "start": None, "duration": 3.0},
+        {"source": "earth.mp4", "start": 12.0, "duration": 4.0},
+    ]
+    assert "import_media:earth.mp4@12s" in engine.calls
+
+
+def test_composition_asset_goes_through_the_compositor(tmp_path: Path) -> None:
+    """组合是程序画出来的画面，不能当普通媒体文件导入，必须走组合渲染。"""
+    job = _write_job(tmp_path)
+    document = {
+        "schema": 1,
+        "canvas": {"w": 1080, "h": 1920, "fps": 30, "frames": 120},
+        "root": {"id": "root", "type": "box"},
+        "tracks": [],
+    }
+    (job / "assets" / "chart.json").write_text(
+        json.dumps(document, ensure_ascii=False), encoding="utf-8"
+    )
+    rows = [dict(MANIFEST_ROWS[0], kind="composition", file="assets/chart.json")]
+    job = _write_job(tmp_path, manifest_rows=rows)
+    engine = _FakeEngine(tmp_path / "out.mp4")
+    report = render_job(job, engine=engine, do_render=False, do_qc=False)
+
+    assert engine.calls[:2] == [
+        "save_composition:assets/chart.json",
+        "render_composition:assets/chart.json",
+    ]
+    assert report.assets[0]["frames"] == 120
+    assert report.frames == 210
 
 
 # ------------------------------------------------------------------ 时间轴

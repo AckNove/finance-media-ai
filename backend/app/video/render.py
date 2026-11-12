@@ -16,6 +16,7 @@ import hashlib
 import json
 import logging
 import re
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Mapping
@@ -122,8 +123,77 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def prepare_clips(
-    storyboard: Storyboard,
+def _find_font(job_root: Path, font_path: str) -> Path | None:
+    """在任务目录里找字体：先看相对路径，再按文件名搜一遍任务目录。
+
+    任务目录的布局有两种：字体放 ``<job>/fonts/``，或者放在引擎工程目录里
+    （``<job>/project/<project_id>/fonts/``）。两种都认，但都限定在任务目录内。
+    """
+    direct = job_root / font_path
+    if direct.is_file():
+        return direct
+    name = Path(font_path).name
+    for candidate in sorted(job_root.rglob(name)):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _sync_fonts(job_root: Path, project_dir: Path) -> list[str]:
+    """把任务目录 fonts/ 下的字体复制进工程目录，返回复制过的文件名。
+
+    组合文档用 ``fonts/xxx.ttf`` 这样的相对路径引用字体，引擎相对工程目录解析，
+    所以字体必须在工程里存在。已经存在且大小一致就不重复复制。
+    """
+    source_dir = job_root / "fonts"
+    if not source_dir.is_dir():
+        return []
+    target_dir = project_dir / "fonts"
+    copied: list[str] = []
+    for item in sorted(source_dir.iterdir()):
+        if not item.is_file():
+            continue
+        target = target_dir / item.name
+        if target.is_file() and target.stat().st_size == item.stat().st_size:
+            continue
+        target_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(item, target)
+        copied.append(item.name)
+    return copied
+
+
+def _import_composition(
+    asset_id: str,
+    document_path: Path,
+    *,
+    job_root: Path,
+    engine: VideoEngine,
+) -> dict[str, Any]:
+    """把一份组合文档交给引擎保存并渲染成帧序列。
+
+    组合是"程序画出来的画面"，不是普通媒体文件，所以不能走 import_media。
+    文档里的字体路径写的是任务目录内的相对路径，引擎只认工程目录内的文件，
+    因此这里把任务目录的 fonts/ 复制进工程再渲染。
+    """
+    try:
+        document = json.loads(document_path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise RenderError(
+            "bad_composition", f"{asset_id}: 组合文档不是合法 JSON（{document_path}）：{error}"
+        ) from error
+    relative = document_path.relative_to(job_root).as_posix()
+    try:
+        engine.save_composition_reloading(relative, document)
+        result = engine.render_composition(relative)
+    except MediaEngineError as error:
+        raise RenderError(error.code, f"{asset_id}: 组合渲染失败：{error}") from error
+    clip = dict((result.get("clip") if isinstance(result, dict) else None) or {})
+    if not clip:
+        raise RenderError("empty_clip", f"{asset_id}: 组合渲染没有返回帧序列")
+    return clip
+
+
+def prepare_clips(    storyboard: Storyboard,
     *,
     job_root: Path,
     engine: VideoEngine,
@@ -141,29 +211,59 @@ def prepare_clips(
     else:
         raise RenderError("missing_manifest", f"缺少素材清单：{manifest_path}")
 
-    needed: list[str] = []
+    needed: list[tuple[str, float, float]] = []
     for shot in storyboard.shots:
         if shot.asset_type == "solid" or not shot.asset_id:
             continue
-        if shot.asset_id not in needed:
-            needed.append(shot.asset_id)
+        key = (shot.asset_id, shot.source_start, shot.duration)
+        if key not in needed:
+            needed.append(key)
 
     clips: dict[str, dict[str, Any]] = {}
     asset_rows: list[dict[str, Any]] = []
     calls: list[str] = []
-    for asset_id in needed:
+    for asset_id, source_start, duration in needed:
         row = rows.get(asset_id)
+        registered_as = asset_id
         if row is None:
-            raise RenderError("unknown_asset", f"分镜用了未登记的素材：{asset_id}")
+            # 同一份登记素材常被拆成多个入点用（S03A / S03B）。只允许退回到
+            # 去掉末尾大写字母后确实存在的登记项，不猜任何别的路径。
+            base = asset_id.rstrip("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+            if base and base != asset_id and base in rows:
+                row = rows[base]
+                registered_as = base
+            else:
+                raise RenderError("unknown_asset", f"分镜用了未登记的素材：{asset_id}")
         relative = row.get("file") or ""
         path = (job_root / relative).resolve()
         if not path.is_file():
             raise RenderError("missing_asset_file", f"{asset_id}: 文件不存在 {path}")
-        result = engine.import_media(
-            source=path,
-            rights=row.get("license") or None,
-        )
-        calls.append(f"import_media:{asset_id}")
+        kind = (row.get("kind") or "").strip()
+        if kind == "composition":
+            clip = _import_composition(asset_id, path, job_root=job_root, engine=engine)
+            calls.append(f"render_composition:{asset_id}")
+            asset_rows.append(
+                {
+                    "asset_id": asset_id,
+                    "registered_as": registered_as,
+                    "file": relative,
+                    "sha256": _sha256(path),
+                    "asset_class": row.get("asset_class", ""),
+                    "license": row.get("license", ""),
+                    "commercial_use": row.get("commercial_use", ""),
+                    "source_start": source_start,
+                    "frames": int(clip.get("n") or 1),
+                }
+            )
+            clips[asset_id] = clip
+            continue
+        window: dict[str, Any] = {"rights": row.get("license") or None}
+        if source_start:
+            window["start"] = source_start
+        if kind == "video" and duration:
+            window["duration"] = duration
+        result = engine.import_media(source=path, **window)
+        calls.append(f"import_media:{asset_id}" + (f"@{source_start:g}s" if source_start else ""))
         clip = dict(result.raw.get("clip") or {})
         if not clip:
             raise RenderError("empty_clip", f"{asset_id}: 引擎没有返回帧序列")
@@ -171,11 +271,13 @@ def prepare_clips(
         asset_rows.append(
             {
                 "asset_id": asset_id,
+                "registered_as": registered_as,
                 "file": relative,
                 "sha256": _sha256(path),
                 "asset_class": row.get("asset_class", ""),
                 "license": row.get("license", ""),
                 "commercial_use": row.get("commercial_use", ""),
+                "source_start": source_start,
                 "frames": int(clip.get("n") or 1),
             }
         )
@@ -277,6 +379,7 @@ def render_job(
     """分镜 → 时间轴 → 成片 → 质检。任何一步缺东西都如实报 blocked，不伪造产物。"""
     root = Path(job_root).resolve()
     job_id = root.name
+    project_dir: Path | None = None
     storyboard_path = root / "storyboard" / "storyboard.csv"
     if not storyboard_path.is_file():
         raise RenderError(
@@ -290,9 +393,37 @@ def render_job(
         raise RenderError("invalid_storyboard", f"{job_id}: 分镜不合法（{error.code}）：{error}") from error
 
     if engine is None:
+        from backend.app.capabilities.media.engine import MediaEngineError as _EngineError
         from backend.app.capabilities.media.openkatana import OpenKatanaEngine
-
-        engine = OpenKatanaEngine(root / "project")
+        workspace = root / "project"
+        workspace.mkdir(parents=True, exist_ok=True)
+        # 引擎每次调用都要 project_id。任务目录第一次跑时还没有工程，这里建一个；
+        # 已经有工程就复用磁盘上那一个，不重复建（重复建会直接报错）。
+        existing = sorted(
+            item for item in workspace.iterdir() if item.is_dir() and not item.name.startswith(".")
+        )
+        # 工程 id 是引擎生成的哈希，不是任务名。挑工程目录时优先用真正有
+        # project.json 的那个；多个都有就取最近改动的，剩下的当历史工程留着不动。
+        ready = [item for item in existing if (item / "project.json").is_file()]
+        if ready:
+            ready.sort(key=lambda item: (item / "project.json").stat().st_mtime, reverse=True)
+            project_id = ready[0].name
+        elif job_id in {item.name for item in existing}:
+            project_id = job_id
+        else:
+            project_id = existing[0].name if existing else job_id
+        engine = OpenKatanaEngine(workspace, project_id=project_id)
+        try:
+            engine.get_project()
+        except _EngineError:
+            try:
+                engine.create_project(job_id, project_id=project_id)
+            except _EngineError as error:
+                raise RenderError("engine_unavailable", f"{job_id}: 建工程失败：{error}") from error
+        # 组合文档里的字体路径是相对工程目录的，而字体文件可能在任务目录里。
+        # 缺字体引擎会直接拒收（ContractError: Asset missing or unsupported）。
+        project_dir = workspace / project_id
+        _sync_fonts(root, project_dir)
 
     try:
         clips, asset_rows, calls = prepare_clips(
@@ -305,22 +436,46 @@ def render_job(
         storyboard, family=font_family, size=font_size, source="subtitle"
     )
     fonts: list[dict[str, Any]] = []
-    font_file = root / font_path if font_path else None
-    if font_file and font_file.is_file():
-        fonts.append({"family": font_family, "url": font_path})
+    font_file = _find_font(root, font_path) if font_path else None
+    if font_file is not None and project_dir is not None:
+        target = project_dir / "fonts" / font_file.name
+        if not target.is_file():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(font_file, target)
+    if font_file is not None:
+        fonts.append({"family": font_family, "url": f"fonts/{font_file.name}"})
+    elif captions:
+        # 有字幕却没有字体文件时，引擎会直接拒收两份产物。与其让它报一句英文
+        # ContractError，不如在这里说清楚缺什么。
+        raise RenderError(
+            "missing_font",
+            f"{job_id}: 分镜里带了字幕，但任务目录里找不到字体 {font_path}；"
+            "把字体放进任务目录的 fonts/ 再跑（组合文档里的字体路径也相对工程目录）",
+        )
     try:
         timeline = build_timeline(storyboard, clips, text=captions, fonts=fonts or None)
     except TimelineError as error:
         raise RenderError(error.code, str(error)) from error
 
     notes: list[str] = []
+    # 时间轴默认写到 project/timeline.json；那儿已经有别人写的文件时不要覆盖，
+    # 改写到时间轴旁边另存一份，并在报告里说明（Phase 2 的交付物就是这样被保护住的）。
     timeline_path = root / "project" / "timeline.json"
+    payload = json.dumps(timeline, ensure_ascii=False, indent=1)
+    if timeline_path.is_file():
+        existing = timeline_path.read_text(encoding="utf-8", errors="replace")
+        if existing.strip() != payload.strip():
+            timeline_path = root / "project" / "timeline.render.json"
+            notes.append("project/timeline.json 已存在且内容不同，本次写到 timeline.render.json，没有覆盖原文件")
     timeline_path.parent.mkdir(parents=True, exist_ok=True)
-    timeline_path.write_text(json.dumps(timeline, ensure_ascii=False, indent=1), encoding="utf-8")
+    timeline_path.write_text(payload, encoding="utf-8")
     notes.append(f"时间轴已写入 {timeline_path}")
 
-    validation = engine.validate_timeline(timeline)
-    calls.append("validate_timeline")
+    try:
+        validation = engine.validate_timeline(timeline)
+        calls.append("validate_timeline")
+    except MediaEngineError as error:
+        raise RenderError(error.code, f"{job_id}: 引擎校验时间轴失败：{error}") from error
     if not validation.get("valid", True):
         raise RenderError(
             "invalid_timeline",

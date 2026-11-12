@@ -124,8 +124,11 @@ def _make_job(root: Path, name: str, *, with_storyboard: bool) -> Path:
     job = root / name
     (job / "storyboard").mkdir(parents=True, exist_ok=True)
     (job / "assets").mkdir(parents=True, exist_ok=True)
+    (job / "fonts").mkdir(parents=True, exist_ok=True)
     (job / "project").mkdir(parents=True, exist_ok=True)
     (job / "assets" / "chart.png").write_bytes(b"\x89PNG\r\n\x1a\nfake")
+    # 有字幕就必须有字体文件，否则真实引擎会拒收时间轴（替身引擎不会，照样建这个文件）
+    (job / "fonts" / "NotoSansSC-VF.ttf").write_bytes(b"fake-font")
     if with_storyboard:
         header = (
             "shot_id,start_time,end_time,narrative_purpose,narration,visual_description,"
@@ -135,7 +138,7 @@ def _make_job(root: Path, name: str, *, with_storyboard: bool) -> Path:
         rows = [
             "sh01,0,3,开场,银行靠什么赚钱,标题卡,,solid,#0b1220,原创,fade_in,static,none,"
             "银行靠什么赚钱？,none,bottom,30,1080,1920",
-            "sh02,3,7,收入结构,利息净收入占七成,柱状图,C_CHART,composition,generated,原创,"
+            "sh02,3,7,收入结构,利息净收入占七成,柱状图,C_CHART,generated_image,generated,原创,"
             "bar_grow,push,dissolve,利息净收入占七成,whoosh_low,bottom,30,1080,1920",
         ]
         (job / "storyboard" / "storyboard.csv").write_text(
@@ -146,7 +149,7 @@ def _make_job(root: Path, name: str, *, with_storyboard: bool) -> Path:
             "sha256,license,commercial_use,credit,verification_status,used_in_shots,purpose"
         )
         manifest_row = (
-            "C_CHART,B,composition,assets/chart.png,,本仓库程序生成,,2026-11-12T00:00:00Z,,"
+            "C_CHART,B,image,assets/chart.png,,本仓库程序生成,,2026-11-12T00:00:00Z,,"
             "原创,allowed,本仓库,verified,sh02,收入结构演示"
         )
         (job / "assets_manifest.csv").write_text(
@@ -188,6 +191,12 @@ def test_pipeline_builds_timeline_from_storyboard(client: Any, monkeypatch: pyte
 
         def validate_timeline(self, timeline):
             return {"valid": True, "frames": timeline["canvas"]["frames"], "warnings": []}
+
+        def get_project(self):
+            return {"project_id": "demo_job"}
+
+        def create_project(self, title: str, *, project_id: str | None = None):
+            return {"project_id": project_id or title}
 
     monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
     monkeypatch.setattr(openkatana, "OpenKatanaEngine", _FakeEngine)
