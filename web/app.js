@@ -649,9 +649,104 @@ function jobFromQuery() {
   return query.get('job') || '';
 }
 
+const SCRIPT_NEXT = {
+  draft: [['送审', 'in_review']],
+  in_review: [['通过', 'approved'], ['驳回', 'rejected']],
+  rejected: [['回到草稿', 'draft']],
+  approved: [['标记可出分镜', 'storyboard_ready']],
+  storyboard_ready: [['标记已制作', 'produced']],
+  produced: [['标记已发布', 'published']],
+  published: [['归档', 'archived']],
+  archived: [],
+};
+
 async function pageScripts(view) {
   const picker = await jobPicker(jobFromQuery());
-  view.innerHTML = `<div class="card"><h2>脚本</h2>${picker.html}<div id="script-box"></div></div>`;
+  view.innerHTML = `
+    <div class="card">
+      <h2>脚本库（可审核的版本）</h2>
+      <div class="row">
+        <label>选题 ID<input id="sc-topic" type="number" min="1" placeholder="1"></label>
+        <label>标题<input id="sc-title" placeholder="商业银行是怎么赚钱的"></label>
+        <label>模板<select id="sc-template">
+          <option value="financial_mechanism">financial_mechanism</option>
+          <option value="industry_research">industry_research</option>
+          <option value="case_documentary">case_documentary</option>
+          <option value="football_explainer">football_explainer</option>
+        </select></label>
+      </div>
+      <label>正文<textarea id="sc-body" rows="6" placeholder="口播稿正文；改内容请新开一版，不要原地覆盖"></textarea></label>
+      <div class="row"><button class="btn" id="sc-create">新建一版脚本</button></div>
+      <div id="sc-result"></div>
+      <div id="sc-list"></div>
+    </div>
+    <div class="card">
+      <h2>任务目录里的 script.md</h2>
+      ${picker.html}
+      <div id="script-box"></div>
+    </div>`;
+
+  const resultBox = document.getElementById('sc-result');
+  const listBox = document.getElementById('sc-list');
+
+  const refresh = async () => {
+    const listed = await api('/scripts?limit=20');
+    if (!listed.ok) { listBox.innerHTML = failure(listed); return; }
+    const rows = listed.data.items || [];
+    listBox.innerHTML = `
+      <h3>最近 ${listed.data.total || 0} 个版本</h3>
+      ${table([
+        { title: 'ID', key: 'id', num: true },
+        { title: '选题', key: 'topic_id', num: true },
+        { title: '版本', key: 'version', num: true },
+        { title: '状态', value: (row) => statusTag(row.status), raw: true },
+        { title: '标题', value: (row) => esc(String(row.title || '').slice(0, 40)) },
+        { title: '字数', key: 'word_count', num: true },
+        { title: '批准人', value: (row) => esc(row.approved_by || '—') },
+        { title: '操作', raw: true, value: (row) => {
+          const moves = SCRIPT_NEXT[row.status] || [];
+          return moves.map(([label, next]) =>
+            `<button class="btn ghost" data-script="${row.id}" data-next="${next}">${esc(label)}</button>`
+          ).join(' ') || '<span class="muted">终态</span>';
+        } },
+      ], rows, '还没有脚本版本')}`;
+    listBox.querySelectorAll('button[data-script]').forEach((button) => {
+      button.onclick = async () => {
+        button.disabled = true;
+        const moved = await api(`/scripts/${button.dataset.script}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: button.dataset.next }),
+        });
+        resultBox.innerHTML = moved.ok
+          ? `<div class="note ok">#${button.dataset.script} → ${esc(moved.data.status)}</div>`
+          : failure(moved);
+        await refresh();
+      };
+    });
+  };
+
+  document.getElementById('sc-create').onclick = async (event) => {
+    const button = event.currentTarget;
+    const body = document.getElementById('sc-body').value;
+    const payload = {
+      topic_id: Number(document.getElementById('sc-topic').value || 0),
+      title: document.getElementById('sc-title').value.trim(),
+      body,
+      template: document.getElementById('sc-template').value,
+    };
+    if (!payload.topic_id || !payload.title || !body.trim()) {
+      resultBox.innerHTML = '<div class="note bad">选题 ID、标题、正文都要填。</div>';
+      return;
+    }
+    button.disabled = true;
+    const created = await api('/scripts', { method: 'POST', body: JSON.stringify(payload) });
+    button.disabled = false;
+    resultBox.innerHTML = created.ok
+      ? `<div class="note ok">已建脚本 #${created.data.id}（v${created.data.version}，${esc(created.data.status)}）</div>`
+      : failure(created);
+    if (created.ok) await refresh();
+  };
+
   const box = document.getElementById('script-box');
   const load = async (jobId) => {
     if (!jobId) { box.innerHTML = ''; return; }
@@ -667,6 +762,7 @@ async function pageScripts(view) {
     select.onchange = () => { location.hash = `#/scripts?job=${select.value}`; };
     load(select.value);
   }
+  await refresh();
 }
 
 async function pageStoryboard(view) {
@@ -809,7 +905,49 @@ async function pageReview(view) {
     reason: task.failure_reason || '',
     at: task.updated_at,
   }));
+  const reviews = await api('/reviews?limit=20');
+  const reviewRows = reviews.ok ? (reviews.data.items || []) : [];
   view.innerHTML = `
+    <div class="card">
+      <h2>记一次审核</h2>
+      <div class="row">
+        <label>对象类型<select id="rv-target-type">
+          <option value="research_report">research_report</option>
+          <option value="script">script</option>
+          <option value="knowledge_item">knowledge_item</option>
+        </select></label>
+        <label>对象 ID<input id="rv-target-id" type="number" min="1" placeholder="1"></label>
+        <label>结论<select id="rv-verdict">
+          <option value="pass">pass（通过）</option>
+          <option value="needs_revision">needs_revision（要改）</option>
+          <option value="reject">reject（驳回）</option>
+        </select></label>
+        <label>审核人<input id="rv-name" placeholder="你的名字（必填，agent 不能自审）"></label>
+        <label>阶段<select id="rv-stage">
+          <option value="professional">professional</option>
+          <option value="compliance">compliance</option>
+          <option value="final">final</option>
+        </select></label>
+      </div>
+      <label>意见<textarea id="rv-comment" rows="3" placeholder="选 needs_revision 时必须写清要改什么"></textarea></label>
+      <div class="row"><button class="btn" id="rv-submit">记录审核结论</button></div>
+      <div id="rv-result"></div>
+      <p class="muted">结论会回写到对象上：研究报告 pass→verified / needs_revision→disputed /
+      reject→refuted；脚本与知识条目只记流水，不改它们的业务状态——审核通过不等于可以发布。</p>
+    </div>
+    <div class="card">
+      <h2>审核流水</h2>
+      ${reviews.ok ? table([
+        { title: 'ID', key: 'id', num: true },
+        { title: '对象', value: (row) => `${esc(row.target_type)} #${row.target_id}` },
+        { title: '版本', value: (row) => (row.target_version === null ? '—' : row.target_version) },
+        { title: '结论', value: (row) => statusTag(row.verdict === 'pass' ? 'verified' : row.verdict === 'reject' ? 'failed' : 'paused'), raw: true },
+        { title: '阶段', key: 'stage' },
+        { title: '审核人', key: 'reviewer_name' },
+        { title: '意见', value: (row) => esc(String(row.comment || '').slice(0, 60)) },
+        { title: '时间', value: (row) => when(row.reviewed_at) },
+      ], reviewRows, '还没有审核记录') : failure(reviews)}
+    </div>
     <div class="card">
       <h2>待人工审核（暂停中的任务）</h2>
       ${tasks.ok ? table([
@@ -830,6 +968,36 @@ async function pageReview(view) {
         <li>成片的署名、授权、字幕与素材是否一致</li>
       </ul>
     </div>`;
+
+  document.getElementById('rv-submit').onclick = async (event) => {
+    const button = event.currentTarget;
+    const verdict = document.getElementById('rv-verdict').value;
+    const comment = document.getElementById('rv-comment').value.trim();
+    const payload = {
+      target_type: document.getElementById('rv-target-type').value,
+      target_id: Number(document.getElementById('rv-target-id').value || 0),
+      verdict,
+      reviewer_name: document.getElementById('rv-name').value.trim(),
+      stage: document.getElementById('rv-stage').value,
+      comment: comment || null,
+    };
+    const resultBox = document.getElementById('rv-result');
+    if (!payload.target_id || !payload.reviewer_name) {
+      resultBox.innerHTML = '<div class="note bad">对象 ID 和审核人都要填。</div>';
+      return;
+    }
+    if (verdict === 'needs_revision' && !comment) {
+      resultBox.innerHTML = '<div class="note bad">needs_revision 必须写清要改什么（comment 不能空）。</div>';
+      return;
+    }
+    button.disabled = true;
+    const created = await api('/reviews', { method: 'POST', body: JSON.stringify(payload) });
+    button.disabled = false;
+    resultBox.innerHTML = created.ok
+      ? `<div class="note ok">已记录审核 #${created.data.id}（${esc(created.data.verdict)}）</div>`
+      : failure(created);
+    if (created.ok) await pageReview(document.getElementById('view'));
+  };
 }
 
 async function pageModels(view) {
