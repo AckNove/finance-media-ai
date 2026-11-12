@@ -13,12 +13,14 @@ import pytest
 
 from backend.app.capabilities.search.engine import (
     PROVIDERS,
+    SearchHit,
     SearchQuery,
     SearchUnavailable,
     clean_tracking,
     parse_bing,
     parse_so360,
     parse_sogou,
+    resolve_engine_redirects,
     search,
 )
 from backend.app.capabilities.search.tool import make_fetch_url, make_web_search
@@ -235,3 +237,136 @@ def test_fetch_url_tool_maps_unsafe_url_to_error():
     result = tool(caller=agent_caller(), url="http://127.0.0.1:8000/secret")
     assert result.status == "error"
     assert result.error_code == "blocked_ip"
+
+
+# --- 真实目标地址解析 -----------------------------------------------------
+# 背景：中文引擎把 href 换成自己的跳转链接（/link?url=<token>），抓这种地址会被
+# robots 拒绝，也抓不到正文。真实地址要么在属性里（360 的 data-mdurl），
+# 要么得读一次跳转的 Location。
+
+
+SO360_WITH_MDURL = """
+<ul class="result">
+  <li class="res-list">
+    <h3><a href="https://www.so.com/link?url=tok" data-mdurl="https://www.toutiao.com/article/762411835509571638">净息差与银行估值</a></h3>
+    <p class="res-desc">净息差决定银行盈利能力</p>
+  </li>
+</ul>
+"""
+
+
+def test_parse_so360_prefers_data_mdurl_over_redirect_href():
+    items = parse_so360(SO360_WITH_MDURL)
+    assert items[0]["url"] == "https://www.toutiao.com/article/762411835509571638"
+
+
+def test_parse_sogou_uses_mu_attribute_when_present():
+    html = """
+    <div class="vrwrap">
+      <h3><a href="/link?url=x" mu="https://www.pbc.gov.cn/zhengce/1.html">货币政策报告</a></h3>
+      <div class="str-text">报告正文</div>
+    </div>
+    """
+    items = parse_sogou(html)
+    assert items[0]["url"] == "https://www.pbc.gov.cn/zhengce/1.html"
+
+
+def _resolver(ip: str):
+    def resolve(host: str) -> list[str]:
+        return [ip]
+
+    return resolve
+
+
+def _redirect_transport(location: str, *, search_html: str = SOGOU_HTML) -> httpx.MockTransport:
+    """搜狗结果页正常，``/link`` 跳转到 ``location``。"""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.startswith("/link"):
+            return httpx.Response(302, headers={"location": location})
+        return httpx.Response(200, text=search_html, headers={"content-type": "text/html"})
+
+    return httpx.MockTransport(handler)
+
+
+def test_resolve_engine_redirects_follows_location_and_marks_origin():
+    transport = _redirect_transport("https://www.pbc.gov.cn/zhengce/1.html")
+    with httpx.Client(transport=transport) as http:
+        hits = resolve_engine_redirects(
+            [
+                SearchHit(
+                    title="货币政策报告",
+                    url="https://www.sogou.com/link?url=abc123",
+                    snippet="",
+                    provider="sogou",
+                    rank=1,
+                )
+            ],
+            http=http,
+            resolver=_resolver("93.184.216.34"),
+        )
+    assert hits[0].url == "https://www.pbc.gov.cn/zhengce/1.html"
+    assert hits[0].resolved_from == "https://www.sogou.com/link?url=abc123"
+    assert hits[0].as_dict()["resolved_from"].startswith("https://www.sogou.com/link")
+
+
+def test_resolve_engine_redirects_keeps_original_when_target_is_private():
+    transport = _redirect_transport("http://127.0.0.1:8000/admin")
+    with httpx.Client(transport=transport) as http:
+        hits = resolve_engine_redirects(
+            [
+                SearchHit(
+                    title="内网地址",
+                    url="https://www.sogou.com/link?url=abc123",
+                    snippet="",
+                    provider="sogou",
+                    rank=1,
+                )
+            ],
+            http=http,
+            resolver=_resolver("93.184.216.34"),
+        )
+    assert hits[0].url == "https://www.sogou.com/link?url=abc123", "宁可用跳转链接，也不让引擎把我们指向内网"
+    assert hits[0].resolved_from == ""
+
+
+def test_resolve_engine_redirects_keeps_original_when_location_missing():
+    transport = _redirect_transport("")  # 302 但没有 Location
+    with httpx.Client(transport=transport) as http:
+        hits = resolve_engine_redirects(
+            [
+                SearchHit(
+                    title="没有 Location",
+                    url="https://www.sogou.com/link?url=abc123",
+                    snippet="",
+                    provider="sogou",
+                    rank=1,
+                )
+            ],
+            http=http,
+            resolver=_resolver("93.184.216.34"),
+        )
+    assert hits[0].url == "https://www.sogou.com/link?url=abc123"
+
+
+def test_search_skips_results_pointing_at_the_engine_itself(tmp_path: Path):
+    """360 会把自家 AI 页混进结果（ai.so.com），那不是可用来源。"""
+    html = """
+    <ul>
+      <li class="res-list">
+        <h3><a href="https://ai.so.com/search?q=x">360 AI 搜索</a></h3>
+        <p class="res-desc">引擎自己的页面</p>
+      </li>
+      <li class="res-list">
+        <h3><a href="https://www.toutiao.com/article/1" data-mdurl="https://www.toutiao.com/article/1">真正的文章</a></h3>
+        <p class="res-desc">正文在这里</p>
+      </li>
+    </ul>
+    """
+    transport = make_transport({"www.so.com": (200, html)})
+    report = search(
+        SearchQuery(keywords="净息差", limit=5),
+        transport=transport,
+        audit_path=tmp_path / "s.jsonl",
+    )
+    assert [hit.url for hit in report.hits] == ["https://www.toutiao.com/article/1"]

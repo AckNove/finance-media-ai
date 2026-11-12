@@ -9,7 +9,9 @@
 - 每次搜索都写一行 JSONL 审计（``logs/search_events.jsonl``）。
 
 诚实边界：解析出来的 ``url`` 可能是搜索引擎的跳转链接（例如搜狗的 ``/link?url=``），
-作者/发布时间在结果页上通常没有，就留空——**不猜**。
+这时会对它做**一次**跳转解析拿到真实地址（见 :func:`resolve_engine_redirects`），
+解析不出来的保留原链接并记在 ``resolved_from`` 里；作者/发布时间在结果页上通常没有，
+就留空——**不猜**。
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal, Mapping, Sequence
@@ -25,7 +27,7 @@ from urllib.parse import parse_qsl, quote_plus, urlencode, urlsplit, urlunsplit
 
 import httpx
 
-from backend.app.capabilities.search.safety import USER_AGENT
+from backend.app.capabilities.search.safety import USER_AGENT, UnsafeUrlError, assert_public_url
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +110,8 @@ class SearchHit:
     snippet: str
     provider: str
     rank: int
+    #: 若搜索结果原本是引擎的跳转链接，这里记原始链接，便于复核"它是怎么变过来的"
+    resolved_from: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -116,6 +120,7 @@ class SearchHit:
             "snippet": self.snippet,
             "provider": self.provider,
             "rank": self.rank,
+            "resolved_from": self.resolved_from,
         }
 
 
@@ -197,6 +202,47 @@ def _provider_url(provider: str, query: SearchQuery) -> str:
     return url
 
 
+def _real_target(link: Any, base: str) -> str:
+    """取一条搜索结果的**真实**目标地址。
+
+    中文搜索引擎普遍把 href 换成自己的跳转链接（``/link?url=...``），
+    真实地址藏在属性里：360 用 ``data-mdurl``，部分镜像用 ``data-url`` / ``mu``。
+    有就直接用；没有就退回 href（后面还有一步跳转解析兜底）。
+    """
+    for attribute in ("data-mdurl", "data-url", "mu", "data-href"):
+        value = link.get(attribute)
+        if isinstance(value, str) and value.startswith(("http://", "https://")):
+            return value
+    return _absolute(base, link.get("href", ""))
+
+
+def _is_engine_self(host: str, provider: str) -> bool:
+    """结果指向搜索引擎自己（AI 助手页、站内导航）时不算有效结果。"""
+    host = host.lower()
+    if provider == "sogou":
+        return host.endswith("sogou.com")
+    if provider == "so360":
+        return host.endswith("so.com") or host.endswith("360.cn")
+    if provider == "bing":
+        return host.endswith("bing.com")
+    return False
+
+
+def _engine_redirect(url: str, provider: str) -> bool:
+    """判断一条结果是不是引擎自己的跳转链接（需要对它做一次解析）。"""
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").lower()
+    if provider == "so360":
+        return host.endswith("so.com") and parsed.path.startswith("/link")
+    if provider == "sogou":
+        return host.endswith("sogou.com") and parsed.path.startswith("/link")
+    if provider == "bing":
+        return host.endswith("bing.com") and parsed.path.startswith("/ck/a")
+    return False
+
+
 def parse_sogou(html: str, *, base: str = "https://www.sogou.com", limit: int = 10) -> list[dict[str, str]]:
     from bs4 import BeautifulSoup
 
@@ -206,7 +252,7 @@ def parse_sogou(html: str, *, base: str = "https://www.sogou.com", limit: int = 
         link = block.select_one("h3 a")
         if link is None:
             continue
-        href = _absolute(base, link.get("href", ""))
+        href = _real_target(link, base)
         title = link.get_text(strip=True)
         if not href or not title:
             continue
@@ -228,7 +274,7 @@ def parse_so360(html: str, *, base: str = "https://www.so.com", limit: int = 10)
         if link is None:
             continue
         classes = " ".join(block.get("class") or [])
-        href = _absolute(base, link.get("href", ""))
+        href = _real_target(link, base)
         title = link.get_text(strip=True)
         if "ad" in classes.split() or not href or not title:
             continue
@@ -262,6 +308,106 @@ def parse_bing(html: str, *, base: str = "https://cn.bing.com", limit: int = 10)
 
 
 _PARSERS = {"sogou": parse_sogou, "so360": parse_so360, "bing": parse_bing}
+
+
+_SCRIPT_REDIRECTS = (
+    re.compile(r"window\.location\.replace\(\s*[\"']([^\"']+)", re.I),
+    re.compile(r"window\.location\.href\s*=\s*[\"']([^\"']+)", re.I),
+    re.compile(r"location\.replace\(\s*[\"']([^\"']+)", re.I),
+    re.compile(r"http-equiv=[\"']refresh[\"'][^>]*url=([^\"'>\s]+)", re.I),
+    re.compile(r"[\"'](https?://[^\"']+)[\"']", re.I),
+)
+
+
+def _script_redirect(body: str) -> str:
+    """从跳转中转页里读出真实地址。
+
+    搜狗实测：``/link?url=<token>`` 返回 **200 + 288 字节的 HTML**，
+    真实地址写在 ``<script>window.location.replace("http://...")</script>`` 里，
+    没有 ``Location`` 头。360 的 ``/link`` 部分也是这种形态，
+    所以只看状态码是读不到真实地址的。
+    """
+    for pattern in _SCRIPT_REDIRECTS:
+        match = pattern.search(body)
+        if match:
+            candidate = match.group(1).strip()
+            if candidate.startswith(("http://", "https://")):
+                return candidate
+    return ""
+
+
+def resolve_engine_redirects(
+    hits: Sequence[SearchHit],
+    *,
+    http: httpx.Client,
+    timeout: float = 10.0,
+    resolver: Any = None,
+) -> list[SearchHit]:
+    """把引擎跳转链接换成真实目标地址（每条约一次 HEAD/GET，最多一跳）。
+
+    为什么要单独一步：搜狗/360 的结果 href 是 ``/link?url=<token>``，直接抓这个地址
+    会被对方 robots 拒绝（而且抓到的也不是正文）。但真实地址常常藏在属性里
+    （360 的 ``data-mdurl``）——属性没有时，才用一次**不跟随**的请求读 ``Location``。
+
+    安全上不放松：解析出来的地址仍要过 :func:`assert_public_url`，
+    内网/回环/非 http(s) 一律丢掉原链接，宁可用跳转链接让下游明确失败，
+    也不让"搜索引擎替我们访问内网"成为 SSRF 的旁路。
+
+    解析失败的条目原样保留，并在 ``resolved_from`` 留空——**不假装解析成功**。
+    """
+    from urllib.parse import urlparse
+
+    resolved: list[SearchHit] = []
+    for hit in hits:
+        if not _engine_redirect(hit.url, hit.provider):
+            resolved.append(hit)
+            continue
+        target = ""
+        for method in ("head", "get"):
+            try:
+                response = getattr(http, method)(
+                    hit.url, follow_redirects=False, timeout=timeout
+                )
+            except httpx.HTTPError:
+                continue
+            location = response.headers.get("location", "")
+            if response.status_code in (301, 302, 303, 307, 308) and location:
+                target = _absolute(hit.url, location)
+                break
+            if method == "get":
+                # 搜狗/360 的跳转是 200 + JS 跳转页，没有 Location 头
+                body = response.text
+                if len(body) > 4096:
+                    body = body[:4096]
+                target = _script_redirect(body)
+        if not target:
+            resolved.append(hit)
+            continue
+        try:
+            assert_public_url(target, resolver=resolver)
+        except UnsafeUrlError as error:
+            logger.warning("拒绝解析到非公网地址：%s (%s)", target, error.reason)
+            resolved.append(hit)
+            continue
+        host = (urlparse(target).hostname or "").lower()
+        if _is_engine_self(host, hit.provider):
+            continue
+        resolved.append(
+            replace(hit, url=clean_tracking(target), resolved_from=hit.url)
+        )
+    return resolved
+
+
+def _rededupe(hits: Sequence[SearchHit]) -> list[SearchHit]:
+    """跳转解析之后重新去重并重排序号（两条跳转可能指向同一页）。"""
+    seen: set[str] = set()
+    unique: list[SearchHit] = []
+    for hit in hits:
+        if hit.url in seen:
+            continue
+        seen.add(hit.url)
+        unique.append(replace(hit, rank=len(unique) + 1))
+    return unique
 
 
 def search(
@@ -316,6 +462,12 @@ def search(
             raw_count += len(items)
             for item in items:
                 url = clean_tracking(item["url"])
+                from urllib.parse import urlparse
+
+                host = (urlparse(url).hostname or "").lower()
+                if _is_engine_self(host, provider) and not _engine_redirect(url, provider):
+                    # 指向搜索引擎自己的 AI 页/站内导航：不是可用结果
+                    continue
                 if url in seen:
                     continue
                 seen.add(url)
@@ -332,6 +484,7 @@ def search(
                     break
             if len(hits) >= query.limit:
                 break
+        hits = _rededupe(resolve_engine_redirects(hits, http=http, timeout=timeout))[: query.limit]
     finally:
         if owned:
             http.close()
@@ -390,5 +543,6 @@ __all__ = [
     "parse_bing",
     "parse_so360",
     "parse_sogou",
+    "resolve_engine_redirects",
     "search",
 ]
