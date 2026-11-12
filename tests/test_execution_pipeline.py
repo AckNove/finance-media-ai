@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -730,3 +731,62 @@ def test_verify_claims_checks_quotes_against_the_source_excerpt(factory, runtime
     assert output["checked"] >= 1
     assert output["found"] >= 1, "摘录里确实有这句带数字的原话"
     assert output["semantic_check_done"] is False, "语义核查要模型，不能在规则层冒充"
+
+
+def test_plan_derives_keyword_queries_without_a_model(factory, runtime, tmp_path):
+    """规划阶段不该因为没密钥就卡死整条链：拆检索词用规则做得到。"""
+    report, snapshot = _run_stage(factory, runtime, "research.plan", tmp_path)
+    output = snapshot.subtasks[0].output
+    assert report.completed == [1]
+    assert output["planner"] == "keywords"
+    assert output["model_used"] is False
+    assert output["queries"], "至少要拆出一个能检索的词"
+    assert output["query_count"] == len(output["queries"])
+    assert "没有做语义扩展" in output["note"]
+    assert snapshot.status != "paused", "规划阶段完成，任务不该停在等人补密钥"
+
+
+def test_collect_uses_the_queries_the_plan_stage_derived(factory, runtime):
+    """上游排出的检索词要真被采集阶段用上，否则规划等于白做。"""
+    upstream = [
+        {
+            "subtask_id": 1,
+            "sequence": 1,
+            "task_type": "research.plan",
+            "question": "拆解研究问题：商业银行怎么赚钱",
+            "output": {
+                "queries": ["商业银行营业收入构成", "净息差 2024"],
+                "planner": "keywords",
+                "model_used": False,
+            },
+        }
+    ]
+    task = runtime.create_task(title="按规划检索", objective="商业银行怎么赚钱")
+    runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="执行检索：商业银行怎么赚钱",
+        task_type="research.collect",
+        input_payload={"_upstream": upstream},
+    )
+    runtime.start_task(task.id)
+    tools = FakeTools()
+    worker = Worker(runtime, AgentExecutor(tools=tools, session_factory=factory))
+    worker.run_once()
+
+    searched = [args.get("keywords") for tool, args in tools.calls if tool == "web_search"]
+    assert searched == ["商业银行营业收入构成", "净息差 2024"], f"实际检索词是 {searched}"
+
+def test_digest_of_another_run_does_not_overwrite_an_existing_one(factory, runtime, tmp_path):
+    """产物按 task-<id> 落盘，但 id 只在一个库里唯一：换库跑同一个 id 不许覆盖别人的底稿。"""
+    first = tmp_path / "task-1"
+    first.mkdir()
+    (first / "digest.json").write_text(
+        json.dumps({"objective": "另一份真实研究的目标"}, ensure_ascii=False), encoding="utf-8"
+    )
+
+    _report, snapshot = _run_stage(factory, runtime, "research.analyze", tmp_path)
+    written = Path(snapshot.subtasks[0].output["digest"]["json"])
+    assert written.parent != first, "目标不同就该换目录，而不是覆盖"
+    assert written.parent.name.startswith("task-1-")
+    assert "另一份真实研究的目标" in (first / "digest.json").read_text(encoding="utf-8")

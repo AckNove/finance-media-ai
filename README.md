@@ -39,7 +39,8 @@
 > | 表格数据 → 指标 + 可复现图表 | ✅ 已实测 | 同输入同字节的 PNG，图上强制印出处行；图表自动登记为素材清单里的 B 类行 |
 > | 旁白音轨（分镜口播稿 → 真实 TTS → 时间轴音轨） | ✅ 已实测 | 7 镜 30.6 秒全部合成；超长只记 `overrun`，**不拉伸镜头**；TTS 不可用就明说"没有旁白" |
 > | 报告 → 规则分镜 → 数据卡 → 真实成片 | ✅ 已实测 | `content/jobs/v5_research_film/output/final.mp4`：71.667 秒 / 1080×1920 / 30fps / 旁白 8 段 / QC 七项全过（SHA-256 见交付报告 §S） |
-> | 统一模型网关（OpenAI 兼容、预算与成本闸门） | ⚠️ 代码就绪、**无密钥** | 缺 key 时返回 `not_configured`；价目未知直接拒绝请求 |
+> | 研究闭环前半段（真实搜索→抓取→解析→证据入库→报告→审核） | ✅ 已实测 | `flow_check` 一次跑完：sources=6 / evidence=17 / report=1 / review=1；后半段（模型分析）BLOCKED |
+> | 统一模型网关（OpenAI 兼容、预算与成本闸门、限流与密钥脱敏） | ⚠️ 代码就绪、**无密钥** | 缺 key 时返回 `not_configured`；价目未知直接拒绝请求；`model_calls` 仍 0 行 |
 > | 18 页工作台（真实接口，无假数据） | ✅ 可用 | `http://127.0.0.1:8000/app/` |
 >
 > 注意：`journal_mode=WAL` **不会**因为启动服务或查状态而自动打开，它是显式动作——
@@ -200,6 +201,7 @@ backend/scripts/                  seed_collections / enable_wal / install_ffmpeg
                                   / media_selftest / research_task / run_worker / render_job
                                   / produce_video / preflight / recover_tasks
                                   / model_smoke（真实模型冒烟）/ import_digest（底稿导入复现）
+                                  / flow_check（前端全链路验收）
 scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
 agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
@@ -210,7 +212,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（782 例）
+tests/                            pytest 回归测试（786 例）
 ```
 
 ## 文档

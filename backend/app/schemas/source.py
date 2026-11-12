@@ -39,7 +39,9 @@ class SourceOut(ORMBase):
     url: str | None = None
     publisher: str | None = None
     source_type: SourceType
-    published_at: date | None = None
+    #: 库里是 DateTime；真实抓取拿到的"发布时间"常常带时分（``2024-11-22T20:46``），
+    #: 用 ``date`` 会让有时间的来源整页 500，所以这里照实返回日期时间。
+    published_at: datetime | None = None
     accessed_at: datetime
     jurisdiction: str | None = None
     credibility_level: CredibilityLevel

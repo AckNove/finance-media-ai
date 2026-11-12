@@ -1,0 +1,177 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 135
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf"
+    }
+  ],
+  "root": {
+    "id": "root",
+    "type": "box",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "align-items": "center",
+      "justify-content": "center",
+      "gap": "46px",
+      "width": "1080px",
+      "height": "1920px",
+      "padding": "0 120px",
+      "background-color": "#1d2a44"
+    },
+    "children": [
+      {
+        "id": "kicker",
+        "type": "text",
+        "text": "原文数据",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "34px",
+          "font-weight": "400",
+          "color": "#35e0ff",
+          "line-height": "1.25",
+          "text-align": "center",
+          "letter-spacing": "0.16em"
+        }
+      },
+      {
+        "id": "number",
+        "type": "text",
+        "text": "1.69%",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "176px",
+          "font-weight": "700",
+          "color": "#b6ff1f",
+          "line-height": "1.25",
+          "text-align": "center"
+        }
+      },
+      {
+        "id": "caption",
+        "type": "text",
+        "text": "度的净息差环比下降4个基点至1.69%",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "50px",
+          "font-weight": "400",
+          "color": "#f2f5f7",
+          "line-height": "1.25",
+          "text-align": "center"
+        }
+      },
+      {
+        "id": "source",
+        "type": "text",
+        "text": "来源 S01",
+        "style": {
+          "font-family": "AKSC",
+          "font-size": "32px",
+          "font-weight": "400",
+          "color": "#94a3b8",
+          "line-height": "1.25",
+          "text-align": "center"
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "node": "kicker",
+      "property": "reveal",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "number",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          0.86
+        ],
+        [
+          134,
+          1.06
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "number",
+      "property": "opacity",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "caption",
+      "property": "opacity",
+      "keys": [
+        [
+          6,
+          0
+        ],
+        [
+          20,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "caption",
+      "property": "translateY",
+      "keys": [
+        [
+          6,
+          26
+        ],
+        [
+          134,
+          -6
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "source",
+      "property": "opacity",
+      "keys": [
+        [
+          14,
+          0
+        ],
+        [
+          26,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    }
+  ]
+}

@@ -27,4 +27,19 @@ class VideoJobOut(BaseModel):
     )
 
 
-__all__ = ["VideoJobOut"]
+class VideoJobIn(BaseModel):
+    """从报告开视频任务时的可选参数。
+
+    默认目录名由报告 id + 日期生成，同一天对同一份报告再点一次就会撞名；
+    这里允许调用方指定 ``job_id``，重试时换个名字即可（目录存在时仍然拒绝覆盖）。
+    """
+
+    job_id: str | None = Field(
+        default=None,
+        max_length=64,
+        pattern=r"^[A-Za-z0-9._-]+$",
+        description="任务目录名，省略则按 report_<id>_<日期> 生成",
+    )
+
+
+__all__ = ["VideoJobIn", "VideoJobOut"]

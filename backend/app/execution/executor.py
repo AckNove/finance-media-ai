@@ -22,11 +22,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import time
 from dataclasses import dataclass, field
 from decimal import Decimal
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from sqlalchemy.orm import Session, sessionmaker
@@ -131,17 +133,73 @@ class ExecutionOutcome:
         }
 
 
+def _clean_queries(items: Any) -> list[str]:
+    if not isinstance(items, list):
+        return []
+    return [str(item).strip() for item in items if str(item).strip()][:MAX_QUERIES]
+
+
+def _safe_digest_dir(directory: Path, digest: Any) -> Path:
+    """给底稿挑一个不会覆盖别人的目录。
+
+    产物按 ``task-<id>`` 落盘，而 id 只在**一个库**里唯一：换一个库跑同一个 id，
+    或删库重建，就会撞上上一次的目录。早先直接覆盖，实测把一份真实底稿换成了
+    另一次实验的内容。这里改成：目录里已有同名底稿但目标不同，就退到
+    ``task-<id>-<标题指纹>``，谁也不覆盖谁。
+    """
+    existing = directory / "digest.json"
+    if not existing.exists():
+        return directory
+    try:
+        payload = json.loads(existing.read_text(encoding="utf-8"))
+        same = str(payload.get("objective", "")) == str(digest.objective)
+    except (OSError, ValueError):
+        same = False
+    if same:
+        return directory
+    fingerprint = hashlib.sha256(str(digest.objective).encode("utf-8")).hexdigest()[:8]
+    return directory.with_name(f"{directory.name}-{fingerprint}")
+
+
+def _planned_queries(payload: dict[str, Any]) -> list[str]:
+    """上游 ``research.plan`` 排出的检索词。
+
+    规划阶段把问题拆成检索词之后，采集阶段要**直接用**这份结果，否则规划就白做了。
+    只认 ``planner="keywords"`` 这种规则产物的结构，读不到就当没有。
+    """
+    upstream = payload.get("_upstream")
+    if not isinstance(upstream, list):
+        return []
+    for item in upstream:
+        if not isinstance(item, dict):
+            continue
+        if item.get("task_type") != TaskType.RESEARCH_PLAN.value:
+            continue
+        output = item.get("output")
+        if isinstance(output, dict):
+            queries = _clean_queries(output.get("queries"))
+            if queries:
+                return queries
+    return []
+
+
 def derive_queries(question: str, payload: dict[str, Any] | None = None) -> list[str]:
     """从子任务问题里推出检索词。
+
+    优先级：显式 ``payload["queries"]`` > 上游 ``research.plan`` 的产出 > 按标点拆句。
 
     没有模型可用时这就是全部"规划"能力：它**不做语义扩展**，只把问题拆成
     几个可检索的短语，并在 ``output`` 里如实标明 ``planner="keywords"``。
     想要真正的多角度问题拆解，需要模型（见 MODEL_TASK_TYPES）。
     """
     payload = payload or {}
-    explicit = payload.get("queries")
-    if isinstance(explicit, list) and explicit:
-        return [str(item).strip() for item in explicit if str(item).strip()][:MAX_QUERIES]
+    explicit = _clean_queries(payload.get("queries"))
+    if explicit:
+        return explicit
+
+    planned = _planned_queries(payload)
+    if planned:
+        return planned
 
     text = question.strip().rstrip("？?。.")
     chunks = [chunk.strip() for chunk in text.replace("，", "|").replace("、", "|").split("|")]
@@ -173,6 +231,7 @@ class AgentExecutor:
         #: 研究产物落盘根目录（默认 content/research，测试里换成临时目录）
         self.artifacts_root = artifacts_root
         self._handlers: dict[str, Callable[[Claim, CallerContext], ExecutionOutcome]] = {
+            TaskType.RESEARCH_PLAN.value: self._plan,
             TaskType.RESEARCH_COLLECT.value: self._collect,
             TaskType.RESEARCH_EXTRACT.value: self._extract,
             TaskType.RESEARCH_ANALYZE.value: self._analyze,
@@ -219,6 +278,31 @@ class AgentExecutor:
         )
 
     # ------------------------------------------------------------------ 处理器
+
+    def _plan(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """把研究问题拆成检索词。
+
+        这一阶段**不调用模型**：真实模型的拆解能力还没接上（见 MODEL_TASK_TYPES），
+        而"拆检索词"这件事用规则就能做到，没必要因为缺密钥把整条研究链卡死在这里。
+        产出里如实写 ``planner="keywords"``、``model_used=False``，下游采集阶段直接
+        用这份检索词；谁想知道这是不是 AI 规划的，看这两个字段就知道。
+        """
+        payload = claim.input_payload if isinstance(claim.input_payload, dict) else {}
+        question = claim.question.strip()
+        if question.startswith("拆解研究问题："):
+            question = question[len("拆解研究问题：") :].strip()
+        queries = derive_queries(question, {"queries": payload.get("queries")})
+        return ExecutionOutcome(
+            status="completed",
+            output={
+                "objective": question,
+                "queries": queries,
+                "query_count": len(queries),
+                "planner": "keywords",
+                "model_used": False,
+                "note": "按标点与长度拆检索词，没有做语义扩展；多角度拆解需要模型",
+            },
+        )
 
     def _collect(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """真实搜索 + 真实抓取。没有模型参与，结果可直接进证据库。"""
@@ -461,6 +545,7 @@ class AgentExecutor:
             queries=queries,
         )
         directory = (self.artifacts_root or (PROJECT_ROOT / "content" / "research")) / f"task-{claim.task_id}"
+        directory = _safe_digest_dir(directory, digest)
         paths = write_digest(digest, directory)
         return digest, payload, paths
 

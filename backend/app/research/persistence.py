@@ -239,9 +239,22 @@ def _summary_of(digest: Digest) -> str:
     return " ".join(parts)
 
 
-def _findings_of(digest: Digest) -> list[str]:
-    """把数据点原样列出来，不加工成结论——没有模型就不写结论。"""
-    return [f"[{point.source_id}] {point.text}" for point in digest.data_points[:20]]
+def _findings_of(digest: Digest) -> list[dict[str, Any]]:
+    """把数据点原样列出来，不加工成结论——没有模型就不写结论。
+
+    结构是 ``{"text", "source_id", "numbers", "verified"}``：库里这一列是 JSON，
+    接口与前端都按"一条发现=一条对象"来读；早先只写字符串，会让
+    ``GET /api/research-reports`` 直接 500。
+    """
+    return [
+        {
+            "text": point.text,
+            "source_id": point.source_id,
+            "numbers": list(point.numbers),
+            "verified": False,
+        }
+        for point in digest.data_points[:20]
+    ]
 
 
 def _limitations_of(digest: Digest) -> str:

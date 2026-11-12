@@ -1,0 +1,110 @@
+{
+ "job_id": "v5_flow_acceptance",
+ "created_at": "2026-11-12T14:46:21.359487+00:00",
+ "stage": "storyboard_ready",
+ "next_stage": "render",
+ "blocked": false,
+ "blocked_reason": "",
+ "model_provider": "model_not_configured",
+ "outline": {
+  "job_id": "v5_flow_acceptance",
+  "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance\\storyboard\\storyboard.csv",
+  "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_flow_acceptance\\storyboard\\OUTLINE.md",
+  "shots": [
+   {
+    "shot_id": "sh01",
+    "seconds": 4.0,
+    "narration": "这一条讲的是：分析：商业银行靠什么赚钱、净息差为什么下降。下面每一句话都能追到原文。",
+    "subtitle": "分析：商业银行靠什么赚钱、净息差为什",
+    "source_id": "",
+    "number": ""
+   },
+   {
+    "shot_id": "sh02",
+    "seconds": 4.5,
+    "narration": "近日，国家金融监督管理总局公布2023年第四季度商业银行主要监管指标情况。",
+    "subtitle": "近日，国家金融监督管理总局公布20…",
+    "source_id": "S01",
+    "number": ""
+   },
+   {
+    "shot_id": "sh03",
+    "seconds": 4.5,
+    "narration": "数据显示，2023年，衡量商业银行盈利能力的重要指标之一净息差整体仍在下行，第四季度的净息差环比下降4个基点至1.69%，跌破1.7%，创2010年有统计数据以来新低。",
+    "subtitle": "数据显示，2023年，",
+    "source_id": "S01",
+    "number": "1.69%"
+   },
+   {
+    "shot_id": "sh04",
+    "seconds": 4.5,
+    "narration": "三季度商业银行净息差降至1.53% 城商行净息差最低 商业银行盈利增长和息差收窄压力仍然较大",
+    "subtitle": "三季度商业银行净息差降至1.53%…",
+    "source_id": "S02",
+    "number": "1.53%"
+   },
+   {
+    "shot_id": "sh05",
+    "seconds": 4.5,
+    "narration": "今日，国家金融监督管理总局发布2024年三季度银行业保险业主要监管指标数据情况，从数据来看，三季度末银行业总资产和净利润同比较上半年稳中有升，不良率维持低位，银行业经营状况略有改善。",
+    "subtitle": "今日，国家金融监督管理总局发布20…",
+    "source_id": "S02",
+    "number": ""
+   },
+   {
+    "shot_id": "sh06",
+    "seconds": 4.5,
+    "narration": "21深度ㅣ万亿信用卡之变：监管明确分期收入属于利息，不是手续费",
+    "subtitle": "21深度ㅣ万亿信用卡之变：",
+    "source_id": "S03",
+    "number": "21"
+   },
+   {
+    "shot_id": "sh07",
+    "seconds": 4.5,
+    "narration": "11月2日，多家电商平台的尾款支付活动继续，不少网友“转战”在各大直播间，纷纷计算着哪种满减活动、消费分期以及支付优惠最为划算。",
+    "subtitle": "11月2日，多家电商平台的尾款支付…",
+    "source_id": "S03",
+    "number": "11"
+   },
+   {
+    "shot_id": "sh08",
+    "seconds": 5.0,
+    "narration": "以上 6 个数字来自 4 份资料（S01、S02、S03）。这只是资料汇编，不是投资建议。",
+    "subtitle": "资料汇编 · 不是投资建议",
+    "source_id": "",
+    "number": ""
+   }
+  ],
+  "shot_count": 8,
+  "total_seconds": 36.0,
+  "frames": 1080,
+  "source_ids": [
+   "S01",
+   "S02",
+   "S03"
+  ],
+  "warnings": [
+   "只引用了 4 份资料里的 3 份"
+  ],
+  "generated_by": "rules",
+  "ok": true
+ },
+ "report": {
+  "report_id": 1,
+  "research_task_id": 1,
+  "title": "分析：商业银行靠什么赚钱、净息差为什么下降",
+  "verification_status": "disputed",
+  "sha256": "dc1ac4b726789cb78de42ec362bc05b9e5aec88650763f0d376fbfcb11c948c1"
+ },
+ "counts": {
+  "evidence": 17,
+  "sources": 4
+ },
+ "narrative_style": "AK（accessible-explainer + investigative-storytelling + ak-signature）",
+ "not_done": [
+  "script/script.md（分镜已就位，但正式脚本仍需模型或人工）",
+  "assets_manifest.csv（素材必须先登记授权；纯色底镜头不需要）",
+  "audio/ 与 output/（跑 render_job 才会生成）"
+ ]
+}

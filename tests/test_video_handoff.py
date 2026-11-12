@@ -163,6 +163,36 @@ def test_video_job_api_creates_directory_and_reports_blocked(
     assert (Path(body["path"]) / "job.json").is_file()
 
 
+def test_video_job_api_accepts_an_explicit_job_id(
+    client, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """同一天对同一份报告再点一次不该只能撞 409：允许调用方自己起名。"""
+    monkeypatch.setattr(handoff_module, "JOBS_ROOT", tmp_path)
+    monkeypatch.setattr(
+        model_providers,
+        "provider_status",
+        lambda **_: {"deepseek": {"status": "missing_api_key"}},
+    )
+    created = client.post(
+        "/api/research-reports",
+        json={"title": "重试也要能建", "summary": "摘要。", "limitations": "样本有限。"},
+    )
+    report_id = created.json()["id"]
+
+    first = client.post(f"/api/research-reports/{report_id}/video-job", json={"job_id": "retry_one"})
+    assert first.status_code == 201, first.text
+    assert first.json()["job_id"] == "retry_one"
+
+    second = client.post(f"/api/research-reports/{report_id}/video-job", json={"job_id": "retry_two"})
+    assert second.status_code == 201, second.text
+    assert second.json()["job_id"] == "retry_two"
+
+    duplicate = client.post(
+        f"/api/research-reports/{report_id}/video-job", json={"job_id": "retry_one"}
+    )
+    assert duplicate.status_code == 409, "同名目录仍然拒绝覆盖"
+
+
 def test_video_job_api_returns_404_for_unknown_report(client, tmp_path: Path) -> None:
     response = client.post("/api/research-reports/999999/video-job")
     assert response.status_code == 404

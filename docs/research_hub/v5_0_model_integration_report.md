@@ -189,3 +189,72 @@ python -m backend.scripts.model_smoke
 4. **没有做流式输出**与多 provider 故障转移：现在是单 provider、非流式。
 5. **§6 视频链路**：报告→视频任务的交接已通（规则分镜 + 数据卡 + 旁白 + 渲染 + QC 全跑过），
    但"内容策划/脚本生成"这两步要模型，仍 BLOCKED。
+
+---
+
+## 7. 前端真实验收（§5）：用真 HTTP 服务把整条链点了一遍
+
+脚本 `backend/scripts/flow_check.py`：起一个真 `uvicorn`（临时库 `%TEMP%\fmai_flow_*\flow.db`），
+用 `urllib` 逐条打接口，**不打 mock、不改生产库**。可复跑：
+
+```powershell
+python -m backend.scripts.flow_check
+```
+
+### 7.1 实测返回码序列（一次跑完，2026-11-12 22:47）
+
+| 步骤 | 接口 | 返回码 | 关键结果 |
+| --- | --- | --- | --- |
+| 建选题 | `POST /api/topics` | 201 | `topic_id=1` |
+| 建研究任务 | `POST /api/research-tasks` | 201 | `task_id=1`，7 个子任务（跳过 3 个选题阶段） |
+| 推进第 1 轮 | `POST /api/research-tasks/1/run` | 200 | `completed=[1,2,3]` |
+| 推进第 2 轮 | 同上 | 200 | `blocked=[4]`（`research.analyze` 缺模型） |
+| 任务终态 | `GET /api/research-tasks/1` | 200 | `paused`，`{succeeded:3, blocked:1, pending:3}` |
+| 资料库 | `GET /api/sources` | 200 | **`total=6`**（真实抓取的公开网页） |
+| 报告 | `GET /api/research-reports` | 200 | `total=1`，`report_id=1` |
+| 证据链 | `GET /api/evidence?research_report_id=1` | 200 | **`total=17`** |
+| 建脚本 | `POST /api/scripts` | 201 | `script_id=1`、`v1`、`draft` |
+| 送审 / 通过 | `PATCH /api/scripts/1/status` | 200 / 200 | `in_review` → `approved` |
+| 记审核 | `POST /api/reviews` | 201 | `review_id=1`、`needs_revision` |
+| 从报告建视频任务 | `POST /api/research-reports/1/video-job` | 201 | `v5_flow_acceptance`、`stage=storyboard_ready`、`blocked=false` |
+| 成本 | `GET /api/system/costs` | 200 | `model_calls=0`、`model_cost_cny=0` |
+| 服务商 | `GET /api/system/providers` | 200 | `deepseek=missing_api_key` |
+
+视频任务目录里落下的真实文件：`research/report.md`、`research/evidence.json`（50 KB）、
+`research/sources.json`、`storyboard/storyboard.csv`（8 镜 / 36 秒，4 张数据卡）、
+`storyboard/OUTLINE.md`、`assets/compositions/card_sh0*.json`、`assets_manifest.csv`、`HANDOFF.md`。
+**这几份文件是从真报告 + 真证据排出来的，不是模板。**
+
+### 7.2 验收中修掉的四个真缺陷（都不是改测试绕过）
+
+| # | 现象 | 根因 | 修法 | 复现它的测试 |
+| --- | --- | --- | --- | --- |
+| 1 | 任务从 `research.plan` 开始就 `blocked`，后面的**真实检索/抓取**（不需要模型）全停在 `pending` | 规划阶段被归进 `MODEL_TASK_TYPES`，一律走"没模型就阻塞" | 新增 `AgentExecutor._plan`：用规则从问题拆检索词，产出标 `planner="keywords"` / `model_used=false`，下游直接复用 | `test_plan_derives_keyword_queries_without_a_model`、`test_collect_uses_the_queries_the_plan_stage_derived` |
+| 2 | `GET /api/research-reports` **500** | `findings` 列存的是字符串数组，接口按对象数组解析 | `persistence._findings_of()` 改写结构化对象 `{text, source_id, numbers, verified}` | `tests/test_research_persistence.py` 全绿 + §7.1 实测 200 |
+| 3 | `GET /api/sources` **500**（只要有带时分的发布时间） | 库里是 `DateTime`，schema 写成 `date` | `SourceOut.published_at` 改 `datetime` | 同上 |
+| 4 | 同一份报告当天再点"建视频任务"只能撞 **409** | 路由不接 `job_id`，默认名 = 报告 id + 日期，不可重试 | 新增 `VideoJobIn`，允许调用方指定 `job_id`；同名目录仍拒绝覆盖 | `test_video_job_api_accepts_an_explicit_job_id` |
+
+另外补了一道**数据保护**：产物按 `content/research/task-<id>/` 落盘，而 id 只在一个库里唯一。
+验收时用临时库跑到 `task-1`，把仓库里那份真实底稿覆盖掉了（已用 `git checkout --` 恢复）。
+现在 `_safe_digest_dir()` 会在"目录里已有同 id 但目标不同的底稿"时退到 `task-<id>-<指纹>`，
+并加了 `test_digest_of_another_run_does_not_overwrite_an_existing_one`。
+
+### 7.3 本轮测试与库状态
+
+| 项 | 值 |
+| --- | --- |
+| 全量测试 | **786 passed, 2 skipped, 1 warning**（唯一 warning 仍是 `agent_runs↔research_subtasks` 外键环） |
+| 新增测试 | `test_execution_pipeline.py` +3、`test_video_handoff.py` +1 |
+| `model_calls` | **0 行**（全程没调用任何模型） |
+| 真实开发库 | `sha256=2df764e565c2b89644b70e3abc9143088761730fccf438f801683afa7fb48203`、540,672 B、**19 表**、`revision=de8148733a9b`、`journal_mode=delete`、无 `-wal`/`-shm` —— 与基线逐字节一致 |
+
+---
+
+## 8. 现在还剩什么（一句话一条）
+
+1. **真实模型调用**：仍 `BLOCKED: model_not_configured`。你配好 `.env` + `features.model: true` 后，
+   跑 `python -m backend.scripts.model_smoke` 就能验证；我不会替你花这笔钱。
+2. **研究闭环的后半段**（模型分析 → 结构化 Finding → 结论段 → 语义核查）依赖模型，无密钥即无法真跑；
+   前半段（真实搜索 → 抓取 → 解析 → 证据入库 → 报告草稿 → 审核）本轮已端到端跑通。
+3. **视频链路的"内容策划/脚本生成"**同样要模型；分镜→数据卡→旁白→渲染→QC 已能真出片。
+4. 未做：流式输出、多 provider 故障转移、语义检索、自动发布。

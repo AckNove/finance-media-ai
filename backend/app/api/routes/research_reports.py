@@ -12,7 +12,7 @@ from backend.app.models.evidence import Evidence
 from backend.app.models.source import Source
 from backend.app.schemas.common import Page
 from backend.app.schemas.research import ResearchReportCreate, ResearchReportOut
-from backend.app.schemas.video import VideoJobOut
+from backend.app.schemas.video import VideoJobIn, VideoJobOut
 from backend.app.services.research_service import ResearchReportService
 from backend.app.video.handoff import VideoHandoffError, create_video_job
 
@@ -76,7 +76,7 @@ def get_research_report(db: DbSession, report_id: int = Path(ge=1)) -> ResearchR
     ),
 )
 def create_video_job_for_report(
-    db: DbSession, report_id: int = Path(ge=1)
+    db: DbSession, payload: VideoJobIn | None = None, report_id: int = Path(ge=1)
 ) -> VideoJobOut:
     report = ResearchReportService(db).get(report_id)
     evidence = list(
@@ -89,7 +89,12 @@ def create_video_job_for_report(
         else []
     )
     try:
-        scaffold = create_video_job(report, evidence=evidence, sources=sources)
+        scaffold = create_video_job(
+            report,
+            evidence=evidence,
+            sources=sources,
+            job_id=(payload.job_id if payload else None),
+        )
     except VideoHandoffError as error:
         if error.reason == "job_exists":
             raise ConflictError(
