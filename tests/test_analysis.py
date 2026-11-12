@@ -211,3 +211,19 @@ def test_charts_use_a_real_cjk_font(tmp_path: Path) -> None:
     result = bar_chart(["利息", "手续费"], [1.0, 2.0], output=tmp_path / "font.png")
     # 机器上应当能找到 Noto Sans SC / 微软雅黑；找不到就会退回 fallback（中文会变方框）
     assert result.font_family != "fallback"
+
+
+@pytest.mark.parametrize(
+    ("value", "unit", "expected"),
+    [
+        (1.52, "%", "1.52%"),          # 净息差不能显示成 1.5%
+        (13.13, "%", "13.13%"),
+        (42.8, "亿元", "42.8亿元"),
+        (42800.0, "亿元", "42,800亿元"),  # 大数不必带小数
+        (-1.05, "%", "-1.05%"),
+    ],
+)
+def test_value_labels_keep_enough_precision(value: float, unit: str, expected: str) -> None:
+    from backend.app.analysis.charts import _number_text
+
+    assert _number_text(value, unit) == expected

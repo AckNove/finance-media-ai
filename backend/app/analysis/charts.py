@@ -152,6 +152,19 @@ def _finish(figure, path: Path, *, kind: str, dpi: int, series_count: int, point
     )
 
 
+def _number_text(value: float, unit: str = "") -> str:
+    """按量级选小数位：净息差 1.52% 不能显示成 1.5%，营收 4.28 万亿不必带两位小数。"""
+    magnitude = abs(value)
+    if magnitude >= 10000:
+        text = f"{value:,.0f}"
+    elif magnitude >= 100:
+        text = f"{value:,.1f}"
+    else:
+        # 百分数、比率通常要两位；把没意义的尾零去掉（42.80 → 42.8）
+        text = f"{value:,.2f}".rstrip("0").rstrip(".")
+    return f"{text}{unit}"
+
+
 def line_chart(
     series: Sequence[tuple[str, Sequence[float]]],
     labels: Sequence[str],
@@ -177,13 +190,13 @@ def line_chart(
         if highlight_last and values:
             axes.scatter([len(labels) - 1], [list(values)[-1]], color=color, s=90, zorder=5)
             axes.annotate(
-                f"{list(values)[-1]:,.1f}{unit}",
+                _number_text(list(values)[-1], unit),
                 (len(labels) - 1, list(values)[-1]),
                 textcoords="offset points",
-                xytext=(-6, 24),
+                xytext=(-14, 30),
                 ha="right",
                 color=color,
-                fontsize=13,
+                fontsize=14,
             )
     if title:
         axes.set_title(title, fontsize=20, color=PAPER, pad=16, loc="left")
@@ -220,7 +233,7 @@ def bar_chart(
     size: tuple[int, int] = CANVAS_VERTICAL,
     dpi: int = 160,
     source_note: str = "",
-    value_format: str = "{:,.1f}",
+    value_format: str = "",
 ) -> ChartResult:
     """柱状图：结构类数字（收入构成、各业务占比、Top-N 榜单）用它。"""
     if len(labels) != len(values):
@@ -233,8 +246,9 @@ def bar_chart(
     colors = [SERIES_COLORS[i % len(SERIES_COLORS)] for i in positions]
     bars = axes.bar(positions, list(values), color=colors, width=0.62)
     for bar, value in zip(bars, values):
+        text = value_format.format(value) + unit if value_format else _number_text(value, unit)
         axes.annotate(
-            value_format.format(value) + unit,
+            text,
             (bar.get_x() + bar.get_width() / 2, bar.get_height()),
             textcoords="offset points",
             xytext=(0, 6),
