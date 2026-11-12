@@ -56,6 +56,7 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("POST", "/api/research-reports"): HUMAN_ONLY,
     ("GET", "/api/research-reports"): HUMAN_ONLY,
     ("GET", "/api/research-reports/{report_id}"): HUMAN_ONLY,
+    ("POST", "/api/research-reports/{report_id}/video-job"): HUMAN_ONLY,
     # M8：研究任务编排/执行（人工建任务，人工推进，人工闸门）
     ("POST", "/api/research-tasks"): HUMAN_ONLY,
     ("GET", "/api/research-tasks"): HUMAN_ONLY,

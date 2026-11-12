@@ -83,6 +83,8 @@ function failure(result) {
 }
 
 let JOBS_CACHE = null;
+// 任务页的自动刷新定时器：切页时必须清掉，否则会在别的页面上偷偷改 DOM。
+let activePoll = null;
 async function loadJobs(force) {
   if (JOBS_CACHE && !force) return JOBS_CACHE;
   const result = await api('/workspace/jobs');
@@ -379,6 +381,41 @@ async function pageTaskDetail(view, params) {
   document.getElementById('pause-task').onclick = () => act(`/research-tasks/${id}/pause`, '暂停');
   document.getElementById('resume-task').onclick = () => act(`/research-tasks/${id}/resume`, '恢复');
   document.getElementById('cancel-task').onclick = () => act(`/research-tasks/${id}/cancel`, '取消');
+
+  // 任务在跑的时候自动刷新进度：只换两张卡的内容，不动按钮与输出区。
+  if (['created', 'planning', 'running'].includes(String(task.status))) {
+    const progressCard = view.querySelectorAll('.card')[1];
+    const eventsCard = view.querySelectorAll('.card')[2];
+    activePoll = setInterval(async () => {
+      const [fresh, freshEvents] = await Promise.all([
+        api(`/research-tasks/${id}`),
+        api(`/research-tasks/${id}/events?limit=50`),
+      ]);
+      if (!fresh.ok) return;
+      const next = fresh.data;
+      progressCard.innerHTML = `<h2>阶段进度</h2><div class="row">${statusTag(next.status)}
+        <span class="tag info">花费 ${money(next.cost_spent_cny)}</span></div>` + table([
+        { title: '#', key: 'sequence', num: true },
+        { title: '阶段', key: 'task_type' },
+        { title: '执行者', value: (row) => esc(row.assignee || '—') },
+        { title: '状态', value: (row) => statusTag(row.status), raw: true },
+        { title: '尝试', value: (row) => `${row.attempts}/${row.max_attempts}`, num: true },
+        { title: '说明', value: (row) => esc(row.failure_reason || '') },
+      ], next.subtasks);
+      if (freshEvents.ok) {
+        eventsCard.innerHTML = `<h2>事件流</h2>` + table([
+          { title: '#', key: 'event_seq', num: true },
+          { title: '类型', key: 'event_type' },
+          { title: '执行者', value: (row) => esc(row.actor || '—') },
+          { title: '时间', value: (row) => when(row.created_at) },
+        ], freshEvents.data.items);
+      }
+      if (!['created', 'planning', 'running'].includes(String(next.status))) {
+        clearInterval(activePoll);
+        activePoll = null;
+      }
+    }, 4000);
+  }
 }
 
 async function pageSearch(view) {
@@ -475,12 +512,38 @@ async function pageReports(view) {
         { title: '标题', key: 'title' },
         { title: '核验状态', value: (row) => statusTag((row.verification_status || 'unverified').toLowerCase()), raw: true },
         { title: '创建时间', value: (row) => when(row.created_at) },
-        { title: '操作', value: (row) => `<a href="#/planning?report=${row.id}">用它做内容策划</a>`, raw: true },
+        { title: '操作', value: (row) => `<a href="#/planning?report=${row.id}">用它做内容策划</a>
+          <button class="btn ghost" data-video="${row.id}">建视频任务</button>`, raw: true },
       ], items, '还没有报告：跑一个研究任务') : failure(result)}
     </div>
+    <div id="video-job-result"></div>
     <div id="report-detail"></div>`;
 
   if (!items.length) return;
+  const output = document.getElementById('video-job-result');
+  view.querySelectorAll('button[data-video]').forEach((button) => {
+    button.onclick = async () => {
+      const reportId = button.dataset.video;
+      output.innerHTML = '<div class="note">正在把研究材料搬进任务目录…</div>';
+      const response = await api(`/research-reports/${reportId}/video-job`, { method: 'POST', body: '{}' });
+      if (!response.ok) { output.innerHTML = failure(response); return; }
+      const job = response.data;
+      output.innerHTML = `<div class="card">
+        <h2>视频任务目录已建好</h2>
+        <p><code>${esc(job.path)}</code></p>
+        <div class="row">
+          <span class="tag info">阶段 ${esc(job.stage)}</span>
+          <span class="tag">证据 ${job.evidence_count} 条</span>
+          <span class="tag">来源 ${job.source_count} 条</span>
+          ${job.blocked ? `<span class="tag warn">阻塞：${esc(job.blocked_reason)}</span>` : '<span class="tag ok">模型已就绪</span>'}
+        </div>
+        <div class="note ${job.blocked ? 'warn' : 'ok'}">${esc(job.next_step || '')}</div>
+        <p class="muted">脚本与分镜目录是空的：没有模型可用时不会生成模板文字冒充脚本，等你把模型配好再跑下一步。</p>
+        <a href="#/video">去视频预览页看已有成片</a>
+      </div>`;
+    };
+  });
+
   const detail = await api(`/research-reports/${items[0].id}`);
   if (detail.ok) {
     const report = detail.data;
@@ -806,6 +869,10 @@ async function pageSettings(view) {
 /* ------------------------------------------------------------------ 启动 */
 
 async function route() {
+  if (activePoll) {
+    clearInterval(activePoll);
+    activePoll = null;
+  }
   const { route: matched, params, path } = matchRoute(location.hash);
   document.getElementById('page-title').textContent = matched.title;
   document.getElementById('page-hint').textContent = matched.hint || '';
