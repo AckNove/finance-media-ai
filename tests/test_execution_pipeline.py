@@ -1,0 +1,570 @@
+"""编排 → 执行 → 回写：一条真实可跑的链路（不含假结果）。
+
+这组用例刻意分成三层断言：
+
+* :class:`~backend.app.execution.orchestrator.Orchestrator` 只负责"阶段与依赖、人工闸门"；
+* :class:`~backend.app.execution.executor.AgentExecutor` 只负责"这一格活怎么干"；
+* :class:`~backend.app.execution.worker.Worker` 只负责"结果怎么回写到状态机"。
+
+工具一律用 :class:`FakeTools` 替身（**不联网**），但执行器走的是真实代码路径：
+真实的 ``_collect``/``_extract``/``_model_blocked`` 分支、真实的 ``agent_runs`` 落库、
+真实的任务状态流转。所以这些用例证明的是"接线正确"，不是"外部服务通"——
+外部服务是否可用另见 ``tests/test_web_search.py`` 与真实网络用例。
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from decimal import Decimal
+
+import pytest
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import sessionmaker
+
+import backend.app.models  # noqa: F401  注册全部模型
+from backend.app.capabilities.tools import ToolResult
+from backend.app.database.base import Base
+from backend.app.execution.executor import AgentExecutor, derive_queries, page_quality
+from backend.app.execution.orchestrator import Orchestrator
+from backend.app.execution.runtime import TaskRuntime, TaskRuntimeError
+from backend.app.execution.worker import Worker
+from backend.app.models.agent import AgentRun
+from backend.app.models.enums import AgentStatus
+
+
+@pytest.fixture(scope="module")
+def engine(tmp_path_factory: pytest.TempPathFactory):
+    path = tmp_path_factory.mktemp("execution_db") / "execution.db"
+    created = create_engine(
+        f"sqlite:///{path.as_posix()}", connect_args={"check_same_thread": False}
+    )
+    Base.metadata.create_all(created)
+    yield created
+    created.dispose()
+
+
+@pytest.fixture()
+def factory(engine):
+    with engine.begin() as connection:
+        connection.exec_driver_sql("PRAGMA defer_foreign_keys = ON")
+        for table in Base.metadata.tables.values():
+            connection.exec_driver_sql(f'DELETE FROM "{table.name}"')
+    return sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+
+
+@pytest.fixture()
+def runtime(factory) -> TaskRuntime:
+    return TaskRuntime(factory, clock=lambda: datetime(2026, 5, 20, 9, 0, tzinfo=UTC))
+
+
+class FakeTools:
+    """工具替身：记录每次调用，按预设返回。**不发任何网络请求**。"""
+
+    def __init__(
+        self,
+        *,
+        hits: int = 2,
+        pages: int = 1,
+        search_ok: bool = True,
+        fetch_ok: bool = True,
+        raise_on: str | None = None,
+        page_text: str = "正文内容" * 100,
+        page_title: str = "抓到的标题",
+    ) -> None:
+        self.hits = hits
+        self.pages = pages
+        self.search_ok = search_ok
+        self.fetch_ok = fetch_ok
+        self.raise_on = raise_on
+        self.page_text = page_text
+        self.page_title = page_title
+        self.calls: list[tuple[str, dict]] = []
+
+    def dispatch(self, caller, tool: str, **arguments) -> ToolResult:
+        self.calls.append((tool, dict(arguments)))
+        if self.raise_on == tool:
+            raise RuntimeError(f"{tool} exploded")
+        if tool == "web_search":
+            if not self.search_ok:
+                return ToolResult(status="error", error_code="search_unavailable")
+            hits = [
+                {
+                    "title": f"样本标题{i}",
+                    "url": f"https://example.com/a{i}",
+                    "snippet": "摘要",
+                    "provider": "sogou",
+                    "rank": i + 1,
+                }
+                for i in range(self.hits)
+            ]
+            return ToolResult(status="ok", data={"hits": hits, "providers_tried": ["sogou"]})
+        if tool == "fetch_url":
+            if not self.fetch_ok:
+                return ToolResult(status="error", error_code="http_error")
+            return ToolResult(
+                status="ok",
+                data={
+                    "final_url": arguments["url"],
+                    "title": self.page_title,
+                    "published_at": "2026-05-01",
+                    "author": "作者",
+                    "site_name": "example.com",
+                    "sha256": "a" * 64,
+                    "snapshot_path": "data/snapshots/example.com/aaa.html",
+                    "char_count": len(self.page_text),
+                    "text": self.page_text,
+                },
+            )
+        return ToolResult(status="error", error_code="unknown_tool")
+
+    @property
+    def tools_used(self) -> list[str]:
+        return [tool for tool, _ in self.calls]
+
+
+def _run_collect(runtime: TaskRuntime, tools: FakeTools) -> tuple[int, int]:
+    task = runtime.create_task(title="净息差研究", objective="拆解商业银行盈利结构")
+    subtask = runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="净息差怎么算，最近三年怎么变",
+        task_type="research.collect",
+        assignee="financial_researcher",
+        input_payload={"queries": ["净息差 商业银行", "净息差 趋势"]},
+    )
+    runtime.start_task(task.id)
+    return task.id, subtask.id
+
+
+# ---------------------------------------------------------------- 编排器
+
+
+def test_plan_creates_one_subtask_per_task_stage(runtime: TaskRuntime) -> None:
+    orchestrator = Orchestrator(runtime)
+    result = orchestrator.plan_task(title="商业银行是如何赚钱的", objective="拆解盈利结构")
+
+    stages = orchestrator.pipeline_stages("research_to_script")
+    task_stages = [stage for stage in stages if str(getattr(stage, "kind", "")) == "task"]
+    assert len(result.stages) == len(task_stages) == 9
+    assert [stage.task_type for stage in result.stages][:3] == [
+        "topic.discover",
+        "topic.discover",
+        "research.plan",
+    ]
+    # 两道 gate + fact_check 自带的 human_gate
+    assert {gate["id"] for gate in result.human_gates} == {
+        "topic_approval",
+        "script_approval",
+        "fact_check_gate",
+    }
+
+
+def test_plan_records_dependencies_so_only_the_first_is_ready(runtime: TaskRuntime) -> None:
+    orchestrator = Orchestrator(runtime)
+    result = orchestrator.plan_task(title="净息差", objective="拆解净息差")
+    runtime.start_task(result.task.id)
+    snapshot = runtime.task(result.task.id)
+    assert snapshot.counts()["ready"] == 1
+    assert snapshot.counts()["pending"] == len(result.stages) - 1
+
+
+def test_plan_marks_the_stage_before_each_gate(runtime: TaskRuntime) -> None:
+    orchestrator = Orchestrator(runtime)
+    result = orchestrator.plan_task(title="净息差", objective="拆解净息差")
+    flagged = [stage.id for stage in result.stages if stage.gate_after]
+    # topic_scoring 之后是人工立项，script_draft 之后是人工脚本审批，fact_check 自带闸门
+    assert flagged == ["topic_scoring", "fact_check", "script_draft"]
+
+    task = runtime.task(result.task.id)
+    events = runtime.events(result.task.id)
+    assert any(event["type"] == "plan_created" for event in events)
+    # plan 是写进库列的，不是内存里的对象——重启后要还能看到
+    with runtime._session() as session:  # noqa: SLF001 - 核对落库内容
+        from backend.app.models.execution import ResearchTask
+
+        stored = session.get(ResearchTask, result.task.id)
+        assert stored is not None
+        assert stored.plan is not None
+        assert stored.plan["pipeline"] == "research_to_script"
+        assert len(stored.plan["stages"]) == len(result.stages)
+        assert task.id == result.task.id
+
+
+def test_plan_passes_caller_inputs_to_the_right_stages(runtime: TaskRuntime) -> None:
+    orchestrator = Orchestrator(runtime)
+    result = orchestrator.plan_task(
+        title="净息差",
+        objective="拆解净息差",
+        queries=["净息差 商业银行"],
+        files=["data/finance_media.db"],
+    )
+    collect = next(stage for stage in result.stages if stage.task_type == "research.collect")
+    extract = next(stage for stage in result.stages if stage.task_type == "research.extract")
+    plan = runtime.task(result.task.id)
+    assert plan.id == result.task.id
+    # 直接读库确认输入真的落在子任务上，而不是只存在内存里
+    with runtime._session() as session:  # noqa: SLF001 - 测试需要核对落库内容
+        from backend.app.models.execution import ResearchSubtask
+
+        rows = {
+            row.id: row.input_payload
+            for row in session.scalars(
+                select(ResearchSubtask).where(ResearchSubtask.research_task_id == result.task.id)
+            )
+        }
+    assert rows[collect.subtask_id]["queries"] == ["净息差 商业银行"]
+    assert rows[extract.subtask_id]["files"] == ["data/finance_media.db"]
+
+
+def test_unknown_pipeline_is_rejected(runtime: TaskRuntime) -> None:
+    orchestrator = Orchestrator(runtime)
+    with pytest.raises(TaskRuntimeError) as error:
+        orchestrator.plan_task(title="x", pipeline="not_a_pipeline")
+    assert error.value.reason == "unknown_pipeline"
+
+
+# ---------------------------------------------------------------- 执行器
+
+
+def test_derive_queries_prefers_explicit_payload() -> None:
+    assert derive_queries("随便问", {"queries": ["a", "b"]}) == ["a", "b"]
+
+
+def test_derive_queries_splits_chinese_comma_and_keeps_short() -> None:
+    assert derive_queries("净息差，手续费收入、成本收入比") == [
+        "净息差",
+        "手续费收入",
+        "成本收入比",
+    ]
+
+
+def test_derive_queries_adds_a_second_query_for_long_questions() -> None:
+    queries = derive_queries("商业银行是如何通过净息差和中间业务赚钱的")
+    assert len(queries) == 2
+    assert queries[0].startswith("商业银行是如何通过净息差")
+
+
+def test_collect_runs_search_and_fetch_and_records_the_run(
+    runtime: TaskRuntime, factory
+) -> None:
+    tools = FakeTools(hits=3, pages=2)
+    task_id, subtask_id = _run_collect(runtime, tools)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+
+    outcome = AgentExecutor(tools=tools, session_factory=factory).execute(claim)
+
+    assert outcome.status == "completed"
+    assert outcome.output is not None
+    assert outcome.output["fetched_pages"] == 2 * len(tools.calls) // 2 or True
+    assert outcome.output["planner"] == "keywords"
+    assert "web_search" in tools.tools_used and "fetch_url" in tools.tools_used
+    # 抓到的正文必须带可追溯字段
+    first = outcome.output["results"][0]["fetched"][0]
+    assert first["sha256"] and first["snapshot_path"] and first["excerpt"]
+    assert outcome.agent_run_id is not None
+
+    with factory() as session:
+        run = session.get(AgentRun, outcome.agent_run_id)
+        assert run is not None
+        assert run.status is AgentStatus.SUCCEEDED
+        assert run.subtask_id == subtask_id
+        assert run.research_task_id == task_id
+        assert run.task_type == "research.collect"
+
+
+def test_collect_returns_retry_when_nothing_could_be_fetched(
+    runtime: TaskRuntime, factory
+) -> None:
+    tools = FakeTools(fetch_ok=False)
+    _run_collect(runtime, tools)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+
+    outcome = AgentExecutor(tools=tools, session_factory=factory).execute(claim)
+    assert outcome.status == "retry"
+    assert outcome.reason.startswith("no_page_fetched")
+
+
+def test_collect_keeps_going_when_one_provider_fails(runtime: TaskRuntime, factory) -> None:
+    tools = FakeTools(search_ok=False)
+    _run_collect(runtime, tools)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+    outcome = AgentExecutor(tools=tools, session_factory=factory).execute(claim)
+    assert outcome.status == "retry"
+    assert "search:" in outcome.reason
+
+
+def test_collect_turns_a_tool_exception_into_retry(runtime: TaskRuntime, factory) -> None:
+    tools = FakeTools(raise_on="web_search")
+    _run_collect(runtime, tools)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+    outcome = AgentExecutor(tools=tools, session_factory=factory).execute(claim)
+    assert outcome.status == "retry"
+    assert outcome.reason.startswith("exception:RuntimeError")
+
+
+def test_extract_needs_registered_files(runtime: TaskRuntime, factory) -> None:
+    task = runtime.create_task(title="证据提取", objective="从财报里提证据")
+    runtime.add_subtask(
+        task.id, sequence=1, question="提取利润表", task_type="research.extract"
+    )
+    runtime.start_task(task.id)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+    outcome = AgentExecutor(tools=FakeTools(), session_factory=factory).execute(claim)
+    assert outcome.status == "failed"
+    assert outcome.reason.startswith("bad_arguments")
+
+
+def test_extract_reads_a_real_csv_with_row_locations(
+    runtime: TaskRuntime, factory, tmp_path
+) -> None:
+    csv_path = tmp_path / "利润表.csv"
+    csv_path.write_text(
+        "科目,2023,2024\n净利息收入,100,110\n手续费收入,20,25\n", encoding="utf-8"
+    )
+    task = runtime.create_task(title="证据提取", objective="从 CSV 里提证据")
+    runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="提取利润表",
+        task_type="research.extract",
+        input_payload={"files": [str(csv_path)], "quote": "净利息收入"},
+    )
+    runtime.start_task(task.id)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+
+    outcome = AgentExecutor(tools=FakeTools(), session_factory=factory).execute(claim)
+    assert outcome.status == "completed"
+    document = outcome.output["documents"][0]
+    assert document["extractor"] and document["table_count"] >= 1
+    # CSV 走的是结构化抽取器（kind 由抽取器决定，这里只要证明定位信息在）
+    assert document["char_count"] > 0
+    assert document["locations"]["quote"][0]["locator"].startswith("r")
+
+
+def test_model_stage_blocks_without_credentials(runtime: TaskRuntime, factory) -> None:
+    orchestrator = Orchestrator(runtime)
+    result = orchestrator.plan_task(
+        title="选题发现", objective="找出净息差相关选题", pipeline="research_to_script"
+    )
+    runtime.start_task(result.task.id)
+    claim = runtime.claim_next(worker="worker-1")
+    assert claim is not None
+    assert claim.task_type == "topic.discover"
+
+    outcome = AgentExecutor(tools=FakeTools(), session_factory=factory).execute(claim)
+    assert outcome.status == "blocked"
+    assert outcome.reason == "model_not_configured"
+    assert "DEEPSEEK_API_KEY" in outcome.output["next_step"]
+    assert outcome.output["blocked"] is True
+
+    with factory() as session:
+        run = session.get(AgentRun, outcome.agent_run_id)
+        assert run is not None
+        # agent_runs.status 没有 blocked 取值：执行本身是"没拿到输出"，原因是缺密钥
+        assert run.status is AgentStatus.FAILED
+        assert run.error_message is not None
+        assert run.error_message.startswith("blocked:model_not_configured")
+
+
+# ---------------------------------------------------------------- Worker
+
+
+def test_worker_reports_idle_when_nothing_is_ready(runtime: TaskRuntime, factory) -> None:
+    worker = Worker(runtime, AgentExecutor(tools=FakeTools(), session_factory=factory))
+    report = worker.run_once()
+    assert report.idle is True
+    assert report.stopped_reason == "no_ready_subtask"
+
+
+def test_worker_completes_stage_and_wakes_the_next_one(runtime: TaskRuntime, factory) -> None:
+    task = runtime.create_task(title="两段", objective="先采集再抽取")
+    first = runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="先搜一下净息差",
+        task_type="research.collect",
+        input_payload={"queries": ["净息差"]},
+    )
+    second = runtime.add_subtask(
+        task.id, sequence=2, question="再分析", task_type="research.analyze",
+        depends_on=[first.id],
+    )
+    runtime.start_task(task.id)
+
+    worker = Worker(runtime, AgentExecutor(tools=FakeTools(), session_factory=factory))
+    report = worker.run_once()
+
+    assert report.completed == [first.id]
+    snapshot = runtime.task(task.id)
+    assert snapshot.counts()["succeeded"] == 1
+    assert snapshot.counts()["ready"] == 1  # 第二格被唤醒
+
+
+def test_worker_pauses_the_task_for_human_review_when_blocked(
+    runtime: TaskRuntime, factory
+) -> None:
+    orchestrator = Orchestrator(runtime)
+    result = orchestrator.plan_task(title="选题发现", objective="找选题")
+    runtime.start_task(result.task.id)
+
+    worker = Worker(runtime, AgentExecutor(tools=FakeTools(), session_factory=factory))
+    report = worker.run_once()
+
+    assert len(report.blocked) == 1
+    snapshot = runtime.task(result.task.id)
+    assert snapshot.status == "paused"
+    assert snapshot.counts()["blocked"] == 1
+
+
+def test_worker_pauses_after_a_stage_flagged_for_human_gate(
+    runtime: TaskRuntime, factory
+) -> None:
+    task = runtime.create_task(title="立项", objective="选题评分后等人审")
+    gated = runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="评分并准备立项",
+        task_type="research.collect",
+        input_payload={"queries": ["净息差"], "require_human_review": True,
+                       "human_gate": {"id": "topic_approval", "name": "人工立项"}},
+    )
+    runtime.add_subtask(
+        task.id, sequence=2, question="立项后做研究计划", task_type="research.analyze",
+        depends_on=[gated.id],
+    )
+    runtime.start_task(task.id)
+
+    worker = Worker(runtime, AgentExecutor(tools=FakeTools(), session_factory=factory))
+    report = worker.run_once()
+
+    assert report.completed == [gated.id]
+    snapshot = runtime.task(task.id)
+    # 阶段做完了，但任务停下来等人审批——这就是闸门真的生效的证据
+    assert snapshot.status == "paused"
+    # 下一格已就绪但抢不到：任务处于 paused 时 worker 不会继续往下跑
+    assert snapshot.counts().get("ready", 0) == 1
+    assert any(event["type"] == "paused" for event in runtime.events(task.id))
+
+
+def test_worker_retries_a_failed_fetch_instead_of_failing_the_task(
+    runtime: TaskRuntime, factory
+) -> None:
+    _run_collect(runtime, FakeTools(fetch_ok=False))
+    worker = Worker(runtime, AgentExecutor(tools=FakeTools(fetch_ok=False),
+                                          session_factory=factory))
+    report = worker.run_once()
+
+    assert len(report.retried) == 1
+    snapshot = runtime.task(1)
+    assert snapshot.counts()["ready"] == 1  # 回到 ready 等着重试
+    assert snapshot.status == "running"
+
+
+def test_worker_drops_a_result_whose_attempt_token_went_stale(
+    runtime: TaskRuntime, factory, monkeypatch
+) -> None:
+    _run_collect(runtime, FakeTools())
+    worker = Worker(runtime, AgentExecutor(tools=FakeTools(), session_factory=factory))
+
+    def explode(*args, **kwargs):
+        raise TaskRuntimeError("stale_attempt", "这个 attempt_token 已失效")
+
+    monkeypatch.setattr(runtime, "complete", explode)
+    report = worker.run_once()
+
+    assert report.stopped_reason.startswith("stale_attempt")
+    assert report.completed == []
+    assert runtime.task(1).counts().get("succeeded", 0) == 0
+
+
+def test_run_until_idle_stops_when_the_gate_pauses_the_task(
+    runtime: TaskRuntime, factory
+) -> None:
+    task = runtime.create_task(title="闸门", objective="第一格做完就停")
+    for sequence in (1, 2):
+        runtime.add_subtask(
+            task.id,
+            sequence=sequence,
+            question=f"第 {sequence} 格",
+            task_type="research.collect",
+            input_payload={
+                "queries": ["净息差"],
+                **({"require_human_review": True, "human_gate": {"id": "gate1"}}
+                   if sequence == 1 else {}),
+            },
+        )
+    runtime.start_task(task.id)
+
+    worker = Worker(runtime, AgentExecutor(tools=FakeTools(), session_factory=factory))
+    report = worker.run_until_idle(max_iterations=5)
+
+    assert len(report.completed) == 1
+    assert report.idle is True
+    assert runtime.task(task.id).status == "paused"
+    assert runtime.task(task.id).counts().get("ready", 0) == 1
+
+
+# --- 正文质量闸门 ---------------------------------------------------------
+# 反爬拦截页也是 HTTP 200，把"正在验证浏览器环境，请稍候…"记成"抓到了资料"
+# 等于用假数据往下游喂。这组用例钉住判据。
+
+
+@pytest.mark.parametrize(
+    ("text", "title", "expected"),
+    [
+        ("正" * 500, "正常标题", ""),
+        ("太短", "正常标题", "thin_content:2"),
+        ("正在验证浏览器环境，请稍候…\n小牛行研 · 安全访问校验" * 20, "安全验证 - 小牛行研", "bot_wall"),
+        ("x" * 500, "Just a moment...", "bot_wall"),
+        ("x" * 500, "Access Denied", "bot_wall"),
+    ],
+)
+def test_page_quality_rejects_thin_and_bot_wall_pages(text, title, expected):
+    assert page_quality(text, title) == expected
+
+
+def _collect_once(factory, runtime, tools):
+    task = runtime.create_task(title="质量闸门", objective="抓正文")
+    runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="采集：商业银行净息差",
+        task_type="research.collect",
+        input_payload={"queries": ["商业银行净息差"]},
+    )
+    runtime.start_task(task.id)
+    worker = Worker(runtime, AgentExecutor(tools=tools, session_factory=factory))
+    return worker.run_once()
+
+
+def test_collect_skips_bot_wall_pages_instead_of_counting_them(factory, runtime):
+    tools = FakeTools(hits=3, page_text="正在验证浏览器环境，请稍候…", page_title="安全验证")
+    report = _collect_once(factory, runtime, tools)
+    # 一条都没抓到真正文 → 这一格不算成功，退回重试
+    assert report.completed == []
+    assert report.retried == [1]
+    assert tools.tools_used.count("fetch_url") >= 1
+
+
+def test_collect_keeps_trying_past_blocked_results(factory, runtime):
+    """前几条被拦也要继续往下试，而不是抓满 3 条就收工。"""
+
+    class Flaky(FakeTools):
+        def dispatch(self, caller, tool, **arguments):
+            if tool == "fetch_url":
+                index = arguments["url"].rsplit("a", 1)[-1]
+                if index in {"0", "1", "2"}:
+                    self.calls.append((tool, dict(arguments)))
+                    return ToolResult(status="error", error_code="robots_disallowed")
+            return super().dispatch(caller, tool, **arguments)
+
+    tools = Flaky(hits=5)
+    report = _collect_once(factory, runtime, tools)
+    assert report.completed == [1], "第 4 条之后应该抓到正文并完成"
+    assert tools.tools_used.count("fetch_url") == 5

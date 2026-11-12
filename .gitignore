@@ -132,3 +132,7 @@ content/jobs/*/project/*/timeline-*.json
 # V1 旧任务目录：含从本机桌面复制来的原始数据（csv/xlsx/pdf），
 # 与 V2.x 的「旧数据全局隔离」口径一致，不入库。本地文件保留在磁盘上。
 content/jobs/20261110_jgb_gold_repricing/
+
+# 抓取快照（data/snapshots/<host>/<sha256>.html）：是"当时页面长什么样"的证据，
+# 但内容是第三方原文，体积也大，不入库；结论与 SHA-256 记在数据库与输出 JSON 里。
+data/snapshots/
