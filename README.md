@@ -21,18 +21,42 @@
 品牌、内容分类、商业模式与合规红线的完整定义见
 `docs/brand_strategy.md`、`docs/content_strategy.md`、`docs/business_model.md`。
 
-> 当前有两条进度不同的工作线。**研究工作台停在 M2.0 骨架**：配置层、权限闸门、
-> task_type 注册表、SQLite 连接参数与**显式** WAL 初始化、B1/B2/B3 迁移、启动自检和请求追踪
-> 已落地；模型 API、搜索工具及 TaskRuntime/Orchestrator 尚未接入。
-> **视频演示管线已交付 V2.2 Phase 2**：本地 OpenKatana/FFmpeg 适配、分镜驱动、多轨合成、
-> 素材溯源及 42.5 秒演示片均有实测证据，但尚未接入研究/内容生产链，也未经对外发布所需的
-> 页面级授权审核。分别见 `docs/research_hub/m2_0_delivery_report.md` 和
-> `docs/research_hub/phase2_handover_report.md`。
+> **当前状态：V5.0 统一平台已跑通「真实搜索 → 真实抓取 → 证据链入库 → 报告草稿」，
+> 视频侧保留 V2.2 Phase 2 的分镜/时间轴/渲染/质检链路。真实模型调用是唯一的大阻塞：
+> 仓库里没有任何 API Key，也没有本机模型服务，所以模型阶段会明确标 `BLOCKED`，不会伪造。**
+>
+> 一句话看懂能不能用：
+>
+> | 能力 | 状态 | 证据 |
+> | --- | --- | --- |
+> | 真实搜索 + 真实抓取（SSRF/robots/反爬拦截闸门） | ✅ 已实测 | 抓到今日头条/新浪财经等正文，解析出发布时间；验证命令见 `docs/research_hub/v5_0_delivery_report.md` |
+> | 任务运行时（队列/租约/重试/暂停/人工闸门） | ✅ 已实测 | 9 阶段 DAG + 3 道闸门，重启后可恢复 |
+> | 证据链（来源/证据/报告落库，逐字核对） | ✅ 已实测 | 一次真实跑：sources=3 / reports=1 / evidence=11 / verified=11 |
+> | 语音合成（Edge TTS + SAPI 兜底，词级时间） | ✅ 已实测 | 中文拿到真实词级边界，可直接出 SRT/ASS |
+> | 视频渲染与质检（FFmpeg 8.1.2 + OpenKatana） | ✅ 已实测 | 42.5 秒 1080×1920 成片，17 项 QC |
+> | 统一模型网关（OpenAI 兼容、预算与成本闸门） | ⚠️ 代码就绪、**无密钥** | 缺 key 时返回 `not_configured`；价目未知直接拒绝请求 |
+> | 18 页工作台（真实接口，无假数据） | ✅ 可用 | `http://127.0.0.1:8000/app/` |
 >
 > 注意：`journal_mode=WAL` **不会**因为启动服务或查状态而自动打开，它是显式动作——
 > `python -m backend.scripts.enable_wal --database-url <库> --dry-run` 先看清目标，再去掉 `--dry-run` 执行。
 
 ## 快速开始（Windows / PowerShell）
+
+```powershell
+# 一条命令：建/复用 .venv、准备独立工作库（自动 alembic upgrade head）、预检、启动
+.\scripts\start.ps1
+#   工作台  http://127.0.0.1:8000/app/
+#   接口文档 http://127.0.0.1:8000/docs
+#   健康检查 http://127.0.0.1:8000/api/system/status
+
+# 只做体检（不启动服务）：ok / blocked / error 三档，blocked 会告诉你怎么解
+.\.venv\Scripts\python.exe -m backend.scripts.preflight
+
+# 重启后恢复：回收过期租约并列出卡住的任务（默认只看不改，加 --apply 才动）
+.\.venv\Scripts\python.exe -m backend.scripts.recover_tasks
+```
+
+手工步骤（想自己控制每一步时）：
 
 ```powershell
 # 1. 虚拟环境（Python 3.12）
@@ -53,11 +77,13 @@ $env:DATABASE_URL = "sqlite:///./data/quickstart.db"
 
 # 6. 启动
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
-#    http://127.0.0.1:8000/docs
 
-# 7. 测试
-.\.venv\Scripts\python.exe -m pytest -q
+# 7. 测试（pyproject 的 addopts 已带 -q，想看清用例数就覆盖它）
+.\.venv\Scripts\python.exe -m pytest -o addopts="" -q
 ```
+
+> **数据安全**：`data/finance_media.db` 是只读的开发库，`start.ps1` 会拒绝在它上面启动；
+> 默认工作库是另建的 `data/finance_media.work.db`。迁移、WAL、seed 一律不针对那个受保护的库。
 
 ## 已实现的接口
 
@@ -78,48 +104,90 @@ $env:DATABASE_URL = "sqlite:///./data/quickstart.db"
 | GET | `/api/evidence?knowledge_item_id=` | 按主张目标查询证据（附来源摘要） |
 | POST / GET | `/api/research-reports` | 创建 / 列表研究报告 |
 | GET | `/api/research-reports/{report_id}` | 报告详情 |
+| POST / GET | `/api/research-tasks` | 按流水线拆解并建研究任务 / 任务列表 |
+| GET | `/api/research-tasks/{task_id}` | 任务详情（阶段进度、计数、计划、失败原因） |
+| GET | `/api/research-tasks/{task_id}/events` | 任务事件流（created/claimed/子任务/闸门/重试） |
+| POST | `/api/research-tasks/{task_id}/run` | 同步推进最多 N 格（真搜索真抓取） |
+| POST | `/api/research-tasks/{task_id}/pause\|resume\|cancel` | 暂停 / 恢复 / 取消 |
+| GET | `/api/system/costs` | 模型与工具调用成本聚合（按模型/工具/天） |
+| GET | `/api/system/providers` | 服务商状态（ready / missing_api_key / provider_disabled…，不回显密钥） |
+| GET | `/api/system/agents` | 九角色名册与各自可做的 task_type |
+| GET | `/api/workspace/jobs` | 视频任务目录、成片与产物清单 |
+| GET | `/api/workspace/jobs/{job_id}` | 分镜 / 素材 / 来源三张表 + 脚本与质检文本 |
+| GET | `/api/workspace/jobs/{job_id}/file?path=` | 产物文件（路径穿越一律拒绝） |
+| GET | `/api/workspace/search?q=` | 真实搜索（受 `features.search` 开关约束） |
+| GET | `/api/workspace/config` | 配置快照（features / cost / execution / models 价目状态） |
+
+共 **29 个路径 / 37 个操作**，全部登记在 `backend/app/api/router.py` 的 `ROUTE_CALLERS`，
+启动自检会逐条比对「清单 vs 真实挂载」，不一致就拒绝启动。
 
 统一错误响应：`{"error": {"code": "...", "message": "...", "details": ...}}`。
 
 每个响应都带 `X-Request-Id`（`req-<16 位十六进制>`，可用同名请求头透传，非法值会被替换），
 访问日志与异常日志都带同一个 id。
 
-## 调用者身份与工具权限（M2.0）
+## 调用者身份与工具权限
 
 - 每个路由必须显式声明允许的调用者（`backend/app/api/router.py` 的 `ROUTE_CALLERS`）：
-  `GET /health` 公开，其余 20 个操作当前**只允许 `human`**；启动自检用 `app.openapi()`
-  与这张表双向比对，任何未声明/多余的端点都会让进程拒绝启动。
+  `GET /health` 公开，其余 **36 个操作只允许 `human`**；启动自检会把 `app.openapi()`
+  与「真实路由上挂着哪个依赖」双向比对，未声明、多余、或清单说 human 而端点没挂依赖，
+  都会让进程拒绝启动。
 - `agent` 身份**不能由外部请求声明**：`X-Caller` 只作审计标签，非 `human` 值会被忽略并记录
   `forged_header` 告警；agent 上下文只能由执行层在进程内构造（`CallerContext.for_executor`）。
 - `dev` 端点仅限 `/api/_dev/*` 且 `APP_ENV != production`，生产环境返回 404。
 - 越权一律 422 `domain_validation_error` + `details.reason="permission_denied"`。
-- 工具登记表 `backend/app/capabilities/tools.py` 里 10 个工具的 `implemented` **全部为
-  `False`**：现在调用任何工具都返回 `not_implemented`，这是刻意为之，不是缺陷。
+- 工具登记表 `backend/app/capabilities/tools.py` 里 10 个工具**已实现 5 个**：
+  `web_search`、`fetch_url`、`parse_pdf`、`parse_xlsx`、`llm_complete`；
+  未实现的 5 个（`db_query`、`db_write`、`task_update`、`handoff`、`fact_check`）
+  调用时返回 `not_implemented`——这是刻意的诚实边界。
+
+## 一个研究任务会经过什么
+
+```
+POST /api/research-tasks
+  → Orchestrator 读 config/pipelines.yaml，把目标拆成 9 个 task 阶段 + 3 道人工闸门
+  → TaskRuntime 落库（research_tasks / research_subtasks / task_events）
+POST /api/research-tasks/{id}/run
+  → Worker 抢租约 → AgentExecutor 分派处理器
+       research.collect  真搜索 + 真抓取（SSRF/robots/反爬拦截闸门）→ 页面写入 sources
+       research.extract  结构化抽取（页码/行号/工作表定位）
+       research.analyze  先落底稿与证据链 → 再查模型；无密钥 → BLOCKED + 下一步怎么做
+       verify.claims     逐字核对，命中才 VERIFIED，不命中只说"需人工复核"
+  → 命中人工闸门自动 pause（原因落在库里，可查）
+```
+
+真实模型调用就绪后，`research.analyze / synthesize / verify.claims / content.*` 会从
+BLOCKED 变成真正产出；在此之前它们**不会**用假文本冒充结论。
 
 ## 目录结构
 
 ```
 backend/app/{api,core,models,schemas,services,database}   服务代码
-backend/app/execution/             L2 执行层：task_types.py（十种 task_type）、routing.py（路由与一致性校验）
-backend/app/capabilities/          L3 能力层骨架：guard.py（权限闸门）、tools.py（工具登记）、budget.py（成本闸门）
-backend/app/capabilities/media/    OpenKatana 与 FFmpeg 本地媒体适配层（演示任务已实测）
-backend/app/capabilities/adapters/ 可选 MarkItDown 本地解析适配器，尚未接入研究执行链
-backend/app/media/                 分镜校验、素材清单与时间轴构建
-backend/app/parsers/               解析产物与解析器 Protocol；实现位于 capabilities/adapters/
-backend/app/database/              session.py（连接级 PRAGMA）、wal.py（WAL 显式初始化，默认拒绝开发库）
-backend/migrations/                Alembic 迁移（初始 de8148733a9b + B1/B2/B3 三批）
-backend/scripts/seed_collections.py  按 code upsert 六大合集（幂等；默认拒绝写开发库）
-backend/scripts/enable_wal.py     显式把库切到 WAL（默认拒绝开发库，支持 --dry-run）
-agents/                            九角色提示词 + roster.yaml + PROTOCOL.md
-knowledge/{8 个子域}/               知识条目 Markdown（规范见 knowledge/README.md）
-content/{topics,scripts,storyboards,assets,published}
-video_engine/{templates,renderers,subtitles,audio,quality_control}
-prompts/{system,research,writing,review,production}
+backend/app/execution/            执行层：task_types / routing / runtime（队列租约）/ orchestrator（DAG）/ executor / worker
+backend/app/capabilities/         权限闸门 guard.py、工具登记 tools.py、成本闸门 budget.py
+backend/app/capabilities/model/   统一模型网关：providers / tokens / gateway（预算·缓存·重试·成本复算）/ tool
+backend/app/capabilities/search/  真实搜索与抓取：safety（SSRF/robots）/ fetcher / engine（三引擎 + 真实地址还原）
+backend/app/capabilities/tts/     语音：provider（契约）/ edge（Edge TTS，词级时间）/ sapi（离线兜底）/ subtitle（SRT·ASS）
+backend/app/capabilities/adapters/ MarkItDown 解析、structured（带页码/行号定位的抽取）、search·model·tts 工具适配器
+backend/app/capabilities/media/   OpenKatana 与 FFmpeg 本地媒体适配层
+backend/app/research/             研究底稿 digest、逐字核查 verify、证据链落库 persistence
+backend/app/media/                分镜校验、素材清单与时间轴构建
+backend/app/skills/registry.py    Skill Registry（sha256 固定、按 task_type 装载、工具门禁）
+backend/app/parsers/              解析产物与解析器 Protocol；实现位于 capabilities/adapters/
+backend/app/database/             session.py（连接级 PRAGMA）、wal.py（WAL 显式初始化，默认拒绝开发库）
+backend/migrations/               Alembic 迁移（初始 de8148733a9b + B1/B2/B3 + B4 成本精度）
+backend/scripts/                  seed_collections / enable_wal / install_ffmpeg / check_media_toolchain
+                                  / media_selftest / research_task / preflight / recover_tasks
+scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
+web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
+agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
+skills/                           Skill 目录（ak/ 三个自研 + vendor/anthropic 的 pdf、xlsx）
+knowledge/{8 个子域}/              知识条目 Markdown（规范见 knowledge/README.md）
+content/jobs/<job_id>/            每条视频一个任务目录（分镜、素材清单、时间轴、成片、质检）
+video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
-data/{raw,processed,exports}        本地数据（大文件不入库）
-data/backups/                     迁移前的 sqlite3 .backup 目标目录
-docs/                              战略、架构、数据模型、Agent 手册、工作流、路线图、验收报告
-tests/                             pytest 回归测试
+docs/research_hub/                架构、交付报告、决策登记、遗留问题
+tests/                            pytest 回归测试（607 例）
 ```
 
 ## 文档
@@ -135,7 +203,9 @@ tests/                             pytest 回归测试
 | `docs/agent_manual.md` | 九角色、统一协议、调度接口、新增角色步骤 |
 | `docs/workflow.md` | 十四步内容/视频工作流、状态机、四个模板、12 项质检 |
 | `docs/phase1_acceptance.md` | 12 项验收实测结果 + 功能状态（DONE/PARTIAL/NOT IMPLEMENTED） |
-| `docs/research_hub/` | 研究工作台架构与 M2.0 交付记录；另有 V2.2 Phase 2 视频管线交接、产物索引和遗留问题清单 |
+| `docs/research_hub/` | 研究工作台架构与各阶段交付记录：M2.0、V2.2 Phase 2（视频）、V5.0（统一平台） |
+| `docs/research_hub/v5_0_delivery_report.md` | **V5.0 交付报告**：20 个模块的落地状态、真实运行证据、BLOCKED 项与最少人工操作 |
+| `docs/research_hub/v5_0_oss_evaluation.md` | 17 个开源项目的源码级评估（固定 SHA、许可证、采用方式） |
 | `agents/PROTOCOL.md` | Agent 统一输入输出协议（10 字段）+ 品牌与内容规则 |
 
 ## 安全约定

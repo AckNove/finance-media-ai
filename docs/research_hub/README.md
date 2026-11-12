@@ -91,6 +91,8 @@
 | [`phase2_media_adapter_report.md`](phase2_media_adapter_report.md) … [`phase2_decision_register.md`](phase2_decision_register.md) | **V2.2 Phase 2 八份文档**：适配层、导入测试、分镜 schema、时间轴集成、素材溯源、演示片、质检、决策登记 | 要接手视频管线之前必读 |
 | [`phase2_closure_remediation_report.md`](phase2_closure_remediation_report.md) … [`phase2_final_decision_register.md`](phase2_final_decision_register.md) | **Phase 2 收尾整改七份文档**：署名核验、narration/subtitle 契约、音频口径一致性、视觉听觉复核、最终质检、整改总报告、最终决策与残留风险 | 想知道"验收发现的问题修成什么样了" |
 | [`phase2_handover_report.md`](phase2_handover_report.md)、[`phase2_artifact_index.md`](phase2_artifact_index.md)、[`phase2_remaining_issues.md`](phase2_remaining_issues.md) | **Phase 2 冻结三件套**：交接总说明（做了什么、验证结果、能否交付）、交付物索引（每份文件的实际路径与是否入库）、遗留问题清单（工程债 / 授权审核 / 待人工决策 / 可选增强） | 接手 Phase 2 或判断"能不能发"时先看这三份 |
+| [`v5_0_delivery_report.md`](v5_0_delivery_report.md) | **V5.0 交付报告**：接管审计与 Codex 成果分类、20 个模块落地状态、11 个提交、真实运行证据（搜索/抓取/证据链/语音/视频/工作台）、607 例测试、BLOCKED 项与最少人工操作、15 条安全边界核对、数据库与 Git 证明 | 想知道"现在到底能干什么、卡在哪" |
+| [`v5_0_oss_evaluation.md`](v5_0_oss_evaluation.md) | **V5.0 开源项目源码级评估**：17 个项目的固定 SHA、许可证、Windows 可用性、采用方式（DEPENDENCY/SIDECAR/REFERENCE/REJECTED） | 要引入外部框架之前必读 |
 | 本文 `README.md` | 总说明与索引 | 从这里开始 |
 
 ---
