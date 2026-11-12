@@ -710,7 +710,29 @@ async function pageVideo(view) {
     </div>
     <div class="card"><h2>质检报告</h2>
       ${qc ? `<pre>${esc(qc)}</pre>` : '<div class="empty">没有 qc/qc_report.md</div>'}
+    </div>
+    <div class="card"><h2>重新生成时间轴</h2>
+      <p class="muted">读取该任务的 storyboard/storyboard.csv 与素材清单，交给引擎校验并写出时间轴。
+        默认只做时间轴（秒级）；真渲染一条长片要十几分钟，需要用命令行或等待后续排期。</p>
+      <div class="row"><button class="btn" id="build-timeline">生成时间轴</button></div>
+      <div id="pipeline-out"></div>
     </div>`;
+
+  document.getElementById('build-timeline').onclick = async () => {
+    const out = document.getElementById('pipeline-out');
+    out.innerHTML = '<div class="note">正在校验分镜并把素材交给引擎…</div>';
+    const result = await api(`/workspace/jobs/${job.job_id}/pipeline`, {
+      method: 'POST',
+      body: JSON.stringify({ render: false }),
+    });
+    if (!result.ok) { out.innerHTML = failure(result); return; }
+    const data = result.data;
+    out.innerHTML = data.blocked
+      ? `<div class="note warn">${esc(data.message || data.blocked_reason || '被阻塞')}</div>`
+      : `<div class="note ok">时间轴已写入：${esc(data.timeline_path || '')}
+          · ${data.storyboard_shots} 个镜头 · ${data.frames} 帧 · ${data.canvas.w}×${data.canvas.h}</div>
+         <pre>${esc((data.engine_calls || []).join('\n'))}</pre>`;
+  };
 }
 
 async function pageReview(view) {

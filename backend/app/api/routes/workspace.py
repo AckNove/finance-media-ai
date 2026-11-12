@@ -134,6 +134,45 @@ def get_job(job_id: str = PathParam(min_length=1, max_length=80)) -> dict[str, A
     return payload
 
 
+@router.post("/jobs/{job_id}/pipeline", summary="分镜 → 时间轴（可选：真渲染 + 技术质检）")
+def run_job_pipeline(
+    job_id: str = PathParam(min_length=1, max_length=80),
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """把任务目录里的分镜跑成时间轴；`render=true` 时继续渲染并质检。
+
+    默认只做时间轴（毫秒级、不占机器）：渲染一条 40 秒竖屏片要十几分钟，
+    必须由人显式点。分镜缺失或素材未登记一律如实报错，不生成占位内容。
+    """
+    body = payload or {}
+    job_dir = _resolve_inside(JOBS_ROOT / job_id, JOBS_ROOT)
+    if not job_dir.is_dir():
+        raise NotFoundError(f"任务目录不存在：{job_id}", details={"reason": "unknown_job"})
+    if not (job_dir / "storyboard" / "storyboard.csv").is_file():
+        return {
+            "ok": False,
+            "blocked": True,
+            "blocked_reason": "missing_storyboard",
+            "message": "这个任务还没有分镜文件，先写 storyboard/storyboard.csv 再跑",
+        }
+
+    from backend.app.video.render import RenderError, render_job
+
+    wants_render = bool(body.get("render"))
+    try:
+        report = render_job(
+            job_dir,
+            do_render=wants_render,
+            do_qc=wants_render,
+            output_name=str(body.get("output_name") or "output/final.mp4"),
+        )
+    except RenderError as error:
+        raise DomainValidationError(
+            str(error), details={"reason": error.reason}
+        ) from error
+    return report.as_dict()
+
+
 @router.get("/jobs/{job_id}/file", summary="读取任务产物文件（?path=output/xxx.mp4）")
 def get_job_file(
     job_id: str = PathParam(min_length=1, max_length=80),

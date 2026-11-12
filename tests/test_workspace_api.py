@@ -115,3 +115,94 @@ def test_monitoring_endpoints_are_read_only_and_real(client: Any) -> None:
         assert "api_key" not in json.dumps(item)
     agents = client.get("/api/system/agents").json()
     assert agents["count"] == 9
+
+
+# ------------------------------------------------------------------ 渲染流水线
+
+
+def _make_job(root: Path, name: str, *, with_storyboard: bool) -> Path:
+    job = root / name
+    (job / "storyboard").mkdir(parents=True, exist_ok=True)
+    (job / "assets").mkdir(parents=True, exist_ok=True)
+    (job / "project").mkdir(parents=True, exist_ok=True)
+    (job / "assets" / "chart.png").write_bytes(b"\x89PNG\r\n\x1a\nfake")
+    if with_storyboard:
+        header = (
+            "shot_id,start_time,end_time,narrative_purpose,narration,visual_description,"
+            "asset_id,asset_type,asset_source,license,animation,camera_motion,transition,"
+            "subtitle,sound_effect,safety_zone,fps,canvas_width,canvas_height"
+        )
+        rows = [
+            "sh01,0,3,开场,银行靠什么赚钱,标题卡,,solid,#0b1220,原创,fade_in,static,none,"
+            "银行靠什么赚钱？,none,bottom,30,1080,1920",
+            "sh02,3,7,收入结构,利息净收入占七成,柱状图,C_CHART,composition,generated,原创,"
+            "bar_grow,push,dissolve,利息净收入占七成,whoosh_low,bottom,30,1080,1920",
+        ]
+        (job / "storyboard" / "storyboard.csv").write_text(
+            "\n".join([header, *rows]) + "\n", encoding="utf-8"
+        )
+        manifest_header = (
+            "asset_id,asset_class,kind,file,source_id,publisher,source_url,retrieved_at,"
+            "sha256,license,commercial_use,credit,verification_status,used_in_shots,purpose"
+        )
+        manifest_row = (
+            "C_CHART,B,composition,assets/chart.png,,本仓库程序生成,,2026-11-12T00:00:00Z,,"
+            "原创,allowed,本仓库,verified,sh02,收入结构演示"
+        )
+        (job / "assets_manifest.csv").write_text(
+            "\n".join([manifest_header, manifest_row]) + "\n", encoding="utf-8"
+        )
+    return job
+
+
+def test_pipeline_without_storyboard_says_so(client: Any, monkeypatch: pytest.MonkeyPatch,
+                                             tmp_path: Path) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    _make_job(tmp_path, "empty_job", with_storyboard=False)
+    body = client.post("/api/workspace/jobs/empty_job/pipeline", json={}).json()
+    assert body["ok"] is False
+    assert body["blocked"] is True
+    assert body["blocked_reason"] == "missing_storyboard"
+
+
+def test_pipeline_builds_timeline_from_storyboard(client: Any, monkeypatch: pytest.MonkeyPatch,
+                                                  tmp_path: Path) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+    from backend.app.capabilities.media import openkatana
+
+    class _FakeEngine:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+        def import_media(self, source: Path, *, rights: str | None = None):
+            from backend.app.capabilities.media.engine import ImportResult
+
+            return ImportResult(
+                kind="image", path=Path(source), sha256="a" * 64, width=1080, height=1350,
+                fps=30.0, duration=None, has_audio=False,
+                raw={"clip": {"frames_dir": "plates/C_CHART", "pattern": "%05d.png",
+                              "n": 1, "fps": 30, "w": 1080, "h": 1350}},
+            )
+
+        def validate_timeline(self, timeline):
+            return {"valid": True, "frames": timeline["canvas"]["frames"], "warnings": []}
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    monkeypatch.setattr(openkatana, "OpenKatanaEngine", _FakeEngine)
+    job = _make_job(tmp_path, "demo_job", with_storyboard=True)
+
+    body = client.post("/api/workspace/jobs/demo_job/pipeline", json={"render": False}).json()
+    assert body["ok"] is False  # 只跑时间轴时没有产物，ok 为 False 是诚实的
+    assert body["stage"] == "timeline_ready"
+    assert body["frames"] == 210
+    assert body["storyboard_shots"] == 2
+    timeline = job / "project" / "timeline.json"
+    assert timeline.is_file()
+    document = json.loads(timeline.read_text(encoding="utf-8"))
+    assert len(document["shots"]) == 2
+    assert [item["text"] for item in document["text"]] == [
+        "银行靠什么赚钱？",
+        "利息净收入占七成",
+    ]
