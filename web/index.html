@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>finance-media-ai 工作台</title>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">AK</div>
+      <div>
+        <div class="brand-title">finance-media-ai</div>
+        <div class="brand-sub">研究与内容生产工作台</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">
+      <div id="health" class="pill">检查中…</div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <h1 id="page-title">首页</h1>
+      <div class="topbar-right">
+        <span id="page-hint" class="hint"></span>
+        <button id="refresh" class="btn ghost" type="button">刷新</button>
+      </div>
+    </header>
+    <section id="view" class="view"><div class="loading">加载中…</div></section>
+  </main>
+</div>
+<script src="./app.js"></script>
+</body>
+</html>

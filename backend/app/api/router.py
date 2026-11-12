@@ -21,6 +21,7 @@ from backend.app.api.routes import (
     research_tasks,
     sources,
     topics,
+    workspace,
 )
 from backend.app.core.caller import CallerKind
 
@@ -68,6 +69,12 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("GET", "/api/system/costs"): HUMAN_ONLY,
     ("GET", "/api/system/providers"): HUMAN_ONLY,
     ("GET", "/api/system/agents"): HUMAN_ONLY,
+    # M9：工作台（真实搜索、视频任务产物只读、配置快照）
+    ("GET", "/api/workspace/search"): HUMAN_ONLY,
+    ("GET", "/api/workspace/jobs"): HUMAN_ONLY,
+    ("GET", "/api/workspace/jobs/{job_id}"): HUMAN_ONLY,
+    ("GET", "/api/workspace/jobs/{job_id}/file"): HUMAN_ONLY,
+    ("GET", "/api/workspace/config"): HUMAN_ONLY,
 }
 
 
@@ -89,6 +96,7 @@ def build_api_router(prefix: str) -> APIRouter:
     router.include_router(research_reports.router)
     router.include_router(research_tasks.router)
     router.include_router(monitoring.router)
+    router.include_router(workspace.router)
     return router
 
 
