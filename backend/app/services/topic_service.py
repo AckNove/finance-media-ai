@@ -63,6 +63,7 @@ class TopicService(BaseService):
         knowledge_domain: str | None = None,
         research_status: str | None = None,
         content_status: str | None = None,
+        tag_id: int | None = None,
         limit: int = 20,
         offset: int = 0,
     ) -> tuple[list[Topic], int]:
@@ -73,12 +74,65 @@ class TopicService(BaseService):
             stmt = stmt.where(Topic.research_status == research_status)
         if content_status:
             stmt = stmt.where(Topic.content_status == content_status)
+        if tag_id is not None:
+            # 语义是"这个标签下的选题"：内连接而非 EXISTS，方便一次查询拿到计数。
+            stmt = stmt.join(TopicTag, TopicTag.topic_id == Topic.id).where(
+                TopicTag.tag_id == tag_id
+            )
         return self._paginate(
             stmt,
             limit=limit,
             offset=offset,
             order_by=(Topic.priority.asc(), Topic.created_at.desc(), Topic.id.desc()),
         )
+
+    def find_tag(self, *, name: str, namespace: TagNamespace | None = None) -> Tag:
+        """按 `namespace(+name)` 找标签；没指定 namespace 时按名字找，找到多个就算歧义。"""
+        stmt = select(Tag).where(Tag.name == name.strip())
+        if namespace is not None:
+            stmt = stmt.where(Tag.namespace == namespace)
+        rows = list(self.db.scalars(stmt.limit(2)))
+        if not rows:
+            raise NotFoundError(
+                f"标签 {name!r} 不存在",
+                details={"name": name, "namespace": namespace.value if namespace else None},
+            )
+        if len(rows) > 1:
+            raise DomainValidationError(
+                f"标签名 {name!r} 在多个命名空间下都存在，请指定 namespace",
+                details={
+                    "field": "namespace",
+                    "candidates": sorted(row.namespace.value for row in rows),
+                },
+            )
+        return rows[0]
+
+    def list_tagged_topics(
+        self,
+        *,
+        name: str | None = None,
+        namespace: TagNamespace | None = None,
+        tag_id: int | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> tuple[list[Topic], int, Tag | None]:
+        """按标签反查选题：可以给 `tag_id`，也可以给名字（+可选命名空间）。
+
+        顺序刻意是"先解析标签再查选题"：标签不存在时给 404，而不是静默返回空列表
+        ——空列表会被误读成"这个标签下没有选题"。
+        """
+        tag: Tag | None = None
+        if tag_id is not None:
+            tag = self.db.get(Tag, tag_id)
+            if tag is None:
+                raise NotFoundError(f"标签 id={tag_id} 不存在", details={"tag_id": tag_id})
+        elif name:
+            tag = self.find_tag(name=name, namespace=namespace)
+        topics, total = self.list(
+            tag_id=tag.id if tag is not None else None, limit=limit, offset=offset
+        )
+        return topics, total, tag
+
 
     def update(self, topic_id: int, payload: TopicUpdate) -> Topic:
         topic = self.get(topic_id)

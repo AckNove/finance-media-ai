@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Path, Response, status
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
+from backend.app.models.enums import TagNamespace
 from backend.app.models.taxonomy import TopicCollection, TopicTag
 from backend.app.schemas.common import Page
 from backend.app.schemas.topic import (
@@ -46,11 +47,23 @@ def list_topics(
     knowledge_domain: str | None = None,
     research_status: str | None = None,
     content_status: str | None = None,
+    tag_id: int | None = None,
+    tag: str | None = None,
+    tag_namespace: TagNamespace | None = None,
 ) -> Page[TopicOut]:
-    items, total = TopicService(db).list(
+    """按标签过滤：`tag_id` 精确定位，或 `tag`(=名字)+可选 `tag_namespace`。
+
+    `tag` 在多个命名空间下同名时报 422 并列出候选，不做"猜一个"的处理。
+    """
+    service = TopicService(db)
+    resolved_tag_id = tag_id
+    if resolved_tag_id is None and tag:
+        resolved_tag_id = service.find_tag(name=tag, namespace=tag_namespace).id
+    items, total = service.list(
         knowledge_domain=knowledge_domain,
         research_status=research_status,
         content_status=content_status,
+        tag_id=resolved_tag_id,
         limit=page.limit,
         offset=page.offset,
     )

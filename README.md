@@ -209,7 +209,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（766 例）
+tests/                            pytest 回归测试（769 例）
 ```
 
 ## 文档
@@ -250,8 +250,8 @@ tests/                            pytest 回归测试（766 例）
 
 - 语义检索与向量库；知识库 Markdown 的自动同步（只能人工按 `knowledge/README.md` 落条目）。
 - 真实鉴权/多用户、限流、CI 与云部署（当前是本地单机，`networkExposure: loopback`）。
-- 按标签反查选题（标签能打、能摘，但还没有"某标签下有哪些选题"的列表接口）；
-  概念类知识条目还只能落 `knowledge_domain=general`。
+- 概念类知识条目还只能落 `knowledge_domain=general`；标签只做了"打/摘/反查"，
+  还没有标签共现、热度衰减这类聚合分析。
 - 发布接口：合成与审核都在本地完成，**系统按设计不会自动发布**到任何平台。
 
 已经做完、别再列成缺口的（本轮补齐）：
@@ -261,6 +261,8 @@ tests/                            pytest 回归测试（766 例）
 - 选题标签：`GET/POST /api/topics/{id}/tags`、`DELETE .../{tag_id}`；标签按
   `namespace+name` 复用（同名标签挂到第二个选题时复用同一行、`usage_count` 递增），
   摘干净后重新挂回来计数会回到 1；`create_missing=false` 时不会顺手造新标签。
+  反查选题：`GET /api/topics?tag_id=1` 或 `?tag=净息差&tag_namespace=mechanism`；
+  同名标签跨命名空间时报 422 并列出候选，不替你猜。
 - 脚本与审核：`POST/GET /api/scripts`、`PATCH /api/scripts/{id}/status`（状态机
   `draft → in_review → approved|rejected`，批准时写 `approved_at/approved_by`）、
   `POST/GET /api/reviews`（结论回写到报告：pass→verified / needs_revision→disputed /

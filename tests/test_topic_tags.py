@@ -137,3 +137,48 @@ def test_default_namespace_is_other(client: TestClient) -> None:
         f"/api/topics/{topic_id}/tags", json={"name": _name("默认")}
     ).json()
     assert body["namespace"] == TagNamespace.OTHER.value
+
+
+def test_topics_can_be_filtered_by_tag_id(client: TestClient) -> None:
+    name = _name("按标签")
+    tagged = _topic(client, "按标签查的选题")
+    untagged = _topic(client, "没打标签的选题")
+    attached = client.post(f"/api/topics/{tagged}/tags", json={"name": name}).json()
+
+    listed = client.get(f"/api/topics?tag_id={attached['tag_id']}&limit=100").json()
+    ids = {row["id"] for row in listed["items"]}
+    assert tagged in ids
+    assert untagged not in ids
+    assert listed["total"] == len(listed["items"])
+
+
+def test_topics_can_be_filtered_by_tag_name(client: TestClient) -> None:
+    name = _name("按名字")
+    topic_id = _topic(client, "按标签名查的选题")
+    client.post(f"/api/topics/{topic_id}/tags", json={"name": name, "namespace": "industry"})
+
+    listed = client.get(
+        "/api/topics", params={"tag": name, "tag_namespace": "industry", "limit": 100}
+    ).json()
+    assert topic_id in {row["id"] for row in listed["items"]}
+
+    # 名字存在但命名空间不对 → 404（不是静默返回空列表）
+    wrong = client.get("/api/topics", params={"tag": name, "tag_namespace": "period"})
+    assert wrong.status_code == 404
+
+
+def test_an_ambiguous_tag_name_asks_for_the_namespace(client: TestClient) -> None:
+    name = _name("重名")
+    topic_id = _topic(client)
+    client.post(f"/api/topics/{topic_id}/tags", json={"name": name, "namespace": "industry"})
+    client.post(f"/api/topics/{topic_id}/tags", json={"name": name, "namespace": "period"})
+
+    ambiguous = client.get("/api/topics", params={"tag": name})
+    assert ambiguous.status_code == 422
+    details = ambiguous.json()["error"]["details"]
+    assert details["field"] == "namespace"
+    assert details["candidates"] == ["industry", "period"]
+
+    # 指定命名空间后能查
+    okay = client.get("/api/topics", params={"tag": name, "tag_namespace": "period"})
+    assert okay.status_code == 200
