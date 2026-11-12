@@ -190,11 +190,8 @@ def record_report(
     """
     summary = _summary_of(digest)
     findings = _findings_of(digest)
-    limitations = "；".join(digest.notes) or "未使用模型，只有规则汇编"
-    stats = tier_stats or {
-        "sources": len(digest.sources),
-        "data_points": len(digest.data_points),
-    }
+    limitations = _limitations_of(digest)
+    stats = tier_stats or _tier_stats_of(digest)
     report = None
     if research_task_id is not None:
         report = session.scalar(
@@ -245,6 +242,48 @@ def _summary_of(digest: Digest) -> str:
 def _findings_of(digest: Digest) -> list[str]:
     """把数据点原样列出来，不加工成结论——没有模型就不写结论。"""
     return [f"[{point.source_id}] {point.text}" for point in digest.data_points[:20]]
+
+
+def _limitations_of(digest: Digest) -> str:
+    """局限说明：先把"这一版没做什么"写清楚，再把交叉比对看到的坑摆出来。
+
+    报告最容易被当成"结论"直接引用，所以单一来源与冲突必须写在最显眼的位置，
+    而不是藏在一份附带的 markdown 里。
+    """
+    parts = list(digest.notes) or ["未使用模型，只有规则汇编"]
+    cross = digest.corroboration
+    if cross is not None:
+        if getattr(cross, "conflicts", ()):
+            parts.append(
+                f"跨来源比对发现 {len(cross.conflicts)} 处同一件事数字不一致，"
+                "未判断谁对，引用前必须回原文核对口径与时点"
+            )
+        if getattr(cross, "single_source", ()):
+            parts.append(
+                f"另有 {len(cross.single_source)} 条说法只有单一来源，引用前应另找佐证"
+            )
+        if getattr(cross, "corroborated", ()):
+            parts.append(
+                f"其中 {len(cross.corroborated)} 个数字被至少两个来源同时说到"
+                "（仅表示一致，不等于数据正确）"
+            )
+    return "；".join(parts)
+
+
+def _tier_stats_of(digest: Digest) -> dict[str, Any]:
+    stats: dict[str, Any] = {
+        "sources": len(digest.sources),
+        "data_points": len(digest.data_points),
+    }
+    cross = digest.corroboration
+    if cross is not None:
+        stats["cross_check"] = {
+            "checked_points": getattr(cross, "checked_points", 0),
+            "corroborated": len(getattr(cross, "corroborated", ())),
+            "conflicts": len(getattr(cross, "conflicts", ())),
+            "single_source": len(getattr(cross, "single_source", ())),
+        }
+    return stats
 
 
 def record_evidence(

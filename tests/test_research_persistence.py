@@ -177,6 +177,28 @@ def test_report_records_the_rule_built_summary(session):
     assert report.tier_stats["sources"] == 2
 
 
+def test_report_limitations_carry_the_cross_check_result(session):
+    """单一来源与冲突必须写进报告局限里，不能只躺在底稿 markdown 中。"""
+    digest = _digest()
+    cross = digest.corroboration
+    assert cross is not None, "默认要跑跨来源比对"
+
+    report = record_report(session, digest=digest, research_task_id=8)
+    session.commit()
+
+    limitations = report.limitations
+    assert f"{len(cross.single_source)} 条说法只有单一来源" in limitations
+    if cross.corroborated:
+        assert "不等于数据正确" in limitations
+    if cross.conflicts:
+        assert "未判断谁对" in limitations
+        assert "引用前必须回原文核对" in limitations
+    stats = report.tier_stats["cross_check"]
+    assert stats["checked_points"] == cross.checked_points
+    assert stats["conflicts"] == cross.conflict_count
+    assert stats["single_source"] == len(cross.single_source)
+
+
 def test_evidence_is_verified_only_where_the_quote_was_found(session):
     digest = _digest()
     recorded = record_sources(session, digest.sources)
