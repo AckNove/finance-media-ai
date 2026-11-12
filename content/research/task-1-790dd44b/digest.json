@@ -1,0 +1,1933 @@
+{
+  "schema": 1,
+  "title": "事实核查（强制闸门）：2024 年以来光伏组件价格持续下跌，行业出现普遍亏损。请研究：组件价格战是怎么形成、又通过哪些环节影响龙头组件企业的现金流与资本开支的？请给出可核对的公开数据。",
+  "objective": "2024 年以来光伏组件价格持续下跌，行业出现普遍亏损。请研究：组件价格战是怎么形成、又通过哪些环节影响龙头组件企业的现金流与资本开支的？请给出可核对的公开数据。",
+  "generated_at": "2026-11-12T17:37:44+00:00",
+  "generated_by": "rules",
+  "queries": [
+    "光伏组件价格 走势 2024",
+    "组件均价 元/W",
+    "硅料 硅片 电池片 价格",
+    "光伏产业链 价格周报",
+    "组件成交价",
+    "光伏产品价格指数",
+    "光伏 产能利用率",
+    "组件 产量 2024",
+    "光伏 新增产能 投产",
+    "光伏 库存 开工率",
+    "产能过剩 光伏",
+    "扩产进度",
+    "组件企业 经营性现金流 2024",
+    "光伏 应收账款 账期",
+    "存货跌价准备 光伏",
+    "隆基 晶科 天合 年报",
+    "现金流量净额",
+    "信用减值损失",
+    "光伏 资本开支 下降",
+    "组件 扩产项目 终止",
+    "光伏 定增 终止",
+    "购建固定资产 支付现金 光伏",
+    "在建工程 延期",
+    "募投项目 变更",
+    "光伏组件 集采 开标价格",
+    "央企 组件招标 价格分",
+    "光伏 EPC 招标 最低价",
+    "组件 中标均价",
+    "集中采购 组件",
+    "招标评分规则",
+    "光伏 反内卷 政策",
+    "光伏 行业自律 限产",
+    "组件 招标 规则 调整",
+    "工信部 光伏 产能 调控",
+    "反低价无序竞争",
+    "行业自律公约"
+  ],
+  "source_count": 27,
+  "data_point_count": 104,
+  "sources": [
+    {
+      "source_id": "S01",
+      "title": "2024下半年光伏各环节价格走势-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/news/20240805/1392870.shtml",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "aeca104213435bf05e2c327b4a961819b1712d168827dcea6af95a4a7053752f",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\aeca104213435bf05e2c327b4a961819b1712d168827dcea6af95a4a7053752f.html",
+      "char_count": 507,
+      "query": "光伏组件价格 走势 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S02",
+      "title": "2024下半年光伏各环节价格走势_财富号_东方财富网",
+      "url": "https://caifuhao.eastmoney.com/news/20240803181644359815420",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "33b910d76d876144e494ab2cc7016ed2760a4a429cde140495d48ee3b2de1340",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\caifuhao.eastmoney.com\\33b910d76d876144e494ab2cc7016ed2760a4a429cde140495d48ee3b2de1340.html",
+      "char_count": 3515,
+      "query": "光伏组件价格 走势 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S03",
+      "title": "2024年光伏组件价格走势图_光伏组件现货价格_供需库存数据 - 我的钢铁网 (Mysteel)",
+      "url": "https://list1.mysteel.com/zhishi/2024ngfzjjgzst.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "352199e651d1418dd0fa1270bdf74f8e4476d6b0e855844761afe27b62e770e3",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\list1.mysteel.com\\352199e651d1418dd0fa1270bdf74f8e4476d6b0e855844761afe27b62e770e3.html",
+      "char_count": 4651,
+      "query": "光伏组件价格 走势 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S04",
+      "title": "重回1元/W时代？2026年光伏组件价格有三重强支撑-钛媒体官方网站",
+      "url": "https://www.tmtpost.com/7852900.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "a10e95b41160a49dab5c9684dde031a5d87b0bf68c937cdc24b6e17cbcea4abd",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.tmtpost.com\\a10e95b41160a49dab5c9684dde031a5d87b0bf68c937cdc24b6e17cbcea4abd.html",
+      "char_count": 5110,
+      "query": "组件均价 元/W",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S05",
+      "title": "0.76~1.02元/W，华电8GW组件集采开标，均价上涨！ 2月11日，华电集团2026年8GW光伏组件集中采购项目正式开标，共32家组件企业参与投标，开标的整体情况如下表所示。\n... - 雪球",
+      "url": "https://www.xueqiu.com/2733868088/375820151",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "6f4b881ad9cbd46190e57c87f064ff9fdd222630788e5088060b748d0069a6fb",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\6f4b881ad9cbd46190e57c87f064ff9fdd222630788e5088060b748d0069a6fb.html",
+      "char_count": 433,
+      "query": "组件均价 元/W",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S06",
+      "title": "2026年1–5月光伏组件价格与趋势（元/W，主流成交价，含税）月份集中式（TO_财富号_东方财富网",
+      "url": "https://caifuhao.eastmoney.com/news/20260529101222424892020",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "1367a5bdb7c114f590c46d6298365b6bf32ce8d43c89d9713349ab19872e45ba",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\caifuhao.eastmoney.com\\1367a5bdb7c114f590c46d6298365b6bf32ce8d43c89d9713349ab19872e45ba.html",
+      "char_count": 1654,
+      "query": "组件均价 元/W",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S07",
+      "title": "硅片价格_硅片价格今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1232792.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "9b4fed39a1d164b2a4c94a18eb2ea0a0ad36ac1d18c2f420e7fce3f8f6237680",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\9b4fed39a1d164b2a4c94a18eb2ea0a0ad36ac1d18c2f420e7fce3f8f6237680.html",
+      "char_count": 8012,
+      "query": "硅料 硅片 电池片 价格",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S08",
+      "title": "硅片价格网_硅片价格网今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1523812.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "c9ecbf85d9763cc9d030c3ab216e0bddf6095b6d4fc3a753b4ce6bce0f805d16",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\c9ecbf85d9763cc9d030c3ab216e0bddf6095b6d4fc3a753b4ce6bce0f805d16.html",
+      "char_count": 6203,
+      "query": "硅料 硅片 电池片 价格",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S09",
+      "title": "硅片市场价_硅片市场价今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1486920.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "b3cc8b2369f52a9a6365af3bb4bd3caa559d264fa267416b05e23899fb3204a4",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\b3cc8b2369f52a9a6365af3bb4bd3caa559d264fa267416b05e23899fb3204a4.html",
+      "char_count": 4864,
+      "query": "硅料 硅片 电池片 价格",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S10",
+      "title": "光伏发电利用率-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/topics/gffdlyl/",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "6f3ca3ac7953badb1bb06128af530801fe49effa58e66467f2f68ed5a9c263a0",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\6f3ca3ac7953badb1bb06128af530801fe49effa58e66467f2f68ed5a9c263a0.html",
+      "char_count": 507,
+      "query": "光伏 产能利用率",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S11",
+      "title": "光伏利用率-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/topics/guangfuliyonglu/",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "9e01b4ef4907d3db8c261c5678f22ed4c8a6f34451dc8734ef3c7f6178907a0e",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\9e01b4ef4907d3db8c261c5678f22ed4c8a6f34451dc8734ef3c7f6178907a0e.html",
+      "char_count": 507,
+      "query": "光伏 产能利用率",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S12",
+      "title": "光伏产能利用率-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/topics/gfcnlyl/",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "2a9d64f5683f1babedf8704f3dd37af191255bf5569c18791b81312943e32875",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\2a9d64f5683f1babedf8704f3dd37af191255bf5569c18791b81312943e32875.html",
+      "char_count": 507,
+      "query": "光伏 产能利用率",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S13",
+      "title": "光伏下午茶（第2443期） ——————————\n▼\n彭博：2025年，全球组件产量从2024年的691GW降至689GW。新增装机容量仅655GW... - 雪球",
+      "url": "https://www.xueqiu.com/3477208101/396945467",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "868e4dfb4fa9e18d88924a9abd498124fc73c358ca0bbd4b98762a1fa3688e22",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\868e4dfb4fa9e18d88924a9abd498124fc73c358ca0bbd4b98762a1fa3688e22.html",
+      "char_count": 1813,
+      "query": "组件 产量 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S14",
+      "title": "2024年中国光伏组件产量预测及企业出货量排名分析",
+      "url": "https://www.163.com/dy/article/JE059CCF051481OF.html",
+      "site_name": "",
+      "author": "网易",
+      "published_at": "2024-10-08T15:36",
+      "sha256": "29edf46f7a896cced9ac1c8c0687e24ce9dbf9d7f211c8fff7de066e81e47661",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.163.com\\29edf46f7a896cced9ac1c8c0687e24ce9dbf9d7f211c8fff7de066e81e47661.html",
+      "char_count": 5472,
+      "query": "组件 产量 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S15",
+      "title": "工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%",
+      "url": "https://k.sina.com.cn/article_2311077472_m89c03e6003302ath4.html",
+      "site_name": "新浪网",
+      "author": "证券日报之声",
+      "published_at": "2025-02-27T16:08",
+      "sha256": "61b3cc9399da0c2330f60296ac719e2c2db27543ba86d07a5c5a5965d5baa5a7",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\k.sina.com.cn\\61b3cc9399da0c2330f60296ac719e2c2db27543ba86d07a5c5a5965d5baa5a7.html",
+      "char_count": 1209,
+      "query": "组件 产量 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S16",
+      "title": "2026重估光伏：从产能出清到价值回归一、2026年装机需求情况2026 年 1-4 月国内新增光伏装机 50.91GW... - 雪球",
+      "url": "https://www.xueqiu.com/7431678790/394209341",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "d1e16cec8a3702b247199d0196380421a50b069dae26bdd3a9e745ad564e2d9a",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\d1e16cec8a3702b247199d0196380421a50b069dae26bdd3a9e745ad564e2d9a.html",
+      "char_count": 2075,
+      "query": "光伏 新增产能 投产",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S17",
+      "title": "20260126 新增200GW光伏产能 白银历史天价 光伏铜替代银 关注欧莱新材：铜栅线 无铟 TCO 靶材 $欧莱新材(SH688530)$ 新增200GW光伏产能 白银不断突破历史天价 光伏铜替代银 路线明确 关注欧莱新材：铜... - 雪球",
+      "url": "https://www.xueqiu.com/3148845249/372990465",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "2291df210f574423a067096967b26dc55a7351919b3ad08d2eb84dfa2f80fb7f",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\2291df210f574423a067096967b26dc55a7351919b3ad08d2eb84dfa2f80fb7f.html",
+      "char_count": 1381,
+      "query": "光伏 新增产能 投产",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S18",
+      "title": "四川力争今年新增投产光伏发电350万千瓦、风电130万千瓦",
+      "url": "https://www.scpublic.cn/news/wx/detail?newsid=725011",
+      "site_name": "",
+      "author": "sgpy",
+      "published_at": "",
+      "sha256": "70005fa1ad8253fab9bbfc663bc29274d4a40e4b7b01dc63890f3d444d91fa0b",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.scpublic.cn\\70005fa1ad8253fab9bbfc663bc29274d4a40e4b7b01dc63890f3d444d91fa0b.html",
+      "char_count": 952,
+      "query": "光伏 新增产能 投产",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S19",
+      "title": "【长江电新】通威股份：电池组件出货规模大幅增加，经营性现金流为正事件：通威股份发布2024年业绩预告，预计归母净利亏损7... - 雪球",
+      "url": "https://www.xueqiu.com/1073970919/320939192",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "567a17786c36c78858d4618aabd13c603c186744e2ed690afa13c0172f51857d",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\567a17786c36c78858d4618aabd13c603c186744e2ed690afa13c0172f51857d.html",
+      "char_count": 922,
+      "query": "组件企业 经营性现金流 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S20",
+      "title": "晶科能源2024年经营性现金流78亿，负债率下降2个百分点_腾讯新闻",
+      "url": "https://news.qq.com/rain/a/20250429A08APJ00",
+      "site_name": "",
+      "author": "腾讯网",
+      "published_at": "2025-04-29T18:54",
+      "sha256": "58588e6c67e8b21832de2fd38d923388e831d9d8ca23e436b3ae7b7f5c19869c",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\news.qq.com\\58588e6c67e8b21832de2fd38d923388e831d9d8ca23e436b3ae7b7f5c19869c.html",
+      "char_count": 946,
+      "query": "组件企业 经营性现金流 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S21",
+      "title": "宇通重工2024年报解读：经营活动现金流增1489.88%，研发投入下降11.72%-有驾",
+      "url": "https://www.yoojia.com/article/10001483543946721435.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "ce60ec060f775b79a30a6c0a5ca3b87697dd48956d6e0bcbd1241dacc0f188aa",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.yoojia.com\\ce60ec060f775b79a30a6c0a5ca3b87697dd48956d6e0bcbd1241dacc0f188aa.html",
+      "char_count": 4825,
+      "query": "组件企业 经营性现金流 2024",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S22",
+      "title": "光伏企业应收账款高企 新华社——经济参考网",
+      "url": "http://www.jjckb.cn/2013-03/06/content_431923.htm",
+      "site_name": "",
+      "author": "",
+      "published_at": "2013-03-06",
+      "sha256": "79df7b2ec62a1784695df1035ebad20d72a54c25515172c80778b4d7eb6def18",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.jjckb.cn\\79df7b2ec62a1784695df1035ebad20d72a54c25515172c80778b4d7eb6def18.html",
+      "char_count": 2828,
+      "query": "光伏 应收账款 账期",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S23",
+      "title": "光伏内卷中的小微企业，命如蝼蚁草芥，最长账期600天！",
+      "url": "https://www.163.com/dy/article/JIQ0JB7O0553ACX8.html",
+      "site_name": "",
+      "author": "网易",
+      "published_at": "2024-12-07T09:37",
+      "sha256": "44a56f334b8a338e96eb886495b9ee6755a87b40e0b1c4fec33dec3d4c5f75a8",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.163.com\\44a56f334b8a338e96eb886495b9ee6755a87b40e0b1c4fec33dec3d4c5f75a8.html",
+      "char_count": 7732,
+      "query": "光伏 应收账款 账期",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S24",
+      "title": "太阳能光伏企业应收帐款期限问题浮现-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/news/20120314/347812.shtml",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "f55a98727c523ec7f65540f700fdc22c99993e11e8808e5837185143571337d6",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\f55a98727c523ec7f65540f700fdc22c99993e11e8808e5837185143571337d6.html",
+      "char_count": 507,
+      "query": "光伏 应收账款 账期",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S25",
+      "title": "隆基 绿能及其所在的光伏行业，资产减值主要通过两个维度进行：存货跌价准备（东西还没卖出去价格就跌了）和固定资产/无形资产... - 雪球",
+      "url": "https://www.xueqiu.com/5810847611/374922153",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "34e2f707dd46cf717dc095a0fc2791c8e7e9d9837b150f610efa41dcd45e1aef",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\34e2f707dd46cf717dc095a0fc2791c8e7e9d9837b150f610efa41dcd45e1aef.html",
+      "char_count": 1121,
+      "query": "存货跌价准备 光伏",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S26",
+      "title": "博威合金：存货跌价损失主要是公司的光伏电池片及组件业务",
+      "url": "https://www.163.com/dy/article/JTC9K0U5051984TV.html?spss=dy_author",
+      "site_name": "",
+      "author": "网易",
+      "published_at": "2025-04-17T18:38",
+      "sha256": "af371e096a6be1fbf6e641700c174a4dd98c421f32ff092ed5ef698d87900955",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.163.com\\af371e096a6be1fbf6e641700c174a4dd98c421f32ff092ed5ef698d87900955.html",
+      "char_count": 6107,
+      "query": "存货跌价准备 光伏",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S27",
+      "title": "两期财报表现均不理想，英杰电气：光伏收入确认延缓、计提存货跌价准备等致利润缩水 深圳商报·读创客户端记者 穆砚  4月28日，四川英杰电气股份有限公司（以下简称“英杰电气”或“公司”）发布公告称，公司... - 雪球",
+      "url": "https://www.xueqiu.com/6620276709/333426271",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "f77d4385168c1fb7489c4f48421a59924b2a606b984354e0c82c06b81dcc6eca",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\f77d4385168c1fb7489c4f48421a59924b2a606b984354e0c82c06b81dcc6eca.html",
+      "char_count": 2170,
+      "query": "存货跌价准备 光伏",
+      "verification_status": "unverified"
+    }
+  ],
+  "data_points": [
+    {
+      "source_id": "S02",
+      "text": "P 型 M10 价格为每片 1.25 元人民币、G12 为 1.7 元人民币；",
+      "numbers": [
+        "10",
+        "1.25",
+        "12",
+        "1.7"
+      ]
+    },
+    {
+      "source_id": "S02",
+      "text": "在 N 型产品中，M10 价格为每片 1.1 元人民币，G12 落在 1.6-1.65 元人民币的区间，值得注意的是，G12R 硅片因需求疲软，主流价格从七月初的 1.35 元人民币下降至 1.25 元人民币。",
+      "numbers": [
+        "10",
+        "1.1",
+        "12",
+        "1.6",
+        "1.65",
+        "1.35",
+        "1.25"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "重回1元/W时代？",
+      "numbers": [
+        "1"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "在上调3分/W后，天合光能最新的组件价格分别为：中版型、大版型组件价格为0.88-0.92+元/W，离1元/W的价格已经不远了；",
+      "numbers": [
+        "3",
+        "0.88",
+        "0.92",
+        "1"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "功能型组件价格稍高，防眩光组件0.95-0.99+元/W，轻质单玻组件1.08-1.12+元/W。",
+      "numbers": [
+        "0.95",
+        "0.99",
+        "1.08",
+        "1.12"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "在一个月前，业内普遍觉得光伏组件1元/W遥不可及。",
+      "numbers": [
+        "1"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "2025年12月初时，Infolink数据显示，双面双玻TOPCon组件均价在0.693元/W左右。",
+      "numbers": [
+        "2025",
+        "12",
+        "0.693"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "今年1月1日，Infolink公布的数据显示，在集中式、工商业分布式项目中，BC组件价格分别涨了2.6%、3.9%。",
+      "numbers": [
+        "1",
+        "2.6",
+        "3.9"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "text": "0.76~1.02元/W，华电8GW组件集采开标，均价上涨！",
+      "numbers": [
+        "0.76",
+        "1.02",
+        "8"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "text": "2月11日，华电集团2026年8GW光伏组件集中采购项目正式开标，共32家组件企业参与投标，开标的整体情况如下表所示。",
+      "numbers": [
+        "2",
+        "11",
+        "2026",
+        "8",
+        "32"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "text": "表：华电集团2026年光伏组件集中采购开标结果（单位：元/W）",
+      "numbers": [
+        "2026"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "text": "此前，中国光伏行业协会曾给出内部成本参考价，当银价为20000元/kg时，光伏组件的行业平均成本为0.824元/W（不含税）、0.94元/W（含税）。",
+      "numbers": [
+        "20000",
+        "0.824",
+        "0.94"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "text": "详见《CPIA：银价20元/g时，组件平均全成本0.824元/W》",
+      "numbers": [
+        "20",
+        "0.824"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "text": "其中，12家企业的常规组件报价低于0.824元/W。",
+      "numbers": [
+        "12",
+        "0.824"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "2026年1–5月 光伏组件价格与趋势（元/W，主流成交价，含税）",
+      "numbers": [
+        "2026",
+        "1",
+        "5"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "2月 0.68–0.70 0.72–0.76 ↑4%~6% 龙头率先提价、抢出口启动",
+      "numbers": [
+        "2",
+        "0.68",
+        "0.70",
+        "0.72",
+        "0.76",
+        "4",
+        "6"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "3月 0.70–0.73 0.76–0.80 ↑3%~5% 出口退税取消预期、银价上涨",
+      "numbers": [
+        "3",
+        "0.70",
+        "0.73",
+        "0.76",
+        "0.80",
+        "5"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "4月 0.71–0.74 0.77–0.82 ↑1%~3% 退税正式取消、成本传导",
+      "numbers": [
+        "4",
+        "0.71",
+        "0.74",
+        "0.77",
+        "0.82",
+        "1",
+        "3"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "5月 0.72–0.75 0.78–0.85 ↑1%~4% 供需改善、挺价意愿强",
+      "numbers": [
+        "5",
+        "0.72",
+        "0.75",
+        "0.78",
+        "0.85",
+        "1",
+        "4"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "• 1月：筑底，价格接近现金成本线（约0.68元/W）。",
+      "numbers": [
+        "1",
+        "0.68"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "0.9-0.95元/片，210RN",
+      "numbers": [
+        "0.9",
+        "0.95",
+        "210"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "0.98-1元/片，210N",
+      "numbers": [
+        "0.98",
+        "1",
+        "210"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "1.08-1.13元/片。",
+      "numbers": [
+        "1.08",
+        "1.13"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "产能利用率环比降0.2%】2026年10月",
+      "numbers": [
+        "0.2",
+        "2026",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。",
+      "numbers": [
+        "54.7",
+        "9",
+        "0.2"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "企业产能利用率在549%左右，环比增0.3%。",
+      "numbers": [
+        "549",
+        "0.3"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "价格0.9-0.95元/片，210RN",
+      "numbers": [
+        "0.9",
+        "0.95",
+        "210"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "价格0.98-1元/片，210N",
+      "numbers": [
+        "0.98",
+        "1",
+        "210"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "价格1.08-1.13元/片。",
+      "numbers": [
+        "1.08",
+        "1.13"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "产能利用率环比降0.2%】2026年10月",
+      "numbers": [
+        "0.2",
+        "2026",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。",
+      "numbers": [
+        "54.7",
+        "9",
+        "0.2"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "企业产能利用率在549%左右，环比增0.3%。",
+      "numbers": [
+        "549",
+        "0.3"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "N型致密料周均价32.5元/千克，N型颗粒硅32元/千克，N型混包料30.5元/千克。",
+      "numbers": [
+        "32.5",
+        "32",
+        "30.5"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "多晶硅产量143万吨，足以制造700GW组件。",
+      "numbers": [
+        "143",
+        "700"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "多晶硅库存达到创纪录高位，超过50万吨。",
+      "numbers": [
+        "50"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "印度生产的组件达到67GW，约占全球供应量的10%。",
+      "numbers": [
+        "67",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "在逆变器领域，总部位于中国大陆以外地区的企业供应占比仍低于8%",
+      "numbers": [
+        "8"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "爱旭宣布成为埃及单体最大1.2GW Nefer Menya集中式项目的独家光伏组件供应商",
+      "numbers": [
+        "1.2"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "2026年一季度末，存货从年初145亿元攀升至181.58亿元，涨幅近25%；",
+      "numbers": [
+        "2026",
+        "145",
+        "181.58",
+        "25"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "中商产业研究院发布的《2024-2029年中国光伏组件行业深度分析及发展前景预测研究报告》显示，2023年中国光伏组件产能、产量分别达920GW、518.1GW，同比分别增长66.7%、75.8%。",
+      "numbers": [
+        "2024",
+        "2029",
+        "2023",
+        "920",
+        "518.1",
+        "66.7",
+        "75.8"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "2024年1-6月全国光伏组件产量达271GW，同比增长32.8%。",
+      "numbers": [
+        "2024",
+        "1",
+        "6",
+        "271",
+        "32.8"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "从企业生产情况来看，2023年组件环节产业集聚度出现一定程度的下降，TOP5企业市场占有率为50.1%。",
+      "numbers": [
+        "2023",
+        "5",
+        "50.1"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "从全球组件出货情况来看，2023年前十家企业组件出货量409.9GW，相比去年251.4GW规模的出货量，同比增长超过63.0%，TOP10的门槛超过16GW。",
+      "numbers": [
+        "2023",
+        "409.9",
+        "251.4",
+        "63.0",
+        "10",
+        "16"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%",
+      "numbers": [
+        "2024",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "【工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%】",
+      "numbers": [
+        "2024",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "黄仁勋被曝与高管有新婚外情，英伟达暴跌8%，董事会启动罢免",
+      "numbers": [
+        "8"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "腾讯被传裁员8000人！",
+      "numbers": [
+        "8000"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "意大利单日新增6557例确诊病例，累计确诊破5万",
+      "numbers": [
+        "6557",
+        "5"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "朋友圈47%的内容在炫耀",
+      "numbers": [
+        "47"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "2026 年 1-4 月国内新增光伏装机 50.91GW，同比下降 74.3%，主要受 2025 年初抢装高基数影响；",
+      "numbers": [
+        "2026",
+        "1",
+        "4",
+        "50.91",
+        "74.3",
+        "2025"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "中性预测全年国内新增装机 220GW，同比下降 31%。",
+      "numbers": [
+        "220",
+        "31"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "海外市场维持高景气，1-4 月电池组件出口 131.74GW，同比增长 25.1%，中东、东南亚、印度为核心增量市场。",
+      "numbers": [
+        "1",
+        "4",
+        "131.74",
+        "25.1"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "中环负债率分别达 74%、68%；",
+      "numbers": [
+        "74",
+        "68"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "集采高效化趋势：华能率先取消低效组件标段，转换效率 23.8% 以上的高效组件占比从 42% 提升至近 60%；",
+      "numbers": [
+        "23.8",
+        "42",
+        "60"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "截至 2026 年 5 月 18 日，央国企集采中高效组件、BC、HJT 标段累计 38.9GW，占比 49.6%。",
+      "numbers": [
+        "2026",
+        "5",
+        "18",
+        "38.9",
+        "49.6"
+      ]
+    },
+    {
+      "source_id": "S17",
+      "text": "2025年6月11日，第十八届国际太阳能光伏和智慧能源&储能及电池技术与装备（上海）大会暨展览会（SNEC 2025）在上海国家会展中心盛大开幕。",
+      "numbers": [
+        "2025",
+        "6",
+        "11"
+      ]
+    },
+    {
+      "source_id": "S17",
+      "text": "电镀铜 电池无银化 HJT .电镀铜图形 4000 万/GW 电镀设备约 5000 万/GW 东威科技",
+      "numbers": [
+        "4000",
+        "5000"
+      ]
+    },
+    {
+      "source_id": "S17",
+      "text": "，将拥有产能规模大（8000 片/小时以上）、破片率低（小于 0.1%）、均匀性好、高效节能、清洁环保等优势。",
+      "numbers": [
+        "8000",
+        "0.1"
+      ]
+    },
+    {
+      "source_id": "S17",
+      "text": "：垂直电镀技术成熟，破片率 < 0.1%，产能 8000 片 / 小时，适配大尺寸硅片，PCB 领域成本控制经验丰富",
+      "numbers": [
+        "0.1",
+        "8000"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "四川力争今年新增投产光伏发电350万千瓦、风电130万千瓦",
+      "numbers": [
+        "350",
+        "130"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "3月28日，四川省第十四届人民代表大会常务委员会第二次会议举行。",
+      "numbers": [
+        "3",
+        "28"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "因地制宜开发建设水风光互补的光伏风电项目，力争2023年新增投产光伏发电350万千瓦、风电130万千瓦。",
+      "numbers": [
+        "2023",
+        "350",
+        "130"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "深入推进国家天然气（页岩气）千亿立方米级产能基地建设，力争天然气年产量达到540亿立方米。",
+      "numbers": [
+        "540"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "35项任务→推动万达开地区发展！",
+      "numbers": [
+        "35"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "大熊猫国家公园管理协同立法 川陕甘三省拟7月同步提请审议",
+      "numbers": [
+        "7"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "事件：通威股份发布2024年业绩预告，预计归母净利亏损70-75亿，据此测算，2024Q4归母净利亏损30-35亿。",
+      "numbers": [
+        "2024",
+        "70",
+        "75",
+        "4",
+        "30",
+        "35"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "1、2024Q4，1）多晶硅方面，公司硅料出货量预计在10-12万吨，Q4后半段为乐山保山枯水期，公司有所降开工，减产以及枯水期电价提升对成本有一定影响。",
+      "numbers": [
+        "1",
+        "2024",
+        "4",
+        "10",
+        "12"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "4）Q4 固定资产减值报废约10亿元，主要为永祥老厂设备的报废以及部分perc产能考虑改造成TOPCon不具有经济性而计提减值影响。",
+      "numbers": [
+        "4",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "2、展望后续，1）硅料行业12月产量在10万吨左右，1月进一步降低，多晶硅2506最新收盘价为4.49万元/吨，后续硅料价格有望上涨，通威硅料龙头地位稳固，成本优势明显。",
+      "numbers": [
+        "2",
+        "1",
+        "12",
+        "10",
+        "2506",
+        "4.49"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "此外，公司现金储备充足，2024Q3末公司货币资金165亿+交易性金融资产146亿，助力公司长远发展。",
+      "numbers": [
+        "2024",
+        "3",
+        "165",
+        "146"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "3、通威此前公告控股股东通威集团拟在2024年2月-2025年1月增持公司股份，增持金额10-20亿元，截止目前已经增持超10亿元，表明对于公司发展的长期信心。",
+      "numbers": [
+        "3",
+        "2024",
+        "2",
+        "2025",
+        "1",
+        "10",
+        "20"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "晶科能源2024年经营性现金流78亿，负债率下降2个百分点",
+      "numbers": [
+        "2024",
+        "78",
+        "2"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "财报显示，公司在2024年实现组件出货量 92.87GW，同比增长 18.28%，第六次蝉联全球组件出货量冠军。",
+      "numbers": [
+        "2024",
+        "92.87",
+        "18.28"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "公司全年营收924.7亿元，实现归属于上市公司股东的净利润0.99亿元。",
+      "numbers": [
+        "924.7",
+        "0.99"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "值得注意的是，2024年公司实现经营性现金流78.67亿元，全年资产负债率逆势下降2个百分点。",
+      "numbers": [
+        "2024",
+        "78.67",
+        "2"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "截至报告期末，公司黄金片区电池量产平均效率超26.7%，实验室TOPCon钙钛矿叠层电池效率达34.22%，为当前主流技术与下一代技术融合打开空间。",
+      "numbers": [
+        "26.7",
+        "34.22"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "公司计划2025年完成40%以上产能的升级改造，年底前形成40-50GW高功率TOPCon产能，进一步巩固技术领先优势。",
+      "numbers": [
+        "2025",
+        "40",
+        "50"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "宇通重工2024年报解读：经营活动现金流增1489.88%，研发投入下降11.72%",
+      "numbers": [
+        "2024",
+        "1489.88",
+        "11.72"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "2025年，宇通重工股份有限公司发布2024年年度报告，报告期内，公司实现营业收入37.99亿元，同比增长30.67%；",
+      "numbers": [
+        "2025",
+        "2024",
+        "37.99",
+        "30.67"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "归属于上市公司股东的净利润2.27亿元，同比增长3.97%。",
+      "numbers": [
+        "2.27",
+        "3.97"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "值得注意的是，公司经营活动产生的现金流量净额为5.72亿元，同比增长1489.88%，研发费用为1.29亿元，同比下降11.72%。",
+      "numbers": [
+        "5.72",
+        "1489.88",
+        "1.29",
+        "11.72"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "2024年宇通重工营业收入达到379,858.33万元，较上年的290,699.23万元增长30.67%。",
+      "numbers": [
+        "2024",
+        "379",
+        "858.33",
+        "290",
+        "699.23",
+        "30.67"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "从业务板块来看，环卫设备业务实现营业收入154,305.09万元，销量3,221台，同比增长17.2%，其中新能源产品销量增长77.4%；",
+      "numbers": [
+        "154",
+        "305.09",
+        "3",
+        "221",
+        "17.2",
+        "77.4"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "中盛光电董事长王兴华坦言，虽然今年国内光伏应用市场较之2012年会有翻倍成长，但该公司一直以来均比较谨慎，“因为我们一直都比较担心国内项目的回款问题”，故此公司仍以国际市场为主。",
+      "numbers": [
+        "2012"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "根据太阳能专业研究机构Solarbuzz提供的数据，2012年中国光伏装机容量约为4.5GW，较之2011年的2.89GW增长55.7%，成为继德国之后的全球第二大光伏装机大国。",
+      "numbers": [
+        "2012",
+        "4.5",
+        "2011",
+        "2.89",
+        "55.7"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "同时2012年底组件价格较之年初下降了近50%，考虑到光伏电价补贴未有下调，部分企业会选择2013年初再开工，由此提升项目财务收益率。",
+      "numbers": [
+        "2012",
+        "50",
+        "2013"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "在1月9日的全国能源工作会议上，国家能源局确立了今年中国光伏发电装机10GW的目标。",
+      "numbers": [
+        "1",
+        "9",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "10GW的目标，较之2012年的4.5GW再度翻倍。",
+      "numbers": [
+        "10",
+        "2012",
+        "4.5"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "”一位晶科能源销售人士称，该公司主要与国内五大电力集团和地方国企建立战略同盟，由此带动组件的销售，“过去国内市场的销售基本为空白，但在2012年国内市场的出货量已有数百MW的出货量”。",
+      "numbers": [
+        "2012"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "所以，当赶碳号看到新能源车企业对待供应商截然相反的两种态度时，内心五味杂陈：一方面，比亚迪仅靠一封邮件，就可以肆意压榨供应商降价10%，美其名曰“挖掘降本空间”，另一方面，特斯拉借势打脸竞争对手，声称供应链公司付款周期只要90天。",
+      "numbers": [
+        "10",
+        "90"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "一个极端的例子，胶膜企业海优新材，竟然要252天才能收到应收账款及应收票据，而主材企业弘元绿能的应付票据和应付款周期，更是高达615天——将近两年，才会“给钱”！",
+      "numbers": [
+        "252",
+        "615"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "如果生产出来的成本是 1 元/瓦，但市场价变成了 0.8 元/瓦，公司必须在当季财务报表中冲销这 0.2 元的差额。",
+      "numbers": [
+        "1",
+        "0.8",
+        "0.2"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "26.49 亿元",
+      "numbers": [
+        "26.49"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "20-22 亿元",
+      "numbers": [
+        "20",
+        "22"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "10-15 亿元",
+      "numbers": [
+        "10",
+        "15"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "15-20 亿元",
+      "numbers": [
+        "15",
+        "20"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "60-65 亿元",
+      "numbers": [
+        "60",
+        "65"
+      ]
+    },
+    {
+      "source_id": "S26",
+      "text": "存货跌价损失34669.86万元，固定资产减值损失16411.89万元。",
+      "numbers": [
+        "34669.86",
+        "16411.89"
+      ]
+    },
+    {
+      "source_id": "S27",
+      "text": "4月28日，四川英杰电气股份有限公司（以下简称“英杰电气”或“公司”）发布公告称，公司于4月25日与多家机构投资者进行了2024年度和2025年一季度业绩线上交流。",
+      "numbers": [
+        "4",
+        "28",
+        "25",
+        "2024",
+        "2025"
+      ]
+    },
+    {
+      "source_id": "S27",
+      "text": "英杰电气2024年营收达到17.8亿元，同比增长0.59%，归母净利润下降25.19%。",
+      "numbers": [
+        "2024",
+        "17.8",
+        "0.59",
+        "25.19"
+      ]
+    },
+    {
+      "source_id": "S27",
+      "text": "公司营业收入主要来自光伏行业，销售收入87,378.79万元，占营业收入的比重49.08%，同比下降10.27%；",
+      "numbers": [
+        "87",
+        "378.79",
+        "49.08",
+        "10.27"
+      ]
+    },
+    {
+      "source_id": "S27",
+      "text": "来自半导体及电子材料行业的销售收入35,060.65万元，占营业收入的比重19.69%，同比上升6.41%。",
+      "numbers": [
+        "35",
+        "060.65",
+        "19.69",
+        "6.41"
+      ]
+    },
+    {
+      "source_id": "S27",
+      "text": "其他行业的收入增长较多，约为5.53亿元，同比增长18.92%。",
+      "numbers": [
+        "5.53",
+        "18.92"
+      ]
+    },
+    {
+      "source_id": "S27",
+      "text": "目前光伏行业仍有近19亿元的发出商品未确认销售收入(但有60%左右的货款公司已经实际收取)。",
+      "numbers": [
+        "19",
+        "60"
+      ]
+    }
+  ],
+  "notes": [
+    "本文件由规则汇编生成，**没有使用模型**：不含分析、对比、归因与结论。",
+    "候选数据点是从正文里原样摘出的句子，**未做事实核查**，引用前必须回原文确认。",
+    "同一篇资料可能被多个检索词命中，已按 URL 去重。",
+    "“跨来源比对”只做机械比对（上下文相似度 + 数字是否相同），标出“多来源印证”与“两处说法不一致”，**不判断谁对**。"
+  ],
+  "meta": {
+    "upstream_stages": 9,
+    "excerpts": {
+      "S01": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"d91e8e0157da288f351bd0c2102dc9ae\",\"traceid\":\"276077ee17945048662065484e9682\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-gtG/jZRVxIiZDNYr69x88XlB+6Cw0IU7oKw6/acPhliDhmmkdjsqFPnq+b7sStjjCRgK+sqPawAKw6zasQjEdCX4ggpN22gGECLhBAlkvZ8=\",\"_waf_698b2709\":0}",
+      "S02": "财经\n焦点\n股票\n新股\n期指\n期权\n行情\n数据\n全球\n美股\n港股\n期货\n外汇\n银行\n基金\n理财\n债券\n直播\n股吧\n基金吧\n博客\n财富号\n搜索\n行情中心\n指数\n期指\n期权\n个股\n板块\n排行\n新股\n基金\n港股\n美股\n期货\n外汇\n黄金\n自选股\n自选基金\n数据中心\n资金流向\n主力排名\n板块资金\n个股研报\n新股申购\n转债申购\n北交所申购\nAH股比价\n年报大全\n融资融券\n龙虎榜\n限售解禁\nIPO审核\n大宗交易\n估值分析\n首页\n>\n社区\n>\n正文\n2024下半年光伏各环节价格走势\n相守湖畔\n2024年08月03日 18:16\n江苏\n返回\n财富号评论吧>\n点赞\n0\n评论\n0\n收藏\n大\n中\n小\n2024下半年光伏各环节价格走势\n原创 InfoLink\n随着过往的扩产计划大规模落地后，迭加全球需求增长放缓，「产能过剩」一词成为 2024 年光伏产业的真实写照，从硅料到组件环节，多数生产企业皆难以保持盈利，在如今的严峻市况下，下半年的价格走势将大程度取决于各环节企业的排产规划与经营策略。\n硅料：产能高度集中 头部企业主导价格走势\n首先观察硅料环节，经过长时间的大幅崩跌后，中国硅料价格在七月逐渐触底，每公斤大约落在 36-41 元人民币的区间，由于价格已低于行业生产成本，许多硅料企业规划在三季度逐步减产或检修，并淘汰既有的老旧产能，另一方面，在老旧产能退场的同时，头部企业的新建产能落地与否也为市场带来不确定性，且因硅料产能集中度较高，头部企业的决策将主导未来价格走势，须持续观望三季度各企业的实际生产，如果能顺利减少供应，中国硅料价格有望在三季度末小幅回弹。\n相较于中国硅料的低迷行情，海外硅料因为美国 UFLPA 法案的溯源要求，具备一定稀缺性，价格长期维持在每公斤 18-24.5 美元的区间，近期不稳定因素来自政策面，例如五月美国对东南亚四国出口的电池和组件发起双反调查，预期在四季度税率实施后，东南亚四国产品出口美国将严重受限，可能进一步冲击海外硅料的整体需求，导致价格出现变动。\n硅片：企业产品规格选型不一 价格走势分化\n受上游硅料跌价与库存堆积的影响，硅片价格在 2024 上半年快速下探，并全面突破行业生产成本线，截至七月底，大部分产品价格都已触底且暂时维持平稳。P 型 M10 价格为每片 1.25 元人民币、G12 为 1.7 元人民币；在 N 型产品中，M10 价格为每片 1.1 元人民币，G12 落在 1.6-1.65 元人民币的区间，值得注意的是，G12R 硅片因需求疲软，主流价格从七月初的 1.35 元人民币下降至 1.25 元人民币。\n分析下半年硅片价格走势，整体硅片价格的主要变因或潜在利好将来自上游硅料环节，正如先前提到的，硅料环节如期减供将让三季度末价格小幅回升，受上游涨价影响，可望带动硅片价格的上行。\n然而，硅片企业的经营策略也导致不同规格产品的价格分化。例如 ",
+      "S03": "2024年光伏组件价格走势图\n搜索\n今日价格\n实时快讯\n热点资讯\n登录\n注册\n当前位置：\n我的钢铁网\n>\n光伏组件\n>\n2024年光伏组件价格走势图\n品名\n型号\n规格(mm)\n最低价\n最高价\n中间价\n走势\n光伏组件\n210R双面topcon（分布式）\n2382*1134*30\n0.7\n0.73\n0.715\n光伏组件\n182双面topcon（分布式）\n2278*1134*30\n0.7\n0.725\n0.713\n光伏组件\n210双面topcon（集中式）\n2384*1303*30\n0.70\n0.73\n0.715\n光伏组件\n210双面HJT（分布式）\n2384*1303*30\n0.715\n0.74\n0.728\n光伏组件\n182单面topcon（分布式）\n2278*1134*30\n0.7\n0.725\n0.713\n查看更多价格\n2026-10-29\n光伏组件\n价格指数\n光伏组件：产量：中国（年）\n533\n(-50.10)\n光伏组件：产能利用率：中国（年）\n60.92\n(-25.06)\n光伏组件：有效产能：中国（年）\n798\n(56.93)\n光伏组件：出口数量环比：中国（月）\n35.01\n(36.49)\n光伏组件：看跌比例：中国（周）\n40\n(0.00)\n2024年光伏组件价格走势图\n相关价格\n-\n重置\n确认\n按综合排序\n按综合排序\n按最新排序\n国内\n光伏组件\n价格行情（2026-10-28 10:23）\n光伏组件\n2026-10-28 10:23\n国内\n光伏组件\n价格行情（2026-10-27 10:33）\n光伏组件\n2026-10-27 10:33\n国内\n光伏组件\n价格行情（2026-10-26 10:19）\n光伏组件\n2026-10-26 10:19\n国内\n光伏组件\n价格行情（2026-10-23 10:20）\n光伏组件\n2026-10-23 10:20\n国内\n光伏组件\n价格行情（2026-10-22 10:27）\n光伏组件\n2026-10-22 10:27\n国内\n光伏组件\n价格行情（2026-10-21 10:25）\n光伏组件\n2026-10-21 10:25\n国内\n光伏组件\n价格行情（2026-10-20 10:26）\n光伏组件\n2026-10-20 10:26\n国内\n光伏组件\n价格行情（2026-10-19 10:37）\n光伏组件\n2026-10-19 10:37\n国内\n光伏组件\n价格行情（2026-10-16 10:25）\n光伏组件\n2026-10-16 10:25\n国内\n光伏组件\n价格行情（2026-10-15 10:26）\n光伏组件\n2026-10-15 10:26\n点击加载更多\n快讯播报\n2024年光伏组件价格走势图\n快讯\n2026-07-30\n15:12\n【光\n伏\n组件\n承压运行 低效产能出清渐成\n价格\n修复关键】2026上半\n年光\n伏\n组件\n产量降",
+      "S04": "推荐\n快报\n广场\n科股宝VIP\n视频\n直播\n媒体\n企服\n创投\n咨询\n活动\n钛空时间\n集团时光\n公众号\n清朗网络行动\n写稿\n视频投稿\nApp下载\nENGLISH\n钛媒体\n链得得\n钛空时间\n消研所\n钛媒体创投家\n品牌服务\n专家服务\n政府服务\n创业者服务\n融资需求\n申请报道\n项目数据库\n投资者服务\n创投家CLUB投资机构库\n机构数据库\n行研报告\n钛媒体\n链得得\nITValue\n钛空时间\n消研所\n钛极客\n资讯\n科股宝\nPRO\n视频\n直播\nFM\n重回1元/W时代？2026年光伏组件价格有三重强支撑\n华夏能源网\n2026.01.23 16:16\n· 来自北京\n全文4088字\n00:00 / 12:08\n组件龙头开年已三次上调组件价格。\n文 | 华夏能源网\n稳步上涨的光伏组件价格，传递出“春江水暖”的市场喜讯。\n华夏能源网获悉，1月20日，天合光能（SH：688599）再次上调分布式光伏组件市场指导价，这已是1月1日、1月13日调价后，开年以来的第三次调价了。\n在上调3分/W后，天合光能最新的组件价格分别为：中版型、大版型组件价格为0.88-0.92+元/W，离1元/W的价格已经不远了；功能型组件价格稍高，防眩光组件0.95-0.99+元/W，轻质单玻组件1.08-1.12+元/W。\n在一个月前，业内普遍觉得光伏组件1元/W遥不可及。2025年12月初时，Infolink数据显示，双面双玻TOPCon组件均价在0.693元/W左右。但令人没想到的是，仅仅半个月后，组件价格就不再“躺平”。\n今年1月1日，Infolink公布的数据显示，在集中式、工商业分布式项目中，BC组件价格分别涨了2.6%、3.9%。1月7日，组件价格再次上涨，双面双玻TOPCon组件均价达到了0.7元/W，比前一周上涨了0.3%，比一个月前上涨了1%。\n另外，除天合光能，晶科能源（SH：688223）、晶澳科技（SZ：002459）、TCL中环（SZ：002129）等龙头企业近期也上调了组件报价。集体涨价显示出光伏市场的强劲需求，组件1元/W时代已近在眼前。\n值得一提的是，光伏组件价格上次跌破1元/W关口，还是在2023年10月。经历了2年的苦熬后，这一次光伏组件价格有很大可能重回1元/W时代。从需求端的装机增量、到供给端的反内卷，再到成本端的价格上行，都有望支撑组件价格在2026年有亮眼表现。\n需求端：装机量或负增长，但新的增量空间值得期待\n供需关系是影响光伏组件价格的最关键因素。\n从2020年开始，光伏产业狂飙突进，产能规模迅速增长。这除了“双碳”目标等政策驱动外，需求爆发也给了各类资金强烈信心——2024年，中国光伏新增装机量高达277.17GW，是2020年（48.2GW）的5.75倍。\n那么，2026年光伏需求情况如何呢？目前来看，行业各方普遍持悲观态度。\n华夏能源网注意到，在2025年12",
+      "S05": "0.76~1.02元/W，华电8GW组件集采开标，均价上涨！\n作者：\n智汇光伏\n发布于:\n2026-02-11 14:15\n雪球\n转发：0\n回复：0\n喜欢：0\n2月11日，华电集团2026年8GW光伏组件集中采购项目正式开标，共32家组件企业参与投标，开标的整体情况如下表所示。\n表：华电集团2026年光伏组件集中采购开标结果（单位：元/W）\n上述均价明显高于此前的集采开标均价。\n1月21日，该项目发布招标公告，两个标段的主要要求如下表。详见《8GW！华电启动2026光伏组件集采，高效组件为主》\n此前，中国光伏行业协会曾给出内部成本参考价，当银价为20000元/kg时，光伏组件的行业平均成本为0.824元/W（不含税）、0.94元/W（含税）。详见《CPIA：银价20元/g时，组件平均全成本0.824元/W》\n此次企业的报价分布情况如下图所示。其中，12家企业的常规组件报价低于0.824元/W。\n32家企业的详细报价情况如下表所示（数据来源于索比光伏网）。",
+      "S06": "财经\n焦点\n股票\n新股\n期指\n期权\n行情\n数据\n全球\n美股\n港股\n期货\n外汇\n银行\n基金\n理财\n债券\n直播\n股吧\n基金吧\n博客\n财富号\n搜索\n行情中心\n指数\n期指\n期权\n个股\n板块\n排行\n新股\n基金\n港股\n美股\n期货\n外汇\n黄金\n自选股\n自选基金\n数据中心\n资金流向\n主力排名\n板块资金\n个股研报\n新股申购\n转债申购\n北交所申购\nAH股比价\n年报大全\n融资融券\n龙虎榜\n限售解禁\nIPO审核\n大宗交易\n估值分析\n首页\n>\n社区\n>\n正文\n股友6Y17525N79\n2026年05月29日 10:12\n安徽\n返回\n天合光能吧>\n点赞\n0\n评论\n0\n收藏\n大\n中\n小\n$天合光能(SH688599)$\n2026年1–5月 光伏组件价格与趋势（元/W，主流成交价，含税）\n月份 集中式（TOPCon） 分布式（主流品牌） 环比变动 核心驱动因素\n1月 0.65–0.68 0.68–0.72 企稳微跌 年末库存高、价格磨底\n2月 0.68–0.70 0.72–0.76 ↑4%~6% 龙头率先提价、抢出口启动\n3月 0.70–0.73 0.76–0.80 ↑3%~5% 出口退税取消预期、银价上涨\n4月 0.71–0.74 0.77–0.82 ↑1%~3% 退税正式取消、成本传导\n5月 0.72–0.75 0.78–0.85 ↑1%~4% 供需改善、挺价意愿强\n趋势小结\n• 1月：筑底，价格接近现金成本线（约0.68元/W）。\n• 2–3月：快速反弹，出口退税取消预期+银价上涨，带动全链提价。\n• 4–5月：温和上行，政策落地后成本传导、库存下降，价格稳步抬升。\n• 整体：2026年以来呈V型反转、持续上行，分布式涨幅大于集中式。\n要不要我把这张表扩展到6–12月的预测价格与趋势，方便你全年对照？\n追加内容\n本文作者可以追加内容哦 !\n举报\n郑重声明：\n用户在社区发表的所有信息将由本网站记录保存，仅代表作者个人观点，与本网站立场无关，不对您构成任何投资建议，据此操作风险自担。\n请勿相信代客理财、免费荐股和炒股培训等宣传内容，远离非法证券活动。请勿添加发言用户的手机号码、公众号、微博、微信及QQ等信息，谨防上当受骗！\n股友6Y17525N79\n关注\n更多文章\n投资组合\n--\n总收益\n20日收益\n日收益\n--\n--\n--\n最新操作\n-\n-\n-\n历史收益率走势(%)\nChart\n自选股\n代码\n名称\n最新价\n涨跌幅\n查看更多\n浪客视频\n-\n郑重声明：东方财富网发布此信息的目的在于传播更多信息，与本站立场无关。东方财富网不保证该信息（包括但不限于文字、视频、音频、数据及图表）全部或者部分内容的准确性、真实性、完整性、有效性、及时性、原创性等。相关信息并未经过本网站证实，不对您构成任何投资建议，据此操作，风险自担。\n东方财富\n扫一扫下载APP\n东方财富产品\n东方财富免费版\n东方财富Level",
+      "S07": "碳酸锂\n89200\n-200.00\n-0.22%\n磷酸铁锂\n41600\n-200.00\n-0.48%\n金属锂\n600000\n0.00\n0.00%\n硫酸镍\n24350\n0.00\n0.00%\n三元材料\n120000\n2000.00\n1.69%\n三元前驱体\n92000\n0.00\n0.00%\n多晶硅\n42\n0.00\n0.00%\n电池片\n0.62\n0.00\n0%\n锂电池废料\n16340\n0.00\n0.00%\n锂电池负极片\n26841\n0.00\n0.00%\n电池硫酸锰\n7540\n0.00\n0.00%\n工业硅\n8850\n0.00\n0.00%\n硫酸钴\n48000\n2000.00\n4.35%\n磷酸铁\n16200\n0.00\n0.00%\n锂辉石精矿\n940\n0.00\n0.00%\n电解锰\n18100\n0.00\n0.00%\n硅片\n1.41\n0.00\n0.00%\n光伏组件\n0.66\n0.00\n0%\n人造石墨\n26200\n0.00\n0.00%\n天然石墨\n32000\n0.00\n0.00%\n三元电芯\n0.56\n0.00\n0%\n锂电池回收\n41802\n-5550.00\n-11.72%\n镍生铁\n1050\n0.00\n0.00%\n碳酸钴\n135\n0.00\n0.00%\n镍矿\n689\n0.00\n0.00%\n硅片价格\n当前位置：\n我的钢铁网\n>\n新能源\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n新能源\n>\n硅片价格\n更新时间：2026-11-12\n15日\n30日\n90日\n1年\n快讯播报\n硅片价格\n快讯\n2026-11-11\n10:42\n【2026年11月11日\n硅片\n价格\n】183N\n硅片\n价格\n0.9-0.95元/片，210RN\n硅片\n价格\n0.98-1元/片，210N\n硅片\n价格\n1.08-1.13元/片。\n2026-11-09\n16:00\n【10月中国\n硅片\n产能利用率环比降0.2%】2026年10月\n硅片\n国内企业产能利用率在54.7%，与9月相比降0.2%。据Mysteel预计，2026年11月份\n硅片\n企业产能利用率在549%左右，环比增0.3%。\n2026-11-09\n14:40\n【10月中国\n硅片\n产量环比上涨5.97%】2026年10月中国\n硅片\n企业产量54.09GW，环比下降0.31%，同比下降10.85%。 据Mysteel预计，2026年11月\n硅片\n排产54.35GW，环比上涨0.49%。\n2026-11-06\n17:17\n【Mysteel晶硅光伏周评20261106】本周多晶硅现货延续 “报价稳、成交冷” 的僵持格局，现货签单缓慢。N型致密报价43元/千克，颗粒硅41元/千克。头部企业挺价意愿仍存，但下游持续消耗存量库存，短期补库也都从贸易商、期现商零散补库，暂无规模化直采。供应端，10月已有企业陆续减产，西南部分产能停产，当月产出环比下降8.68%，",
+      "S08": "碳酸锂\n89200\n-200.00\n-0.22%\n磷酸铁锂\n41600\n-200.00\n-0.48%\n金属锂\n600000\n0.00\n0.00%\n硫酸镍\n24350\n0.00\n0.00%\n三元材料\n120000\n2000.00\n1.69%\n三元前驱体\n92000\n0.00\n0.00%\n多晶硅\n42\n0.00\n0.00%\n电池片\n0.62\n0.00\n0%\n锂电池废料\n16340\n0.00\n0.00%\n锂电池负极片\n26841\n0.00\n0.00%\n电池硫酸锰\n7540\n0.00\n0.00%\n工业硅\n8850\n0.00\n0.00%\n硫酸钴\n48000\n2000.00\n4.35%\n磷酸铁\n16200\n0.00\n0.00%\n锂辉石精矿\n940\n0.00\n0.00%\n电解锰\n18100\n0.00\n0.00%\n硅片\n1.41\n0.00\n0.00%\n光伏组件\n0.66\n0.00\n0%\n人造石墨\n26200\n0.00\n0.00%\n天然石墨\n32000\n0.00\n0.00%\n三元电芯\n0.56\n0.00\n0%\n锂电池回收\n41802\n-5550.00\n-11.72%\n镍生铁\n1050\n0.00\n0.00%\n碳酸钴\n135\n0.00\n0.00%\n镍矿\n689\n0.00\n0.00%\n硅片价格网\n当前位置：\n我的钢铁网\n>\n新能源\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n新能源\n>\n硅片价格网\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n硅片价格网\n快讯\n2026-11-11\n10:42\n【2026年11月11日\n硅片\n价格】183N\n硅片\n价格0.9-0.95元/片，210RN\n硅片\n价格0.98-1元/片，210N\n硅片\n价格1.08-1.13元/片。\n2026-11-09\n16:00\n【10月中国\n硅片\n产能利用率环比降0.2%】2026年10月\n硅片\n国内企业产能利用率在54.7%，与9月相比降0.2%。据Mysteel预计，2026年11月份\n硅片\n企业产能利用率在549%左右，环比增0.3%。\n2026-11-09\n14:40\n【10月中国\n硅片\n产量环比上涨5.97%】2026年10月中国\n硅片\n企业产量54.09GW，环比下降0.31%，同比下降10.85%。 据Mysteel预计，2026年11月\n硅片\n排产54.35GW，环比上涨0.49%。\n2026-11-06\n17:17\n【Mysteel晶硅光伏周评20261106】本周多晶硅现货延续 “报价稳、成交冷” 的僵持格局，现货签单缓慢。N型致密报价43元/千克，颗粒硅41元/千克。头部企业挺价意愿仍存，但下游持续消耗存量库存，短期补库也都从贸易商、期现商零散补库，暂无规模化直采。供应端，10月已有企业陆续减产，西南部分产能停产，当月产出环比下降8.68%，供",
+      "S09": "铜\n108227.52\n422.48\n0.39%\n电解铜\n108180\n420.00\n0.39%\n铜精矿\n21272\n-10.00\n-0.05%\n铜杆\n74784\n-475.00\n-0.63%\n铜管\n85500\n400.00\n0.47%\n废铜\n92280\n-80.00\n-0.09%\n铝\n23278\n501.00\n2.20%\n电解铝\n23219\n434.00\n1.90%\n氧化铝\n2653\n0.00\n0.00%\n铝土矿\n513\n0.00\n0.00%\n废铝\n19900\n400.00\n2.05%\n铝棒\n23550\n300.00\n1.29%\n铅锭\n15894.7\n-82.04\n-0.51%\n铅精矿\n15917\n-75.00\n-0.47%\n锌\n25382.93\n63.27\n0.25%\n锌精矿\n25553\n50.00\n0.20%\n锌锭\n25433\n64.00\n0.25%\n锡\n355375\n-4425.00\n-1.23%\n稀土\n5550\n0.00\n0.00%\n白银\n12349\n-155.00\n-1.24%\n硅片市场价\n当前位置：\n我的钢铁网\n>\n有色金属\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n硅价格\n>\n硅片市场价\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n硅片市场价\n快讯\n2026-07-31\n17:22\n【Mysteel晶硅光伏周评20260731】本周国内多晶硅市场持续低位磨底运行，行业整体维持高供给、高库存、弱需求的弱势基本面，市场整体交投氛围低迷，成交活跃度处于低位。本周市场签单量无明显改善，总体成交重心持稳。当前多晶硅行业基本面拐点仍未显现，西南丰水期产能持续释放带动供给增量，下游\n硅片\n企业原料库存高位、采购相对谨慎，叠加终端光伏装机需求疲软，行业库存持续累积，供需错配矛盾持续深化，市场维持底部震荡磨底格局。短期\n市场价\n格或将持续承压，但行业成本底线支撑稳固，叠加行业政策托底预期仍存，价格深度下跌空间不大。本周多晶硅均价继续下移。N型致密料周均价32.5元/千克，N型颗粒硅32元/千克，N型混包料30.5元/千克。\n2026-07-24\n17:25\n【Mysteel晶硅光伏周评20260724】本周国内多晶硅市场持续低位磨底运行，行业整体维持高供给、高库存、弱需求的弱势基本面，市场整体交投氛围低迷，成交活跃度处于低位。本周市场供需博弈态势进一步加剧，行业签单量无明显改善，市场成交重心持稳。当前多晶硅行业基本面拐点仍未显现，西南丰水期产能持续释放带动供给增量，下游\n硅片\n企业原料库存高位、采购相对谨慎，叠加终端光伏装机需求疲软，行业库存持续累积，供需错配矛盾持续深化，市场维持底部震荡磨底格局。短期\n市场价\n格将持续承压，但行业成本底线支撑稳固，叠加行业政策托底预期仍存，价格深度下跌空间不大。\n2026-",
+      "S10": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"c25143719bb16cbaf3a363b90470c665\",\"traceid\":\"276077c417945049199452867ee879\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-fOP2hR0dUJaJ0gOLBq3WEeGZY7pQxen8FgMJsfnEbdmEkROkNx8vECiHe5WgV1mxOStTp9dt27lTRXdg/NhDS39Yutr0icFApxMin53k7aQ=\",\"_waf_698b2709\":0}",
+      "S11": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"4aa4c5ed83fb8cac742677837ab67902\",\"traceid\":\"3ccdc17517945049253787138e85a3\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-4VppQlS8OJxKpieYQhZIaOagKwmu+CBW7DWh1TRPYOnONe/Ae19SntrPelmLIZrCIulBxUPyScSm8jjrncSEc/SRQomPI/QS/gBKqMX0un8=\",\"_waf_698b2709\":0}",
+      "S12": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"ebe68f7cdcb9ba1ab80650d836e7965f\",\"traceid\":\"3ccdc17917945049275753906e9ae6\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-FyMimE8yk2ZSszKhqxHPSPkua4+jIPoV0Xf599OrcpKRQTsLOk/lpZpFu8lStN92OFIAo9YRQhrx49/2qlUY7n4zF02F8bIM9CCBSSKClRU=\",\"_waf_698b2709\":0}",
+      "S13": "光伏下午茶（第2443期）\n作者：\n老红看光伏\n发布于:\n2026-06-26 13:35\n雪球\n转发：0\n回复：1\n喜欢：0\n——————————\n▼\n彭博：2025年，全球组件产量从2024年的691GW降至689GW。新增装机容量仅655GW。多晶硅产量143万吨，足以制造700GW组件。多晶硅库存达到创纪录高位，超过50万吨。印度生产的组件达到67GW，约占全球供应量的10%。在逆变器领域，总部位于中国大陆以外地区的企业供应占比仍低于8%\n爱旭宣布成为埃及单体最大1.2GW Nefer Menya集中式项目的独家光伏组件供应商\n隆基\n2026年一季度末，存货从年初145亿元攀升至181.58亿元，涨幅近25%；资产负债率从2023年末的56.87%升至一季度末的66.08%；经营活动现金流净额为-24.49亿元，较上年同期恶化40%。2025年全年，隆基经营活动现金流净额43.59亿元，同比大幅转正；存货周转天数同比缩短10天；销售费用和管理费用分别同比下降29.96%和23.67%\n隆基\n2025年全年BC组件出货22.87GW，2026年一季度BC组件销量8.34GW，占当期总出货量的约66%。从2023年的6GW、2024年的17GW、2025年的23GW，到2026年预计超50GW\n隆基\n：市场上储能标称往返效率通常在85%至89%，但2025年中国电网侧储能平均效率约82%，这中间的差距正是系统不协同带来的损耗。隆基表示其系统往返效率可达93%。隆基真正要掌握的，是电芯的定义权、验证权和系统匹配权，而非制造权。这是\"全栈隆基\"与电芯厂纵向一体化战略的本质区别\nBC博弈，\n隆基\n彻底更换竞争逻辑，从源头搭建研发、协同、专利、运营四重立体护城河，保守估计维持3-5年绝对技术领先窗口。拥有授权专利超510项，其中发明专利330项以上。专利覆盖硅片、电池、组件全链条\n宁德时代\n与英国最大能源公司——章鱼能源成立合资公司，共同建设欧洲重卡换电网络。宁德时代将把骐骥换电技术引入欧洲。2027年在英国建成首批示范换电站，预计到2035年，换电站网络将扩大至30座以上\nNextpower刚将GameChange Energy 诉至法院，又宣布3.3亿欧元收购德国太阳能供应商Zimmermann PV-Steel Group，后者2009年进入太阳能光伏行业，迄今已部署超过20GW的光伏支架。这是Nextpower近一个月内收购的第二家欧洲公司\n中国出海企业协作联盟与界面财联社研究院联合发布“中国企业全球影响力100强”榜单，\n天合光能\n位列第66名\n天合光能\n推出的THBC技术，是在现有庞大的TOPCon产能资产基座上，实现性能跃升与产业可行性的高度统一 。 天合光能将其精辟地概括为“不是技术叠加，而是结构性升级” ，是不为刷榜而生，而是直指电站降本与大尺",
+      "S14": "网易首页\n应用\n网易新闻\n网易公开课\n网易红彩\n网易严选\n邮箱大师\n网易云课堂\n快速导航\n新闻\n国内\n国际\n王三三\n体育\nNBA\nCBA\n综合\n中超\n国际足球\n英超\n西甲\n意甲\n娱乐\n明星\n电影\n电视\n音乐\n封面故事\n财经\n股票\n原创\n智库\n汽车\n购车\n车型库\n科技\n网易智能\n原创\nIT\n互联网\n通信\n时尚\n艺术\n旅游\n手机\n/\n数码\n惊奇科技\n易评机\n家电\n房产\n/\n家居\n北京房产\n上海房产\n广州房产\n楼盘库\n设计师库\n案例库\n教育\n留学\n高考\n查看网易地图\n登录\n注册免费邮箱\n注册VIP邮箱（特权邮箱，付费）\n免费下载网易官方手机邮箱应用\n安全退出\n移动端\n网易公开课\nTED\n中国大学视频公开课\n国际名校公开课\n赏课·纪录片\n付费精品课程\n北京大学公开课\n英语课程学习\n网易严选\n新人特价\n9.9专区\n新品热卖\n人气好物\n居家生活\n服饰鞋包\n母婴亲子\n美食酒水\n支付\n一卡通充值\n一卡通购买\n我的网易支付\n网易跨境支付\n邮箱\n免费邮箱\nVIP邮箱\n企业邮箱\n免费注册\n客户端下载\n网易首页\n>\n网易号\n> 正文\n申请入驻\n2024年中国光伏组件产量预测及企业出货量排名分析\n2024-10-08 15:36:05　来源:\n中商情报网\n广东\n举报\n0\n分享至\n用微信扫码二维码\n分享至好友和朋友圈\n中商情报网讯：近年来，我国光伏产业链主要环节产量均实现高比例增长。中商产业研究院发布的《2024-2029年中国光伏组件行业深度分析及发展前景预测研究报告》显示，2023年中国光伏组件产能、产量分别达920GW、518.1GW，同比分别增长66.7%、75.8%。2024年1-6月全国光伏组件产量达271GW，同比增长32.8%。中商产业研究院分析师预测，2024年全年中国光伏组件产量将达到556.3GW。\n数据来源：中商产业研究院整理\n从企业生产情况来看，2023年组件环节产业集聚度出现一定程度的下降，TOP5企业市场占有率为50.1%。从全球组件出货情况来看，2023年前十家企业组件出货量409.9GW，相比去年251.4GW规模的出货量，同比增长超过63.0%，TOP10的门槛超过16GW。\n资料来源：中商产业研究院整理\n更多资料请参考中商产业研究院发布的《中国光伏组件行业市场前景及投资机会研究报告》，同时中商产业研究院还提供产业大数据、产业情报、行业研究报告、行业白皮书、行业地位证明、可行性研究报告、产业规划、产业链招商图谱、产业招商指引、产业链招商考察&推介会、“十五五”规划等咨询服务。\n特别声明：以上内容(如有图片或视频亦包括在内)为自媒体平台“网易号”用户上传并发布，本平台仅提供信息存储服务。\nNotice: The content above (including the pictures and videos if any) is uploaded an",
+      "S15": "新浪首页\n新闻\n体育\n财经\n娱乐\n科技\n博客\n图片\n专栏\n更多\n汽车\n教育\n时尚\n女性\n星座\n健康\n房产\n历史\n视频\n收藏\n育儿\n读书\n佛学\n游戏\n旅游\n邮箱\n导航\n移动客户端\n新浪微博\n新浪新闻\n新浪财经\n新浪体育\n新浪众测\n新浪博客\n新浪视频\n新浪游戏\n天气通\n我的收藏\n注册\n登录\n新浪看点\n看点秒拍\n>\n正文\n新浪新闻客户端\n新浪新闻公众号\n新浪新闻视频号\n新浪新闻抖音\n新浪新闻快手\n新浪新闻小红书\n新浪新闻B站\n热搜时代小宇宙\n×\n点击任意位置关闭\n工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%\n工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%\n2025年02月27日 16:08\n新浪网\n作者\n证券日报之声\n证券日报官方账号\n缩小字体\n放大字体\n收藏\n微博\n微信\n分享\n0\n腾讯QQ\nQQ空间\n工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%\n【工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%】\n特别声明：以上文章内容仅代表作者本人观点，不代表新浪网观点或立场。如有关于作品内容、版权或其它问题请于作品发表后的30日内与新浪网联系。\n赛博对话\n热搜时代\n一天零一页\n无双\n热浪之外\n来自于：北京\n权利保护声明页/Notice to Right Holders\n相关新闻\n投资热点尽在新浪财经APP>\n加载中\n点击加载更多\n阅读排行榜\n评论排行榜\n01\n俄罗斯驻美国大使达尔奇耶夫去世\n02\n高市成天喊“开战”，多家日媒假装听不见\n03\n天塌了！黄仁勋被曝与高管有新婚外情，英伟达暴跌8%，董事会启动罢免\n04\n特朗普将赴东盟峰会，各国怕的不只是关税\n05\n腾讯被传裁员8000人！脉脉同事圈一度挤爆  知情人士辟谣\n01\n意大利单日新增6557例确诊病例，累计确诊破5万\n02\n习言道 | 没有一支强大的军队，就不可能有个强大的祖国\n03\n人民领袖｜和“老马”的两次见面\n04\n纪念孙中山先生诞辰160周年大会在京举行 习近平发表重要讲话\n05\n天天学习｜“振兴中华”的百年回响\n图片新闻\n安徽芜湖：秋菊采摘助增收\n红枫映古轩 紫竹院秋景入画\n浙江湖州：银杏树下晒面香 农旅融合促振兴\n湖南道县：砂糖桔迎丰收\n视频新闻\n新媒体实验室\n朋友圈47%的内容在炫耀\n近300起杀妻案如何判罚\n谈恋爱反降低生活质量？\n全国最能吃的省市竟是它\n性犯罪者再犯几率达12.8%\n联系我们\n|\n广告营销\n|\n通行证注册\n产品答疑\n|\n招聘信息\n|\n网站律师\nSINA English\n举报邮箱：jubao@vip.sina.com\nCopyright © 1996-2026 SINA Corporation\nAll Rights Reserved  新浪公司\n版权所有\n新浪首页\n相关新闻\n",
+      "S16": "作者：\n承舍空\n发布于:\n2026-06-11 14:56\n修改于:\n2026-06-11 14:56\n雪球\n转发：0\n回复：6\n喜欢：1\n2026重估光伏：从产能出清到价值回归\n一、2026年装机需求情况\n2026 年 1-4 月国内新增光伏装机 50.91GW，同比下降 74.3%，主要受 2025 年初抢装高基数影响；中性预测全年国内新增装机 220GW，同比下降 31%。海外市场维持高景气，1-4 月电池组件出口 131.74GW，同比增长 25.1%，中东、东南亚、印度为核心增量市场。\n二、供给端：多重因素加速落后产能出清\n2.1 供给过剩格局下盈利底部夯实\n产能端：2025 年末光伏各环节名义产能超 1000GW，2026 年组件需求仅 550-650GW，供需严重失衡。\n盈利端：2024 年三季度起主产业链销售毛利率持续为负，截至 2026 年一季度，硅料、硅片、电池、组件环节普遍亏损。\n财务端：主链企业负债率普遍攀升，\n通威股份\n、\nTCL\n中环负债率分别达 74%、68%；2025 年四季度起经营现金流有所改善，但投资现金流维持低位，行业资本开支显著放缓。\n2.2 集采高效化 + 少银化技术拉开企业差距\n集采高效化趋势：华能率先取消低效组件标段，转换效率 23.8% 以上的高效组件占比从 42% 提升至近 60%；截至 2026 年 5 月 18 日，央国企集采中高效组件、BC、HJT 标段累计 38.9GW，占比 49.6%。\n少银化加速落地：银价高位背景下，头部企业加快技术导入：\n隆基绿能\n：2026 年 6 月建成 20GW BC 产线，推进纯铜浆料替代\n爱旭股份\n：珠海基地量产无银铜互联 ABC 电池，义乌基地完成低银化工艺导入\n阿特斯\n：2026 年 6 月导入银包铜浆料，年底目标降低 40% 银耗\n晶科能源\n：贱金属化技术大规模导入，三季度高效飞虎 3 产品成本具备竞争力\n三、新技术：BC 性价比凸显，太空光伏打开增量空间\n3.1 BC 电池：从分布式走向集中式，成本优势逐步显现\n产能格局：截至 2026 年 5 月，全球 BC 电池现有落地产能接近 80GW，\n隆基绿能\n、\n爱旭股份\n两家总产能占比近 80%。\n效率领先：爱旭 ABC 组件量产效率达 25.3%，\n隆基\nHPBC 组件量产效率 24.8%，均位居行业前列。\n市场渗透：2026 年至今央国企 BC 组件招标规模超 6.2GW，1-5 月 BC 招标占比达 27%；BC 组件较 TOPCon 组件溢价约 0.06 元 / W，海外分布式市场溢价维持在 0.05 美元 / W 左右，爱旭 2026 年至今海外 BC 签单量近 3GW。\n成本优势：2026 年二季度，ABC 电池总成本 0.321 元 / W，较 TOPCon 低 0.022 元 / W；ABC 组件",
+      "S17": "20260126 新增200GW光伏产能 白银历史天价 光伏铜替代银 关注欧莱新材：铜栅线 无铟 TCO 靶材\n作者：\n理想完美\n发布于:\n2026-01-26 10:53\n雪球\n转发：0\n回复：4\n喜欢：6\n$欧莱新材(SH688530)$\n新增200GW光伏产能    白银不断突破历史天价 光伏铜替代银 路线明确    关注欧莱新材：铜栅线 HJT 全球首发核心供应商，无铟 TCO 靶材批量供货\nSpaceX与特斯拉计划未来三年内在美国建设总计200GW光伏产能\n马斯克第一性原理下的选择逻辑\n若按马斯克成本控制与技术创新双重标准，光伏铜替代银技术路线   欧莱新材\n东威科技\n更符合其战略诉求：\n$欧莱新材(SH688530)$\n铜栅线 HJT 全球首发核心供应商，无铟 TCO 靶材批量供货\n欧莱新材亮相SNEC 2025，推出HJT/钙钛矿太阳能电池降本增效一站式材料解决方案\n欧莱新材\n2025年6月12日 11:17\n上海\n在小说阅读器中沉浸阅读\n2025年6月11日，第十八届国际太阳能光伏和智慧能源&储能及电池技术与装备（上海）大会暨展览会（SNEC 2025）在上海国家会展中心盛大开幕。\n欧莱新材\n携高效靶材（99:1）、无铟靶材、ITO靶材、IZO靶材、RPD/PED靶材、铜制程栅线靶材及铜电镀高纯微晶磷铜球等创新产品亮相，为HJT/钙钛矿太阳能电池提供降本增效一站式材料解决方案。\n电镀铜 电池无银化 HJT .电镀铜图形 4000 万/GW 电镀设备约 5000 万/GW 东威科技\n电镀铜行业研究：助力电池无银化，促进XBC与HJT产业化提速\n网页链接\n东威科技 电\n镀\n路竞争激烈，有好多竞争对手在市场范围内。优势并不明显。\n东威科 续电镀设备为国内外首创，目前正在制造第三代设备\n，将拥有产能规模大（8000 片/小时以上）、破片率低（小于 0.1%）、均匀性好、高效节能、清洁环保等优势。水平电镀：在电镀槽内通过滚轮水平传输待镀电池，滚轮导电使种子层形成电镀系统阴极，在通电及水平传输中实现电镀。\n马斯克第一性原理下的选择逻辑\n若按马斯克成本控制与技术创新双重标准，欧莱新材\n东威科技\n更符合其战略诉求：\n东威科技\n：垂直电镀技术成熟，破片率 < 0.1%，产能 8000 片 / 小时，适配大尺寸硅片，PCB 领域成本控制经验丰富\n作者：理想完美\n链接：\n网页链接\n来源：雪球\n著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。\n风险提示：本文所提到的观点仅代表个人的意见，所涉及标的不作推荐，据此买卖，风险自负。，所涉及标的不作推荐，据此买卖，风险自负。\n全部讨论\n理想完美\n01-30 13:43\n$欧莱新材(SH688530)$\n今天上午洗完盘   继续拉升\n理想完美\n02-12 11:02\n$欧莱新材(SH688530)$\n真强",
+      "S18": "四川力争今年新增投产光伏发电350万千瓦、风电130万千瓦\n2023-03-28 17:56:00\n四川新闻网\n3月28日，四川省第十四届人民代表大会常务委员会第二次会议举行。会议对四川省2022年度环境状况和环境保护目标完成情况进行审议。\n2023年是全面贯彻落实党的二十大精神的开局之年，是实施“十四五”规划承前启后的关键一年，也是深入打好污染防治攻坚战、推进美丽中国建设的重要一年。\n记者从会上获悉，四川今年将持续推动经济社会绿色低碳转型。因地制宜开发建设水风光互补的光伏风电项目，力争2023年新增投产光伏发电350万千瓦、风电130万千瓦。深入推进国家天然气（页岩气）千亿立方米级产能基地建设，力争天然气年产量达到540亿立方米。\n同时，四川将全力推动绿色低碳优势产业高质量发展，组织实施重点高能耗行业节能降碳行动。全面加强资源节约，推动10个以上园区实施循环化改造，加快建设资源循环利用基地，推进废旧物资循环利用体系重点城市建设，推动建设一批绿色园区、绿色工厂，深入开展江河湖清漂、废弃汽车治理专项行动。实施城市更新和新型城市建设工程，深入实施生态修复和城市修补“城市双修”，加快补齐污水垃圾、排水防涝、地下管网等基础设施短板。\n此外，在积极稳妥推进碳达峰碳中和的过程中，四川将先立后破，统筹编制重点领域、重点行业专项方案，构建完善碳达峰碳中和“1+N”政策体系，有计划分步骤实施“碳达峰十大行动”。加大清洁能源开发利用，推进水风光气氢多能互补一体化发展，加快建设全国优质清洁能源基地和国家清洁能源示范省，将“优势资源”转化为“清洁能源”。统筹开展结构降碳、节能减碳、科技治碳、生态固碳，构建温室气体排放管理体系，制定甲烷排放控制行动方案。大力推动天府新区开展国家气候投融资试点，成都、广元开展国家低碳城市和气候适应型城市试点。推进近零碳排放园区、港口、工地、服务区试点建设。（记者 陈淋）\n相关报道\n川渝联合发文！35项任务→推动万达开地区发展！\n四川拟规定定期开展女职工乳腺癌、宫颈癌筛查\n四川启动重点领域合法性审查要点指南编制试点工作\n大熊猫国家公园管理协同立法 川陕甘三省拟7月同步提请审议\n成都自然博物馆3月29日全天闭馆 不要跑空了！\n©2020 四川发布 版权所有 转载须经授权",
+      "S19": "作者：\n能源海之歌\n发布于:\n2025-01-18 16:19\nAndroid\n转发：0\n回复：1\n喜欢：0\n【长江电新】通威股份：电池组件出货规模大幅增加，经营性现金流为正\n事件：通威股份发布2024年业绩预告，预计归母净利亏损70-75亿，据此测算，2024Q4归母净利亏损30-35亿。尽管公司2024年利润为负，但全年维持经营性现金流净流入。\n1、2024Q4，1）多晶硅方面，公司硅料出货量预计在10-12万吨，Q4后半段为乐山保山枯水期，公司有所降开工，减产以及枯水期电价提升对成本有一定影响。2）电池组件方面，公司电池出货28-32GW，组件出货15-17GW，出货量环比增加明显（Q3分别为22-23、11GW），但受行业层面Q4未有明显改善原因，亏损总额增大。3）农牧业务Q4为淡季，业绩贡献较小。 4）Q4 固定资产减值报废约10亿元，主要为永祥老厂设备的报废以及部分perc产能考虑改造成TOPCon不具有经济性而计提减值影响。\n2、展望后续，1）硅料行业12月产量在10万吨左右，1月进一步降低，多晶硅2506最新收盘价为4.49万元/吨，后续硅料价格有望上涨，通威硅料龙头地位稳固，成本优势明显。2）电池业务方面，公司已经全面转型至N型，TOPCon电池供需为主产业链最优。公司1GW HJT生产线设备进展顺利，不排除在创新型产品技术上创新和突破行业领先，来打破产能过剩的格局。3）组件方面，通威渠道拓展良好，2024年分布式出货量超17GW排名第一，后续随着行业回暖有望体现价格优势。此外，公司现金储备充足，2024Q3末公司货币资金165亿+交易性金融资产146亿，助力公司长远发展。\n3、通威此前公告控股股东通威集团拟在2024年2月-2025年1月增持公司股份，增持金额10-20亿元，截止目前已经增持超10亿元，表明对于公司发展的长期信心。当前光伏产业链价格已逐步企稳或略有回升，春节后基本面和政策面的积极变化更值得期待，通威已在光伏产业链多个环节形成突出竞争优势，周期之后龙头优势有望充分体现，继续重点推荐！\n全部讨论\n乐观的回报小酒吧\n2025-01-18 23:40\n分析下仕净科技吧，2024业绩如何",
+      "S20": "晶科能源2024年经营性现金流78亿，负债率下降2个百分点\n证券之星\n2025-04-29 18:54\n发布于\n上海\n证券之星官方账号\n4月29日晚间，全球光伏龙头企业\n晶科能源\n(688223.SH)发布2024 年度业绩。财报显示，公司在2024年实现组件出货量 92.87GW，同比增长 18.28%，第六次蝉联全球组件出货量冠军。公司全年营收924.7亿元，实现归属于上市公司股东的净利润0.99亿元。值得注意的是，2024年公司实现经营性现金流78.67亿元，全年资产负债率逆势下降2个百分点。\n在全球\n光伏\n行业供需格局深度调整的背景下，公司凭借在技术创新、全球化布局、数智化转型及储能业务的多维突破，展现出强大的经营韧性，持续巩固行业龙头地位。截至报告期末，公司黄金片区电池量产平均效率超26.7%，实验室TOPCon钙钛矿叠层电池效率达34.22%，为当前主流技术与下一代技术融合打开空间。公司计划2025年完成40%以上产能的升级改造，年底前形成40-50GW高功率TOPCon产能，进一步巩固技术领先优势。\n公司持续推进全球化布局，2024年海外组件销售额占比接近70%。与沙特公共投资基金(PIF)及沙特能源设备公司(Vision Industries Company)合作建设的10GW高效电池及组件项目进展顺利，预计2026年下半年逐步投产，将增强公司在中东市场的竞争力；美国工厂完成升级改造与扩产，2GW产能实现满产运营，本土化供应突破贸易壁垒。\n报告期内，公司推动发行全球存托凭证(GDR)并申请在法兰克福证券交易所上市，提升国际化融资能力。运营层面，通过优化应付账款周转天数、提升供应链金融票据使用比例，有效降低资金成本，2024年公司实现经营性现金流78.67亿元，全年资产负债率下降2个百分点。\n面向未来，公司加速布局​储能业务， 2024年，储能系统出货量突破1GWh，较上年同期实现较高增长，连续多个季度荣登BNEF Tier 1一级储能厂商名录。公司针对户用、工商业及大型电站等场景，推出定制化储能解决方案，并与全球多家电力开发商签订订单。未来，公司将加大储能业务的海外市场开拓，探索“光储一体”创新模式，计划2025年储能系统出货量目标达6GWh。",
+      "S21": "有驾\n真车评 懂行情\n百度旗下汽车信息与服务平台\n首页\n选车\n经销商\n排行榜\n\n\n\napp下载\n扫码下载有驾app\n登录\n注册\n宇通重工2024年报解读：经营活动现金流增1489.88%，研发投入下降11.72%\n新浪财经\n发布时间：2025-04-08 21:55\n|\n新浪财经官方账号\n2025年，宇通重工股份有限公司发布2024年年度报告，报告期内，公司实现营业收入37.99亿元，同比增长30.67%；归属于上市公司股东的净利润2.27亿元，同比增长3.97%。值得注意的是，公司经营活动产生的现金流量净额为5.72亿元，同比增长1489.88%，研发费用为1.29亿元，同比下降11.72%。\n财务关键指标解读\n营收稳健增长，市场拓展成效显著\n2024年宇通重工营业收入达到379,858.33万元，较上年的290,699.23万元增长30.67%。这一增长主要得益于公司环卫设备及矿用装备新能源设备销量的增加。从业务板块来看，环卫设备业务实现营业收入154,305.09万元，销量3,221台，同比增长17.2%，其中新能源产品销量增长77.4%；矿用装备业务在新能源矿用车领域保持行业第一品牌优势，收入同比大幅提升。这表明公司在核心业务领域的市场拓展取得了显著成效，产品竞争力不断增强。\n净利润微增，盈利能力保持稳定\n归属于上市公司股东的净利润为22,707.79万元，较上年的21,840.42万元增长3.97%。虽然净利润实现了增长，但增速相对较慢。从数据来看，公司营业成本为297,975.77万元，同比增长36.98%，成本的增长幅度高于营业收入的增长幅度，这在一定程度上对净利润的增长形成了制约。公司需要进一步优化成本管理，提高运营效率，以提升盈利能力。\n扣非净利润增长，核心业务盈利能力增强\n归属于上市公司股东的扣除非经常性损益的净利润为17,241.86万元，较上年的14,051.04万元增长22.71%。这一增长反映了公司核心业务的盈利能力有所增强。公司在环卫设备、矿用装备等主营业务上的持续投入和市场拓展，使得核心业务的盈利水平得到提升。与净利润的增长幅度相比，扣非净利润的增长更为显著，说明公司的盈利质量有所提高，对非经常性损益的依赖程度降低。\n基本每股收益上升，股东回报增加\n基本每股收益为0.43元/股，较上年的0.4元/股增长7.5%。这一增长主要得益于净利润的增长以及公司股本的相对稳定。基本每股收益的提升，意味着股东每持有一股所能享有的公司盈利增加，公司为股东创造价值的能力有所增强。\n扣非每股收益增长，主业盈利支撑增强\n扣除非经常性损益后的基本每股收益为0.33元/股，较上年的0.26元/股增长26.92%。这一指标的大幅增长，进一步证明了公司核心业务盈利能力的提升。与基本每股收益相比，扣非每股收益更能反映公司主营业务的盈利水平，其增长表明公",
+      "S22": "光伏企业应收账款高企\n2013-03-06 　　作者：梁钟荣　　来源：21世纪经济报道\n分享到：\n【字号\n大\n中\n小\n】\n一位晶科能源的高管感慨，1月底，其国内全年销售指标已经完成了一半。\n不仅仅是晶科能源，2012年第四季度国内光伏组件出货量猛增达到11GW，创下历史新高，包括英利、阿特斯、中电光伏等在美国上市的企业也将迎来靓丽四季报。\n2月20日，Solarbuzz资深分析师廉锐称，欧洲市场回暖、美国和日本市场需求的增长、国内市场扩容等是光伏市场行情升温的要因，“同时在过去一年中，许多中小型光伏企业停产或减产，使得产能过剩问题得到部分解决”。\n在出货量再创新高的同时，国内市场应收账款的问题再度摆到光伏企业的面前。伴随着中国光伏市场的高速成长，从投资人到EPC厂商，再到组件及辅材供应商，光伏企业的“三角债”问题一直无法理清。\n中盛光电董事长王兴华坦言，虽然今年国内光伏应用市场较之2012年会有翻倍成长，但该公司一直以来均比较谨慎，“因为我们一直都比较担心国内项目的回款问题”，故此公司仍以国际市场为主。\n升温的国内市场行情\n“我们已经在看一些二手的设备，主要是全新的或是没有开工生产多久的”\n根据太阳能专业研究机构Solarbuzz提供的数据，2012年中国光伏装机容量约为4.5GW，较之2011年的2.89GW增长55.7%，成为继德国之后的全球第二大光伏装机大国。\n在廉锐看来，除却新开工项目外，加上2012年未开工项目，2013年中国国内光伏市场的安装量会再创新高。\n2012年众多项目未开工在于，彼时众多项目放在当年第四季度方始批复；同时2012年底组件价格较之年初下降了近50%，考虑到光伏电价补贴未有下调，部分企业会选择2013年初再开工，由此提升项目财务收益率。\n在1月9日的全国能源工作会议上，国家能源局确立了今年中国光伏发电装机10GW的目标。10GW的目标，较之2012年的4.5GW再度翻倍。\n“我们现在基本不参与竞标了，因为那会在价格上拼刺刀。”一位晶科能源销售人士称，该公司主要与国内五大电力集团和地方国企建立战略同盟，由此带动组件的销售，“过去国内市场的销售基本为空白，但在2012年国内市场的出货量已有数百MW的出货量”。\n记者获悉，1月份，无锡尚德、海润光伏等江苏5家重点光伏企业内销23.3亿元，环比增长37%，占当月销售总额的76%，环比提升4个百分点。\n东方日升在2月7日的公告中称，公司与中节能太阳能科技（镇江）有限公司签订了太阳能组件销售合同，合同金额共计4.08亿元。\n江苏一位光伏企业高管表示，国内虽然号称有超过40GW的组件产能，但倒闭的更多。“赛维差不多3GW的产能，关了大部分；尚德电力关了一半。潞安环能、大全新能源等公司的组件厂已不再运作，绍兴、义乌很多厂子也停掉了，由此为大厂腾出空间”。\n“我认为目前中国真实的组件产能才有20",
+      "S23": "网易首页\n应用\n网易新闻\n网易公开课\n网易红彩\n网易严选\n邮箱大师\n网易云课堂\n快速导航\n新闻\n国内\n国际\n王三三\n体育\nNBA\nCBA\n综合\n中超\n国际足球\n英超\n西甲\n意甲\n娱乐\n明星\n电影\n电视\n音乐\n封面故事\n财经\n股票\n原创\n智库\n汽车\n购车\n车型库\n科技\n网易智能\n原创\nIT\n互联网\n通信\n时尚\n艺术\n旅游\n手机\n/\n数码\n惊奇科技\n易评机\n家电\n房产\n/\n家居\n北京房产\n上海房产\n广州房产\n楼盘库\n设计师库\n案例库\n教育\n留学\n高考\n查看网易地图\n登录\n注册免费邮箱\n注册VIP邮箱（特权邮箱，付费）\n免费下载网易官方手机邮箱应用\n安全退出\n移动端\n网易公开课\nTED\n中国大学视频公开课\n国际名校公开课\n赏课·纪录片\n付费精品课程\n北京大学公开课\n英语课程学习\n网易严选\n新人特价\n9.9专区\n新品热卖\n人气好物\n居家生活\n服饰鞋包\n母婴亲子\n美食酒水\n支付\n一卡通充值\n一卡通购买\n我的网易支付\n网易跨境支付\n邮箱\n免费邮箱\nVIP邮箱\n企业邮箱\n免费注册\n客户端下载\n网易首页\n>\n网易号\n> 正文\n申请入驻\n光伏内卷中的小微企业，命如蝼蚁草芥，最长账期600天！\n2024-12-07 09:37:15　来源:\n赶碳号\n上海\n举报\n0\n分享至\n用微信扫码二维码\n分享至好友和朋友圈\n光伏供应链上的中小企业，正在无声中凋零，甚至很少有人知道他们曾经来过……\n在这一轮光伏洗牌中，绝大多数中小企业，实际上是沉默的大多数，是真正为龙头企业间恶性竞争买单的人。光伏内卷，首先就是卷他们，有些企业甚至没来得及发出一丁点声音，就已经倒下。\n所以，当赶碳号看到新能源车企业对待供应商截然相反的两种态度时，内心五味杂陈：一方面，比亚迪仅靠一封邮件，就可以肆意压榨供应商降价10%，美其名曰“挖掘降本空间”，另一方面，特斯拉借势打脸竞争对手，声称供应链公司付款周期只要90天。\n为什么有中国企业的地方，就一定要卷呢？真的就只是因为我们太勤劳了吗？\n在刚刚结束的2024中国光伏行业大会上，正泰新能陆川说，现在逆变器之所以还不算太卷，是因为SMA还没死掉。假使哪天SMA也倒下了，逆变器行业再也没有一个高价在那里撑着，这个行业将很快卷成和光伏一样。以此来看，如果新能源车行业没有特斯拉、没有那些善待供应商的企业，这个行业会不会也卷到血流成河呢？\n我们还真的不能笑话比亚迪。当下，中小光伏企业在供应链中的境地，实际上和比亚迪的供应商们差不多——光伏辅材企业对客户的账期普遍超过了3个月。\n一个极端的例子，胶膜企业海优新材，竟然要252天才能收到应收账款及应收票据，而主材企业弘元绿能的应付票据和应付款周期，更是高达615天——将近两年，才会“给钱”！在当下，谁能撑两年呢？\n赶碳号摄于2024上海SNEC光伏展\n01 辅材企业，两百多天才能收到钱！\n特斯拉给供应链企业的付款周期是90天。而在光伏",
+      "S24": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"53a0157025d5961c0e0ddfc3accf909e\",\"traceid\":\"276082ab17945050122651650efce5\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-kCX/1SGRKQ6byL0D9F6vAYO8fRfxmrlMbRWQHZyiQ0WBus05z1c1qIiPPnPNaHoj4QtAVkGpBGQ1ylwLPL6j9bamSuOONbEX/OorLPt0SQ8=\",\"_waf_698b2709\":0}",
+      "S25": "作者：\n愚者不自渡\n发布于:\n2026-02-05 00:06\n雪球\n转发：0\n回复：0\n喜欢：0\n隆基\n绿能及其所在的光伏行业，资产减值主要通过两个维度进行：\n存货跌价准备\n（东西还没卖出去价格就跌了）和\n固定资产/无形资产减值准备\n（旧的生产线由于技术落后不值钱了）。\n在光伏行业从 P 型向 N 型（尤其是\n隆基\n向 BC 技术）转型的过程中，这种减值是导致账面巨亏的核心原因。\n一、 资产减值是如何进行的？（核心逻辑）\n存货跌价准备（主要在 2024 年和 2025 年上半年）：\n硅片和组件价格暴跌。如果生产出来的成本是 1 元/瓦，但市场价变成了 0.8 元/瓦，公司必须在当季财务报表中冲销这 0.2 元的差额。\n固定资产减值（主要在 2025 年）：\n这是\n隆基\n“壮士断腕”的关键。隆基拥有庞大的 P 型（PERC）产能。随着 BC 技术成熟，这些旧产线虽然还能生产，但已经没有市场竞争力。隆基通过“加速折旧”或“一次性计提减值”，将这些旧工厂的账面价值直接归零。\n二、 2024 年各季度减值计提（数据参考）\n2024 年是行业价格战最惨烈的一年，减值主要集中在\n存货\n。\n第一季度（Q1）：\n计提约\n26.49 亿元\n。主要是硅片价格超预期下跌导致的存货损失。\n第二季度（Q2）：\n计提约\n20-22 亿元\n。组件价格战进入白热化，库存压力巨大。\n第三季度（Q3）：\n计提约\n10-15 亿元\n。价格开始磨底，计提幅度有所收窄。\n第四季度（Q4）：\n计提约\n10 亿元左右\n（含年末资产清查）。\n2024 全年合计：\n资产减值和信用减值总额接近\n70 亿元\n。\n三、 2025 年各季度减值计提（数据参考）\n2025 年的减值逻辑发生了变化，从“存货跌价”转向了**“产能出清”**（固定资产减值）。\n第一季度（Q1）：\n计提约\n12 亿元\n。主要是为了配合 BC 二代技术转型，对部分旧线进行停产减值。\n第二季度（Q2）：\n计提约\n18 亿元\n。这一季是\n隆基\n财务压力最大的时期，公司决定加速清理旧产能，为 BC 技术让路。\n第三季度（Q3）：\n计提约\n15 亿元\n。随着 2026 年“扭亏目标”的确立，公司在这一季进行了较为彻底的资产质量洗澡。\n第四季度（Q4）：\n计提约\n15-20 亿元\n。年末由于白银价格波动以及对老旧 PERC 产能的最终处置，计提额度维持高位。\n2025 全年合计：\n减值总额约\n60-65 亿元\n。\n隆基\n这两年亏掉的\n130 亿（70亿 + 60亿）\n减值，本质上是把过去十年旧技术的“累赘”全部卸掉了。2026 年的盈利预测，正是建立在“不再需要计提巨大减值”这一财务基础之上的。",
+      "S26": "网易首页\n应用\n网易新闻\n网易公开课\n网易红彩\n网易严选\n邮箱大师\n网易云课堂\n快速导航\n新闻\n国内\n国际\n王三三\n体育\nNBA\nCBA\n综合\n中超\n国际足球\n英超\n西甲\n意甲\n娱乐\n明星\n电影\n电视\n音乐\n封面故事\n财经\n股票\n原创\n智库\n汽车\n购车\n车型库\n科技\n网易智能\n原创\nIT\n互联网\n通信\n时尚\n艺术\n旅游\n手机\n/\n数码\n惊奇科技\n易评机\n家电\n房产\n/\n家居\n北京房产\n上海房产\n广州房产\n楼盘库\n设计师库\n案例库\n教育\n留学\n高考\n查看网易地图\n登录\n注册免费邮箱\n注册VIP邮箱（特权邮箱，付费）\n免费下载网易官方手机邮箱应用\n安全退出\n移动端\n网易公开课\nTED\n中国大学视频公开课\n国际名校公开课\n赏课·纪录片\n付费精品课程\n北京大学公开课\n英语课程学习\n网易严选\n新人特价\n9.9专区\n新品热卖\n人气好物\n居家生活\n服饰鞋包\n母婴亲子\n美食酒水\n支付\n一卡通充值\n一卡通购买\n我的网易支付\n网易跨境支付\n邮箱\n免费邮箱\nVIP邮箱\n企业邮箱\n免费注册\n客户端下载\n网易首页\n>\n网易号\n> 正文\n申请入驻\n博威合金：存货跌价损失主要是公司的光伏电池片及组件业务\n2025-04-17 18:38:08　来源:\n证券之星\n上海\n举报\n0\n分享至\n用微信扫码二维码\n分享至好友和朋友圈\n证券之星消息，博威合金(601137)04月17日在投资者关系平台上答复投资者关心的问题。\n投资者：\n存货跌价损失34669.86万元，固定资产减值损失16411.89万元。铜不是在涨价吗？你这存货怎么会跌这么多呢？麻烦公司给股东们解释一下，可以吗？\n博威合金董秘：\n您好，存货跌价损失主要是公司的光伏电池片及组件业务，由于受到美国对东南亚四国的双反关税影响，关税税率的大幅上涨导致公司存货总成本上升，存货跌价准备大幅增加。公司在美国建设的2GW电池片及组件项目，就是从根本上解决美国对海外进口产品加征关税的举措，其中2GWTOPCon组件项目全线贯通，将在四月份开始投产。感谢您的关注！\n投资者：\n董秘您好！公司口口声声要保护投资者利益，近期股价却跟跌不跟涨，跌跌不休，表现极差，请问公司如何保护投资者利益？坐视不管吗？\n博威合金董秘：\n您好，公司的市值不仅受企业经营业绩的影响，同时还受宏观经济、股市环境、投资者心理预期等多重因素的影响。一方面，公司将持续做好自身的经营工作，努力以更好的业绩回报广大投资者；另一方面，公司一直以来非常重视股东权益的维护工作，上市以来每年都有分红回馈股东。公司正处于数字化变革之后的成长期，公司会通过实际的经营业绩来赢得市场的认可并回报投资者。感谢您的关注和支持！\n投资者：\n贵公司前面都说订单很满！为何四季度销售利润减少百分之二十以上！股价应声下跌！今年一季度情况如何呢？\n博威合金董秘：\n您好，第四季度营业总收入不及前三季度，主要是公司越南光伏业务第",
+      "S27": "两期财报表现均不理想，英杰电气：光伏收入确认延缓、计提存货跌价准备等致利润缩水\n作者：\n深圳商报\n发布于:\n2025-04-28 17:50\n雪球\n转发：0\n回复：0\n喜欢：1\n深圳商报·读创客户端记者 穆砚\n4月28日，四川英杰电气股份有限公司（以下简称“英杰电气”或“公司”）发布公告称，公司于4月25日与多家机构投资者进行了2024年度和2025年一季度业绩线上交流。在活动中，英杰电气透露，光伏收入确认延缓和光伏设备验收周期延长、计提存货跌价准备及研发费用激增是利润缩水的三大关键因素。\n英杰电气2024年营收达到17.8亿元，同比增长0.59%，归母净利润下降25.19%。公司营业收入主要来自光伏行业，销售收入87,378.79万元，占营业收入的比重49.08%，同比下降10.27%；来自半导体及电子材料行业的销售收入35,060.65万元，占营业收入的比重19.69%，同比上升6.41%。其他行业的收入增长较多，约为5.53亿元，同比增长18.92%。\n关于2024年公司经营业绩未达预期的主要原因，英杰电气称，主要原因有三个。首先，光伏收入确认延缓，光伏电源设备产能调整导致验收周期推迟，原本应该在2024年内确认收入的项目未能如期确认。目前光伏行业仍有近19亿元的发出商品未确认销售收入(但有60%左右的货款公司已经实际收取)。其次，因为光伏行业发出商品金额较高，针对当前的光伏行业较为艰难的状况，公司对光伏行业的发出商品计提了约4,371万元的存货跌价准备。第三，期间费用增加，尤其是研发费用同比增长40%，包括了股权激励费用的摊销以及为加强研发团队而招聘高学历人才带来的薪酬支出。\n公司经营活动产生的现金净流量为60,176.52万元，同比增加46,204.77万元，主要得益于订单货款回收以及海外大额订单的及时收款。良好的现金流是公司持续经营的重要保障，表明公司在当前情况下仍具备充裕的资金流，这对公司稳定经营以及后期发展具有重要意义。\n英杰电气向投资者透露了当前存货和合同负债情况，公司存货从2023年的18.38亿元减少到2024年的15.56亿元，合同负债维持在约11亿元左右。存货(主要为发出商品)和合同负债数据相对稳定，是2025年营收的重要基础，但由于光伏行业下行调整，尾款回收和营收确认存在较大压力，所以公司将进一步加大针对光伏行业的货款回收力度。\n谈及2024年订单情况及在手订单状况，英杰电气称，024年因光伏行业影响，整体新增订单下降约40%，主要原因为光伏行业订单大幅度下降。尽管国内光伏订单大幅下滑，但海外订单有所突破，去年签订了5亿元左右的光伏海外订单。截至2024年底，公司在手订单超过27亿元，较前两年有所减少。\n公司将努力实现光伏海外订单在2025年确认销售收入，同时加强国内光伏行业营收确认和剩余货款回收工作，公司一季度已经有国内光伏行业"
+    }
+  },
+  "corroboration": {
+    "checked_points": 104,
+    "corroborated_count": 7,
+    "conflict_count": 0,
+    "single_source_count": 98,
+    "min_overlap": 0.5,
+    "min_sources": 2,
+    "rules": [
+      "上下文 4-gram 相似度 ≥ 0.50 的不同来源数据点 → 视为在说同一件事",
+      "同一簇内某数字（不含年份）被不少于 2 个来源说到 → 记为印证",
+      "同一簇内两条数据点的关键数字集合完全不相交 → 记为冲突（不判断谁对）",
+      "不做同义词归并、不做单位换算、不给可信度打分"
+    ],
+    "corroborated": [
+      {
+        "numbers": [
+          "0.2"
+        ],
+        "source_ids": [
+          "S07",
+          "S08"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S07",
+            "text": "产能利用率环比降0.2%】2026年10月"
+          },
+          {
+            "source_id": "S08",
+            "text": "产能利用率环比降0.2%】2026年10月"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "0.2"
+        ],
+        "source_ids": [
+          "S07",
+          "S08"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S07",
+            "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。"
+          },
+          {
+            "source_id": "S08",
+            "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "0.3"
+        ],
+        "source_ids": [
+          "S07",
+          "S08"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S07",
+            "text": "企业产能利用率在549%左右，环比增0.3%。"
+          },
+          {
+            "source_id": "S08",
+            "text": "企业产能利用率在549%左右，环比增0.3%。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "10"
+        ],
+        "source_ids": [
+          "S07",
+          "S08"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S07",
+            "text": "产能利用率环比降0.2%】2026年10月"
+          },
+          {
+            "source_id": "S08",
+            "text": "产能利用率环比降0.2%】2026年10月"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "54.7"
+        ],
+        "source_ids": [
+          "S07",
+          "S08"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S07",
+            "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。"
+          },
+          {
+            "source_id": "S08",
+            "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "549"
+        ],
+        "source_ids": [
+          "S07",
+          "S08"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S07",
+            "text": "企业产能利用率在549%左右，环比增0.3%。"
+          },
+          {
+            "source_id": "S08",
+            "text": "企业产能利用率在549%左右，环比增0.3%。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "9"
+        ],
+        "source_ids": [
+          "S07",
+          "S08"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S07",
+            "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。"
+          },
+          {
+            "source_id": "S08",
+            "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。"
+          }
+        ]
+      }
+    ],
+    "conflicts": [],
+    "single_source": [
+      {
+        "source_id": "S02",
+        "text": "P 型 M10 价格为每片 1.25 元人民币、G12 为 1.7 元人民币；"
+      },
+      {
+        "source_id": "S02",
+        "text": "在 N 型产品中，M10 价格为每片 1.1 元人民币，G12 落在 1.6-1.65 元人民币的区间，值得注意的是，G12R 硅片因需求疲软，主流价格从七月初的 1.35 元人民币下降至 1.25 元人民币。"
+      },
+      {
+        "source_id": "S04",
+        "text": "重回1元/W时代？"
+      },
+      {
+        "source_id": "S04",
+        "text": "在上调3分/W后，天合光能最新的组件价格分别为：中版型、大版型组件价格为0.88-0.92+元/W，离1元/W的价格已经不远了；"
+      },
+      {
+        "source_id": "S04",
+        "text": "功能型组件价格稍高，防眩光组件0.95-0.99+元/W，轻质单玻组件1.08-1.12+元/W。"
+      },
+      {
+        "source_id": "S04",
+        "text": "在一个月前，业内普遍觉得光伏组件1元/W遥不可及。"
+      },
+      {
+        "source_id": "S04",
+        "text": "2025年12月初时，Infolink数据显示，双面双玻TOPCon组件均价在0.693元/W左右。"
+      },
+      {
+        "source_id": "S04",
+        "text": "今年1月1日，Infolink公布的数据显示，在集中式、工商业分布式项目中，BC组件价格分别涨了2.6%、3.9%。"
+      },
+      {
+        "source_id": "S05",
+        "text": "0.76~1.02元/W，华电8GW组件集采开标，均价上涨！"
+      },
+      {
+        "source_id": "S05",
+        "text": "2月11日，华电集团2026年8GW光伏组件集中采购项目正式开标，共32家组件企业参与投标，开标的整体情况如下表所示。"
+      },
+      {
+        "source_id": "S05",
+        "text": "表：华电集团2026年光伏组件集中采购开标结果（单位：元/W）"
+      },
+      {
+        "source_id": "S05",
+        "text": "此前，中国光伏行业协会曾给出内部成本参考价，当银价为20000元/kg时，光伏组件的行业平均成本为0.824元/W（不含税）、0.94元/W（含税）。"
+      },
+      {
+        "source_id": "S05",
+        "text": "详见《CPIA：银价20元/g时，组件平均全成本0.824元/W》"
+      },
+      {
+        "source_id": "S05",
+        "text": "其中，12家企业的常规组件报价低于0.824元/W。"
+      },
+      {
+        "source_id": "S06",
+        "text": "2026年1–5月 光伏组件价格与趋势（元/W，主流成交价，含税）"
+      },
+      {
+        "source_id": "S06",
+        "text": "2月 0.68–0.70 0.72–0.76 ↑4%~6% 龙头率先提价、抢出口启动"
+      },
+      {
+        "source_id": "S06",
+        "text": "3月 0.70–0.73 0.76–0.80 ↑3%~5% 出口退税取消预期、银价上涨"
+      },
+      {
+        "source_id": "S06",
+        "text": "4月 0.71–0.74 0.77–0.82 ↑1%~3% 退税正式取消、成本传导"
+      },
+      {
+        "source_id": "S06",
+        "text": "5月 0.72–0.75 0.78–0.85 ↑1%~4% 供需改善、挺价意愿强"
+      },
+      {
+        "source_id": "S06",
+        "text": "• 1月：筑底，价格接近现金成本线（约0.68元/W）。"
+      },
+      {
+        "source_id": "S07",
+        "text": "0.9-0.95元/片，210RN"
+      },
+      {
+        "source_id": "S07",
+        "text": "0.98-1元/片，210N"
+      },
+      {
+        "source_id": "S07",
+        "text": "1.08-1.13元/片。"
+      },
+      {
+        "source_id": "S08",
+        "text": "价格0.9-0.95元/片，210RN"
+      },
+      {
+        "source_id": "S08",
+        "text": "价格0.98-1元/片，210N"
+      },
+      {
+        "source_id": "S08",
+        "text": "价格1.08-1.13元/片。"
+      },
+      {
+        "source_id": "S09",
+        "text": "N型致密料周均价32.5元/千克，N型颗粒硅32元/千克，N型混包料30.5元/千克。"
+      },
+      {
+        "source_id": "S13",
+        "text": "多晶硅产量143万吨，足以制造700GW组件。"
+      },
+      {
+        "source_id": "S13",
+        "text": "多晶硅库存达到创纪录高位，超过50万吨。"
+      },
+      {
+        "source_id": "S13",
+        "text": "印度生产的组件达到67GW，约占全球供应量的10%。"
+      },
+      {
+        "source_id": "S13",
+        "text": "在逆变器领域，总部位于中国大陆以外地区的企业供应占比仍低于8%"
+      },
+      {
+        "source_id": "S13",
+        "text": "爱旭宣布成为埃及单体最大1.2GW Nefer Menya集中式项目的独家光伏组件供应商"
+      },
+      {
+        "source_id": "S13",
+        "text": "2026年一季度末，存货从年初145亿元攀升至181.58亿元，涨幅近25%；"
+      },
+      {
+        "source_id": "S14",
+        "text": "中商产业研究院发布的《2024-2029年中国光伏组件行业深度分析及发展前景预测研究报告》显示，2023年中国光伏组件产能、产量分别达920GW、518.1GW，同比分别增长66.7%、75.8%。"
+      },
+      {
+        "source_id": "S14",
+        "text": "2024年1-6月全国光伏组件产量达271GW，同比增长32.8%。"
+      },
+      {
+        "source_id": "S14",
+        "text": "从企业生产情况来看，2023年组件环节产业集聚度出现一定程度的下降，TOP5企业市场占有率为50.1%。"
+      },
+      {
+        "source_id": "S14",
+        "text": "从全球组件出货情况来看，2023年前十家企业组件出货量409.9GW，相比去年251.4GW规模的出货量，同比增长超过63.0%，TOP10的门槛超过16GW。"
+      },
+      {
+        "source_id": "S15",
+        "text": "工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%"
+      },
+      {
+        "source_id": "S15",
+        "text": "【工信部：2024年全国光伏多晶硅 硅片 电池 组件产量同比增长均超过10%】"
+      },
+      {
+        "source_id": "S15",
+        "text": "黄仁勋被曝与高管有新婚外情，英伟达暴跌8%，董事会启动罢免"
+      },
+      {
+        "source_id": "S15",
+        "text": "腾讯被传裁员8000人！"
+      },
+      {
+        "source_id": "S15",
+        "text": "意大利单日新增6557例确诊病例，累计确诊破5万"
+      },
+      {
+        "source_id": "S15",
+        "text": "朋友圈47%的内容在炫耀"
+      },
+      {
+        "source_id": "S16",
+        "text": "2026 年 1-4 月国内新增光伏装机 50.91GW，同比下降 74.3%，主要受 2025 年初抢装高基数影响；"
+      },
+      {
+        "source_id": "S16",
+        "text": "中性预测全年国内新增装机 220GW，同比下降 31%。"
+      },
+      {
+        "source_id": "S16",
+        "text": "海外市场维持高景气，1-4 月电池组件出口 131.74GW，同比增长 25.1%，中东、东南亚、印度为核心增量市场。"
+      },
+      {
+        "source_id": "S16",
+        "text": "中环负债率分别达 74%、68%；"
+      },
+      {
+        "source_id": "S16",
+        "text": "集采高效化趋势：华能率先取消低效组件标段，转换效率 23.8% 以上的高效组件占比从 42% 提升至近 60%；"
+      },
+      {
+        "source_id": "S16",
+        "text": "截至 2026 年 5 月 18 日，央国企集采中高效组件、BC、HJT 标段累计 38.9GW，占比 49.6%。"
+      },
+      {
+        "source_id": "S17",
+        "text": "2025年6月11日，第十八届国际太阳能光伏和智慧能源&储能及电池技术与装备（上海）大会暨展览会（SNEC 2025）在上海国家会展中心盛大开幕。"
+      },
+      {
+        "source_id": "S17",
+        "text": "电镀铜 电池无银化 HJT .电镀铜图形 4000 万/GW 电镀设备约 5000 万/GW 东威科技"
+      },
+      {
+        "source_id": "S17",
+        "text": "，将拥有产能规模大（8000 片/小时以上）、破片率低（小于 0.1%）、均匀性好、高效节能、清洁环保等优势。"
+      },
+      {
+        "source_id": "S17",
+        "text": "：垂直电镀技术成熟，破片率 < 0.1%，产能 8000 片 / 小时，适配大尺寸硅片，PCB 领域成本控制经验丰富"
+      },
+      {
+        "source_id": "S18",
+        "text": "四川力争今年新增投产光伏发电350万千瓦、风电130万千瓦"
+      },
+      {
+        "source_id": "S18",
+        "text": "3月28日，四川省第十四届人民代表大会常务委员会第二次会议举行。"
+      },
+      {
+        "source_id": "S18",
+        "text": "因地制宜开发建设水风光互补的光伏风电项目，力争2023年新增投产光伏发电350万千瓦、风电130万千瓦。"
+      },
+      {
+        "source_id": "S18",
+        "text": "深入推进国家天然气（页岩气）千亿立方米级产能基地建设，力争天然气年产量达到540亿立方米。"
+      },
+      {
+        "source_id": "S18",
+        "text": "35项任务→推动万达开地区发展！"
+      },
+      {
+        "source_id": "S18",
+        "text": "大熊猫国家公园管理协同立法 川陕甘三省拟7月同步提请审议"
+      },
+      {
+        "source_id": "S19",
+        "text": "事件：通威股份发布2024年业绩预告，预计归母净利亏损70-75亿，据此测算，2024Q4归母净利亏损30-35亿。"
+      },
+      {
+        "source_id": "S19",
+        "text": "1、2024Q4，1）多晶硅方面，公司硅料出货量预计在10-12万吨，Q4后半段为乐山保山枯水期，公司有所降开工，减产以及枯水期电价提升对成本有一定影响。"
+      },
+      {
+        "source_id": "S19",
+        "text": "4）Q4 固定资产减值报废约10亿元，主要为永祥老厂设备的报废以及部分perc产能考虑改造成TOPCon不具有经济性而计提减值影响。"
+      },
+      {
+        "source_id": "S19",
+        "text": "2、展望后续，1）硅料行业12月产量在10万吨左右，1月进一步降低，多晶硅2506最新收盘价为4.49万元/吨，后续硅料价格有望上涨，通威硅料龙头地位稳固，成本优势明显。"
+      },
+      {
+        "source_id": "S19",
+        "text": "此外，公司现金储备充足，2024Q3末公司货币资金165亿+交易性金融资产146亿，助力公司长远发展。"
+      },
+      {
+        "source_id": "S19",
+        "text": "3、通威此前公告控股股东通威集团拟在2024年2月-2025年1月增持公司股份，增持金额10-20亿元，截止目前已经增持超10亿元，表明对于公司发展的长期信心。"
+      },
+      {
+        "source_id": "S20",
+        "text": "晶科能源2024年经营性现金流78亿，负债率下降2个百分点"
+      },
+      {
+        "source_id": "S20",
+        "text": "财报显示，公司在2024年实现组件出货量 92.87GW，同比增长 18.28%，第六次蝉联全球组件出货量冠军。"
+      },
+      {
+        "source_id": "S20",
+        "text": "公司全年营收924.7亿元，实现归属于上市公司股东的净利润0.99亿元。"
+      },
+      {
+        "source_id": "S20",
+        "text": "值得注意的是，2024年公司实现经营性现金流78.67亿元，全年资产负债率逆势下降2个百分点。"
+      },
+      {
+        "source_id": "S20",
+        "text": "截至报告期末，公司黄金片区电池量产平均效率超26.7%，实验室TOPCon钙钛矿叠层电池效率达34.22%，为当前主流技术与下一代技术融合打开空间。"
+      },
+      {
+        "source_id": "S20",
+        "text": "公司计划2025年完成40%以上产能的升级改造，年底前形成40-50GW高功率TOPCon产能，进一步巩固技术领先优势。"
+      },
+      {
+        "source_id": "S21",
+        "text": "宇通重工2024年报解读：经营活动现金流增1489.88%，研发投入下降11.72%"
+      },
+      {
+        "source_id": "S21",
+        "text": "2025年，宇通重工股份有限公司发布2024年年度报告，报告期内，公司实现营业收入37.99亿元，同比增长30.67%；"
+      },
+      {
+        "source_id": "S21",
+        "text": "归属于上市公司股东的净利润2.27亿元，同比增长3.97%。"
+      },
+      {
+        "source_id": "S21",
+        "text": "值得注意的是，公司经营活动产生的现金流量净额为5.72亿元，同比增长1489.88%，研发费用为1.29亿元，同比下降11.72%。"
+      },
+      {
+        "source_id": "S21",
+        "text": "2024年宇通重工营业收入达到379,858.33万元，较上年的290,699.23万元增长30.67%。"
+      },
+      {
+        "source_id": "S21",
+        "text": "从业务板块来看，环卫设备业务实现营业收入154,305.09万元，销量3,221台，同比增长17.2%，其中新能源产品销量增长77.4%；"
+      },
+      {
+        "source_id": "S22",
+        "text": "中盛光电董事长王兴华坦言，虽然今年国内光伏应用市场较之2012年会有翻倍成长，但该公司一直以来均比较谨慎，“因为我们一直都比较担心国内项目的回款问题”，故此公司仍以国际市场为主。"
+      },
+      {
+        "source_id": "S22",
+        "text": "根据太阳能专业研究机构Solarbuzz提供的数据，2012年中国光伏装机容量约为4.5GW，较之2011年的2.89GW增长55.7%，成为继德国之后的全球第二大光伏装机大国。"
+      },
+      {
+        "source_id": "S22",
+        "text": "同时2012年底组件价格较之年初下降了近50%，考虑到光伏电价补贴未有下调，部分企业会选择2013年初再开工，由此提升项目财务收益率。"
+      },
+      {
+        "source_id": "S22",
+        "text": "在1月9日的全国能源工作会议上，国家能源局确立了今年中国光伏发电装机10GW的目标。"
+      },
+      {
+        "source_id": "S22",
+        "text": "10GW的目标，较之2012年的4.5GW再度翻倍。"
+      },
+      {
+        "source_id": "S22",
+        "text": "”一位晶科能源销售人士称，该公司主要与国内五大电力集团和地方国企建立战略同盟，由此带动组件的销售，“过去国内市场的销售基本为空白，但在2012年国内市场的出货量已有数百MW的出货量”。"
+      },
+      {
+        "source_id": "S23",
+        "text": "所以，当赶碳号看到新能源车企业对待供应商截然相反的两种态度时，内心五味杂陈：一方面，比亚迪仅靠一封邮件，就可以肆意压榨供应商降价10%，美其名曰“挖掘降本空间”，另一方面，特斯拉借势打脸竞争对手，声称供应链公司付款周期只要90天。"
+      },
+      {
+        "source_id": "S23",
+        "text": "一个极端的例子，胶膜企业海优新材，竟然要252天才能收到应收账款及应收票据，而主材企业弘元绿能的应付票据和应付款周期，更是高达615天——将近两年，才会“给钱”！"
+      },
+      {
+        "source_id": "S25",
+        "text": "如果生产出来的成本是 1 元/瓦，但市场价变成了 0.8 元/瓦，公司必须在当季财务报表中冲销这 0.2 元的差额。"
+      },
+      {
+        "source_id": "S25",
+        "text": "26.49 亿元"
+      },
+      {
+        "source_id": "S25",
+        "text": "20-22 亿元"
+      },
+      {
+        "source_id": "S25",
+        "text": "10-15 亿元"
+      },
+      {
+        "source_id": "S25",
+        "text": "15-20 亿元"
+      },
+      {
+        "source_id": "S25",
+        "text": "60-65 亿元"
+      },
+      {
+        "source_id": "S26",
+        "text": "存货跌价损失34669.86万元，固定资产减值损失16411.89万元。"
+      },
+      {
+        "source_id": "S27",
+        "text": "4月28日，四川英杰电气股份有限公司（以下简称“英杰电气”或“公司”）发布公告称，公司于4月25日与多家机构投资者进行了2024年度和2025年一季度业绩线上交流。"
+      },
+      {
+        "source_id": "S27",
+        "text": "英杰电气2024年营收达到17.8亿元，同比增长0.59%，归母净利润下降25.19%。"
+      },
+      {
+        "source_id": "S27",
+        "text": "公司营业收入主要来自光伏行业，销售收入87,378.79万元，占营业收入的比重49.08%，同比下降10.27%；"
+      },
+      {
+        "source_id": "S27",
+        "text": "来自半导体及电子材料行业的销售收入35,060.65万元，占营业收入的比重19.69%，同比上升6.41%。"
+      },
+      {
+        "source_id": "S27",
+        "text": "其他行业的收入增长较多，约为5.53亿元，同比增长18.92%。"
+      },
+      {
+        "source_id": "S27",
+        "text": "目前光伏行业仍有近19亿元的发出商品未确认销售收入(但有60%左右的货款公司已经实际收取)。"
+      }
+    ]
+  }
+}

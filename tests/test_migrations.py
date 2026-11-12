@@ -45,6 +45,8 @@ BUSINESS_TABLES = {
     # M2.0 B3：成本与工具计量
     "model_calls",
     "tool_calls",
+    # V5.1 B5：Finding 语义核查
+    "finding_checks",
 }
 
 #: B1 之前的表数（初始迁移的产物），用于断言"批次边界"而不是只断言终态
@@ -53,6 +55,8 @@ TABLES_AFTER_INITIAL = 18
 TABLES_AFTER_B1 = 22
 TABLES_AFTER_B2 = 26
 TABLES_AFTER_B3 = 28
+#: V5.1 B5 之后（语义核查表）
+TABLES_AFTER_B5 = 29
 
 
 def make_alembic_config(db_url: str) -> Config:
@@ -158,6 +162,7 @@ def test_offline_sql_stops_at_initial_revision_by_design(tmp_path: Path):
         ("b1_topic_taxonomy", TABLES_AFTER_B1),
         ("b2_task_layer", TABLES_AFTER_B2),
         ("b3_metering", TABLES_AFTER_B3),
+        ("b5_finding_checks", TABLES_AFTER_B5),
     ],
 )
 def test_each_batch_lands_on_expected_table_count(
@@ -187,6 +192,7 @@ def test_batches_are_individually_reversible(tmp_path: Path):
         ("b1_topic_taxonomy", "de8148733a9b"),
         ("b2_task_layer", "b1_topic_taxonomy"),
         ("b3_metering", "b2_task_layer"),
+        ("b5_finding_checks", "b4_cost_precision"),
     ):
         command.upgrade(config, target)
         command.downgrade(config, "-1")

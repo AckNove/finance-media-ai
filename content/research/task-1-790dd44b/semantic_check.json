@@ -1,0 +1,262 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 4,
+  "prompt_tokens": 9519,
+  "completion_tokens": 2835,
+  "cost_cny": 0.04443,
+  "checked_at": "2026-11-12T17:37:45+00:00",
+  "counts": {
+    "supported": 1,
+    "partially_supported": 5,
+    "contradicted": 0,
+    "insufficient_evidence": 0,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "价格战源于产能扩张远超需求：2023年组件产能920GW、产量518.1GW；2025年末名义产能超1000GW，而2026年需求仅550-650GW。",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "S16支持2025年末名义产能超1000GW和2026年需求550-650GW，但2023年产能920GW和产量518.1GW在证据中找不到，S14摘录全是导航栏文本，没有正文。此外，'价格战源于'的因果表述在证据中只对应'供需严重失衡'。",
+      "evidence_ids": [
+        50
+      ],
+      "source_ids": [
+        "S14",
+        "S16"
+      ],
+      "supporting": [
+        "2025 年末光伏各环节名义产能超 1000GW，2026 年组件需求仅 550-650GW，供需严重失衡。"
+      ],
+      "contradicting": [],
+      "missing": [
+        "2023年组件产能920GW、产量518.1GW的原文",
+        "产能扩张直接导致价格战的因果论述"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "只有2025/2026年产能与需求数字得到支持，2023年数字无证据"
+        },
+        {
+          "code": "causal_leap",
+          "note": "证据只称'供需严重失衡'，未论证价格战'源于'产能扩张"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1586,
+      "completion_tokens": 472,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-12T17:37:45+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "供给过剩把报价压到成本线以下：CPIA测算银价20000元/kg时组件全成本为0.824元/W（不含税），12家企业报价低于该线。",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "银价20000元/kg、全成本0.824元/W（不含税）、12家企业报价低于该线，均能在S05逐字找到；但'供给过剩把报价压到成本线以下'的因果判断在证据中没有表述。",
+      "evidence_ids": [
+        9
+      ],
+      "source_ids": [
+        "S05"
+      ],
+      "supporting": [
+        "当银价为20000元/kg时，光伏组件的行业平均成本为0.824元/W（不含税）、0.94元/W（含税）",
+        "其中，12家企业的常规组件报价低于0.824元/"
+      ],
+      "contradicting": [],
+      "missing": [
+        "供给过剩直接导致报价跌破成本线的因果证据"
+      ],
+      "issues": [
+        {
+          "code": "causal_leap",
+          "note": "证据只给出成本参考价与报价分布，未说明因果来自供给过剩"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1586,
+      "completion_tokens": 472,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-12T17:37:45+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "2026年1月集中式组件为0.65-0.68元/W，已接近约0.68元/W的现金成本线，价格战因此直接导致现金亏损。",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "S06只显示1月集中式价格0.65–0.68元/W；证据中没有约0.68元/W的现金成本线，也没有'价格战导致现金亏损'的表述。0.68在原文中属于报价区间上沿，并非成本线。",
+      "evidence_ids": [
+        15
+      ],
+      "source_ids": [
+        "S06"
+      ],
+      "supporting": [
+        "1月 0.65–0.68 0.68–0.72 企稳微跌 年末"
+      ],
+      "contradicting": [],
+      "missing": [
+        "约0.68元/W现金成本线的原文",
+        "价格战导致现金亏损的证据"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "仅有价格区间得到支持，成本线0.68元/W与现金亏损均无出处"
+        },
+        {
+          "code": "causal_leap",
+          "note": "把价格接近某个数直接等同于现金亏损"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1586,
+      "completion_tokens": 472,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-12T17:37:45+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "全产业链亏损：2024年三季度起主链毛利率持续为负，至2026年一季度硅料、硅片、电池、组件普遍亏损，通威2024年预亏70-75亿元。",
+      "claim_kind": "fact",
+      "verdict": "supported",
+      "reason": "S16支持2024年三季度起主链毛利率持续为负并列举硅料、硅片、电池、组件；S19支持通威2024年预亏70-75亿元。",
+      "evidence_ids": [
+        50,
+        66
+      ],
+      "source_ids": [
+        "S16",
+        "S19"
+      ],
+      "supporting": [
+        "2024 年三季度起主产业链销售毛利率持续为负，截至 2026 年一季度，硅料、硅片、电池、组件环",
+        "预计归母净利亏损70-75亿"
+      ],
+      "contradicting": [],
+      "missing": [],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1586,
+      "completion_tokens": 472,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-12T17:37:45+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 4,
+      "claim": "对现金流的第一道冲击来自存货与减值占用资金：隆基2026年一季度末存货由145亿元升至181.58亿元，同期经营现金流为-24.49亿元。",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "存货145亿升至181.58亿、经营现金流-24.49亿均有逐字出处；但'第一道冲击来自存货与减值占用资金'属于推断，证据未给出因果或先后顺序结论。",
+      "evidence_ids": [
+        34
+      ],
+      "source_ids": [
+        "S13",
+        "S25"
+      ],
+      "supporting": [
+        "2026年一季度末，存货从年初145亿元攀升至181.58亿元",
+        "经营活动现金流净额为-24.49亿元，较上年同期恶化40%"
+      ],
+      "contradicting": [],
+      "missing": [
+        "存货、减值与现金流恶化之间因果或先后次序的证据"
+      ],
+      "issues": [
+        {
+          "code": "causal_leap",
+          "note": "同时出现存货上升与现金流为负，被直接解释为'第一道冲击来自存货与减值占用资金'"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1586,
+      "completion_tokens": 472,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-12T17:37:45+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 5,
+      "claim": "龙头通过拉长应付账款维持经营现金流：晶科2024年经营现金流78.67亿元并优化应付账款，通威亏损但现金流净流入，上游账期最长600天。",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "S20支持晶科2024年经营现金流78.67亿元，S19支持通威亏损但经营现金流净流入；但'优化应付账款'在S20原文中并无对应表述，'上游账期最长600天'的S23证据未提供。",
+      "evidence_ids": [
+        72,
+        66
+      ],
+      "source_ids": [
+        "S20",
+        "S19",
+        "S23"
+      ],
+      "supporting": [
+        "2024年公司实现经营性现金流78.67亿元",
+        "尽管公司2024年利润为负，但全年维持经营性现金流净流入"
+      ],
+      "contradicting": [],
+      "missing": [
+        "晶科优化应付账款的原文",
+        "上游账期最长600天的来源（S23原文缺失）"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "应付账款拉长与600天账期两项均无给定证据支持"
+        },
+        {
+          "code": "causal_leap",
+          "note": "把现金流为正当作'通过拉长应付账款维持'的证据，实际证据未建立该因果"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1586,
+      "completion_tokens": 472,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-12T17:37:45+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    }
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

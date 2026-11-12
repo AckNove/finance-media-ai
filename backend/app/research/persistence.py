@@ -367,12 +367,103 @@ def digest_fingerprint(digest: Digest) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+#: 人工复核允许的取值。**模型判定永远不能直接落进这里。**
+HUMAN_REVIEW_STATUSES: frozenset[str] = frozenset(
+    {"pending", "confirmed", "rejected", "needs_more_evidence"}
+)
+
+
+def record_checks(session: Session, *, report: ResearchReport, checks: Iterable[Any]) -> list[Any]:
+    """把一次语义核查的结果写进 ``finding_checks``。
+
+    同一份报告重复核查时**整批替换**（而不是追加）：核查结论是"当时对这批证据的
+    判断"，留着旧判定只会让人分不清哪一条是现状。人工复核状态按 (报告, 下标) 继承，
+    避免重跑一次模型就把人已经确认过的结论打回 pending。
+    """
+    from backend.app.models.research import FindingCheck
+
+    previous = {
+        row.finding_index: row
+        for row in session.execute(
+            select(FindingCheck).where(FindingCheck.research_report_id == report.id)
+        )
+        .scalars()
+        .all()
+    }
+    for row in previous.values():
+        session.delete(row)
+    session.flush()
+
+    rows: list[FindingCheck] = []
+    for check in checks:
+        carried = previous.get(int(getattr(check, "index", 0)))
+        human_status = carried.human_review_status if carried is not None else "pending"
+        human_note = carried.human_note if carried is not None else ""
+        human_at = carried.human_reviewed_at if carried is not None else None
+        row = FindingCheck(
+            research_report_id=report.id,
+            finding_index=int(getattr(check, "index", 0)),
+            claim=str(getattr(check, "claim", "")),
+            claim_kind=str(getattr(check, "claim_kind", "inference") or "inference"),
+            evidence_ids=list(getattr(check, "evidence_ids", ()) or ()),
+            source_ids=list(getattr(check, "source_ids", ()) or ()),
+            verdict=str(getattr(check, "verdict", "unverifiable")),
+            reason=str(getattr(check, "reason", "") or ""),
+            supporting=list(getattr(check, "supporting", ()) or ()),
+            contradicting=list(getattr(check, "contradicting", ()) or ()),
+            missing=list(getattr(check, "missing", ()) or ()),
+            issues=[item.as_dict() for item in (getattr(check, "issues", ()) or ())],
+            provider=str(getattr(check, "provider", "") or ""),
+            model=str(getattr(check, "model", "") or ""),
+            model_call_id=getattr(check, "model_call_id", None),
+            prompt_tokens=int(getattr(check, "prompt_tokens", 0) or 0),
+            completion_tokens=int(getattr(check, "completion_tokens", 0) or 0),
+            cost_cny=getattr(check, "cost_cny", 0) or 0,
+            checked_at=_parse_dt(str(getattr(check, "checked_at", "") or "")),
+            human_review_status=human_status,
+            human_note=human_note,
+            human_reviewed_at=human_at,
+            notes=list(getattr(check, "notes", ()) or ()),
+        )
+        session.add(row)
+        rows.append(row)
+    session.flush()
+    return rows
+
+
+def set_human_review(
+    session: Session,
+    *,
+    check_id: int,
+    status_value: str,
+    note: str = "",
+) -> Any:
+    """人改人工复核状态。非法取值抛 ``ValueError``（由上层翻成 422）。"""
+    from backend.app.models.research import FindingCheck
+
+    if status_value not in HUMAN_REVIEW_STATUSES:
+        raise ValueError(
+            f"human_review_status 只能是 {sorted(HUMAN_REVIEW_STATUSES)}，收到 {status_value!r}"
+        )
+    row = session.get(FindingCheck, check_id)
+    if row is None:
+        return None
+    row.human_review_status = status_value
+    row.human_note = note or ""
+    row.human_reviewed_at = None if status_value == "pending" else utcnow()
+    session.flush()
+    return row
+
+
 __all__ = [
+    "HUMAN_REVIEW_STATUSES",
     "RecordedSources",
     "classify_source_type",
     "credibility_for",
     "digest_fingerprint",
+    "record_checks",
     "record_evidence",
     "record_report",
     "record_sources",
+    "set_human_review",
 ]

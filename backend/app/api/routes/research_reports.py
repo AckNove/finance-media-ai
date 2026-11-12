@@ -2,15 +2,24 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy import select
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
-from backend.app.core.errors import ConflictError, NotFoundError
+from backend.app.core.errors import ConflictError, DomainValidationError, NotFoundError
 from backend.app.models.evidence import Evidence
+from backend.app.models.research import FindingCheck
 from backend.app.models.source import Source
+from backend.app.research.persistence import HUMAN_REVIEW_STATUSES, set_human_review
 from backend.app.schemas.common import Page
+from backend.app.schemas.finding_check import (
+    FindingCheckOut,
+    FindingCheckReviewIn,
+    FindingCheckSummaryOut,
+)
 from backend.app.schemas.research import ResearchReportCreate, ResearchReportOut
 from backend.app.schemas.video import VideoJobIn, VideoJobOut
 from backend.app.services.research_service import ResearchReportService
@@ -62,8 +71,7 @@ def get_research_report(db: DbSession, report_id: int = Path(ge=1)) -> ResearchR
 
 
 @router.post(
-    "/{report_id}/video-job",
-    response_model=VideoJobOut,
+    "/{report_id}/video-job",    response_model=VideoJobOut,
     status_code=status.HTTP_201_CREATED,
     summary="从报告开一个视频任务目录",
     description=(
@@ -102,3 +110,122 @@ def create_video_job_for_report(
             ) from error
         raise NotFoundError(str(error)) from error
     return VideoJobOut(**{**scaffold.as_dict(), "path": str(scaffold.path)})
+
+
+# ---------------------------------------------------------------- 语义核查
+
+
+def _checks_of(db: DbSession, report_id: int) -> list[FindingCheck]:
+    return list(
+        db.scalars(
+            select(FindingCheck)
+            .where(FindingCheck.research_report_id == report_id)
+            .order_by(FindingCheck.finding_index)
+        )
+    )
+
+
+@router.get(
+    "/{report_id}/checks",
+    response_model=Page[FindingCheckOut],
+    summary="结论核查明细（模型判定 + 人工复核，两条状态线）",
+    description=(
+        "每条结论一条记录：模型给了什么判定、理由、逐字支持/反对片段、缺什么信息，"
+        "以及人工复核到了哪一步。模型判定**不代表**已核实——`verdict` 与 "
+        "`human_review_status` 是两回事，只有后者为 `confirmed` 才算人确认过。"
+    ),
+)
+def list_report_checks(
+    db: DbSession,
+    page: Pagination,
+    report_id: int = Path(ge=1),
+    verdict: str | None = None,
+    human_review_status: str | None = None,
+) -> Page[FindingCheckOut]:
+    ResearchReportService(db).get(report_id)  # 报告不存在直接 404
+    statement = select(FindingCheck).where(FindingCheck.research_report_id == report_id)
+    if verdict:
+        statement = statement.where(FindingCheck.verdict == verdict)
+    if human_review_status:
+        statement = statement.where(FindingCheck.human_review_status == human_review_status)
+    rows = list(db.scalars(statement.order_by(FindingCheck.finding_index)))
+    total = len(rows)
+    window = rows[page.offset : page.offset + page.limit]
+    return Page[FindingCheckOut](
+        items=[FindingCheckOut.model_validate(item) for item in window],
+        total=total,
+        limit=page.limit,
+        offset=page.offset,
+    )
+
+
+@router.get(
+    "/{report_id}/checks/summary",
+    response_model=FindingCheckSummaryOut,
+    summary="核查覆盖情况（按判定与人工状态分组）",
+)
+def summarise_report_checks(db: DbSession, report_id: int = Path(ge=1)) -> FindingCheckSummaryOut:
+    ResearchReportService(db).get(report_id)
+    rows = _checks_of(db, report_id)
+    by_verdict: dict[str, int] = {}
+    by_human: dict[str, int] = {}
+    cost = Decimal("0")
+    calls = 0
+    for row in rows:
+        by_verdict[row.verdict] = by_verdict.get(row.verdict, 0) + 1
+        by_human[row.human_review_status] = by_human.get(row.human_review_status, 0) + 1
+        cost += row.cost_cny or Decimal("0")
+        if row.model_call_id:
+            calls += 1
+    return FindingCheckSummaryOut(
+        research_report_id=report_id,
+        total=len(rows),
+        by_verdict=by_verdict,
+        by_human_review=by_human,
+        model_cost_cny=cost,
+        model_calls=calls,
+        note=(
+            "模型判定与人工复核是两条独立状态线；这里只有计数，判断依据看明细接口"
+            if rows
+            else "这份报告还没有核查记录（未跑语义核查或核查失败）"
+        ),
+    )
+
+
+@router.post(
+    "/{report_id}/checks/{check_id}/review",
+    response_model=FindingCheckOut,
+    summary="人工复核一条核查（只能人写）",
+    description=(
+        "把某条结论的人工复核状态改成 confirmed/rejected/needs_more_evidence，并留下依据。"
+        "这条路径**不会**因为模型说了 supported 就自动 confirmed——必须有人真的点了。"
+    ),
+)
+def review_report_check(
+    db: DbSession,
+    payload: FindingCheckReviewIn,
+    report_id: int = Path(ge=1),
+    check_id: int = Path(ge=1),
+) -> FindingCheckOut:
+    ResearchReportService(db).get(report_id)
+    check = db.get(FindingCheck, check_id)
+    if check is None or check.research_report_id != report_id:
+        raise NotFoundError(
+            f"核查记录 {check_id} 不存在于报告 {report_id}",
+            details={"reason": "unknown_check"},
+        )
+    if payload.status == "confirmed" and not payload.note.strip():
+        raise DomainValidationError(
+            "确认一条结论必须写明依据（对照了哪份原文、哪个口径）",
+            details={"reason": "note_required"},
+        )
+    try:
+        updated = set_human_review(
+            db, check_id=check_id, status_value=payload.status, note=payload.note
+        )
+    except ValueError as error:
+        raise DomainValidationError(
+            str(error), details={"reason": "bad_status", "allowed": sorted(HUMAN_REVIEW_STATUSES)}
+        ) from error
+    db.commit()
+    return FindingCheckOut.model_validate(updated)

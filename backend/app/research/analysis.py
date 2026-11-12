@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 #: 分析阶段最多拿多少个数据点进提示词：太多会把上下文塞满，也太贵。
 MAX_POINTS = 40
@@ -49,8 +49,12 @@ _PROMPT_TEMPLATE = """研究目标：{objective}
   "data_gaps": ["还缺什么证据才能回答研究目标"]
 }}
 
-要求：findings 3~6 条；每条 source_ids 至少一个且在证据里存在；
-numbers 只写证据里出现过的数字；不要复述原文，要给出因果或结构上的判断。
+要求：
+- findings 3~6 条，每条 claim 不超过 60 字；summary 不超过 200 字；
+- 每条 source_ids 至少一个且在证据里存在；
+- numbers 只写证据里出现过的数字；
+- 不要复述原文、不要把原文整句搬进 claim，要给出因果或结构上的判断；
+- **整个 JSON 控制在 1200 字以内**（写太长会被截断，反而丢掉全部结论）。
 """
 
 _JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
@@ -59,11 +63,22 @@ _KINDS = ("fact", "inference", "hypothesis")
 
 
 class AnalysisError(ValueError):
-    """分析阶段失败。``reason`` 稳定，供上层判断。"""
+    """分析阶段失败。``reason`` 稳定，供上层判断。
 
-    def __init__(self, reason: str, message: str) -> None:
+    ``usage`` 带上已经真的花掉的那次调用（prompt/completion/cost）：截断或调用失败
+    也计费，上层要把成本记进任务账，否则任务花费会小于模型账单。
+    """
+
+    def __init__(
+        self,
+        reason: str,
+        message: str,
+        *,
+        usage: Mapping[str, Any] | None = None,
+    ) -> None:
         super().__init__(message)
         self.reason = reason
+        self.usage: dict[str, Any] = dict(usage or {})
 
 
 @dataclass(frozen=True)
@@ -178,9 +193,10 @@ def _source_block(digest: Any) -> str:
     return "\n".join(lines) if lines else "（没有可用证据）"
 
 
-def _point_block(digest: Any) -> str:
+def _point_block(digest: Any, max_points: int | None = None) -> str:
     lines: list[str] = []
-    for point in list(getattr(digest, "data_points", ()) or ())[:MAX_POINTS]:
+    limit = MAX_POINTS if max_points is None else max(1, int(max_points))
+    for point in list(getattr(digest, "data_points", ()) or ())[:limit]:
         text = str(getattr(point, "text", "") or "").strip()
         source_id = str(getattr(point, "source_id", "") or "")
         numbers = ", ".join(str(n) for n in (getattr(point, "numbers", ()) or ()))
@@ -189,13 +205,13 @@ def _point_block(digest: Any) -> str:
     return "\n".join(lines) if lines else "（没有候选数据点）"
 
 
-def build_messages(digest: Any) -> list[dict[str, str]]:
+def build_messages(digest: Any, *, max_points: int | None = None) -> list[dict[str, str]]:
     """把底稿变成一次模型请求的 messages（纯函数，便于测试）。"""
     objective = str(getattr(digest, "objective", "") or getattr(digest, "title", "") or "")
     user = _PROMPT_TEMPLATE.format(
         objective=objective or "（未指定）",
         sources=_source_block(digest),
-        points=_point_block(digest),
+        points=_point_block(digest, max_points),
     )
     return [
         {"role": "system", "content": _PROMPT_SYSTEM},
@@ -270,7 +286,7 @@ def analyze(
     budget: Any = None,
     provider: str | None = None,
     model: str | None = None,
-    max_tokens: int = 2400,
+    max_tokens: int = 5000,
     purpose: str = "research.analyze",
 ) -> AnalysisResult:
     """调用真实模型做一次分析。没有可用模型时抛 ``AnalysisError('no_model')``。"""
@@ -304,36 +320,77 @@ def analyze(
             raise AnalysisError("no_model", f"provider {target_provider} 没有启用的模型")
         target_model = candidates[0].model
 
-    request = ModelRequest(
-        provider=target_provider,
-        model=target_model,
-        messages=build_messages(digest),
-        purpose=purpose,
-        temperature=0.2,
-        max_tokens=max_tokens,
-        response_format="json_object",
-        cacheable=False,
+    # 回答被截断时**不要**直接失败，也不要拿半截 JSON 当结果：先减少进提示词的数据点
+    # 再试一次（证据越多、模型越想逐条列，越容易撞上限）。两次都撞上限才算真失败。
+    attempts = (
+        (MAX_POINTS, max_tokens),
+        (MAX_POINTS // 2, max(2000, int(max_tokens * 0.8))),
+        (MAX_POINTS // 4, max(1500, int(max_tokens * 0.6))),
     )
-    reply = engine.complete(caller or CallerContext.human(), request, budget=budget)
-    if not reply.ok:
-        raise AnalysisError(reply.error_code or "model_error", reply.error_message or "模型调用失败")
+    last_error: AnalysisError | None = None
+    last_usage: dict[str, Any] = {}
+    # 多次尝试的花费要累加：重试也是真花了钱，只记最后一次会让任务账少于模型账单
+    spent: dict[str, Any] = {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_cny": 0.0,
+        "calls": 0,
+    }
+    reply = None
+    used_max_tokens = max_tokens
+    for points_cap, tokens_cap in attempts:
+        request = ModelRequest(
+            provider=target_provider,
+            model=target_model,
+            messages=build_messages(digest, max_points=points_cap),
+            purpose=purpose,
+            temperature=0.2,
+            max_tokens=tokens_cap,
+            response_format="json_object",
+            cacheable=False,
+        )
+        reply = engine.complete(caller or CallerContext.human(), request, budget=budget)
+        record = getattr(reply, "record", None)
+        last_usage = {
+            "prompt_tokens": int(getattr(record, "prompt_tokens", 0) or 0),
+            "completion_tokens": int(getattr(record, "completion_tokens", 0) or 0),
+            "cost_cny": float(getattr(record, "cost_cny", 0.0) or 0.0),
+            "model_call_id": getattr(record, "id", None),
+        }
+        spent["prompt_tokens"] += last_usage["prompt_tokens"]
+        spent["completion_tokens"] += last_usage["completion_tokens"]
+        spent["cost_cny"] += last_usage["cost_cny"]
+        spent["calls"] += 1
+        if not reply.ok:
+            raise AnalysisError(
+                reply.error_code or "model_error",
+                reply.error_message or "模型调用失败",
+                usage={**spent, "model_call_id": last_usage.get("model_call_id")},
+            )
+        usage = getattr(reply, "raw_usage", None) or {}
+        finish_reason = str(usage.get("finish_reason") or "")
+        completion_tokens = last_usage["completion_tokens"]
+        used_max_tokens = tokens_cap
+        if finish_reason == "length" or (tokens_cap and completion_tokens >= tokens_cap):
+            # 撞到 max_tokens：正文被截断，JSON 必然不完整。**不要**拿半截结果去解析，
+            # 否则要么报一个含糊的 bad_output，要么更糟——悄悄得出残缺结论。
+            last_error = AnalysisError(
+                "truncated",
+                (
+                    f"模型输出被截断（finish_reason={finish_reason or '未提供'}，"
+                    f"completion_tokens={completion_tokens}，max_tokens={tokens_cap}，"
+                    f"数据点上限={points_cap}）：已减少证据重试仍不够，请提高 max_tokens"
+                ),
+                usage={**spent, "model_call_id": last_usage.get("model_call_id")},
+            )
+            continue
+        break
+    else:
+        raise last_error or AnalysisError("truncated", "模型输出被截断", usage={**spent, "model_call_id": last_usage.get("model_call_id")})
+    if reply is None:  # pragma: no cover - attempts 非空时不可达
+        raise last_error or AnalysisError("truncated", "模型输出被截断", usage={**spent, "model_call_id": last_usage.get("model_call_id")})
 
     record = getattr(reply, "record", None)
-    usage = getattr(reply, "raw_usage", None) or {}
-    finish_reason = str(usage.get("finish_reason") or "")
-    completion_tokens = int(getattr(record, "completion_tokens", 0) or 0)
-    if finish_reason == "length" or (max_tokens and completion_tokens >= max_tokens):
-        # 撞到 max_tokens：正文被截断，JSON 必然不完整。**不要**拿半截结果去解析，
-        # 否则要么报一个含糊的 bad_output，要么更糟——悄悄得出残缺结论。
-        raise AnalysisError(
-            "truncated",
-            (
-                f"模型输出被截断（finish_reason={finish_reason or '未提供'}，"
-                f"completion_tokens={completion_tokens}，max_tokens={max_tokens}）："
-                "请提高 max_tokens 或减少证据条数"
-            ),
-        )
-
     known = sorted(_known_source_ids(digest))
     summary, findings, gaps, dropped = parse_analysis(reply.text, known_sources=known)
     return AnalysisResult(
@@ -343,7 +400,7 @@ def analyze(
         raw_text=reply.text,
         provider=request.provider,
         model=request.model,
-        model_call_id=getattr(record, "model_call_id", None),
+        model_call_id=getattr(record, "id", None),
         prompt_tokens=int(getattr(record, "prompt_tokens", 0) or 0),
         completion_tokens=completion_tokens,
         cost_cny=float(getattr(record, "cost_cny", 0.0) or 0.0),

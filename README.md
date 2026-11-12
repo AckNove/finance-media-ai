@@ -201,7 +201,7 @@ backend/migrations/               Alembic 迁移（初始 de8148733a9b + B1/B2/B
 backend/scripts/                  seed_collections / enable_wal / install_ffmpeg / check_media_toolchain
                                   / media_selftest / research_task / run_worker / render_job
                                   / produce_video / preflight / recover_tasks
-                                  / model_smoke（真实模型冒烟）/ model_e2e_check（12 步真实闭环）/ import_digest（底稿导入复现）
+                                  / model_smoke（真实模型冒烟）/ model_e2e_check（12 步真实闭环）/ v51_evidence（核查与成本取证）/ import_digest（底稿导入复现）
                                   / flow_check（前端全链路验收）
 scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
@@ -213,7 +213,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（808 例）
+tests/                            pytest 回归测试（839 例）
 ```
 
 ## 文档
@@ -260,8 +260,23 @@ tests/                            pytest 回归测试（808 例）
 只要把 `config/settings.yaml` 的 `features.model` 改回 `false` 就**一键停服**——
 网关在发请求之前就返回 `feature_disabled`，不花钱。
 
-仍然没做的两处（不掩饰）：`research.plan` 仍用规则拆检索词（不是模型做语义拆解）；
-`verify.claims` 只做逐字核对，**语义核查**（口径/时效/样本是否对得上）还没有。
+**V5.1 又补上了两块能力**（2026-11-13，报告见 `docs/research_hub/v5_1_semantic_and_planning_report.md`）：
+
+| 项 | 实测（全新主题「光伏组件价格战为什么会吃掉龙头企业的现金流」） |
+| --- | --- |
+| 模型规划 | `planner=model`、6 个规划子任务、36 个检索词、5 条核心问题 / 5 条风险 |
+| 语义核查 | 6 条结论逐条判定：`supported 1 + partially_supported 5`，人工态全部 `pending` |
+| 动态补任务 | 规划里的高优先级子任务真被追加成采集任务（`direction_changed` 事件） |
+| 全链数据 | 9/9 子任务、27 来源、416 证据、1 报告、54 事件 |
+| 成本 | 4 次调用 47,132 tokens、**¥0.159294**；任务账 == `SUM(model_calls)` |
+
+语义核查的边界写在代码里：**模型判定不等于人工确认**（`human_review_status` 恒从
+`pending` 起步，只有人点才算 `confirmed`）；说"支持"但引不出逐字片段的一律降级成
+证据不足；挂不上 `source_ids` 的结论直接丢弃。
+
+仍然没做的（不掩饰）：`contradicted`（与证据冲突）**还没有真实样本**，只有单测覆盖；
+语义核查一次最多看 30 条证据；规划出来的子任务还没写回任务表（只在 `research.plan`
+阶段的输出里）。
 
 模型与价目现状（`config/models.yaml`，2026-11-12 按官方文档核对）：
 `deepseek-flash`（输入 0.00213 / 输出 0.00852 元每千 token）、

@@ -22,6 +22,26 @@ PY = str(ROOT / ".venv" / "Scripts" / "python.exe")
 PORT = 8397
 BASE = f"http://127.0.0.1:{PORT}"
 
+# 验收主题可以换：V5.1 要求用一个**全新**主题跑，不能复用上一轮的研究结果。
+DEFAULT_TITLE = "光伏组件价格战为什么会吃掉龙头企业的现金流"
+DEFAULT_OBJECTIVE = (
+    "2024 年以来光伏组件价格持续下跌，行业出现普遍亏损。请研究：组件价格战是怎么形成、"
+    "又通过哪些环节影响龙头组件企业的现金流与资本开支的？请给出可核对的公开数据。"
+)
+
+
+def _arg(name: str, fallback: str) -> str:
+    for index, item in enumerate(sys.argv):
+        if item == f"--{name}" and index + 1 < len(sys.argv):
+            return sys.argv[index + 1]
+        if item.startswith(f"--{name}="):
+            return item.split("=", 1)[1]
+    return fallback
+
+
+TITLE = _arg("title", DEFAULT_TITLE)
+OBJECTIVE = _arg("objective", DEFAULT_OBJECTIVE)
+
 workdir = Path(tempfile.mkdtemp(prefix="fmai_model_e2e_"))
 db_path = workdir / "flow.db"
 DB_URL = f"sqlite:///{db_path.as_posix()}"
@@ -106,8 +126,8 @@ try:
         "POST",
         "/api/research-tasks",
         {
-            "title": "商业银行是如何赚钱的",
-            "objective": "商业银行是如何赚钱的？",
+            "title": TITLE,
+            "objective": OBJECTIVE,
             "budget_max_calls": 8,
             "budget_max_cost_cny": 0.5,
         },
@@ -200,6 +220,24 @@ try:
     if report_id:
         _, evidence = call("GET", f"/api/evidence?research_report_id={report_id}")
         log(f"GET /api/evidence -> total={evidence.get('total')}")
+
+    # 6b) V5.1：模型规划与语义核查
+    log("== 6b) 模型规划与语义核查 ==")
+    _, detail = call("GET", f"/api/research-tasks/{task_id}")
+    planning = detail.get("planning") or {}
+    log(f"  planning: planner={planning.get('planner')} model_used={planning.get('model_used')} "
+        f"queries={planning.get('query_count')} subtasks={planning.get('subtask_count')} "
+        f"degraded={planning.get('degraded_reason') or '-'}")
+    log(f"  core_questions={json.dumps(planning.get('core_questions'), ensure_ascii=False)[:300]}")
+    log(f"  risks={json.dumps(planning.get('risks'), ensure_ascii=False)[:300]}")
+    if report_id:
+        _, summary = call("GET", f"/api/research-reports/{report_id}/checks/summary")
+        log(f"  checks/summary -> {json.dumps(summary, ensure_ascii=False)[:400]}")
+        _, checks = call("GET", f"/api/research-reports/{report_id}/checks?limit=100")
+        for item in (checks.get("items") or [])[:6]:
+            log(f"  check#{item['id']} [{item['verdict']}] {str(item['claim'])[:70]} "
+                f"supporting={str(item.get('supporting'))[:80]} human={item.get('human_review_status')}")
+
     _, costs = call("GET", "/api/system/costs")
     log(f"GET /api/system/costs -> {json.dumps(costs, ensure_ascii=False)[:400]}")
 

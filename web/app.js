@@ -102,6 +102,7 @@ const ROUTES = [
   { path: '/search', title: '搜索结果', group: '研究', hint: '真实联网搜索，失败如实报告', render: pageSearch },
   { path: '/sources', title: '资料库', group: '研究', hint: '抓到的原始资料与可信度', render: pageSources },
   { path: '/evidence', title: '证据链', group: '研究', hint: '每条主张追溯到来源与原文', render: pageEvidence },
+  { path: '/checks', title: '语义核查', group: '研究', hint: '模型逐条判定，人工再复核一遍', render: pageChecks },
   { path: '/reports', title: '研究报告', group: '研究', hint: '规则汇编草稿，模型缺席时如实标注', render: pageReports },
   { path: '/planning', title: '内容策划', group: '生产', hint: '从报告到传播角度（需模型）', render: pagePlanning },
   { path: '/scripts', title: '脚本编辑', group: '生产', hint: '视频任务的脚本文本', render: pageScripts },
@@ -328,6 +329,22 @@ async function pageTaskDetail(view, params) {
   const task = detail.data;
   const plan = task.plan || {};
   const gates = plan.human_gates || [];
+  const planning = task.planning || null;
+  const byModel = Boolean(planning && planning.model_used);
+  const planningCard = planning
+    ? `<div class="card"><h2>研究规划</h2>
+        <div class="row">
+          <span class="tag ${byModel ? 'ok' : 'warn'}">${byModel ? '模型规划' : '规则拆词'}</span>
+          ${planning.model_used === false ? '<span class="tag">本轮没有调用模型</span>' : ''}
+          <span class="tag info">检索词 ${planning.query_count} 个</span>
+          <span class="tag info">规划子任务 ${planning.subtask_count} 个</span>
+        </div>
+        ${planning.degraded_reason ? `<div class="note warn">降级原因：<code>${esc(planning.degraded_reason)}</code>${planning.degraded_message ? ` —— ${esc(planning.degraded_message)}` : ''}</div>` : ''}
+        ${(planning.core_questions || []).length ? `<div class="note">核心问题：<ol>${planning.core_questions.map((item) => `<li>${esc(item)}</li>`).join('')}</ol></div>` : ''}
+        ${(planning.risks || []).length ? `<div class="note">风险与缺口：<ul>${planning.risks.map((item) => `<li>${esc(item)}</li>`).join('')}</ul></div>` : ''}
+        ${(planning.proposed_subtasks || []).length ? `<div class="note">由规划动态追加的检索任务：<ul>${planning.proposed_subtasks.map((item) => `<li>${esc(item.question || '')}</li>`).join('')}</ul></div>` : ''}
+      </div>`
+    : '';
 
   view.innerHTML = `
     <div class="card">
@@ -350,6 +367,7 @@ async function pageTaskDetail(view, params) {
         —— 走到闸门会暂停，等你确认后再继续。</div>` : ''}
       ${plan.skip_reason ? `<div class="note">本任务跳过了 ${esc((plan.skipped_stages || []).join('、'))}：${esc(plan.skip_reason)}</div>` : ''}
     </div>
+    ${planningCard}
     <div class="card"><h2>阶段进度</h2>
       ${table([
         { title: '#', key: 'sequence', num: true },
@@ -502,8 +520,125 @@ async function pageEvidence(view) {
   };
 }
 
-async function pageReports(view) {
-  const result = await api('/research-reports?limit=50');
+const VERDICT_LABEL = {
+  supported: '支持',
+  partially_supported: '部分支持',
+  contradicted: '与证据冲突',
+  insufficient_evidence: '证据不足',
+  unverifiable: '无法判断',
+};
+
+const HUMAN_LABEL = {
+  pending: '待人工复核',
+  confirmed: '人工已确认',
+  rejected: '人工已驳回',
+  needs_more_evidence: '需补证据',
+};
+
+function verdictTag(verdict) {
+  const map = { supported: 'ok', partially_supported: 'info', contradicted: 'danger', insufficient_evidence: 'warn', unverifiable: '' };
+  const tone = map[verdict] || '';
+  return `<span class="tag ${tone}">${esc(VERDICT_LABEL[verdict] || verdict)}</span>`;
+}
+
+function humanTag(status) {
+  const tone = status === 'confirmed' ? 'ok' : status === 'rejected' ? 'danger' : status === 'needs_more_evidence' ? 'warn' : 'info';
+  return `<span class="tag ${tone}">${esc(HUMAN_LABEL[status] || status)}</span>`;
+}
+
+function quoteList(items) {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) return '<span class="muted">—</span>';
+  return list.map((item) => `<div class="quote">${esc(item)}</div>`).join('');
+}
+
+async function pageChecks(view) {
+  const reports = await api('/research-reports?limit=50');
+  const items = reports.ok ? reports.data.items : [];
+  const preset = new URLSearchParams((window.location.hash.split('?')[1] || '')).get('report') || '';
+  const options = items
+    .map((item) => `<option value="${item.id}"${String(item.id) === String(preset) ? ' selected' : ''}>#${item.id} ${esc(item.title)}</option>`)
+    .join('');
+  view.innerHTML = `
+    <div class="card">
+      <h2>语义核查</h2>
+      <div class="row">
+        <label>选择报告<select id="checks-report"><option value="">（未选）</option>${options}</select></label>
+        <button class="btn" id="checks-load">加载核查结果</button>
+      </div>
+      <p class="muted">判定由模型逐条给出，<strong>不等于人工确认</strong>；模型的「支持」永远不会自动变成「已核实」。
+        只有人工复核后才会变成人工确认，两件事分开记。</p>
+    </div>
+    <div id="checks-box"><div class="empty">选一份报告查看逐条核查</div></div>`;
+
+  const load = async () => {
+    const reportId = document.getElementById('checks-report').value;
+    const box = document.getElementById('checks-box');
+    if (!reportId) { box.innerHTML = '<div class="empty">先选一份报告</div>'; return; }
+    box.innerHTML = '<div class="note">读取核查结果…</div>';
+    const [summary, checks] = await Promise.all([
+      api(`/research-reports/${reportId}/checks/summary`),
+      api(`/research-reports/${reportId}/checks?limit=100`),
+    ]);
+    if (!summary.ok) { box.innerHTML = failure(summary); return; }
+    if (!checks.ok) { box.innerHTML = failure(checks); return; }
+    const data = summary.data;
+    if (!data.total) {
+      box.innerHTML = `<div class="card"><h2>还没有核查记录</h2>
+        <p class="muted">这份报告还没跑到 <code>verify.claims</code>，或者当时没有可用模型（核查不会假装做过）。</p></div>`;
+      return;
+    }
+    const verdictCells = Object.entries(data.by_verdict || {})
+      .map(([key, value]) => `<span class="tag">${esc(VERDICT_LABEL[key] || key)} ${value}</span>`)
+      .join('');
+    box.innerHTML = `
+      <div class="card">
+        <h2>${data.total} 条结论 · 模型花费 ${money(data.model_cost_cny)} · ${data.model_calls} 次调用</h2>
+        <div class="row">${verdictCells}</div>
+        <p class="muted">${esc(data.note || '')}</p>
+      </div>
+      <div class="card"><h2>逐条核查</h2>
+        <table class="grid">
+          <thead><tr><th>#</th><th>结论</th><th>模型判定</th><th>理由</th><th>支持片段</th><th>反对片段</th><th>人工</th><th>操作</th></tr></thead>
+          <tbody>
+            ${checks.data.items.map((row) => `
+              <tr data-check="${row.id}">
+                <td class="num">${row.finding_index}</td>
+                <td>${esc(row.claim)}<div class="muted">证据 ${esc((row.evidence_ids || []).join(', ') || '—')} · 来源 ${esc((row.source_ids || []).join(', ') || '—')}</div></td>
+                <td>${verdictTag(row.verdict)}<div class="muted">${esc(row.reason || '')}</div></td>
+                <td class="muted">${esc((row.issues || []).map((item) => item.code).join(', ') || '—')}</td>
+                <td>${quoteList(row.supporting)}</td>
+                <td>${quoteList(row.contradicting)}</td>
+                <td>${humanTag(row.human_review_status)}${row.human_note ? `<div class="muted">${esc(row.human_note)}</div>` : ''}</td>
+                <td class="actions">
+                  <button class="btn ghost" data-review="confirmed" data-id="${row.id}">确认</button>
+                  <button class="btn ghost" data-review="rejected" data-id="${row.id}">驳回</button>
+                  <button class="btn ghost" data-review="needs_more_evidence" data-id="${row.id}">需补证据</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    const send = async (checkId, status) => {
+      const note = window.prompt('写一句复核理由（会记进核查记录）', '') || '';
+      const response = await api(`/research-reports/${reportId}/checks/${checkId}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ status, note }),
+      });
+      if (!response.ok) { window.alert(failure(response).replace(/<[^>]+>/g, ' ').trim()); return; }
+      await load();
+    };
+    box.querySelectorAll('button[data-review]').forEach((button) => {
+      button.onclick = () => send(button.dataset.id, button.dataset.review);
+    });
+  };
+
+  document.getElementById('checks-load').onclick = load;
+  if (preset) load();
+}
+
+async function pageReports(view) {  const result = await api('/research-reports?limit=50');
   const items = result.ok ? result.data.items : [];
   view.innerHTML = `
     <div class="card"><h2>研究报告</h2>
@@ -513,6 +648,7 @@ async function pageReports(view) {
         { title: '核验状态', value: (row) => statusTag((row.verification_status || 'unverified').toLowerCase()), raw: true },
         { title: '创建时间', value: (row) => when(row.created_at) },
         { title: '操作', value: (row) => `<a href="#/planning?report=${row.id}">用它做内容策划</a>
+          · <a href="#/checks?report=${row.id}">看语义核查</a>
           <button class="btn ghost" data-video="${row.id}">建视频任务</button>`, raw: true },
       ], items, '还没有报告：跑一个研究任务') : failure(result)}
     </div>

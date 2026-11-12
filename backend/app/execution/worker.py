@@ -31,6 +31,7 @@ class WorkerReport:
     failed: list[int] = field(default_factory=list)
     retried: list[int] = field(default_factory=list)
     reaped: list[int] = field(default_factory=list)
+    added_subtasks: list[int] = field(default_factory=list)
     idle: bool = False
     stopped_reason: str = ""
 
@@ -43,6 +44,7 @@ class WorkerReport:
             "failed": self.failed,
             "retried": self.retried,
             "reaped": self.reaped,
+            "added_subtasks": self.added_subtasks,
             "idle": self.idle,
             "stopped_reason": self.stopped_reason,
         }
@@ -118,6 +120,7 @@ class Worker:
                     agent_run_id=outcome.agent_run_id,
                 )
                 report.completed.append(claim.subtask_id)
+                self._append_planned_followups(claim, outcome, report)
                 self._pause_for_gate(claim, report)
             elif outcome.status == "blocked":
                 # 阻塞不是失败：挂起来等人处理（补密钥、看脚本），任务进入 paused。
@@ -139,6 +142,32 @@ class Worker:
             # 令牌失效（别的 worker 接手了）：这一轮结果作废，不覆盖别人的写入
             logger.warning("drop stale result for subtask %s: %s", claim.subtask_id, error.reason)
             report.stopped_reason = f"stale_attempt:{claim.subtask_id}"
+
+    def _append_planned_followups(
+        self, claim: Claim, outcome: Any, report: WorkerReport
+    ) -> None:
+        """规划阶段点名的高优先级补充检索，真的变成独立采集任务。
+
+        只对 ``research.plan`` 生效，且由 ``runtime.append_followups`` 兜住上限与去重——
+        "想到就无限加任务"是这类系统最容易失控的地方（每一格都要花真钱）。
+        """
+        output = outcome.output if isinstance(outcome.output, dict) else {}
+        proposals = output.get("proposed_subtasks") or []
+        if not proposals:
+            return
+        try:
+            added = self.runtime.append_followups(claim.task_id, proposals)
+        except TaskRuntimeError as error:
+            logger.warning("append followups skipped for task %s: %s", claim.task_id, error.reason)
+            return
+        if added:
+            report.added_subtasks.extend(item.id for item in added)
+            logger.info(
+                "task %s appended %d follow-up subtask(s): %s",
+                claim.task_id,
+                len(added),
+                [item.id for item in added],
+            )
 
     def _pause_for_gate(self, claim: Claim, report: WorkerReport) -> None:
         """阶段声明了 ``require_human_review``：完成之后把任务停下来等人。

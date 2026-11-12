@@ -785,8 +785,18 @@ ANALYSIS_JSON = json.dumps(
 )
 
 
-def _mock_gateway(factory=None):
-    """一个只走内存的模型网关：**不联网、不花钱**，但走真实网关代码路径。"""
+def _mock_gateway(
+    factory=None,
+    *,
+    plan: str | None = None,
+    checks: str | None = None,
+    truncate: str | None = None,
+):
+    """一个只走内存的模型网关：**不联网、不花钱**，但走真实网关代码路径。
+
+    网关只认一个端点，所以按系统提示词分流：规划、语义核查、分析各回各的样本。
+    这样同一个替身能覆盖整条链，而不需要按调用次数猜顺序。
+    """
     import httpx
 
     from backend.app.capabilities.model import ModelGateway
@@ -824,13 +834,43 @@ def _mock_gateway(factory=None):
     )
 
     def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode("utf-8"))
+        system = str((body.get("messages") or [{}])[0].get("content") or "")
+        content = ANALYSIS_JSON
+        if plan is not None and "规划" in system:
+            content = plan
+        elif checks is not None and "核查" in system:
+            content = checks
+        # `truncate` 用来模拟模型撞上限：正文被截断，finish_reason=length，
+        # completion_tokens 正好等于请求的 max_tokens（真实 API 就是这么表现的）。
+        if truncate is not None and truncate in system:
+            cap = int(body.get("max_tokens") or 1000)
+            return httpx.Response(
+                200,
+                json={
+                    "id": "chatcmpl-truncated",
+                    "model": "deepseek-flash",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "finish_reason": "length",
+                            "message": {"role": "assistant", "content": "{\"subtasks\": ["},
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 900,
+                        "completion_tokens": cap,
+                        "total_tokens": 900 + cap,
+                    },
+                },
+            )
         return httpx.Response(
             200,
             json={
                 "id": "chatcmpl-test",
                 "model": "deepseek-flash",
                 "choices": [
-                    {"index": 0, "message": {"role": "assistant", "content": ANALYSIS_JSON}}
+                    {"index": 0, "message": {"role": "assistant", "content": content}}
                 ],
                 "usage": {"prompt_tokens": 900, "completion_tokens": 260, "total_tokens": 1160},
             },
@@ -968,3 +1008,273 @@ def test_digest_of_another_run_does_not_overwrite_an_existing_one(factory, runti
     assert written.parent != first, "目标不同就该换目录，而不是覆盖"
     assert written.parent.name.startswith("task-1-")
     assert "另一份真实研究的目标" in (first / "digest.json").read_text(encoding="utf-8")
+
+
+# --- V5.1：模型规划 + 语义核查接进真实执行链 ------------------------------
+
+PLANNING_JSON = json.dumps(
+    {
+        "objective": "讲清商业银行靠什么赚钱，以及息差收窄后靠什么补",
+        "core_questions": ["收入由哪几块构成？", "息差为什么在收窄？"],
+        "subtasks": [
+            {
+                "id": "s1",
+                "question": "监管口径下商业银行净息差是多少、近年怎么走",
+                "search_intent": "找监管总局的季度行业指标",
+                "keywords": ["商业银行 净息差"],
+                "synonyms": ["NIM"],
+                "source_types": ["监管统计"],
+                "priority": "high",
+                "depends_on": [],
+                "done_when": "拿到近五年序列",
+            },
+            {
+                "id": "s2",
+                "question": "上市银行手续费及佣金净收入的占比",
+                "search_intent": "找年报里的收入结构表",
+                "keywords": ["手续费及佣金净收入 占比"],
+                "synonyms": [],
+                "source_types": ["上市公司年报"],
+                "priority": "high",
+                "depends_on": ["s1"],
+                "done_when": "至少两家银行的可比数据",
+            },
+        ],
+        "risks": ["监管口径与年报口径可能不一致"],
+        "gaps": ["缺少分类型银行的净息差对比"],
+    },
+    ensure_ascii=False,
+)
+
+CHECKS_JSON = json.dumps(
+    {
+        "checks": [
+            {
+                "index": 0,
+                "verdict": "supported",
+                "reason": "原文直接给出净息差与降幅",
+                "supporting": ["净息差降至1.53%"],
+                "contradicting": [],
+                "missing": [],
+                "issues": [],
+            }
+        ]
+    },
+    ensure_ascii=False,
+)
+
+
+def test_plan_uses_the_model_and_proposes_followups(factory, runtime, tmp_path):
+    """有模型时规划必须真由模型做，并把"还要补查什么"提出来。"""
+    report, snapshot = _run_stage(
+        factory, runtime, "research.plan", tmp_path, model_gateway=_mock_gateway(factory, plan=PLANNING_JSON)
+    )
+    output = snapshot.subtasks[0].output
+    assert report.completed == [1], {
+        "failed": report.failed,
+        "blocked": report.blocked,
+        "failure_reason": snapshot.subtasks[0].failure_reason,
+    }
+    assert output["planner"] == "model"
+    assert output["model_used"] is True
+    assert output["queries"] == ["商业银行 净息差", "NIM", "手续费及佣金净收入 占比"]
+    assert output["plan"]["planner"] == "model"
+    assert output["plan"]["core_questions"] == ["收入由哪几块构成？", "息差为什么在收窄？"]
+    assert [item["question"] for item in output["proposed_subtasks"]] == [
+        "上市银行手续费及佣金净收入的占比"
+    ]
+    assert output["proposed_subtasks"][0]["queries"] == ["手续费及佣金净收入 占比"]
+    # 规划也要记账：Token 与成本从网关回执来，不是估的
+    assert snapshot.calls_spent == 1
+    assert snapshot.tokens_spent == 1160
+    assert float(snapshot.cost_spent_cny) > 0
+
+
+def test_plan_degrades_to_keywords_when_the_model_replies_garbage(factory, runtime, tmp_path):
+    """模型给了不可用的回答时降级为规则拆词，并如实写下降级原因。"""
+    report, snapshot = _run_stage(
+        factory,
+        runtime,
+        "research.plan",
+        tmp_path,
+        model_gateway=_mock_gateway(factory, plan="我觉得先查净息差比较好。"),
+    )
+    output = snapshot.subtasks[0].output
+    assert report.completed == [1], "降级也要继续跑，不能卡死整条链"
+    assert output["planner"] == "keywords"
+    assert output["model_used"] is False
+    assert output["queries"], "降级路径也要给出可检索的词"
+    assert output["degraded_reason"].startswith("model_planning_failed:")
+    assert output["proposed_subtasks"] == []
+
+
+def test_worker_appends_followup_subtasks_from_the_model_plan(factory, runtime, tmp_path):
+    """计划里提出的后续检索要真被排进队列，并让分析阶段等它。"""
+    from sqlalchemy import select
+
+    from backend.app.models.execution import (
+        ResearchSubtask,
+        ResearchSubtaskDependency,
+        TaskEvent,
+    )
+
+    task = runtime.create_task(title="动态规划", objective="商业银行怎么赚钱")
+    plan_sub = runtime.add_subtask(
+        task.id, sequence=1, question="拆解研究问题：商业银行怎么赚钱", task_type="research.plan"
+    )
+    collect_sub = runtime.add_subtask(
+        task.id,
+        sequence=2,
+        question="执行检索：商业银行怎么赚钱",
+        task_type="research.collect",
+        input_payload={"queries": ["商业银行 净息差"]},
+        depends_on=[plan_sub.id],
+    )
+    analyze_sub = runtime.add_subtask(
+        task.id,
+        sequence=3,
+        question="综述：商业银行怎么赚钱",
+        task_type="research.analyze",
+        input_payload={"_upstream": _UPSTREAM},
+        depends_on=[collect_sub.id],
+    )
+    runtime.start_task(task.id)
+
+    executor = AgentExecutor(
+        tools=FakeTools(),
+        session_factory=factory,
+        artifacts_root=tmp_path,
+        model_gateway=_mock_gateway(factory, plan=PLANNING_JSON),
+    )
+    report = Worker(runtime, executor).run_once()
+
+    assert report.completed == [plan_sub.id]
+    assert report.added_subtasks, "计划里提出的后续检索要真被排进任务队列"
+    with factory() as session:
+        rows = session.scalars(
+            select(ResearchSubtask)
+            .where(ResearchSubtask.research_task_id == task.id)
+            .order_by(ResearchSubtask.sequence)
+        ).all()
+        dynamic = [
+            row
+            for row in rows
+            if isinstance(row.input_payload, dict) and row.input_payload.get("dynamic")
+        ]
+        assert len(dynamic) == 1
+        new_id = dynamic[0].id
+        assert dynamic[0].task_type == "research.collect"
+        assert dynamic[0].input_payload["queries"] == ["手续费及佣金净收入 占比"]
+        edges = {(edge.subtask_id, edge.depends_on_subtask_id) for edge in session.scalars(select(ResearchSubtaskDependency))}
+        assert (new_id, collect_sub.id) in edges, "新检索要挂在采集阶段之后"
+        assert (analyze_sub.id, new_id) in edges, "分析阶段必须等新检索回来，否则新资料进不了报告"
+        events = session.scalars(select(TaskEvent)).all()
+        assert any(getattr(event.event_type, "value", "") == "direction_changed" for event in events)
+
+
+def test_verify_claims_runs_the_semantic_check_and_keeps_human_review_pending(factory, runtime, tmp_path):
+    """报告写出后，核查阶段要真调模型逐条判，但人工状态必须是 pending。"""
+    from sqlalchemy import select
+
+    from backend.app.models.research import FindingCheck
+
+    task = runtime.create_task(title="语义核查", objective="搞清楚净息差")
+    synthesize_sub = runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="综述：商业银行怎么赚钱",
+        task_type="research.synthesize",
+        input_payload={"_upstream": _UPSTREAM},
+    )
+    verify_sub = runtime.add_subtask(
+        task.id,
+        sequence=2,
+        question="核查报告结论",
+        task_type="verify.claims",
+        input_payload={"_upstream": _UPSTREAM},
+        depends_on=[synthesize_sub.id],
+    )
+    runtime.start_task(task.id)
+
+    executor = AgentExecutor(
+        tools=FakeTools(),
+        session_factory=factory,
+        artifacts_root=tmp_path,
+        model_gateway=_mock_gateway(factory, checks=CHECKS_JSON),
+    )
+    worker = Worker(runtime, executor)
+    worker.run_once()  # 综述：写出报告与证据
+    report = worker.run_once()  # 核查：逐条判
+
+    assert report.completed == [verify_sub.id], {
+        "failed": report.failed,
+        "blocked": report.blocked,
+    }
+    snapshot = runtime.task(task.id)
+    output = [item for item in snapshot.subtasks if item.sequence == 2][0].output
+    assert output["semantic_check_done"] is True
+    assert output["generated_by"] == "model+rules"
+    assert output["verdicts"]["supported"] == 1
+    assert output["sentence_count"] == 1
+    assert output["provider"] == "deepseek" and output["model"] == "deepseek-flash"
+    assert output["model_call_id"] is not None, "核查的模型调用要能追到账本行"
+    assert "pending" in output["human_review"]
+    assert Path(output["semantic_files"]["markdown"]).exists()
+    with factory() as session:
+        rows = session.scalars(select(FindingCheck)).all()
+        assert len(rows) == 1
+        assert rows[0].verdict == "supported"
+        assert rows[0].human_review_status == "pending", "模型判定不许自动变成人工确认"
+        assert rows[0].supporting[0] == "净息差降至1.53%"
+        assert rows[0].model_call_id is not None
+        assert float(rows[0].cost_cny) > 0
+
+def test_truncated_planning_retries_then_degrades_and_still_charges_the_spend(
+    factory, runtime, tmp_path
+):
+    """规划撞上限时：先降要求重试，全撞才降级——而**花掉的钱必须记账**。
+
+    这是一条真实缺陷的回归：`_plan` 降级分支曾经不带 `calls/tokens/cost_cny`，
+    于是 `research_tasks.cost_spent` 小于 `SUM(model_calls.cost_estimate)`，
+    任务账看着比账单便宜。
+    """
+    from backend.app.models.metering import ModelCall
+
+    gateway = _mock_gateway(factory, truncate="规划")
+    report, snapshot = _run_stage(
+        factory, runtime, "research.plan", tmp_path, model_gateway=gateway
+    )
+    output = snapshot.subtasks[0].output
+
+    # 三次尝试都撞上限 → 降级为规则拆词，并且明说降级原因
+    assert output["planner"] == "keywords"
+    assert output["model_used"] is False
+    assert output["degraded_reason"].startswith("model_planning_failed:truncated")
+    # 降级不代表没花钱：三次调用都要进任务账
+    with factory() as session:
+        rows = session.query(ModelCall).all()
+    assert len(rows) == 3
+    assert {row.purpose for row in rows} == {"research.plan"}
+    charged = sum(float(row.cost_estimate) for row in rows)
+    assert snapshot.calls_spent == 3
+    assert float(snapshot.cost_spent_cny) == pytest.approx(charged, abs=1e-9)
+    assert charged > 0
+
+
+def test_task_spend_equals_the_sum_of_model_calls(factory, runtime, tmp_path):
+    """任务累计花费必须等于它名下所有模型调用的合计（账要对得上）。"""
+    from decimal import Decimal
+
+    from backend.app.models.metering import ModelCall
+
+    gateway = _mock_gateway(factory)
+    run_report, snapshot = _run_stage(
+        factory, runtime, "research.analyze", tmp_path, model_gateway=gateway
+    )
+    assert run_report.completed == [1]
+    with factory() as session:
+        rows = session.query(ModelCall).all()
+        total = sum((Decimal(str(row.cost_estimate)) for row in rows), Decimal("0"))
+    assert rows, "这条用例要求真的发生了模型调用"
+    assert Decimal(str(snapshot.cost_spent_cny)) == total
+    assert snapshot.calls_spent == len(rows)

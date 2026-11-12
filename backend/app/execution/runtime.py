@@ -84,6 +84,11 @@ def _as_utc(value: datetime | None) -> datetime | None:
     return value.astimezone(UTC)
 
 
+def _squash(text: str) -> str:
+    """去空白、转小写，用于"这句话是不是同一句"的比较（不做语义判断）。"""
+    return "".join(str(text or "").split()).lower()
+
+
 def _status_key(key: Any) -> str:
     """把枚举状态统计的 key 变成稳定字符串（``ResearchTaskStatus.RUNNING`` → ``running``）。"""
     return str(getattr(key, "value", key))
@@ -461,6 +466,140 @@ class TaskRuntime:
             self._refresh_readiness(session, task)
             session.commit()
             return self._subtask_snapshot(subtask)
+
+    def append_followups(
+        self,
+        task_id: int,
+        proposals: Sequence[Mapping[str, Any]],
+        *,
+        anchor_task_type: str = "research.collect",
+        max_total: int = 14,
+        max_new: int = 2,
+        actor: str = "executor",
+    ) -> list[SubtaskSnapshot]:
+        """按模型规划动态补充检索子任务（**有上限、去重、接在链中间**）。
+
+        为什么不能简单地"想到就加"：
+
+        * 不发散到无穷：超过 ``max_total`` 个子任务、或本次超过 ``max_new`` 个，直接不加；
+        * 不重复搜：问题相同、或检索词已被现有采集子任务覆盖的，跳过；
+        * 不打乱因果：新任务依赖 ``anchor``（采集阶段），而**原本依赖 anchor 的下游**
+          （分析阶段）也补一条指向新任务的依赖——否则分析会抢在补充检索之前跑完，
+          新搜到的资料根本进不了报告。
+
+        返回真正新建的子任务快照（被拒绝的那些不会出现在返回值里）。
+        """
+        additions: list[SubtaskSnapshot] = []
+        if not proposals:
+            return additions
+        with self._session() as session:
+            task = session.get(ResearchTask, task_id)
+            if task is None:
+                raise TaskRuntimeError("unknown_task", f"任务 {task_id} 不存在")
+            if task.status in {ResearchTaskStatus.COMPLETED, ResearchTaskStatus.CANCELLED}:
+                return additions
+            subtasks = list(
+                session.scalars(
+                    select(ResearchSubtask)
+                    .where(ResearchSubtask.research_task_id == task_id)
+                    .order_by(ResearchSubtask.sequence)
+                ).all()
+            )
+            if len(subtasks) >= max_total:
+                return additions
+            anchor = next(
+                (item for item in subtasks if item.task_type == anchor_task_type), None
+            )
+            if anchor is None:
+                return additions
+            anchor_id = anchor.id
+            downstream = [
+                row.subtask_id
+                for row in session.scalars(
+                    select(ResearchSubtaskDependency).where(
+                        ResearchSubtaskDependency.depends_on_subtask_id == anchor_id
+                    )
+                ).all()
+            ]
+            existing_questions = {_squash(item.question) for item in subtasks}
+            covered: set[str] = set()
+            for item in subtasks:
+                payload = item.input_payload if isinstance(item.input_payload, dict) else {}
+                for query in payload.get("queries") or []:
+                    covered.add(_squash(str(query)))
+
+            next_sequence = max((item.sequence for item in subtasks), default=0) + 1
+            capacity = max_total - len(subtasks)
+            for proposal in proposals:
+                if len(additions) >= min(max_new, capacity):
+                    break
+                question = str(proposal.get("question", "") or "").strip()
+                if not question or _squash(question) in existing_questions:
+                    continue
+                queries = [
+                    str(item).strip() for item in (proposal.get("queries") or []) if str(item).strip()
+                ]
+                if not queries:
+                    continue
+                if all(_squash(item) in covered for item in queries):
+                    # 这些词现有的采集任务已经搜过了，加进来只是重复烧钱
+                    continue
+                subtask = ResearchSubtask(
+                    research_task_id=task_id,
+                    sequence=next_sequence,
+                    question=question,
+                    task_type=coerce_task_type(anchor_task_type).value,
+                    assignee=proposal.get("assignee") or anchor.assignee,
+                    status=SubtaskStatus.PENDING,
+                    attempts=0,
+                    max_attempts=int(proposal.get("max_attempts", 2) or 2),
+                    input_payload={
+                        "queries": queries,
+                        "dynamic": True,
+                        "reason": str(proposal.get("reason", "") or ""),
+                        "plan_subtask": str(proposal.get("plan_subtask", "") or ""),
+                    },
+                )
+                session.add(subtask)
+                session.flush()
+                session.add(
+                    ResearchSubtaskDependency(
+                        subtask_id=subtask.id,
+                        depends_on_subtask_id=anchor_id,
+                        created_at=self._clock(),
+                    )
+                )
+                for downstream_id in downstream:
+                    session.add(
+                        ResearchSubtaskDependency(
+                            subtask_id=downstream_id,
+                            depends_on_subtask_id=subtask.id,
+                            created_at=self._clock(),
+                        )
+                    )
+                session.flush()
+                self._event(
+                    session,
+                    task,
+                    TaskEventType.DIRECTION_CHANGED,
+                    subtask=subtask,
+                    actor=actor,
+                    payload={
+                        "action": "append_followup",
+                        "question": question,
+                        "queries": queries,
+                        "depends_on": anchor_id,
+                        "downstream": downstream,
+                    },
+                )
+                existing_questions.add(_squash(question))
+                covered.update(_squash(item) for item in queries)
+                next_sequence += 1
+                additions.append(self._subtask_snapshot(subtask))
+            if additions:
+                self._refresh_readiness(session, task)
+            session.commit()
+        return additions
 
     def set_plan(
         self,

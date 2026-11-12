@@ -283,28 +283,96 @@ class AgentExecutor:
     # ------------------------------------------------------------------ 处理器
 
     def _plan(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
-        """把研究问题拆成检索词。
+        """研究规划：有模型就让模型拆，没有模型就用规则拆并**如实标注降级**。
 
-        这一阶段**不调用模型**：真实模型的拆解能力还没接上（见 MODEL_TASK_TYPES），
-        而"拆检索词"这件事用规则就能做到，没必要因为缺密钥把整条研究链卡死在这里。
-        产出里如实写 ``planner="keywords"``、``model_used=False``，下游采集阶段直接
-        用这份检索词；谁想知道这是不是 AI 规划的，看这两个字段就知道。
+        这里不把"缺模型"当成失败：拆检索词这件事规则也能做，把整条研究链卡死在
+        第一格毫无意义。但产出里必须能一眼看出这是谁拆的——
+        ``planner`` 只会是 ``model`` 或 ``keywords``，降级时另带 ``degraded_reason``。
         """
+        from backend.app.research.planning import plan_research
+
         payload = claim.input_payload if isinstance(claim.input_payload, dict) else {}
         question = claim.question.strip()
         if question.startswith("拆解研究问题："):
             question = question[len("拆解研究问题：") :].strip()
-        queries = derive_queries(question, {"queries": payload.get("queries")})
+        explicit = payload.get("queries") or []
+        keywords = derive_queries(question, {"queries": explicit})
+        base: dict[str, Any] = {
+            "objective": question,
+            "queries": keywords,
+            "query_count": len(keywords),
+            "planner": "keywords",
+            "model_used": False,
+            "proposed_subtasks": [],
+            "note": "按标点与长度拆检索词，没有做语义扩展；多角度拆解需要模型",
+        }
+
+        blocked = self._model_blocked(claim)
+        if blocked.status == "blocked":
+            base["degraded_reason"] = blocked.reason
+            base["degraded_message"] = (
+                "没有可用模型，规划降级为关键词规则拆分（下游照常执行）"
+            )
+            base["next_step"] = (blocked.output or {}).get("next_step", "")
+            return ExecutionOutcome(status="completed", output=base)
+
+        context = {
+            "pipeline": payload.get("pipeline", ""),
+            "explicit_queries": list(explicit),
+            "note": "尚无已有资料，这是首次规划",
+        }
+        try:
+            plan = plan_research(
+                question,
+                context=context,
+                gateway=self._model_gateway,
+                caller=caller,
+                budget=self._budget_for(claim),
+                purpose="research.plan",
+            )
+        except Exception as error:  # noqa: BLE001 - 规划失败要降级，但不能假装成功
+            reason = str(getattr(error, "reason", "") or type(error).__name__)
+            base["degraded_reason"] = f"model_planning_failed:{reason}"
+            base["degraded_message"] = str(error)[:300]
+            # 失败也是真花过钱的：把这次调用的用量记进任务账，否则
+            # research_tasks.cost_spent 会小于 SUM(model_calls)。
+            return ExecutionOutcome(
+                status="completed", output=base, **self._usage_kwargs(error)
+            )
+
+        planned = list(plan.subtasks)
+        queries = plan.queries() or keywords
+        # 高优先级的子任务可以真的变成额外的采集任务（由 worker 追加，有上限、去重）
+        followups = [
+            {
+                "question": item.question,
+                "queries": list(item.all_queries()),
+                "plan_subtask": item.id,
+                "reason": item.search_intent or "规划里列为高优先级的补充检索",
+            }
+            for item in planned[1:]
+            if item.priority == "high"
+        ][:2]
         return ExecutionOutcome(
             status="completed",
             output={
-                "objective": question,
+                "objective": plan.objective,
+                "core_questions": list(plan.core_questions),
+                "subtasks": [item.as_dict() for item in planned],
+                "subtask_count": len(planned),
+                "proposed_subtasks": followups,
                 "queries": queries,
                 "query_count": len(queries),
-                "planner": "keywords",
-                "model_used": False,
-                "note": "按标点与长度拆检索词，没有做语义扩展；多角度拆解需要模型",
+                "risks": list(plan.risks),
+                "gaps": list(plan.gaps),
+                "planner": "model",
+                "model_used": True,
+                "plan": plan.as_dict(),
+                "note": "规划由模型生成；检索词直接进入采集阶段，高优先级子任务会追加为独立采集任务",
             },
+            calls=1,
+            tokens=plan.prompt_tokens + plan.completion_tokens,
+            cost_cny=Decimal(str(round(plan.cost_cny, 6))),
         )
 
     def _collect(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
@@ -550,7 +618,11 @@ class AgentExecutor:
                 queries.extend(str(q) for q in (output.get("queries") or []))
         digest = build_digest(
             title=claim.question or "研究底稿",
-            objective=str(payload.get("objective") or claim.question or ""),
+            # 目标一律取"任务"的目标，而不是各阶段的阶段问题：否则采集/分析/核查三个阶段
+            # 会算出三个不同的目录（曾经的现场是 task-1-4a56b721 / 5f15f8f2 / 89131660），
+            # 同一份研究的底稿、分析、核查散在三个文件夹里。
+            objective=self._task_objective(claim.task_id)
+            or str(payload.get("objective") or claim.question or ""),
             upstream=[item for item in upstream if isinstance(item, dict)],
             queries=queries,
         )
@@ -570,6 +642,40 @@ class AgentExecutor:
             "conflict_count": result.conflict_count,
             "single_source_count": len(result.single_source),
             "conflicts": [item.as_dict() for item in result.conflicts[:5]],
+        }
+
+    def _task_objective(self, task_id: int) -> str:
+        """任务的总体研究目标（所有阶段共用，用来给产物目录定 key）。"""
+        from backend.app.models.execution import ResearchTask
+
+        try:
+            with self._session_factory() as session:
+                row = session.get(ResearchTask, task_id)
+                return str(getattr(row, "objective", "") or "").strip()
+        except Exception as error:  # noqa: BLE001 - 读不到就退回阶段问题
+            logger.warning("读取任务目标失败，退回阶段问题：%s", error)
+            return ""
+
+    def _usage_kwargs(self, error: BaseException) -> dict[str, Any]:
+        """把失败调用真的花掉的用量转成 ``ExecutionOutcome`` 的成本参数。
+
+        模型调用失败 / 输出被截断**不代表没花钱**。这些异常对象上挂着 ``usage``
+        （prompt/completion/cost），这里把它带回任务账，保证
+        ``research_tasks.cost_spent`` 与 ``SUM(model_calls.cost_estimate)`` 对得上。
+        """
+        usage = getattr(error, "usage", None)
+        if not isinstance(usage, dict) or not usage:
+            return {}
+        prompt_tokens = int(usage.get("prompt_tokens") or 0)
+        completion_tokens = int(usage.get("completion_tokens") or 0)
+        cost = float(usage.get("cost_cny") or 0.0)
+        if not (prompt_tokens or completion_tokens or cost):
+            return {}
+        return {
+            # 重试过就有多次调用：按实际次数记账，不要一律记 1 次
+            "calls": int(usage.get("calls") or 1),
+            "tokens": prompt_tokens + completion_tokens,
+            "cost_cny": Decimal(str(round(cost, 6))),
         }
 
     def _budget_for(self, claim: Claim) -> Any:
@@ -644,7 +750,10 @@ class AgentExecutor:
             "本次没有生成任何结论，不会用模板补一段。"
         )
         return ExecutionOutcome(
-            status="failed", reason=f"analysis_failed: {reason}", output=output
+            status="failed",
+            reason=f"analysis_failed: {reason}",
+            output=output,
+            **self._usage_kwargs(error),
         )
 
     def _analyze(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
@@ -851,29 +960,230 @@ class AgentExecutor:
             return None
 
     def _verify_claims(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
-        """在原文里核对候选数据点是否真的出现过（可自动做的那部分）。"""
+        """逐条语义核查报告里的结论：模型判断"话对不对"，逐字确认"引文真不真"。
+
+        两层证据链缺一不可：
+
+        * 规则层（``verify_points``）只回答"这句话是不是原文里的字"，它证明不了
+          口径、时点、因果；
+        * 模型层（``check_findings``）回答"这段证据到底支不支持这条结论"，但它给出的
+          支持/反对片段**必须能在证据里逐字找到**，找不到就降级。
+
+        两层都不写"已核实"：``human_review_status`` 恒为 ``pending``，人工确认是另一回事。
+        """
+        from backend.app.models.research import ResearchReport
+        from backend.app.research.persistence import record_checks
+        from backend.app.research.semantic import check_findings
         from backend.app.research.verify import verify_points
 
         digest, _payload, paths = self._digest_for(claim)
-        report = verify_points(digest)
-        blocked = self._model_blocked(claim)
-        output = {
+        baseline = verify_points(digest)
+        output: dict[str, Any] = {
             "generated_by": "rules",
             "digest": {key: str(value) for key, value in paths.items()},
-            "checked": report["checked"],
-            "found": report["found"],
-            "missing": report["missing"],
-            "results": report["results"],
+            "checked": baseline["checked"],
+            "found": baseline["found"],
+            "missing": baseline["missing"],
+            "results": baseline["results"],
             "semantic_check_done": False,
             "note": (
-                "只核对了『这句带数字的原话是否出现在该来源的正文里』——"
-                "**没有判断它说得对不对**（口径、时效、样本都要模型或人来判）。"
+                "先逐字核对引文是否真出自原文，再由模型判断语义是否成立；"
+                "模型判定不等于人工确认，human_review_status 一律 pending。"
             ),
         }
+        blocked = self._model_blocked(claim)
         if blocked.status == "blocked":
             output["next_step"] = (blocked.output or {}).get("next_step", "")
             return ExecutionOutcome(status="blocked", reason=blocked.reason, output=output)
-        return ExecutionOutcome(status="completed", output=output)
+
+        report_row, findings, units = self._load_checks_input(claim, digest)
+        if not findings:
+            output["semantic_skipped_reason"] = "no_findings"
+            output["note"] = "报告里没有可核查的结论（findings 为空），语义核查未执行"
+            return ExecutionOutcome(status="completed", output=output)
+        if not units:
+            output["semantic_skipped_reason"] = "no_evidence"
+            output["note"] = "这条报告没有入库证据，无法做语义核查（先修证据链）"
+            return ExecutionOutcome(status="completed", output=output)
+
+        try:
+            checked = check_findings(
+                findings,
+                units,
+                gateway=self._model_gateway,
+                caller=caller,
+                budget=self._budget_for(claim),
+                purpose="research.verify",
+            )
+        except Exception as error:  # noqa: BLE001 - 核查失败要重试，不能悄悄放过
+            reason = str(getattr(error, "reason", "") or type(error).__name__)
+            output["semantic_error"] = {"reason": reason, "message": str(error)[:500]}
+            output["note"] = "语义核查调用失败，本轮不产出核查结论（不会退回成『已核对』）"
+            return ExecutionOutcome(
+                status="retry",
+                reason=f"semantic_check_failed: {reason}",
+                output=output,
+                **self._usage_kwargs(error),
+            )
+
+        with self._session_factory() as session:
+            stored = session.get(ResearchReport, report_row.id)
+            if stored is not None:
+                record_checks(session, report=stored, checks=checked.checks)
+                session.commit()
+
+        files = self._write_semantic(
+            paths, checked, objective=str(getattr(digest, "objective", ""))
+        )
+        output.update(
+            {
+                "generated_by": "model+rules",
+                "semantic_check_done": True,
+                "provider": checked.provider,
+                "model": checked.model,
+                "model_call_id": checked.model_call_id,
+                "verdicts": checked.verdict_counts(),
+                "sentence_count": len(checked.checks),
+                "semantic_files": files,
+                "checks": checked.as_dict()["checks"],
+                "human_review": "全部待人工复核（human_review_status=pending）",
+                "note": (
+                    "结论逐条给了判定与逐字片段；判定是模型意见，不是人工核实。"
+                    "confirmed/rejected 只能由人工在复核接口里写。"
+                ),
+            }
+        )
+        return ExecutionOutcome(
+            status="completed",
+            output=output,
+            calls=1,
+            tokens=checked.prompt_tokens + checked.completion_tokens,
+            cost_cny=Decimal(str(round(checked.cost_cny, 6))),
+        )
+
+    def _load_checks_input(
+        self, claim: Claim, digest: Any
+    ) -> tuple[Any, list[dict[str, Any]], list[Any]]:
+        """取出"这条任务最新的报告 + 它的入库证据"，并建立 S01→数据库 id 的对应。"""
+        from sqlalchemy import select
+
+        from backend.app.models.evidence import Evidence
+        from backend.app.models.research import ResearchReport
+        from backend.app.models.source import Source as SourceRow
+        from backend.app.research.semantic import EvidenceUnit
+
+        with self._session_factory() as session:
+            report = session.scalars(
+                select(ResearchReport)
+                .where(ResearchReport.research_task_id == claim.task_id)
+                .order_by(ResearchReport.id.desc())
+                .limit(1)
+            ).first()
+            if report is None:
+                return None, [], []
+            report_id = report.id
+            raw_findings = report.findings if isinstance(report.findings, list) else []
+            findings: list[dict[str, Any]] = []
+            for item in raw_findings:
+                if isinstance(item, dict):
+                    text = str(item.get("text") or "").strip()
+                    kind = str(item.get("kind") or "inference")
+                    source_ids = [str(s) for s in (item.get("source_ids") or [])]
+                    numbers = [str(n) for n in (item.get("numbers") or [])]
+                else:
+                    text, kind, source_ids, numbers = str(item).strip(), "inference", [], []
+                if text:
+                    findings.append(
+                        {
+                            "text": text,
+                            "kind": kind,
+                            "source_ids": source_ids,
+                            "numbers": numbers,
+                        }
+                    )
+            rows = session.execute(
+                select(
+                    Evidence.id, Evidence.source_id, Evidence.claim, Evidence.original_excerpt
+                )
+                .where(Evidence.research_report_id == report_id)
+                .order_by(Evidence.id)
+            ).all()
+
+        # 底稿里的 S01 是对外的来源编号，证据行只认数据库主键，得先把两者对上。
+        #
+        # 注意：核查阶段拿到的 `_upstream` 是上游阶段**跑完之后**的输出，里面已经没有
+        # 抓取明细了，所以不能只从本次重算的底稿里找对应关系——那份底稿此时通常
+        # 一个来源都没有。可靠的做法是以入库时写下的 `report.outline` 为准
+        # （它就是当时底稿里的 来源编号 ↔ URL ↔ 标题）。
+        by_url: dict[str, str] = {}
+        by_title: dict[str, str] = {}
+        for ref in getattr(digest, "sources", []) or []:
+            url = str(getattr(ref, "url", "") or "")
+            title = str(getattr(ref, "title", "") or "")
+            label = str(getattr(ref, "source_id", "") or "")
+            if not label:
+                continue
+            if url:
+                by_url.setdefault(url, label)
+            if title:
+                by_title.setdefault(title, label)
+        outline = report.outline if isinstance(report.outline, list) else []
+        for item in outline:
+            if not isinstance(item, dict):
+                continue
+            url = str(item.get("url") or "")
+            title = str(item.get("title") or "")
+            label = str(item.get("source_id") or "")
+            if not label:
+                continue
+            if url:
+                by_url.setdefault(url, label)
+            if title:
+                by_title.setdefault(title, label)
+
+        url_map: dict[int, str] = {}
+        unmatched = 0
+        source_ids = {row[1] for row in rows if row[1] is not None}
+        if source_ids:
+            with self._session_factory() as session:
+                for source in session.scalars(
+                    select(SourceRow).where(SourceRow.id.in_(source_ids))
+                ).all():
+                    label = by_url.get(str(source.url or "")) or by_title.get(
+                        str(source.title or "")
+                    )
+                    if label:
+                        url_map[source.id] = label
+        units: list[Any] = []
+        for evidence_id, source_id, text, excerpt in rows:
+            body = (excerpt or text or "").strip()
+            if not body:
+                continue
+            label = url_map.get(source_id)
+            if label is None:
+                unmatched += 1
+                label = f"db-{source_id}"
+            units.append(EvidenceUnit(evidence_id=evidence_id, source_id=label, text=body))
+        if unmatched:
+            logger.warning(
+                "核查时有 %d 条证据没能对上底稿里的来源编号（报告 %s），它们的引文会按来源不匹配处理",
+                unmatched,
+                getattr(report, "id", "?"),
+            )
+        return report, findings, units
+
+    def _write_semantic(
+        self, paths: dict[str, Path], checked: Any, *, objective: str
+    ) -> dict[str, str]:
+        directory = Path(paths["markdown"]).parent
+        markdown_path = directory / "semantic_check.md"
+        json_path = directory / "semantic_check.json"
+        markdown_path.write_text(checked.to_markdown(objective=objective), encoding="utf-8")
+        json_path.write_text(
+            json.dumps(checked.as_dict(), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return {"markdown": str(markdown_path), "json": str(json_path)}
 
     # ------------------------------------------------------------------ 记录
 

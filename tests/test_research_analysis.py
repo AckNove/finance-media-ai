@@ -296,7 +296,7 @@ def test_parse_refuses_output_it_cannot_trust(payload: str) -> None:
 def test_analyze_returns_usage_and_cost_from_the_gateway() -> None:
     recorder = Recorder(ok_response(GOOD_JSON, prompt=900, completion=260))
     result = analyze(
-        make_digest(), gateway=build_gateway(recorder), budget=BudgetContext()
+        make_digest(), gateway=build_gateway(recorder), budget=BudgetContext(), max_tokens=2400
     )
     assert result.provider == "deepseek"
     assert result.model == "deepseek-flash"
@@ -333,7 +333,8 @@ def test_analyze_refuses_a_truncated_reply_instead_of_parsing_half_json() -> Non
     )
     gateway = build_gateway(Recorder(truncated))
     with pytest.raises(AnalysisError) as excinfo:
-        analyze(make_digest(), gateway=gateway, budget=BudgetContext())
+        # 显式给上限，免得断言依赖默认值：默认值会随真实长回答一起调大
+        analyze(make_digest(), gateway=gateway, budget=BudgetContext(), max_tokens=2400)
     assert excinfo.value.reason == "truncated"
     assert "max_tokens" in str(excinfo.value)
 

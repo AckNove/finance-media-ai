@@ -50,6 +50,7 @@ class ResearchTaskOut(ORMBase):
     objective: str
     status: str
     topic_id: int | None = None
+    planner: str | None = Field(default=None, description="计划由谁产出：pipeline/model/keywords")
     calls_spent: int = 0
     tokens_spent: int = 0
     cost_spent_cny: Decimal = Decimal("0")
@@ -58,10 +59,32 @@ class ResearchTaskOut(ORMBase):
     updated_at: datetime | None = None
 
 
+class PlanningOut(BaseModel):
+    """``research.plan`` 阶段到底是怎么规划的（模型还是关键词规则）。"""
+
+    model_config = ConfigDict(extra="ignore")
+
+    planner: Literal["model", "keywords"] | str = "keywords"
+    model_used: bool = False
+    objective: str = ""
+    query_count: int = 0
+    subtask_count: int = 0
+    core_questions: list[str] = Field(default_factory=list)
+    risks: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    proposed_subtasks: list[dict[str, Any]] = Field(default_factory=list)
+    degraded_reason: str = ""
+    degraded_message: str = ""
+    note: str = ""
+
+
 class ResearchTaskDetailOut(ResearchTaskOut):
     subtasks: list[SubtaskOut] = Field(default_factory=list)
     plan: dict[str, Any] | None = None
     counts: dict[str, int] = Field(default_factory=dict)
+    planning: PlanningOut | None = Field(
+        default=None, description="规划模式与降级原因（来自 research.plan 阶段的产出）"
+    )
 
 
 class TaskEventOut(ORMBase):
@@ -89,6 +112,9 @@ class RunReportOut(BaseModel):
     retried: list[int] = Field(default_factory=list)
     failed: list[int] = Field(default_factory=list)
     reaped: list[int] = Field(default_factory=list)
+    added_subtasks: list[int] = Field(
+        default_factory=list, description="本轮规划动态追加的采集子任务 id"
+    )
     idle: bool = False
     stopped_reason: str = ""
     task: ResearchTaskDetailOut | None = None

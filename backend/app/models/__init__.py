@@ -26,7 +26,7 @@ from backend.app.models.knowledge import KnowledgeItem, KnowledgeRelation
 from backend.app.models.media import MediaAsset
 from backend.app.models.metering import ModelCall, ToolCall
 from backend.app.models.publication import Publication
-from backend.app.models.research import ResearchReport
+from backend.app.models.research import FindingCheck, ResearchReport
 from backend.app.models.review import ReviewRecord
 from backend.app.models.script import Script
 from backend.app.models.source import Source
@@ -42,6 +42,7 @@ __all__ = [
     "Base",
     "AgentRun",
     "Evidence",
+    "FindingCheck",
     "FinancialCase",
     "FootballCase",
     "FinancialInstrument",
