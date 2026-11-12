@@ -464,6 +464,19 @@ class AgentExecutor:
         paths = write_digest(digest, directory)
         return digest, payload, paths
 
+    def _cross_check(self, digest: Any) -> dict[str, Any]:
+        """底稿里的跨来源比对结果（规则计算；没有就跑一遍）。"""
+        from backend.app.research.corroborate import corroborate
+
+        result = getattr(digest, "corroboration", None) or corroborate(digest.data_points)
+        return {
+            "checked_points": result.checked_points,
+            "corroborated_count": result.corroborated_count,
+            "conflict_count": result.conflict_count,
+            "single_source_count": len(result.single_source),
+            "conflicts": [item.as_dict() for item in result.conflicts[:5]],
+        }
+
     def _analyze(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """把上游资料汇编成"候选数据点表"，并在没有模型时如实标 blocked。"""
         from backend.app.research.verify import verify_points
@@ -479,9 +492,10 @@ class AgentExecutor:
             "data_point_count": len(digest.data_points),
             "data_points": [point.as_dict() for point in digest.data_points],
             "sources": [source.as_dict() for source in digest.sources],
+            "cross_check": self._cross_check(digest),
             "analysis_done": False,
             "note": (
-                "这一步只做了资料整理与数据点抽取，**没有做分析**"
+                "这一步只做了资料整理、数据点抽取和跨来源比对，**没有做分析**"
                 "（对比、归因、趋势判断都需要模型）。"
             ),
         }
@@ -511,6 +525,7 @@ class AgentExecutor:
             "data_point_count": len(digest.data_points),
             "queries": list(digest.queries),
             "sources": [source.as_dict() for source in digest.sources],
+            "cross_check": self._cross_check(digest),
             "report_ready": False,
             "note": (
                 "底稿已落盘（来源清单 + 候选数据点），但**报告的结论段没有生成**："

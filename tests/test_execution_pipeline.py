@@ -700,6 +700,16 @@ def test_analyze_writes_a_digest_and_blocks_without_a_model(factory, runtime, tm
     digest_md = Path(output["digest"]["markdown"])
     assert digest_md.exists()
     assert "规则汇编（未使用模型）" in digest_md.read_text(encoding="utf-8")
+    # 跨来源比对是规则算出来的，应当出现在输出里，便于人先看"有没有冲突"
+    cross_check = output["cross_check"]
+    assert set(cross_check) >= {
+        "checked_points",
+        "corroborated_count",
+        "conflict_count",
+        "single_source_count",
+        "conflicts",
+    }
+    assert cross_check["checked_points"] >= 1
     # 没有密钥 → 任务停在等人补配置，而不是假装写完了报告
     assert report.blocked == [1]
     assert snapshot.status == "paused"

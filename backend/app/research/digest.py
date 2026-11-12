@@ -103,6 +103,7 @@ class Digest:
     generated_by: str = "rules"
     notes: tuple[str, ...] = ()
     meta: dict[str, Any] = field(default_factory=dict)
+    corroboration: Any = None
 
     @property
     def source_count(self) -> int:
@@ -115,7 +116,7 @@ class Digest:
         return None
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "schema": SCHEMA_VERSION,
             "title": self.title,
             "objective": self.objective,
@@ -129,6 +130,9 @@ class Digest:
             "notes": list(self.notes),
             "meta": dict(self.meta),
         }
+        if self.corroboration is not None:
+            payload["corroboration"] = self.corroboration.as_dict()
+        return payload
 
     def to_markdown(self) -> str:
         lines: list[str] = [
@@ -180,6 +184,9 @@ class Digest:
             for index, point in enumerate(self.data_points, start=1):
                 lines.append(f"{index}. {point.text} —— 见 {point.source_id}")
             lines.append("")
+
+        if self.corroboration is not None:
+            lines.append(self.corroboration.to_markdown())
 
         if self.notes:
             lines += ["## 这一版没有做的事", ""]
@@ -268,6 +275,7 @@ def build_digest(
     queries: Sequence[str] = (),
     now: datetime | None = None,
     extra_notes: Sequence[str] = (),
+    cross_check: bool = True,
 ) -> Digest:
     """由上游阶段（collect / extract）的真实输出汇编出一份底稿。"""
     collect_outputs = [
@@ -287,8 +295,18 @@ def build_digest(
         "候选数据点是从正文里原样摘出的句子，**未做事实核查**，引用前必须回原文确认。",
         "同一篇资料可能被多个检索词命中，已按 URL 去重。",
     ]
+    if cross_check:
+        notes.append(
+            "“跨来源比对”只做机械比对（上下文相似度 + 数字是否相同），"
+            "标出“多来源印证”与“两处说法不一致”，**不判断谁对**。"
+        )
     notes.extend(extra_notes)
     stamp = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    corroboration = None
+    if cross_check:
+        from backend.app.research.corroborate import corroborate
+
+        corroboration = corroborate(points)
     return Digest(
         title=title,
         objective=objective,
@@ -298,6 +316,7 @@ def build_digest(
         generated_at=stamp.isoformat(timespec="seconds"),
         notes=tuple(notes),
         meta={"upstream_stages": len(usable), "excerpts": excerpts},
+        corroboration=corroboration,
     )
 
 
