@@ -718,11 +718,16 @@ async function pageVideo(view) {
         <button class="btn" id="build-timeline">只生成时间轴</button>
         <button class="btn ghost" id="render-film">渲染成片（十几分钟）</button>
       </div>
+      <div class="row">
+        <label class="muted"><input type="checkbox" id="with-narration">
+          按分镜的口播稿合成旁白（真实 TTS，需要联网；不同音就明说没有旁白）</label>
+      </div>
       <div id="pipeline-out"></div>
     </div>`;
 
   const runPipeline = async (render) => {
     const out = document.getElementById('pipeline-out');
+    const narration = Boolean(document.getElementById('with-narration')?.checked);
     if (render && !window.confirm('真的开始渲染吗？这一步会占用本机 CPU 十几分钟。')) return;
     out.innerHTML = render
       ? '<div class="note">正在导入素材、渲染镜头并合成成片，请勿关闭页面…</div>'
@@ -731,7 +736,7 @@ async function pageVideo(view) {
     buttons.forEach((button) => { if (button) button.disabled = true; });
     const result = await api(`/workspace/jobs/${job.job_id}/pipeline`, {
       method: 'POST',
-      body: JSON.stringify({ render, output_name: 'output/final.mp4' }),
+      body: JSON.stringify({ render, narration, output_name: 'output/final.mp4' }),
     });
     buttons.forEach((button) => { if (button) button.disabled = false; });
     if (!result.ok) { out.innerHTML = failure(result); return; }

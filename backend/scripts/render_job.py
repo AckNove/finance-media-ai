@@ -68,6 +68,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", default="output/final.mp4")
     parser.add_argument("--no-render", action="store_true", help="只生成并校验时间轴，不真渲染")
     parser.add_argument("--no-qc", action="store_true", help="跳过成片质检（一般不用）")
+    parser.add_argument("--narration", action="store_true",
+                        help="按分镜的 narration 列合成旁白音轨（真实 TTS，默认关闭）")
+    parser.add_argument("--narration-provider", default="auto", choices=["auto", "edge", "sapi"])
+    parser.add_argument("--narration-voice", default=None)
     parser.add_argument("--jobs-root", default=None, help="默认 content/jobs")
     args = parser.parse_args(argv)
 
@@ -85,6 +89,7 @@ def main(argv: list[str] | None = None) -> int:
         "updated_at": _now(),
         "finished_at": None,
         "render": not args.no_render,
+        "narration": bool(args.narration),
         "output_name": args.output,
         "log": ["进程已启动，正在读分镜与素材清单"],
         "report": None,
@@ -98,6 +103,9 @@ def main(argv: list[str] | None = None) -> int:
             do_render=not args.no_render,
             do_qc=not args.no_qc,
             output_name=args.output,
+            narration=bool(args.narration),
+            narration_provider=args.narration_provider,
+            narration_voice=args.narration_voice,
         )
     except RenderError as error:
         payload.update(

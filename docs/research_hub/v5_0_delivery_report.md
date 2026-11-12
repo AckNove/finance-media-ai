@@ -397,3 +397,33 @@ content.*` 会从 BLOCKED 变成真实产出，不需要改架构。在那之前
 
 本轮新增的真实研究产物：`content/research/task-1/{digest.md,digest.json}`（3 条真实来源、
 18 个候选数据点，正文里明写"规则汇编（未使用模型）"），作为"真实搜索→抓取→底稿"的入库证据。
+
+## R. 再增补：印证入报告、图表入库、旁白入轨
+
+§Q 之后又做了三件事，仍然是每条都有测试或真跑证据：
+
+| 增补 | 状态 | 证据 |
+| --- | --- | --- |
+| 跨来源交叉印证（`backend/app/research/corroborate.py`） | ✅ 真数据 | 4-gram Jaccard 判"是不是在说同一件事"，一个数字一条记录；`tests/test_research_corroboration.py` 16 例 |
+| 印证结果写进报告局限与 `tier_stats` | ✅ | `content/research/task-1/digest.json` 重算：`corroborated 12 / conflicts 1 / single 8`；报告 `limitations` 里逐句写明"未判断谁对，引用前必须回原文核对" |
+| 自绘图表登记进素材清单（`backend/app/video/generated.py` + `backend/scripts/chart_from_table.py`） | ✅ | 表格 → 指标 → PNG → `assets_manifest.csv` 的 B 类行，分镜可直接引用；`tests/test_generated_assets.py` 7 例 |
+| 旁白音轨（`backend/app/video/narration.py`） | ✅ 真跑 | 7 个镜头全部用 Edge TTS 合成，逐镜头落 `audio/narration/<shot_id>.mp3`，总 30.6 秒，最长一段超镜头 0.01 秒（容差内）；`tests/test_video_narration.py` 7 例 + `tests/test_video_render.py` 2 例 |
+
+关于印证的那 1 处冲突：契约数据是「城商行 1.38%」和「民营银行 4.11%」两句被 4-gram 相似度 0.73
+连成一簇。这是**规则的已知误差**，不是数据错误；我没有为了让报告更漂亮去调参"消灭"它，
+而是让它留在底稿里并标注"需回原文核对"。同类问题（同义词、单位换算）一律不做猜测。
+
+旁白的三条纪律写死在代码里，不是靠文档约束：
+
+1. 只读分镜的 `narration` 列，**不碰 `subtitle`**（字幕仍只来自 `subtitle` 列）；
+2. 音频按镜头起始时间落位，`overrun_seconds` 如实记录，**不拉伸镜头**去凑时长；
+3. TTS 全不可用时 `ok=False` 且不写 `narration.json`，报告里明写"成片没有旁白"——
+   不生成静音轨冒充配音。
+
+增补后的终态数字（以此处为准）：
+
+- 测试：`pytest -o addopts="" -q` → **722 passed, 2 skipped, 1 warning in 69.54s**；
+- 工具 10 个全部真实实现；API 操作数仍是 41（旁白走既有 `/pipeline` 与后台渲染的 body 参数，
+  没有新增端点，权限清单无需变动）；
+- 旁白默认关闭：`render_job(narration=False)`，后台脚本加 `--narration` 才合成，
+  工作台视频页有对应勾选框——因为真实 TTS 需要联网，不能悄悄跑。

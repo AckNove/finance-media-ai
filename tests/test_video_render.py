@@ -316,6 +316,70 @@ def test_engine_rejecting_the_timeline_stops_before_rendering(tmp_path: Path) ->
     assert not any(call.startswith("render:") for call in engine.calls)
 
 
+def _fake_narration(_text: str, out_path: Path, **_kwargs):
+    from backend.app.capabilities.tts.provider import TtsResult
+
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_bytes(b"ID3fake")
+    return TtsResult(
+        path=out_path,
+        provider="fake",
+        voice="zh-CN-Test",
+        text=str(_text),
+        duration_seconds=1.5,
+        byte_size=out_path.stat().st_size,
+        sha256="b" * 64,
+        words=(),
+        sample_rate=24000,
+        estimated=False,
+        meta={},
+    )
+
+
+def test_narration_adds_voice_tracks_to_the_timeline(tmp_path: Path) -> None:
+    job = _write_job(tmp_path)
+    engine = _FakeEngine(tmp_path / "out.mp4")
+    report = render_job(
+        job,
+        engine=engine,
+        do_render=False,
+        narration=True,
+        synthesize_narration_fn=_fake_narration,
+    )
+
+    document = json.loads(report.timeline_path.read_text(encoding="utf-8"))
+    assert document["audio"]["mode"] == "mix"
+    sources = [track["src"] for track in document["audio"]["tracks"]]
+    assert sources == ["audio/narration/sh01.mp3", "audio/narration/sh02.mp3"]
+    assert report.narration["clip_count"] == 2
+    assert any("旁白" in note for note in report.notes)
+    # 旁白只来自 narration 列，字幕仍来自 subtitle 列
+    assert [item["text"] for item in document["text"]] == ["银行靠什么赚钱？", "利息净收入占七成"]
+
+
+def test_missing_tts_leaves_the_film_silent_but_says_so(tmp_path: Path) -> None:
+    from backend.app.capabilities.tts.provider import TtsError
+
+    def broken(text: str, out_path: Path, **_kwargs):
+        raise TtsError("no_provider", "没有可用的语音提供方")
+
+    job = _write_job(tmp_path)
+    engine = _FakeEngine(tmp_path / "out.mp4")
+    report = render_job(
+        job,
+        engine=engine,
+        do_render=False,
+        narration=True,
+        synthesize_narration_fn=broken,
+    )
+
+    document = json.loads(report.timeline_path.read_text(encoding="utf-8"))
+    assert "audio" not in document
+    assert report.narration["ok"] is False
+    assert any("没有生成旁白音轨" in note for note in report.notes)
+
+
 # ------------------------------------------------------------------ 渲染与质检
 
 

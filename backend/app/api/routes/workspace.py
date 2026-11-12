@@ -167,6 +167,9 @@ def run_job_pipeline(
             do_render=wants_render,
             do_qc=wants_render,
             output_name=str(body.get("output_name") or "output/final.mp4"),
+            narration=bool(body.get("narration")),
+            narration_provider=str(body.get("narration_provider") or "auto"),
+            narration_voice=body.get("narration_voice") or None,
         )
     except RenderError as error:
         raise DomainValidationError(
@@ -233,11 +236,18 @@ def start_job_render(
     ]
     if body.get("render") is False:
         command.append("--no-render")
+    if body.get("narration"):
+        command.append("--narration")
+        provider = str(body.get("narration_provider") or "auto")
+        command += ["--narration-provider", provider]
+        if body.get("narration_voice"):
+            command += ["--narration-voice", str(body["narration_voice"])]
     _spawn(command)
     return {
         "ok": True,
         "job_id": job_id,
         "started": True,
+        "narration": bool(body.get("narration")),
         "status_file": str(runner.status_path(job_dir)),
         "message": "渲染进程已启动；用 GET /api/workspace/jobs/{job_id}/render 看进度",
     }

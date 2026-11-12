@@ -30,7 +30,7 @@ from typing import Any, Callable, Mapping
 from backend.app.capabilities.media.engine import MediaEngineError, VideoEngine
 from backend.app.media.manifest import read_manifest
 from backend.app.media.storyboard import Storyboard, StoryboardError, load_storyboard
-from backend.app.media.timeline import TimelineError, build_timeline, subtitle_events
+from backend.app.media.timeline import TimelineError, audio_mix, build_timeline, subtitle_events
 
 __all__ = [
     "QC_THRESHOLDS",
@@ -90,6 +90,7 @@ class RenderReport:
     engine_calls: tuple[str, ...] = field(default=())
     qc: dict[str, Any] = field(default_factory=dict)
     notes: tuple[str, ...] = field(default=())
+    narration: dict[str, Any] = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -114,6 +115,7 @@ class RenderReport:
             "engine_calls": list(self.engine_calls),
             "qc": self.qc,
             "notes": list(self.notes),
+            "narration": self.narration,
             "ok": self.ok,
         }
 
@@ -381,6 +383,10 @@ def render_job(
     font_path: str = "fonts/NotoSansSC-VF.ttf",
     ffprobe: Callable[[list[str]], str] | None = None,
     ffmpeg: Callable[[list[str]], str] | None = None,
+    narration: bool = False,
+    narration_provider: str = "auto",
+    narration_voice: str | None = None,
+    synthesize_narration_fn: Callable[..., Any] | None = None,
 ) -> RenderReport:
     """分镜 → 时间轴 → 成片 → 质检。任何一步缺东西都如实报 blocked，不伪造产物。"""
     root = Path(job_root).resolve()
@@ -438,6 +444,24 @@ def render_job(
     except MediaEngineError as error:
         raise RenderError(error.code, str(error)) from error
 
+    narration_payload: dict[str, Any] = {}
+    narration_audio: dict[str, Any] | None = None
+    notes: list[str] = []
+    if narration:
+        from backend.app.video.narration import narration_notes, synthesize_narration
+
+        result = synthesize_narration(
+            storyboard,
+            job_root=root,
+            provider=narration_provider,
+            voice=narration_voice,
+            synthesize=synthesize_narration_fn,
+        )
+        narration_payload = result.as_dict()
+        notes.extend(narration_notes(result, shot_count=len(storyboard.shots)))
+        if result.tracks:
+            narration_audio = audio_mix(list(result.tracks))
+
     captions = subtitle_events(
         storyboard, family=font_family, size=font_size, source="subtitle"
     )
@@ -459,11 +483,12 @@ def render_job(
             "把字体放进任务目录的 fonts/ 再跑（组合文档里的字体路径也相对工程目录）",
         )
     try:
-        timeline = build_timeline(storyboard, clips, text=captions, fonts=fonts or None)
+        timeline = build_timeline(
+            storyboard, clips, audio=narration_audio, text=captions, fonts=fonts or None
+        )
     except TimelineError as error:
         raise RenderError(error.code, str(error)) from error
 
-    notes: list[str] = []
     # 时间轴默认写到 project/timeline.json；那儿已经有别人写的文件时不要覆盖，
     # 改写到时间轴旁边另存一份，并在报告里说明（Phase 2 的交付物就是这样被保护住的）。
     timeline_path = root / "project" / "timeline.json"
@@ -499,6 +524,7 @@ def render_job(
         "timeline_path": timeline_path,
         "engine_calls": tuple(calls),
         "notes": tuple(notes),
+        "narration": narration_payload,
     }
 
     if not do_render:
