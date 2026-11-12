@@ -201,7 +201,7 @@ backend/migrations/               Alembic 迁移（初始 de8148733a9b + B1/B2/B
 backend/scripts/                  seed_collections / enable_wal / install_ffmpeg / check_media_toolchain
                                   / media_selftest / research_task / run_worker / render_job
                                   / produce_video / preflight / recover_tasks
-                                  / model_smoke（真实模型冒烟）/ import_digest（底稿导入复现）
+                                  / model_smoke（真实模型冒烟）/ model_e2e_check（12 步真实闭环）/ import_digest（底稿导入复现）
                                   / flow_check（前端全链路验收）
 scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
@@ -213,7 +213,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（788 例）
+tests/                            pytest 回归测试（808 例）
 ```
 
 ## 文档
@@ -244,22 +244,24 @@ tests/                            pytest 回归测试（788 例）
 
 ## 尚未实现（避免误解）
 
-**硬阻塞：真实模型调用。** 仓库里没有任何 API Key、也没有本机模型服务，所以
-`research.analyze / research.synthesize / verify.claims / content.*` 一律停在
-`blocked: model_not_configured`，并把"下一步该配什么"写进任务输出。解除只需三步：
+**真实模型已接通并真跑过一遍闭环**（2026-11-12 深夜）。密钥放在项目根的 `.env`
+（`.gitignore` 已忽略），`features.model: true`；`research.analyze` 与
+`research.synthesize` 会真调 `deepseek-flash`，成本按真实 token 落 `model_calls`。
+一份完整实测见 `docs/research_hub/v5_0_model_integration_report.md` §10：
 
-```powershell
-# 1) 在项目根目录的 .env 里写（只在本机，不进 Git）
-#    DEEPSEEK_API_KEY=sk-你的真实密钥
-# 2) config/settings.yaml 里把 features.model 改成 true（人工开关）
-# 3) 复查并冒烟
-.\.venv\Scripts\python.exe -m backend.scripts.preflight
-.\.venv\Scripts\python.exe -m backend.scripts.model_smoke
-```
+| 项 | 实测 |
+| --- | --- |
+| 12 步闭环 | 9/9 子任务 succeeded，44 条事件 |
+| 真实来源 / 证据 | 6 条来源、48 行 evidence（逐字命中才 verified） |
+| 模型调用 | 2 次（analyze + synthesize），9846 tokens，**¥0.039752** |
+| 报告结论 | 每条挂 `source_ids`，局限说明如实写"由模型生成、需回原文核对" |
 
-`model_smoke` 会把两个闸门一起报（缺密钥 / 开关没开），成功时退出码 0 并打印真实
-`text`、`usage`、`audit.cost_estimate_cny` 与 `audit.id`。在此之前**不会**用假文本
-冒充分析结论，也不会产生任何费用。
+复跑：`python -m backend.scripts.model_e2e_check`（临时库 + 真搜索 + 真模型，约 4 分钱）。
+只要把 `config/settings.yaml` 的 `features.model` 改回 `false` 就**一键停服**——
+网关在发请求之前就返回 `feature_disabled`，不花钱。
+
+仍然没做的两处（不掩饰）：`research.plan` 仍用规则拆检索词（不是模型做语义拆解）；
+`verify.claims` 只做逐字核对，**语义核查**（口径/时效/样本是否对得上）还没有。
 
 模型与价目现状（`config/models.yaml`，2026-11-12 按官方文档核对）：
 `deepseek-flash`（输入 0.00213 / 输出 0.00852 元每千 token）、
@@ -292,8 +294,10 @@ tests/                            pytest 回归测试（788 例）
   接上这些接口，按钮都打真请求。
 
 数据层面的现状（`data/finance_media.db` 只读，所有真实跑都在临时库）：
-`model_calls` 仍是 0 行（没有一次真实模型调用发生过，这是实话不是漏记）；
-`config/models.yaml` 里两条模型的价目仍是 `null`，因此任何真实模型调用都会先被
+真实开发库仍是 19 表 / `revision=de8148733a9b` / `journal_mode=delete`，没被迁移过；
+`model_calls` 在**开发库**里仍是 0 行，真实模型调用只发生在临时库
+（`python -m backend.scripts.model_e2e_check` 跑完就有 2 行、约 ¥0.04）。
+`config/models.yaml` 的两条模型都填了核对过的价目，未填价目的模型仍会被
 `budget.evaluate_model_call()` 以 `pricing_missing` 拒绝（M1.2 决策 Q8=B，宁可拒绝也不按 0 元记账）。
 
 逐项状态见 `docs/research_hub/v5_0_delivery_report.md`（V5.0 二十个模块的落地状态、

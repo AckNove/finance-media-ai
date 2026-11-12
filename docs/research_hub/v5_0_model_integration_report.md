@@ -310,3 +310,101 @@ python -m backend.scripts.flow_check
 | 测试 | 全量 **788 passed, 2 skipped, 1 warning**（新增 2 例：日历数字不上卡、裸数字不排卡） |
 
 旧目录 `content/jobs/v5_flow_acceptance/`（含那张写错的 `11`）已删除，仓库里只留修正后的这条片子。
+
+---
+
+## 10. 真实模型闭环：跑通了（2026-11-12 深夜）
+
+§3 里那个 `BLOCKED: model_not_configured` 在你把密钥交给我之后解除了。这一节记的是**真跑出来的结果**，不是"应该能跑"。
+
+### 10.1 密钥是怎么接上的
+
+| 步骤 | 做了什么 | 为什么必须这么做 |
+| --- | --- | --- |
+| 1 | 项目根建 `.env`，写 `DEEPSEEK_API_KEY=…` | `.gitignore` 已含 `.env` / `.env.*`；`git status --porcelain` 里看不到它 |
+| 2 | `backend/app/core/config.py` 新增 `load_dotenv_into_environ()` 并在导入时调用 | **这是之前一直 `missing_api_key` 的根因**：`Settings` 只把 `.env` 读进自己的模型，而 `providers._env()` 读的是 `os.environ`。不注入进程环境，配了也等于没配 |
+| 3 | `config/settings.yaml` 的 `features.model: false → true` | 人工总开关。关掉即一键停服：网关在发请求**之前**就返回 `feature_disabled`，不花钱 |
+| 4 | `python -m backend.scripts.model_smoke` | 最小真实请求，验"真请求 + 真计费 + 可追溯审计" |
+
+冒烟实测（两次，合计约 ¥0.0027）：
+
+```json
+{"ok": true, "status": "ok", "provider": "deepseek", "model": "deepseek-flash",
+ "usage": {"prompt_tokens": 41, "completion_tokens": 158, "total_tokens": 199},
+ "audit": {"id": 1, "cost_estimate_cny": 0.001433, "duration_ms": 5159}}
+```
+
+`model_calls` 里那一行实测字段：`purpose=smoke`、`pricing_unknown=0`、`prompt_preview` 只有提问，
+**整张表 grep `sk-` 为 0 命中**（密钥不进审计、不进日志）。
+
+### 10.2 12 步闭环实测（`python -m backend.scripts.model_e2e_check`）
+
+只用临时库（`%TEMP%\fmai_model_e2e_*/flow.db`），真起 uvicorn、真搜索、真抓取、真调模型：
+
+| # | 任务书要求的步骤 | 实测结果 |
+| --- | --- | --- |
+| 1 | 建研究任务 | `POST /api/research-tasks` → **201**，`task_id=1`，自动拆出 9 个子任务 |
+| 2 | 拆解问题 | `research.plan` succeeded，`planner=keywords`（规则拆词；语义拆解仍是缺口，见 10.5） |
+| 3 | 真实搜索 | `research.collect` succeeded，**6 条真实来源** |
+| 4 | 真实抓取 | 快照落 `data/snapshots/<host>/<sha256>.*`，反爬页被判 `bot_wall`/`thin_content` 不计入 |
+| 5 | 解析 | `research.extract` succeeded，带页码/行号定位的结构化数据点 |
+| 6 | 模型分析 | `research.analyze` succeeded：`deepseek-flash`，prompt 3453 + completion 1225 = **4678 tokens**，¥0.017792 |
+| 7 | 结构化 Finding | 每条结论带 `source_ids`（挂不上来源的在解析阶段就被丢弃，进 `dropped`） |
+| 8 | 关联 Evidence | `report_id=1`，**evidence 48 行**（逐字命中才 `verified`） |
+| 9 | 事实核查 | `verify.claims` succeeded：48 条逐字核对（语义核查未做，见 10.5） |
+| 10 | 完整报告 | `research.synthesize` succeeded：再花 3454 + 1714 = **5168 tokens**，¥0.021960 |
+| 11 | 保存版本 | `content/research/task-1/{digest.md,digest.json,analysis.md,analysis.json}` |
+| 12 | 完成审核 | 任务 `completed`，9/9 子任务 succeeded，**44 条事件**（`claimed 9 / subtask_started 9 / subtask_succeeded 9 / queued 9 / paused 2 / resumed 3 / plan_created 1 / completed 1 / created 1`） |
+
+模型写出来的报告摘要（`GET /api/research-reports` 实读）：
+
+> 证据支持的结论是：商业银行以盈利为目标，核心收入来自贷款利息与存款付息之间的净利息收入，
+> 中间业务收入是重要补充；规模受约束时，扩大净息差和增加中间业务收入成为创收手段；
+> 拨备计提会影响净利润与营业收入增速的差异。
+
+第一条结论（原文照录，含来源）：
+
+```json
+{"text": "净利息收入是商业银行最重要的收入来源，2016年国有行和股份行利息净收入约占营业收入70%，城商行和农商行分别约80%和90%。",
+ "kind": "fact", "source_ids": ["S01", "S02"], "numbers": ["2016", "70%", "80%", "90%"], "verified": false}
+```
+
+### 10.3 成本
+
+| 项 | 数值 |
+| --- | --- |
+| 模型调用 | **2 次**（analyze + synthesize） |
+| tokens | 9846（prompt 6907 + completion 2939） |
+| 成本 | **¥0.039752** |
+| 若连冒烟一起算 | 约 ¥0.0425 |
+
+`GET /api/system/costs` 与库里 `SUM(model_calls.cost_estimate)` **对得上**（`0.039752`），`pricing_unknown_calls=0`。
+三道预算闸（单次 / 单任务 / 当日）都没动过：任务预算 `budget_max_calls=8`、`budget_max_cost_cny=0.5`，实际各用了 1 次、0.04 元。
+
+### 10.4 这一轮修掉的三个真缺陷
+
+1. **回答被截断却被当成结果**：第一次跑 `research.analyze` 直接 `failed`。查库发现 `completion_tokens=1200` 正好等于 `max_tokens` —— 模型撞上限、JSON 半截。
+   修法：网关把 `choices[0].finish_reason` 带进 `usage`，`analysis.analyze()` 见到 `length`（或 completion 顶到 max_tokens）**直接抛 `truncated`**，绝不解析半截 JSON；默认 `max_tokens` 1200 → **2400**。新增用例 `test_analyze_refuses_a_truncated_reply_instead_of_parsing_half_json`。
+2. **失败不传染，任务卡死在 running**：一格 `blocked` 之后，下游一直停在 `pending`——任务既不结束也不报错，worker 空转，人看到的是"还在跑"。
+   修法：`TaskRuntime._refresh_readiness()` 里把 `blocked` 也算作会传染的终态。新增用例 `test_failure_cascades_so_the_task_ends_instead_of_hanging_in_running`（断言任务收尾为 `failed`、`pending` 归零）。
+3. **报告写着"未使用模型"而正文是模型写的**：`limitations` 一直沿用底稿那句"本文件由规则汇编生成，**没有使用模型**"。这是**假陈述**，比缺一句话严重。
+   修法：`record_report(..., model_label=…)`，模型参与时把那句换掉，改成"摘要与结论由模型（`deepseek/deepseek-flash`）基于下列证据生成…但模型结论不等于事实核查结论"。测试断言 `"未使用模型" not in limitations` 且 `"deepseek/deepseek-flash" in limitations`。
+
+### 10.5 仍然没做的（不掩饰）
+
+| 缺口 | 现状 | 影响 |
+| --- | --- | --- |
+| 语义核查 | `verify.claims` 只做逐字核对，`semantic_check_done=false` | 能证明"这句话原文里有"，不能证明"这句话说得对"（口径、时效、样本仍需人判或模型判） |
+| 模型规划 | `research.plan` 仍是规则拆词 | 拆出来的检索词偏机械，多角度问题拆解需模型 |
+| 人工闸门 | 立项、脚本两处必须人点 `POST /resume` | 这是设计如此（`topic_approval` / `content.script` 前置闸门），不是缺陷 |
+| `verified` 标记 | 模型结论的 `verified` 恒为 `false` | 模型结论不参与逐字核查，标记如实 |
+
+### 10.6 复跑命令
+
+```powershell
+# 完整 12 步（临时库 + 真搜索 + 真模型，约 4 分钱）
+python -m backend.scripts.model_e2e_check
+
+# 只验模型通不通（约 1 分钱）
+python -m backend.scripts.model_smoke
+```
