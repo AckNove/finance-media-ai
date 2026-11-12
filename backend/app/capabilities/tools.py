@@ -1,13 +1,15 @@
-"""工具契约登记与统一调度（M2.0 T04）。
+"""工具契约登记与统一调度（M2.0 T04，V5.0 M2 扩展）。
 
 **诚实边界**：这里登记 10 个工具的契约、权限元数据与统一信封。
-其中 ``parse_pdf`` / ``parse_xlsx`` 已由 ``capabilities.adapters.markitdown_adapter``
-提供**真实实现**（本地 MarkItDown，无网络、无模型）；其余 8 个仍只有契约
-（``implemented=False``），``ToolRegistry.dispatch()`` 对它们返回
-``status="not_implemented"``，绝不返回伪造的成功结果。
+``parse_pdf`` / ``parse_xlsx`` 由 ``capabilities.adapters.markitdown_adapter``
+提供**真实实现**（本地 MarkItDown，无网络、无模型）；``llm_complete`` 由
+``capabilities.model.tool`` 接到统一模型网关（真实 HTTP，无密钥即
+``not_configured``）。其余 7 个仍只有契约（``implemented=False``），
+``ToolRegistry.dispatch()`` 对它们返回 ``status="not_implemented"``，
+绝不返回伪造的成功结果。
 
 未实现 ≠ 不存在：契约（输入/输出/错误码/权限/离线测试方法）已在
-``docs/research_hub/tooling_architecture.md`` 中定义，2.1–2.4 阶段按契约实现。
+``docs/research_hub/tooling_architecture.md`` 中定义，按契约逐步实现。
 """
 
 from __future__ import annotations
@@ -110,8 +112,9 @@ TOOL_SPECS: dict[str, ToolSpec] = {
         name="llm_complete",
         category="model",
         agent_only=True,
-        implemented=False,
-        notes="P0-2：必须先 reserve_call() 再发请求；价目缺失按 Q8=B 直接拒绝",
+        implemented=True,
+        notes="已由 capabilities/model/tool.py 接到统一网关（V5.0 M2）：先过预算三道闸门，"
+        "价目缺失按 Q8=B 直接拒绝，无密钥返回 not_configured，绝不 Fake",
     ),
     "task_update": ToolSpec(
         name="task_update",
@@ -198,16 +201,18 @@ _default_registry: ToolRegistry | None = None
 def get_tool_registry() -> ToolRegistry:
     """进程内默认注册表。
 
-    首次创建时挂上**已真实实现**的适配器（当前只有 MarkItDown 解析器）；
+    首次创建时挂上**已真实实现**的适配器（MarkItDown 解析器 + 统一模型网关）；
     其余工具保持"未实现"，dispatch 返回 ``not_implemented``。
-    适配器的导入放在函数内部，避免 ``adapters`` ↔ ``tools`` 的循环导入。
+    适配器的导入放在函数内部，避免 ``adapters``/``model`` ↔ ``tools`` 的循环导入。
     """
     global _default_registry
     if _default_registry is None:
         registry = ToolRegistry()
         from backend.app.capabilities.adapters import register_parser_adapters
+        from backend.app.capabilities.model.tool import register_model_adapters
 
         register_parser_adapters(registry)
+        register_model_adapters(registry)
         _default_registry = registry
     return _default_registry
 

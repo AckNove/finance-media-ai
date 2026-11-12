@@ -28,7 +28,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.app.core.utils import utcnow
 from backend.app.database.base import Base, TimestampMixin
 from backend.app.models.enums import AgentStatus
-from backend.app.models.types import MoneyAmount, enum_column
+from backend.app.models.types import CostAmount, enum_column
 
 
 class AgentRun(Base, TimestampMixin):
@@ -74,4 +74,4 @@ class AgentRun(Base, TimestampMixin):
         ForeignKey("research_subtasks.id", ondelete="SET NULL"), nullable=True, index=True
     )
     #: 本次执行的预估成本（实际值在 model_calls 逐笔记录）
-    cost_estimate: Mapped[Decimal | None] = mapped_column(MoneyAmount)
+    cost_estimate: Mapped[Decimal | None] = mapped_column(CostAmount)

@@ -31,7 +31,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database.base import Base, TimestampMixin
 from backend.app.models.enums import ResearchTaskStatus, SubtaskStatus, TaskEventType
-from backend.app.models.types import MoneyAmount, enum_column
+from backend.app.models.types import CostAmount, MoneyAmount, enum_column
 
 if TYPE_CHECKING:
     from backend.app.models.agent import AgentRun
@@ -69,11 +69,11 @@ class ResearchTask(Base, TimestampMixin):
 
     budget_max_calls: Mapped[int | None] = mapped_column(Integer)
     budget_max_tokens: Mapped[int | None] = mapped_column(Integer)
-    budget_max_cost: Mapped[Decimal | None] = mapped_column(MoneyAmount)
+    budget_max_cost: Mapped[Decimal | None] = mapped_column(CostAmount)
     calls_spent: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     tokens_spent: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     cost_spent: Mapped[Decimal] = mapped_column(
-        MoneyAmount, nullable=False, default=Decimal("0"), server_default="0"
+        CostAmount, nullable=False, default=Decimal("0"), server_default="0"
     )
 
     #: 抢占者与租约（DB 队列）
@@ -84,7 +84,7 @@ class ResearchTask(Base, TimestampMixin):
         Integer, nullable=False, default=0, server_default="0"
     )
     cost_reserved: Mapped[Decimal] = mapped_column(
-        MoneyAmount, nullable=False, default=Decimal("0"), server_default="0"
+        CostAmount, nullable=False, default=Decimal("0"), server_default="0"
     )
     lease_heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     #: 每次抢占轮换的令牌：旧 worker 拿着过期 token 写不进来
@@ -204,7 +204,7 @@ class TaskEvent(Base):
     )
     payload: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     #: 该事件带来的成本增量（正数=花钱），便于按事件流重算成本
-    cost_delta: Mapped[Decimal | None] = mapped_column(MoneyAmount)
+    cost_delta: Mapped[Decimal | None] = mapped_column(CostAmount)
     actor: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True

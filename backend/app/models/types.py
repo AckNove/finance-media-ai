@@ -13,6 +13,11 @@ from sqlalchemy.orm import MappedColumn, mapped_column
 # 避免 float 舍入误差；币种与单位单独建列记录。
 MoneyAmount = Numeric(20, 2)
 
+# 成本核算用 Numeric(20, 6)：一次模型调用通常只花 0.0001–0.02 元，
+# 用两位小数会被舍成 0.00，导致"当日已花"永远读回 0、预算闸门失效。
+# 业务金额（合同金额、投资额）继续用 MoneyAmount。
+CostAmount = Numeric(20, 6)
+
 
 def enum_column(
     enum_cls: type[PyEnum],
@@ -50,4 +55,4 @@ def enum_column(
 
 
 # 便于类型标注使用
-__all__ = ["MoneyAmount", "enum_column", "MappedColumn"]
+__all__ = ["CostAmount", "MoneyAmount", "enum_column", "MappedColumn"]

@@ -1,7 +1,8 @@
 """M2.0 T04：工具契约登记、权限闸门与"未实现就说不"的诚实性。
 
 最重要的两个断言：
-- ``test_no_tool_is_claimed_as_implemented``：M2.0 中十个工具全部 ``implemented=False``；
+- ``test_only_parser_tools_are_claimed_as_implemented``：声明已实现的工具（解析器 +
+  ``llm_complete``）必须真的能在默认注册表里派发，其余七个不许注册；
 - ``test_dispatch_returns_not_implemented_for_registered_tool``：没有实现时返回
   ``not_implemented``，绝不返回伪造的成功结果。
 """
@@ -42,12 +43,15 @@ def test_tool_specs_cover_all_tool_names():
 def test_only_parser_tools_are_claimed_as_implemented():
     """诚实边界：声明"已实现"的工具必须真的能在默认注册表里派发。
 
-    M2.0 交付时十个工具全部 ``implemented=False``；本阶段新增了 MarkItDown
-    适配器，于是 ``parse_pdf`` / ``parse_xlsx`` 变成真实现，其余八个仍然没有。
+    M2.0 交付时十个工具全部 ``implemented=False``；随后 MarkItDown 适配器让
+    ``parse_pdf`` / ``parse_xlsx`` 变成真实现，V5.0 M2 又让 ``llm_complete``
+    接到统一模型网关，其余七个仍然没有。
     这条断言的两半都必须成立，防止有人只改标记不改实现（或反之）。
     """
     claimed = sorted(name for name, spec in TOOL_SPECS.items() if spec.implemented)
-    assert claimed == ["parse_pdf", "parse_xlsx"], f"声称已实现的工具集合变了: {claimed}"
+    assert claimed == ["llm_complete", "parse_pdf", "parse_xlsx"], (
+        f"声称已实现的工具集合变了: {claimed}"
+    )
 
     registry = get_tool_registry()
     assert sorted(name for name in TOOL_NAMES if registry.is_implemented(name)) == claimed
@@ -147,10 +151,10 @@ def test_registry_dispatches_to_registered_provider():
 
 
 def test_default_registry_matches_declared_implementations():
-    """默认注册表里能派发的工具，必须恰好等于 ``implemented=True`` 的那两个解析器。"""
+    """默认注册表里能派发的工具，必须恰好等于 ``implemented=True`` 的那三个。"""
     registry = get_tool_registry()
     implemented = sorted(name for name in TOOL_NAMES if registry.is_implemented(name))
-    assert implemented == ["parse_pdf", "parse_xlsx"]
+    assert implemented == ["llm_complete", "parse_pdf", "parse_xlsx"]
 
 
 def test_parser_tool_reaches_real_adapter_through_default_registry():

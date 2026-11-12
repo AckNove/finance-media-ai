@@ -26,7 +26,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database.base import Base
 from backend.app.models.enums import CallStatus, ToolCallStatus
-from backend.app.models.types import MoneyAmount, enum_column
+from backend.app.models.types import CostAmount, enum_column
 
 if TYPE_CHECKING:
     from backend.app.models.execution import ResearchSubtask, ResearchTask
@@ -66,7 +66,7 @@ class ModelCall(Base):
         Integer, nullable=False, default=0, server_default="0"
     )
     total_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    cost_estimate: Mapped[Decimal | None] = mapped_column(MoneyAmount)
+    cost_estimate: Mapped[Decimal | None] = mapped_column(CostAmount)
     #: 价目未知时置 1：该行成本不可信，只能按上界估算（Q8=B 默认拒绝新调用）
     pricing_unknown: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="0"
@@ -121,7 +121,7 @@ class ToolCall(Base):
     billable: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="0"
     )
-    cost_estimate: Mapped[Decimal | None] = mapped_column(MoneyAmount)
+    cost_estimate: Mapped[Decimal | None] = mapped_column(CostAmount)
     duration_ms: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
