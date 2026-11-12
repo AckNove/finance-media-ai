@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 from sqlalchemy import create_engine, select
@@ -568,3 +569,91 @@ def test_collect_keeps_trying_past_blocked_results(factory, runtime):
     report = _collect_once(factory, runtime, tools)
     assert report.completed == [1], "第 4 条之后应该抓到正文并完成"
     assert tools.tools_used.count("fetch_url") == 5
+
+
+# --- 研究与核查阶段：底稿落盘 + 无模型时如实 blocked -----------------------
+
+_UPSTREAM = [
+    {
+        "subtask_id": 1,
+        "sequence": 1,
+        "task_type": "research.collect",
+        "question": "采集：商业银行净息差",
+        "output": {
+            "planner": "keywords",
+            "queries": ["商业银行净息差"],
+            "results": [
+                {
+                    "query": "商业银行净息差",
+                    "hit_count": 1,
+                    "hits": [],
+                    "fetched": [
+                        {
+                            "url": "https://finance.example.com/a",
+                            "title": "商业银行三季度净息差降至1.53%",
+                            "published_at": "2024-11-25T07:54",
+                            "author": "",
+                            "site_name": "finance.example.com",
+                            "sha256": "b" * 64,
+                            "snapshot_path": "data/snapshots/finance.example.com/b.html",
+                            "char_count": 4200,
+                            "excerpt": "商业银行三季度净息差降至1.53%，不良贷款率环比持平。",
+                        }
+                    ],
+                }
+            ],
+            "fetched_pages": 1,
+            "errors": [],
+        },
+    }
+]
+
+
+def _run_stage(factory, runtime, task_type: str, artifacts_root, *, extra=None):
+    task = runtime.create_task(title="研究阶段", objective="搞清楚净息差")
+    runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="综述：商业银行怎么赚钱",
+        task_type=task_type,
+        input_payload={"_upstream": _UPSTREAM, **(extra or {})},
+    )
+    runtime.start_task(task.id)
+    executor = AgentExecutor(
+        tools=FakeTools(), session_factory=factory, artifacts_root=artifacts_root
+    )
+    worker = Worker(runtime, executor)
+    report = worker.run_once()
+    return report, runtime.task(task.id)
+
+
+def test_analyze_writes_a_digest_and_blocks_without_a_model(factory, runtime, tmp_path):
+    report, snapshot = _run_stage(factory, runtime, "research.analyze", tmp_path)
+    output = snapshot.subtasks[0].output
+    assert output["generated_by"] == "rules"
+    assert output["analysis_done"] is False, "没有模型就不能声称做了分析"
+    assert output["source_count"] == 1
+    assert output["data_point_count"] >= 1
+    digest_md = Path(output["digest"]["markdown"])
+    assert digest_md.exists()
+    assert "规则汇编（未使用模型）" in digest_md.read_text(encoding="utf-8")
+    # 没有密钥 → 任务停在等人补配置，而不是假装写完了报告
+    assert report.blocked == [1]
+    assert snapshot.status == "paused"
+    assert "DEEPSEEK_API_KEY" in output["next_step"]
+
+
+def test_synthesize_marks_report_not_ready_and_keeps_the_digest(factory, runtime, tmp_path):
+    _report, snapshot = _run_stage(factory, runtime, "research.synthesize", tmp_path)
+    output = snapshot.subtasks[0].output
+    assert output["report_ready"] is False
+    assert output["queries"] == ["商业银行净息差"]
+    assert "结论段没有生成" in output["note"]
+
+
+def test_verify_claims_checks_quotes_against_the_source_excerpt(factory, runtime, tmp_path):
+    _report, snapshot = _run_stage(factory, runtime, "verify.claims", tmp_path)
+    output = snapshot.subtasks[0].output
+    assert output["checked"] >= 1
+    assert output["found"] >= 1, "摘录里确实有这句带数字的原话"
+    assert output["semantic_check_done"] is False, "语义核查要模型，不能在规则层冒充"

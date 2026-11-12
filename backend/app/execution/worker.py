@@ -120,8 +120,11 @@ class Worker:
                 report.completed.append(claim.subtask_id)
                 self._pause_for_gate(claim, report)
             elif outcome.status == "blocked":
-                # 阻塞不是失败：挂起来等人处理（补密钥、看脚本），任务进入 paused
-                self.runtime.request_human_review(claim, reason=outcome.reason or "blocked")
+                # 阻塞不是失败：挂起来等人处理（补密钥、看脚本），任务进入 paused。
+                # 已产出的东西（底稿路径、下一步提示）一起存下来，别让人重跑一遍才知道做到哪。
+                self.runtime.request_human_review(
+                    claim, reason=outcome.reason or "blocked", output=outcome.output
+                )
                 report.blocked.append(claim.subtask_id)
                 logger.warning(
                     "subtask %s blocked: %s", claim.subtask_id, outcome.reason

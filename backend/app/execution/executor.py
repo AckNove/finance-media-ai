@@ -161,14 +161,20 @@ class AgentExecutor:
         session_factory: sessionmaker[Session] | None = None,
         fetch_per_query: int = FETCH_PER_QUERY,
         clock: Callable[[], float] = time.monotonic,
+        artifacts_root: Path | None = None,
     ) -> None:
         self._tools = tools or get_tool_registry()
         self._session_factory = session_factory or get_session_factory()
         self.fetch_per_query = fetch_per_query
         self._clock = clock
+        #: 研究产物落盘根目录（默认 content/research，测试里换成临时目录）
+        self.artifacts_root = artifacts_root
         self._handlers: dict[str, Callable[[Claim, CallerContext], ExecutionOutcome]] = {
             TaskType.RESEARCH_COLLECT.value: self._collect,
             TaskType.RESEARCH_EXTRACT.value: self._extract,
+            TaskType.RESEARCH_ANALYZE.value: self._analyze,
+            TaskType.RESEARCH_SYNTHESIZE.value: self._synthesize,
+            TaskType.VERIFY_CLAIMS.value: self._verify_claims,
         }
 
     # ------------------------------------------------------------------ 入口
@@ -400,6 +406,107 @@ class AgentExecutor:
                 ),
             },
         )
+
+    # ------------------------------------------------------------ 研究与核查
+
+    def _digest_for(self, claim: Claim) -> tuple[Any, dict[str, Any], dict[str, Path]]:
+        """按上游真实输出汇编研究底稿并落盘（**规则汇编，不用模型**）。"""
+        from backend.app.core.config import PROJECT_ROOT
+        from backend.app.research.digest import build_digest, write_digest
+
+        payload = claim.input_payload if isinstance(claim.input_payload, dict) else {}
+        upstream = payload.get("_upstream") or []
+        queries: list[str] = []
+        for item in upstream:
+            output = item.get("output") if isinstance(item, dict) else None
+            if isinstance(output, dict):
+                queries.extend(str(q) for q in (output.get("queries") or []))
+        digest = build_digest(
+            title=claim.question or "研究底稿",
+            objective=str(payload.get("objective") or claim.question or ""),
+            upstream=[item for item in upstream if isinstance(item, dict)],
+            queries=queries,
+        )
+        directory = (self.artifacts_root or (PROJECT_ROOT / "content" / "research")) / f"task-{claim.task_id}"
+        paths = write_digest(digest, directory)
+        return digest, payload, paths
+
+    def _analyze(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """把上游资料汇编成"候选数据点表"，并在没有模型时如实标 blocked。"""
+        digest, _payload, paths = self._digest_for(claim)
+        blocked = self._model_blocked(claim)
+        output = {
+            "generated_by": "rules",
+            "digest": {key: str(value) for key, value in paths.items()},
+            "source_count": digest.source_count,
+            "data_point_count": len(digest.data_points),
+            "data_points": [point.as_dict() for point in digest.data_points],
+            "sources": [source.as_dict() for source in digest.sources],
+            "analysis_done": False,
+            "note": (
+                "这一步只做了资料整理与数据点抽取，**没有做分析**"
+                "（对比、归因、趋势判断都需要模型）。"
+            ),
+        }
+        if blocked.status == "blocked":
+            output["next_step"] = (blocked.output or {}).get("next_step", "")
+            return ExecutionOutcome(
+                status="blocked",
+                reason=blocked.reason,
+                output=output,
+            )
+        return ExecutionOutcome(status="completed", output=output)
+
+    def _synthesize(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """汇总成研究底稿；分析小结需要模型，缺模型时标 blocked 并保留底稿。"""
+        digest, _payload, paths = self._digest_for(claim)
+        blocked = self._model_blocked(claim)
+        output = {
+            "generated_by": "rules",
+            "digest": {key: str(value) for key, value in paths.items()},
+            "source_count": digest.source_count,
+            "data_point_count": len(digest.data_points),
+            "queries": list(digest.queries),
+            "sources": [source.as_dict() for source in digest.sources],
+            "report_ready": False,
+            "note": (
+                "底稿已落盘（来源清单 + 候选数据点），但**报告的结论段没有生成**："
+                "结论必须由模型基于这些证据写，脚本化模板不算研究报告。"
+            ),
+        }
+        if blocked.status == "blocked":
+            output["next_step"] = (blocked.output or {}).get("next_step", "")
+            return ExecutionOutcome(
+                status="blocked",
+                reason=blocked.reason,
+                output=output,
+            )
+        return ExecutionOutcome(status="completed", output=output)
+
+    def _verify_claims(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """在原文里核对候选数据点是否真的出现过（可自动做的那部分）。"""
+        from backend.app.research.verify import verify_points
+
+        digest, _payload, paths = self._digest_for(claim)
+        report = verify_points(digest)
+        blocked = self._model_blocked(claim)
+        output = {
+            "generated_by": "rules",
+            "digest": {key: str(value) for key, value in paths.items()},
+            "checked": report["checked"],
+            "found": report["found"],
+            "missing": report["missing"],
+            "results": report["results"],
+            "semantic_check_done": False,
+            "note": (
+                "只核对了『这句带数字的原话是否出现在该来源的正文里』——"
+                "**没有判断它说得对不对**（口径、时效、样本都要模型或人来判）。"
+            ),
+        }
+        if blocked.status == "blocked":
+            output["next_step"] = (blocked.output or {}).get("next_step", "")
+            return ExecutionOutcome(status="blocked", reason=blocked.reason, output=output)
+        return ExecutionOutcome(status="completed", output=output)
 
     # ------------------------------------------------------------------ 记录
 

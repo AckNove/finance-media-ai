@@ -105,6 +105,45 @@ def _as_payload(output: Any) -> Any:
     return {"value": output}
 
 
+def _with_upstream(
+    payload: Any, *, session: Any = None, subtask: Any = None
+) -> dict[str, Any]:
+    """领活时把"上游阶段已经产出的结果"塞进 input_payload 的 ``_upstream`` 里。
+
+    为什么要这么做：研究流水线是链式的——综述要读采集到的正文，脚本要读综述，
+    事实核查要读脚本。如果每一格都靠调用方自己拼 payload，编排器就得预知所有下游
+    需要什么，写出来的依赖会越来越脆。这里统一按 ``research_subtask_dependencies``
+    取**已成功**的直接前驱输出，附带序号与 task_type，让处理器自己挑。
+
+    只放直接前驱：整条链的输出都塞进来会让 payload 随流程线性膨胀。
+    """
+    base: dict[str, Any] = dict(payload) if isinstance(payload, Mapping) else {}
+    if session is None or subtask is None:
+        return base
+    upstream: list[dict[str, Any]] = []
+    dependencies = session.execute(
+        select(ResearchSubtaskDependency.depends_on_subtask_id).where(
+            ResearchSubtaskDependency.subtask_id == subtask.id
+        )
+    ).scalars().all()
+    for dependency_id in dependencies:
+        previous = session.get(ResearchSubtask, dependency_id)
+        if previous is None or previous.status != SubtaskStatus.SUCCEEDED:
+            continue
+        upstream.append(
+            {
+                "subtask_id": previous.id,
+                "sequence": previous.sequence,
+                "task_type": previous.task_type,
+                "question": previous.question,
+                "output": previous.output_payload,
+            }
+        )
+    if upstream:
+        base["_upstream"] = upstream
+    return base
+
+
 @dataclass(frozen=True, slots=True)
 class SubtaskSnapshot:
     id: int
@@ -523,7 +562,7 @@ class TaskRuntime:
                 max_attempts=subtask.max_attempts,
                 attempt_token=token,
                 lease_until=lease_until,
-                input_payload=subtask.input_payload,
+                input_payload=_with_upstream(subtask.input_payload, session=session, subtask=subtask),
                 budget_max_calls=task.budget_max_calls,
                 budget_max_cost_cny=task.budget_max_cost,
             )
@@ -665,8 +704,15 @@ class TaskRuntime:
 
     # ------------------------------------------------------------------ 人工介入
 
-    def request_human_review(self, claim: Claim, *, reason: str) -> TaskSnapshot:
-        """把子任务挂起等人看（blocked），并把任务置为 paused，避免继续花钱。"""
+    def request_human_review(
+        self, claim: Claim, *, reason: str, output: Any = None
+    ) -> TaskSnapshot:
+        """把子任务挂起等人看（blocked），并把任务置为 paused，避免继续花钱。
+
+        ``output`` 必须一起存下来：被 blocked 的阶段往往已经产出了真实东西
+        （例如研究底稿的路径、以及"下一步该配什么"），只记一句 reason 会让人
+        重新跑一遍才能知道它做到了哪一步。
+        """
         with self._session() as session:
             task = self._require_token(session, claim)
             subtask = session.get(ResearchSubtask, claim.subtask_id)
@@ -674,6 +720,8 @@ class TaskRuntime:
                 raise TaskRuntimeError("unknown_subtask", f"子任务 {claim.subtask_id} 不存在")
             subtask.status = SubtaskStatus.BLOCKED
             subtask.failure_reason = f"human_review: {reason}"
+            if output is not None:
+                subtask.output_payload = _as_payload(output)
             task.status = ResearchTaskStatus.PAUSED
             self._clear_lease(task)
             self._event(
