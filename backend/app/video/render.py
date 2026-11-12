@@ -633,7 +633,11 @@ def render_job(
                 raise RenderError("engine_unavailable", f"{job_id}: 建工程失败：{error}") from error
         # 组合文档里的字体路径是相对工程目录的，而字体文件可能在任务目录里。
         # 缺字体引擎会直接拒收（ContractError: Asset missing or unsupported）。
+        # 顺序很重要：先把字体放进任务目录（本机没有就复制一份），再同步进工程目录，
+        # 然后才导入素材——组合画板在这一步就会被 save_composition 落到工程里。
         project_dir = workspace / project_id
+        if font_path:
+            ensure_font(root, font_path)
         _sync_fonts(root, project_dir)
 
     try:

@@ -63,6 +63,12 @@
 # 报告 → 分镜 → 成片（一条命令；按 report_id 走完交接与渲染）
 .\.venv\Scripts\python.exe -m backend.scripts.produce_video --report-id 1 --narration
 #   加 --no-render 只排分镜与时间轴；默认拒绝对 data/finance_media.db 动手
+
+# 没有跑过联网研究？把仓库里已提交的真实底稿导进独立库，再走上一条命令
+.\.venv\Scripts\python.exe -m backend.scripts.import_digest `
+    --digest content/research/task-1/digest.json --database-url sqlite:///./data/demo.db
+#   底稿里的来源、数据点、印证结果原样搬进 sources / research_reports / evidence，
+#   不改写数字、不补来源；导入后打印 report_id，接着用 produce_video --report-id <id>
 ```
 
 手工步骤（想自己控制每一步时）：

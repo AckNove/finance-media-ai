@@ -136,3 +136,29 @@ def test_the_sheet_is_validated_before_it_is_returned(tmp_path: Path) -> None:
     assert result.storyboard_path.relative_to(tmp_path / "job").as_posix() == (
         "storyboard/storyboard.csv"
     )
+
+
+def test_points_without_a_number_tuple_still_get_their_number_from_the_text(
+    tmp_path: Path,
+) -> None:
+    """从数据库行还原的底稿只有原文、没有 numbers，卡面数字必须从原文里抠出来。
+
+    这条链是真正生产走的那条：`handoff._digest_from_rows` 给的 `DataPoint.numbers`
+    是空元组，如果这里不兜底，整片会退化成纯色底、一张数据卡都不生成。
+    """
+    base = _digest()
+    digest = Digest(
+        title=base.title,
+        objective=base.objective,
+        sources=base.sources,
+        data_points=(DataPoint(source_id="S01", text="2024年净息差降至1.52%，同比收窄0.03个百分点。"),),
+    )
+    result = build_outline(digest, job_root=tmp_path / "job")
+
+    data_shot = next(shot for shot in result.shots if shot.number)
+    assert data_shot.number == "1.52%"
+    board = load_storyboard(result.storyboard_path)
+    row = next(shot for shot in board.shots if shot.shot_id == data_shot.shot_id)
+    card = json.loads((tmp_path / "job" / row.asset_source).read_text(encoding="utf-8"))
+    number_node = next(node for node in card["root"]["children"] if node["id"] == "number")
+    assert number_node["text"] == "1.52%"

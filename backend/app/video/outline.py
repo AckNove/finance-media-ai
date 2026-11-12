@@ -130,13 +130,24 @@ def _caption(text: str) -> str:
 
 
 def _number_set(point: Any) -> tuple[str, ...]:
-    """一句话里的关键数字（去掉年份）。用来挡住"同一组数字换个说法再来一遍"。"""
+    """一句话里的关键数字（去掉年份）。用来挡住"同一组数字换个说法再来一遍"。
+
+    注意：从数据库行还原的底稿（`handoff._digest_from_rows`）只有 `text`，`numbers` 是空的。
+    这时必须自己从原文里抠数字，否则卡面数字全是空、整条片子退化成纯色底。
+    """
     try:
         from backend.app.research.corroborate import key_numbers
 
-        return tuple(sorted(set(key_numbers(point))))
+        numbers = tuple(key_numbers(point))
     except Exception:  # noqa: BLE001 - 规则层不该因为分类器出问题而罢工
-        return tuple(sorted({str(number) for number in getattr(point, "numbers", ()) or ()}))
+        numbers = tuple(str(number) for number in getattr(point, "numbers", ()) or ())
+    if numbers:
+        return tuple(sorted(set(numbers)))
+    from backend.app.research.digest import _numbers_in
+    from backend.app.research.corroborate import _YEAR
+
+    text = str(getattr(point, "text", "") or "")
+    return tuple(sorted({number for number in _numbers_in(text) if not _YEAR.match(number)}))
 
 
 def _number_with_unit(text: str, numbers: Sequence[str]) -> str:
@@ -144,13 +155,28 @@ def _number_with_unit(text: str, numbers: Sequence[str]) -> str:
 
     卡片上只写 "1.52" 会被读成"1.52 个什么东西"，单位必须在场；而单位是原文里
     紧跟在数字后面的那部分，所以直接回原文里抓，不自造映射表。
+
+    "第一个"按**原文出现位置**算，不按数字大小：一句话里同时有 "降至1.52%" 和
+    "收窄0.03个百分点" 时，卡面要的是先说的那个主数字，不是排序后最小的那个。
     """
+    best: tuple[int, str] | None = None
     for number in numbers:
         pattern = re.escape(number) + r"\s*(%|％|亿元|万元|亿美元|个百分点|万亿|亿|倍)"
         match = re.search(pattern, text)
-        if match:
-            return f"{number}{match.group(1)}"
-    return numbers[0] if numbers else ""
+        if match is None:
+            continue
+        if best is None or match.start() < best[0]:
+            best = (match.start(), f"{number}{match.group(1)}")
+    if best is not None:
+        return best[1]
+    if not numbers:
+        return ""
+    # 谁都没有单位：退回原文里最先出现的那个数字
+    first = min(
+        ((text.find(number), number) for number in numbers if text.find(number) >= 0),
+        default=None,
+    )
+    return first[1] if first is not None else numbers[0]
 
 
 def _caption_around(text: str, number: str) -> str:
