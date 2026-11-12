@@ -299,13 +299,25 @@ def create_video_job(
             "素材登记进 assets_manifest.csv 后走 Phase 2 的渲染链"
         )
     else:
-        blocked_reason = provider_note
+        # 分镜没排出来时，先说清"是资料不够"还是"是没模型"——两者的处理办法不一样，
+        # 混成一个 model_not_configured 会让人以为配上密钥就能出片。
+        data_reason = outline_result.get("reason") or ""
+        if data_reason in {"insufficient_sources", "no_data_points"}:
+            blocked_reason = data_reason
+        else:
+            blocked_reason = provider_note
         stage = "research_imported"
         next_stage = "content_plan"
-        next_step = (
-            "先配好模型（.env 的 API Key + config/models.yaml 的 enabled 与价目），"
-            "再让脚本阶段生成 script/script.md；本轮不生成任何脚本，避免用模板文字冒充"
-        )
+        if blocked_reason in {"insufficient_sources", "no_data_points"}:
+            next_step = (
+                "证据链里的可用来源太少，规则分镜排不出来；先补抓资料（另一个来源、"
+                "或同一来源的更完整原文），再重新交接。不硬凑、不重复引用同一来源充数"
+            )
+        else:
+            next_step = (
+                "先配好模型（.env 的 API Key + config/models.yaml 的 enabled 与价目），"
+                "再让脚本阶段生成 script/script.md；本轮不生成任何脚本，避免用模板文字冒充"
+            )
 
     manifest = {
         "job_id": identifier,

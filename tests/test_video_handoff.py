@@ -87,7 +87,9 @@ def test_handoff_copies_research_and_leaves_script_empty(tmp_path: Path, no_mode
 
     manifest = json.loads((job / "job.json").read_text(encoding="utf-8"))
     assert manifest["blocked"] is True
-    assert manifest["blocked_reason"] == "model_not_configured"
+    # 这份夹具只有 1 个来源，规则分镜排不出来 —— 卡点是"资料不够"，不是"没配模型"。
+    # 两者处理办法不同（配密钥 vs 补抓另一个来源），所以必须分开报。
+    assert manifest["blocked_reason"] == "insufficient_sources"
     assert manifest["stage"] == "research_imported"
     assert manifest["counts"] == {"evidence": 1, "sources": 1}
     assert len(manifest["report"]["sha256"]) == 64
@@ -151,7 +153,8 @@ def test_video_job_api_creates_directory_and_reports_blocked(
     body = response.json()
     assert body["report_id"] == report_id
     assert body["blocked"] is True
-    assert body["blocked_reason"] == "model_not_configured"
+    # 单来源报告：卡在资料不够，不是卡在模型（见 test_handoff_copies_research_and_leaves_script_empty）
+    assert body["blocked_reason"] == "insufficient_sources"
     assert Path(body["path"]).is_dir()
     assert Path(body["path"]).parent == tmp_path
     assert (Path(body["path"]) / "job.json").is_file()

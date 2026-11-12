@@ -59,6 +59,10 @@
 
 # 重启后恢复：回收过期租约并列出卡住的任务（默认只看不改，加 --apply 才动）
 .\.venv\Scripts\python.exe -m backend.scripts.recover_tasks
+
+# 报告 → 分镜 → 成片（一条命令；按 report_id 走完交接与渲染）
+.\.venv\Scripts\python.exe -m backend.scripts.produce_video --report-id 1 --narration
+#   加 --no-render 只排分镜与时间轴；默认拒绝对 data/finance_media.db 动手
 ```
 
 手工步骤（想自己控制每一步时）：
@@ -188,7 +192,7 @@ backend/app/database/             session.py（连接级 PRAGMA）、wal.py（WA
 backend/migrations/               Alembic 迁移（初始 de8148733a9b + B1/B2/B3 + B4 成本精度）
 backend/scripts/                  seed_collections / enable_wal / install_ffmpeg / check_media_toolchain
                                   / media_selftest / research_task / run_worker / render_job
-                                  / preflight / recover_tasks
+                                  / produce_video / preflight / recover_tasks
 scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
 agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
@@ -199,7 +203,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（733 例）
+tests/                            pytest 回归测试（737 例）
 ```
 
 ## 文档

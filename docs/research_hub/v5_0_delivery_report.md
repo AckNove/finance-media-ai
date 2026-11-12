@@ -503,3 +503,23 @@ content.*` 会从 BLOCKED 变成真实产出，不需要改架构。在那之前
   `tests/test_video_render.py`(16)；
 - API 操作数不变（41）：规则分镜走既有 `POST /api/research-reports/{id}/video-job`
   （`create_video_job(outline=True)` 默认就生成），渲染走既有后台渲染端点。
+
+### S.6 一条命令跑完"报告 → 成片"
+
+`backend/scripts/produce_video.py`：
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.scripts.produce_video --report-id 1 --narration
+.\.venv\Scripts\python.exe -m backend.scripts.produce_video --report-id 1 --no-render
+```
+
+它做三件事，每步都打印真实产物：查报告与证据 → `create_video_job`（规则分镜）→ `render_job`
+（时间轴 + 渲染 + 质检）。退出码分档，方便脚本判断：`0` 成功 / `2` 拒绝对开发库动手 /
+`3` 交接失败或报告不存在 / `4` 分镜排不出来（资料不够）/ `5` 渲染报错 / `6` 渲染未通过质检。
+
+顺手修了一处**会误导人**的判定：分镜排不出来时原来一律报 `blocked_reason=model_not_configured`，
+但"只有一个来源"这种数据问题配密钥也解决不了。现在按原因分开报 `insufficient_sources` /
+`no_data_points` / `model_not_configured`，`next_step` 也随之分岔（补抓另一个来源 vs 配模型）。
+
+测试：`pytest -o addopts="" -q` → **737 passed, 2 skipped, 1 warning**（新增
+`tests/test_produce_video.py` 4 例：拒保护库、缺报告、正常出分镜、单来源被挡）。
