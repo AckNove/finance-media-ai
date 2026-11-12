@@ -22,3 +22,22 @@ pytest>=8.0,<9.0
 # StarletteDeprecationWarning。项目代码本身不直接使用任何 HTTP 客户端，
 # 这里装 httpx2 是为了让测试客户端走官方推荐路径（而不是屏蔽警告）。
 httpx2>=2.0,<3.0
+
+# --- 搜索与抓取（M3）---
+# 正文抽取用 bs4 + lxml；抓取用 httpx（已随测试依赖间接存在，这里显式声明）
+beautifulsoup4>=4.12,<5.0
+lxml>=5.0,<7.0
+httpx>=0.27,<1.0
+
+# --- 文档解析（M4）---
+# MarkItDown 负责格式转换，pdfplumber/openpyxl/python-docx 负责带页码/行号的结构化抽取
+markitdown[pdf,docx,xlsx,pptx]>=0.1.9,<0.2
+pdfplumber>=0.11,<0.12
+openpyxl>=3.1,<4.0
+python-docx>=1.1,<2.0
+pypdfium2>=4.0,<6.0
+
+# --- 语音合成（M4）---
+# edge-tts 给真实词级时间（字幕对齐必需）；固定版本，因为它复刻的是微软未公开接口
+edge-tts==7.3.1
+

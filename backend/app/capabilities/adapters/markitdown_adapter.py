@@ -139,9 +139,20 @@ def _error(code: str, message: str) -> Any:
 
 
 def parse_document_tool(
-    *, caller: Any, tool: str, path: str, max_chars: int | None = None
+    *,
+    caller: Any,
+    tool: str,
+    path: str,
+    max_chars: int | None = None,
+    structured: bool = False,
+    max_table_rows: int = 2000,
 ) -> Any:
-    """``parse_pdf`` / ``parse_xlsx`` 的共同实现（由 ToolRegistry 校验权限后调用）。"""
+    """``parse_pdf`` / ``parse_xlsx`` 的共同实现（由 ToolRegistry 校验权限后调用）。
+
+    ``structured=True`` 时额外挂上 :mod:`structured` 的定位结果（页码 / 工作表 /
+    行列 / 段落序号），供证据系统把一句引文锚到具体位置；定位失败不影响正文返回，
+    只在 ``structured_error`` 里如实说明。
+    """
     from backend.app.capabilities.tools import ToolResult
 
     if not is_available():
@@ -172,33 +183,51 @@ def parse_document_tool(
     truncated = len(parsed.text) > limit
     text = parsed.text[:limit] if truncated else parsed.text
 
+    data: dict[str, Any] = {
+        "tool": tool,
+        "parser": parsed.parser_name,
+        "parser_version": parsed.parser_version,
+        "kind": parsed.kind,
+        "source_path": str(target),
+        "byte_size": parsed.byte_size,
+        "char_count": len(parsed.text),
+        "returned_chars": len(text),
+        "truncated": truncated,
+        "page_count": parsed.page_count,
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "text": text,
+    }
+    if structured:
+        try:
+            from backend.app.capabilities.adapters.structured import extract_structured
+
+            document = extract_structured(target, max_table_rows=max_table_rows)
+            data["document"] = document.as_dict(max_rows=max_table_rows)
+            data["locations"] = {
+                "spans": len(document.spans),
+                "tables": len(document.tables),
+                "pages": document.page_count,
+                "sheets": list(document.sheet_names),
+                "extractor": document.extractor,
+            }
+        except Exception as exc:  # 定位失败不掩盖正文，如实记录
+            data["document"] = None
+            data["structured_error"] = f"{type(exc).__name__}: {exc}"
+
     return ToolResult(
         status="ok",
-        data={
-            "tool": tool,
-            "parser": parsed.parser_name,
-            "parser_version": parsed.parser_version,
-            "kind": parsed.kind,
-            "source_path": str(target),
-            "byte_size": parsed.byte_size,
-            "char_count": len(parsed.text),
-            "returned_chars": len(text),
-            "truncated": truncated,
-            "page_count": parsed.page_count,
-            "sha256": hashlib.sha256(payload).hexdigest(),
-            "text": text,
-        },
+        data=data,
         billable=False,
         cost_cny=0.0,
     )
 
 
-def parse_pdf_tool(*, caller: Any, path: str, max_chars: int | None = None) -> Any:
-    return parse_document_tool(caller=caller, tool="parse_pdf", path=path, max_chars=max_chars)
+def parse_pdf_tool(*, caller: Any, path: str, max_chars: int | None = None, **kwargs: Any) -> Any:
+    return parse_document_tool(caller=caller, tool="parse_pdf", path=path, max_chars=max_chars, **kwargs)
 
 
-def parse_xlsx_tool(*, caller: Any, path: str, max_chars: int | None = None) -> Any:
-    return parse_document_tool(caller=caller, tool="parse_xlsx", path=path, max_chars=max_chars)
+def parse_xlsx_tool(*, caller: Any, path: str, max_chars: int | None = None, **kwargs: Any) -> Any:
+    return parse_document_tool(caller=caller, tool="parse_xlsx", path=path, max_chars=max_chars, **kwargs)
 
 
 #: 默认注册表要挂上的实现
