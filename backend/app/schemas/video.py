@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -19,6 +21,10 @@ class VideoJobOut(BaseModel):
     evidence_count: int
     source_count: int
     files: list[str] = Field(default_factory=list, description="本次写出的文件")
+    outline: dict[str, Any] = Field(
+        default_factory=dict,
+        description="规则分镜结果（ok/shot_count/total_seconds/reason），排不出来时给原因",
+    )
 
 
 __all__ = ["VideoJobOut"]

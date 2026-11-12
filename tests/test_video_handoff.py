@@ -155,6 +155,9 @@ def test_video_job_api_creates_directory_and_reports_blocked(
     assert body["blocked"] is True
     # 单来源报告：卡在资料不够，不是卡在模型（见 test_handoff_copies_research_and_leaves_script_empty）
     assert body["blocked_reason"] == "insufficient_sources"
+    # 界面靠 outline 字段说明"分镜为什么没排出来"，所以它必须出现在响应里
+    assert body["outline"]["ok"] is False
+    assert body["outline"]["reason"] == "insufficient_sources"
     assert Path(body["path"]).is_dir()
     assert Path(body["path"]).parent == tmp_path
     assert (Path(body["path"]) / "job.json").is_file()

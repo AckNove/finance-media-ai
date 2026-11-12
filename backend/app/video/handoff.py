@@ -67,6 +67,7 @@ class VideoJobScaffold:
     evidence_count: int
     source_count: int
     files: tuple[str, ...] = field(default_factory=tuple)
+    outline: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -81,6 +82,7 @@ class VideoJobScaffold:
             "evidence_count": self.evidence_count,
             "source_count": self.source_count,
             "files": list(self.files),
+            "outline": dict(self.outline),
         }
 
 
@@ -419,6 +421,7 @@ def create_video_job(
         evidence_count=len(evidence_rows),
         source_count=len(source_rows),
         files=tuple(files),
+        outline=dict(outline_result),
     )
 
 

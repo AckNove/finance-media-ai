@@ -68,8 +68,11 @@ def get_research_report(db: DbSession, report_id: int = Path(ge=1)) -> ResearchR
     summary="从报告开一个视频任务目录",
     description=(
         "把报告正文、证据行与来源清单搬进 `content/jobs/<job_id>/research/`，"
-        "脚本与分镜目录留空——它们必须基于这些材料来写。没有可用模型时返回 "
-        "`blocked=true` 与稳定原因码，绝不生成模板脚本冒充。"
+        "只要证据里有两个以上来源，就用**纯规则**排一份分镜草稿"
+        "（`storyboard/storyboard.csv` + `OUTLINE.md`，口播稿是原文摘引、逐镜标来源）；"
+        "`script/` 仍然留空——正式脚本必须由模型或人写。资料不够或没有可用模型时返回 "
+        "`blocked=true` 与稳定原因码（`insufficient_sources` / `no_data_points` / "
+        "`model_not_configured`），绝不生成模板脚本冒充。"
     ),
 )
 def create_video_job_for_report(

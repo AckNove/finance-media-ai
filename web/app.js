@@ -528,6 +528,8 @@ async function pageReports(view) {
       const response = await api(`/research-reports/${reportId}/video-job`, { method: 'POST', body: '{}' });
       if (!response.ok) { output.innerHTML = failure(response); return; }
       const job = response.data;
+      const outline = job.outline || {};
+      const storyboardReady = Boolean(outline.ok);
       output.innerHTML = `<div class="card">
         <h2>视频任务目录已建好</h2>
         <p><code>${esc(job.path)}</code></p>
@@ -535,12 +537,51 @@ async function pageReports(view) {
           <span class="tag info">阶段 ${esc(job.stage)}</span>
           <span class="tag">证据 ${job.evidence_count} 条</span>
           <span class="tag">来源 ${job.source_count} 条</span>
-          ${job.blocked ? `<span class="tag warn">阻塞：${esc(job.blocked_reason)}</span>` : '<span class="tag ok">模型已就绪</span>'}
+          ${storyboardReady
+            ? `<span class="tag ok">分镜 ${outline.shot_count} 镜 · ${outline.total_seconds} 秒</span>`
+            : `<span class="tag warn">分镜未排出：${esc(outline.reason || job.blocked_reason)}</span>`}
         </div>
         <div class="note ${job.blocked ? 'warn' : 'ok'}">${esc(job.next_step || '')}</div>
-        <p class="muted">脚本与分镜目录是空的：没有模型可用时不会生成模板文字冒充脚本，等你把模型配好再跑下一步。</p>
+        <p class="muted">分镜是**纯规则**排的草稿：口播稿是原文摘引、逐镜标来源，没有任何模型结论；
+          正式脚本仍需模型或人工写（<code>script/</code> 故意留空）。</p>
+        <div class="row">
+          <label><input type="checkbox" id="job-narration" /> 合成旁白（需要能连 TTS）</label>
+          <button class="btn" id="job-render" ${storyboardReady ? '' : 'disabled'}>后台渲染成片</button>
+        </div>
+        <div id="job-render-out"></div>
         <a href="#/video">去视频预览页看已有成片</a>
       </div>`;
+
+      const renderButton = document.getElementById('job-render');
+      if (renderButton && storyboardReady) {
+        renderButton.onclick = async () => {
+          const narration = Boolean(document.getElementById('job-narration')?.checked);
+          if (!window.confirm('真的开始渲染吗？这一步会占用本机 CPU 十几分钟。')) return;
+          const box = document.getElementById('job-render-out');
+          box.innerHTML = '<div class="note">已提交后台渲染，进度写到 <code>qc/render_run.json</code>…</div>';
+          const started = await api(`/workspace/jobs/${job.job_id}/render`, {
+            method: 'POST',
+            body: JSON.stringify({ narration }),
+          });
+          if (!started.ok) { box.innerHTML = failure(started); return; }
+          const poll = async () => {
+            const state = await api(`/workspace/jobs/${job.job_id}/render`);
+            if (!state.ok) { box.innerHTML = failure(state); return; }
+            const data = state.data || {};
+            if (data.status === 'running') {
+              box.innerHTML = `<div class="note">渲染中（${esc(data.stage || 'starting')}）…</div>`;
+              setTimeout(poll, 5000);
+              return;
+            }
+            box.innerHTML = `<div class="note ${data.status === 'done' ? 'ok' : 'warn'}">
+              状态 ${esc(data.status)} · 阶段 ${esc(data.stage || '')}
+              ${data.report && data.report.output_path ? `<br/>产物 <code>${esc(data.report.output_path)}</code>` : ''}
+              ${data.error ? `<br/>错误 ${esc(data.error)}` : ''}
+            </div>`;
+          };
+          setTimeout(poll, 3000);
+        };
+      }
     };
   });
 
