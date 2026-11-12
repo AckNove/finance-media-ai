@@ -447,7 +447,9 @@ def _seconds(row: dict[str, str], column: str, shot_id: str) -> float:
     if value < 0:
         raise StoryboardError(
             "bad_number", f"{shot_id}: {column} must be >= 0", shot_id=shot_id, column=column)
-    return round(value, 6)
+    # 不要把时间四舍五入到 6 位：30fps 下 248 帧 = 8.2666666… 秒，任何截断都会让
+    # "落在整帧上"的校验（容差 1e-6）把一个合法时间判成非法。
+    return value
 
 
 def _optional_seconds(row: dict[str, str], column: str, shot_id: str) -> float:

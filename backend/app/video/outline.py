@@ -1,0 +1,509 @@
+"""把一份研究底稿（digest）变成可渲染的分镜表——纯规则，不用模型。
+
+为什么需要这一步：V5.0 要求"从报告直接建视频任务"，但真实模型当前是阻塞状态
+（没有 API Key）。阻塞不该让整条生产线停摆，也不该让程序假装写了脚本。所以这里
+只做**机械转换**：把底稿里已经落库、已经带来源编号的数据点排成镜头，每一镜的
+口播稿就是那句原文，屏幕上打出来的是它来自哪个来源。
+
+这个模块刻意不做的事（写在这里是为了以后有人想"顺手加一点"时先看见边界）：
+
+* 不写观点、不做因果推断、不生成文案——一句话只能来自底稿里的原文；
+* 不挑选"传播价值高"的句子——那是模型或人的工作，规则只按顺序取；
+* 不补全缺失字段：素材缺口就让后续渲染阶段如实报错。
+
+所以产物文件名带 ``OUTLINE.md`` 说明它是规则草稿：谁想把它当成品直接发布，
+先看这份说明。
+"""
+
+from __future__ import annotations
+
+import csv
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Iterable, Mapping, Sequence
+
+from backend.app.media.storyboard import DEFAULT_CANVAS, DEFAULT_FPS, load_storyboard
+
+STORYBOARD_REL = Path("storyboard") / "storyboard.csv"
+NOTES_REL = Path("storyboard") / "OUTLINE.md"
+
+#: 每张数据卡停留多久。4.5 秒是旁白念一句 20~30 字比较自然的长度。
+SECONDS_PER_POINT = 4.5
+
+#: 开场与结尾卡的时长。
+SECONDS_OPENING = 4.0
+SECONDS_CLOSING = 5.0
+
+#: 一屏最多放几个数据点。超过就别塞，宁可少讲两句。
+MAX_POINTS = 6
+
+#: 字幕一行放不下太长的句子，超出就截断并加省略号（口播稿保持完整）。
+#: 46px 字号下 1080 宽画布一行约能放 18 个汉字，26 个会顶出画外（实测被裁）。
+MAX_CAPTION_CHARS = 18
+
+_COLORS = "#1d2a44"
+# 每个镜头都要有运动：纯色卡静止不动会被 freezedetect 判成冻结（Phase 2 实测
+# 66.8 秒冻结）。这里全部用轻微推镜/摇镜，不用 static。
+# 纯色底板是"整幅渐变视频"，一平移就会把画面挪出素材边界、露出比底板更亮的画布
+# 底色（抽帧实测在右边露出一条竖条）。所以底板只用推/冲击这类纯缩放运镜；
+# 数据卡自带与画布同色的底，可以放心平移。
+_PLATE_CAMERAS = ("push", "push", "push", "push")
+_CARD_CAMERAS = ("push", "pan_right", "punch", "pan_up", "push")
+_TRANSITIONS = ("none", "dissolve", "slide", "dissolve", "wipe", "dip")
+
+
+class OutlineError(ValueError):
+    """分镜草稿生成失败。``reason`` 稳定，供接口与测试判断。
+
+    取值：``insufficient_sources``、``no_data_points``、``bad_arguments``。
+    """
+
+    def __init__(self, reason: str, message: str) -> None:
+        super().__init__(message)
+        self.reason = reason
+
+
+@dataclass(frozen=True)
+class OutlineShot:
+    shot_id: str
+    seconds: float
+    narration: str
+    subtitle: str
+    source_id: str
+    number: str = ""
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "shot_id": self.shot_id,
+            "seconds": self.seconds,
+            "narration": self.narration,
+            "subtitle": self.subtitle,
+            "source_id": self.source_id,
+            "number": self.number,
+        }
+
+
+@dataclass(frozen=True)
+class OutlineResult:
+    job_id: str
+    storyboard_path: Path
+    notes_path: Path
+    shots: tuple[OutlineShot, ...]
+    total_seconds: float
+    frames: int
+    source_ids: tuple[str, ...]
+    warnings: tuple[str, ...] = field(default=())
+
+    @property
+    def shot_count(self) -> int:
+        return len(self.shots)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "job_id": self.job_id,
+            "storyboard": str(self.storyboard_path),
+            "notes": str(self.notes_path),
+            "shots": [shot.as_dict() for shot in self.shots],
+            "shot_count": len(self.shots),
+            "total_seconds": round(self.total_seconds, 3),
+            "frames": self.frames,
+            "source_ids": list(self.source_ids),
+            "warnings": list(self.warnings),
+            "generated_by": "rules",
+        }
+
+
+def _caption(text: str) -> str:
+    """屏幕字幕：取原文的一段，不重写句子。
+
+    优先在标点处断开（读起来是完整一句），实在没有标点才硬截并加省略号。
+    """
+    clean = " ".join(str(text).split())
+    if len(clean) <= MAX_CAPTION_CHARS:
+        return clean
+    head = clean[:MAX_CAPTION_CHARS]
+    cut = max(head.rfind(mark) for mark in "，、；：。！？")
+    if cut >= MAX_CAPTION_CHARS // 2:
+        return head[: cut + 1]
+    return clean[: MAX_CAPTION_CHARS - 1] + "…"
+
+
+def _number_set(point: Any) -> tuple[str, ...]:
+    """一句话里的关键数字（去掉年份）。用来挡住"同一组数字换个说法再来一遍"。"""
+    try:
+        from backend.app.research.corroborate import key_numbers
+
+        return tuple(sorted(set(key_numbers(point))))
+    except Exception:  # noqa: BLE001 - 规则层不该因为分类器出问题而罢工
+        return tuple(sorted({str(number) for number in getattr(point, "numbers", ()) or ()}))
+
+
+def _number_with_unit(text: str, numbers: Sequence[str]) -> str:
+    """取第一个带单位的数字（"1.52%" 而不是 "1.52"），找不到就退回裸数字。
+
+    卡片上只写 "1.52" 会被读成"1.52 个什么东西"，单位必须在场；而单位是原文里
+    紧跟在数字后面的那部分，所以直接回原文里抓，不自造映射表。
+    """
+    for number in numbers:
+        pattern = re.escape(number) + r"\s*(%|％|亿元|万元|亿美元|个百分点|万亿|亿|倍)"
+        match = re.search(pattern, text)
+        if match:
+            return f"{number}{match.group(1)}"
+    return numbers[0] if numbers else ""
+
+
+def _caption_around(text: str, number: str) -> str:
+    """取这个数字前后的那一小段（不超过一行）做卡面说明。
+
+    "2024年第四季度，净息差环比下降0.01个百分点" 的关键信息在数字附近；直接截
+    前 18 个字只会得到"2024年第四季度，"，卡片上就只剩一个孤零零的数字。
+    """
+    bare = number
+    for unit in ("个百分点", "亿元", "万元", "亿美元", "万亿", "亿", "倍", "%", "％"):
+        if bare.endswith(unit):
+            bare = bare[: -len(unit)]
+            break
+    bare = bare.strip()
+    if bare:
+        index = text.find(bare)
+        if index >= 0:
+            start = 0
+            for mark in "，,；;。！？：｜| ":
+                position = text.rfind(mark, 0, index)
+                if position >= 0:
+                    start = max(start, position + 1)
+            # 不要把年份切成"24年"这种半截：起点落在数字串里就把整串带上
+            while start > 0 and text[start].isdigit() and text[start - 1].isdigit():
+                start -= 1
+            # 从数字前面那一段的起点开始，保证整段不超过一行
+            window = text[start : start + MAX_CAPTION_CHARS].strip(" ，,；;。！？：｜|")
+            if bare not in window:
+                # 一行装不下"起点到数字"时，改成让数字收在行尾，数字本身必须完整
+                tail = index + len(bare)
+                head = max(0, tail - MAX_CAPTION_CHARS)
+                while head > 0 and text[head].isdigit() and text[head - 1].isdigit():
+                    head -= 1
+                window = text[head:head + MAX_CAPTION_CHARS].strip(" ，,；;。！？：｜|")
+            if bare in window:
+                # 行尾正好切在数字后面时，把单位也带上（"1.52" → "1.52%"）
+                if window.endswith(bare):
+                    follow = text[text.find(window) + len(window) :][:1]
+                    if follow in ("%", "％", "亿", "万", "倍"):
+                        window += follow
+                return window
+    return _caption(text)
+
+
+def _points(digest: Any, limit: int) -> list[Any]:
+    """按来源顺序取数据点：每来源最多两条，同一组数字/同一句话只讲一次。"""
+    picked: list[Any] = []
+    per_source: dict[str, int] = {}
+    seen_numbers: set[tuple[str, ...]] = set()
+    seen_text: set[str] = set()
+    for point in getattr(digest, "data_points", ()) or ():
+        source_id = str(getattr(point, "source_id", "") or "")
+        text = str(getattr(point, "text", "") or "").strip()
+        if not source_id or not text:
+            continue
+        if per_source.get(source_id, 0) >= 2:
+            continue
+        # 不同来源常常一字不改地转述同一句通稿，屏幕上不能出现两次一样的话
+        signature = "".join(text.split())[:20]
+        numbers = _number_set(point)
+        if signature in seen_text or (numbers and numbers in seen_numbers):
+            continue
+        picked.append(point)
+        per_source[source_id] = per_source.get(source_id, 0) + 1
+        seen_text.add(signature)
+        if numbers:
+            seen_numbers.add(numbers)
+        if len(picked) >= limit:
+            break
+    return picked
+
+
+def build_outline(
+    digest: Any,
+    *,
+    job_root: Path,
+    job_id: str | None = None,
+    fps: int = DEFAULT_FPS,
+    canvas: tuple[int, int] = DEFAULT_CANVAS,
+    max_points: int = MAX_POINTS,
+) -> OutlineResult:
+    """把底稿排成开场 + N 张数据卡 + 结尾的分镜表，并校验能通过 ``load_storyboard``。"""
+    if max_points < 1:
+        raise OutlineError("bad_arguments", "max_points 至少为 1")
+    root = Path(job_root)
+    sources = tuple(getattr(digest, "sources", ()) or ())
+    if len(sources) < 2:
+        raise OutlineError(
+            "insufficient_sources",
+            f"只有 {len(sources)} 个来源，证据不足，不做视频分镜（至少 2 个来源）",
+        )
+
+    points = _points(digest, max_points)
+    if not points:
+        raise OutlineError("no_data_points", "底稿里没有可引用的数据点，先补充资料再排分镜")
+
+    title = str(getattr(digest, "title", "") or "").strip() or "未命名研究"
+    openings = OutlineShot(
+        shot_id="sh01",
+        seconds=SECONDS_OPENING,
+        narration=f"这一条讲的是：{title}。下面每一句话都能追到原文。",
+        subtitle=title[:MAX_CAPTION_CHARS],
+        source_id="",
+    )
+    shots: list[OutlineShot] = [openings]
+    for index, point in enumerate(points):
+        text = " ".join(str(point.text).split())
+        numbers = _number_set(point)
+        shots.append(
+            OutlineShot(
+                shot_id=f"sh{index + 2:02d}",
+                seconds=SECONDS_PER_POINT,
+                narration=text,
+                subtitle=_caption(text),
+                source_id=str(point.source_id),
+                number=_number_with_unit(text, numbers),
+            )
+        )
+    source_ids = tuple(dict.fromkeys(shot.source_id for shot in shots if shot.source_id))
+    cited = "、".join(source_ids)
+    closing = OutlineShot(
+        shot_id=f"sh{len(shots) + 1:02d}",
+        seconds=SECONDS_CLOSING,
+        narration=(
+            f"以上 {len(points)} 个数字来自 {len(sources)} 份资料（{cited}）。"
+            "这只是资料汇编，不是投资建议。"
+        ),
+        subtitle="资料汇编 · 不是投资建议",
+        source_id="",
+    )
+    shots.append(closing)
+
+    rows: list[dict[str, str]] = []
+    cards: list[Any] = []
+    cursor = 0.0
+    for index, shot in enumerate(shots):
+        start = round(cursor, 3)
+        end = round(cursor + shot.seconds, 3)
+        cursor = end
+        # 有数字的镜头做成数据卡：数字放大、来源标小。纯色底只留给开场与结尾。
+        card = None
+        if shot.number and 0 < index < len(shots) - 1:
+            from backend.app.video.cards import write_card
+
+            card = write_card(
+                root,
+                asset_id=f"CARD_{shot.shot_id}",
+                number=shot.number,
+                caption=_caption_around(shot.narration, shot.number),
+                source_id=shot.source_id,
+                frames=max(2, int(round(shot.seconds * fps))),
+                width=canvas[0],
+                height=canvas[1],
+            )
+            cards.append(card)
+        rows.append(
+            {
+                "shot_id": shot.shot_id,
+                "start_time": f"{start:g}",
+                "end_time": f"{end:g}",
+                "narrative_purpose": "开场" if index == 0 else (
+                    "收尾" if index == len(shots) - 1 else "引用数据点"
+                ),
+                "narration": shot.narration,
+                "visual_description": (
+                    "纯色底 + 大字排版" if card is None else "数据卡：放大数字 + 来源标注"
+                ),
+                "asset_id": card.asset_id if card else "",
+                "asset_type": "composition" if card else "solid",
+                "asset_source": card.relative_path if card else _COLORS,
+                "license": "原创（程序生成）" if card else "原创（纯色底，程序生成）",
+                "animation": "fade_in",
+                "camera_motion": (
+                    _CARD_CAMERAS[index % len(_CARD_CAMERAS)]
+                    if card
+                    else _PLATE_CAMERAS[index % len(_PLATE_CAMERAS)]
+                ),
+                "transition": _TRANSITIONS[index % len(_TRANSITIONS)],
+                # 卡片上已经有这句说明了，底部再叠一条同样的字幕是重复。
+                "subtitle": "" if card else shot.subtitle,
+                "sound_effect": "none",
+                "safety_zone": "bottom",
+                "fps": str(fps),
+                "canvas_width": str(canvas[0]),
+                "canvas_height": str(canvas[1]),
+                "notes": f"规则草稿；来源 {shot.source_id}" if shot.source_id else "规则草稿",
+            }
+        )
+
+    storyboard_path = root / STORYBOARD_REL
+    storyboard_path.parent.mkdir(parents=True, exist_ok=True)
+    _write_rows(storyboard_path, rows)
+    # 写完立刻按正式格式读回来：宁可现在报错，也不要让渲染阶段才发现分镜不合法。
+    load_storyboard(storyboard_path)
+    if cards:
+        # 数据卡要进素材清单：没登记的素材，渲染阶段一律拒收。
+        from backend.app.video.cards import register_cards
+
+        register_cards(
+            root,
+            cards,
+            purposes={card.asset_id: f"数据卡 {card.asset_id}" for card in cards},
+        )
+
+    notes_path = root / NOTES_REL
+    notes_path.write_text(_notes_text(job_id or root.name, title, shots, sources), encoding="utf-8")
+
+    total = round(cursor, 3)
+    warnings = (
+        f"只引用了 {len(sources)} 份资料里的 {len(source_ids)} 份",
+    ) if len(source_ids) < len(sources) else ()
+
+    return OutlineResult(
+        job_id=job_id or root.name,
+        storyboard_path=storyboard_path,
+        notes_path=notes_path,
+        shots=tuple(shots),
+        total_seconds=total,
+        frames=int(round(total * fps)),
+        source_ids=source_ids,
+        warnings=warnings,
+    )
+
+
+def retime_rows(
+    rows: Sequence[dict[str, Any]],
+    durations: Mapping[str, float],
+    *,
+    pad: float = 0.35,
+    min_seconds: float = 2.0,
+    fps: int = 30,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """按实际配音时长重排每个镜头的起止时间，返回 (新行, 说明)。
+
+    口播稿多长，镜头就该多长——否则 4 秒的镜头里塞 8 秒旁白，后半句会被切掉。
+    这里只改 `start_time`/`end_time`，不动文案、素材与运镜。时间一律对齐到整帧，
+    因为分镜校验要求「起止时间必须落在整帧上」。
+    """
+    frame = 1.0 / max(fps, 1)
+
+    def frames_of(seconds: float) -> int:
+        return int(round(seconds * fps))
+
+    updated: list[dict[str, Any]] = []
+    notes: list[str] = []
+    cursor_frames = 0
+    for row in rows:
+        shot_id = str(row.get("shot_id", ""))
+        span = float(row["end_time"]) - float(row["start_time"])
+        need = span
+        if durations:
+            need = max(min_seconds, float(durations.get(shot_id, 0.0)) + pad)
+        length_frames = max(frames_of(span), frames_of(need))
+        start_frames = cursor_frames
+        end_frames = start_frames + max(length_frames, 1)
+        # 分镜校验要求「起始帧对齐误差 < 1e-6 秒」，所以秒数按 帧/帧率 精确写出，
+        # 不能只保留三位小数（8.267 秒 × 30 帧 = 248.01 帧，会被判非法）。
+        new_row = dict(row)
+        new_row["start_time"] = f"{start_frames * frame:.9f}"
+        new_row["end_time"] = f"{end_frames * frame:.9f}"
+        if (end_frames - start_frames) * frame > span + 1e-9:
+            notes.append(
+                f"{shot_id}: {span:g}s → {(end_frames - start_frames) * frame:.2f}s"
+                f"（配音 {durations.get(shot_id, 0.0):.2f}s）"
+            )
+        cursor_frames = end_frames
+        updated.append(new_row)
+    return updated, notes
+
+
+def retime_storyboard(
+    storyboard: Any,
+    durations: Mapping[str, float],
+    *,
+    pad: float = 0.35,
+    min_seconds: float = 2.0,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """把已解析的分镜按配音时长重排；返回可直接写盘的行。"""
+    rows: list[dict[str, Any]] = []
+    for shot in storyboard.shots:
+        row: dict[str, Any] = {
+            column: getattr(shot, column, "")
+            for column in (
+                "shot_id",
+                "narrative_purpose",
+                "narration",
+                "visual_description",
+                "asset_id",
+                "asset_type",
+                "asset_source",
+                "license",
+                "animation",
+                "camera_motion",
+                "transition",
+                "subtitle",
+                "sound_effect",
+                "safety_zone",
+                "notes",
+                "source_start",
+            )
+        }
+        row["start_time"] = f"{shot.start_time:.3f}"
+        row["end_time"] = f"{shot.end_time:.3f}"
+        rows.append(row)
+    return retime_rows(rows, durations, pad=pad, min_seconds=min_seconds, fps=storyboard.fps)
+
+
+def _write_rows(path: Path, rows: Sequence[dict[str, str]]) -> None:
+    header = list(rows[0].keys())
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=header)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _notes_text(job_id: str, title: str, shots: Iterable[OutlineShot], sources: Sequence[Any]) -> str:
+    lines = [
+        f"# {job_id} 分镜草稿（规则生成）",
+        "",
+        f"- 标题：{title}",
+        "- 生成方式：**纯规则**（`backend/app/video/outline.py`），没有调用任何模型。",
+        "- 每镜的口播稿都是底稿里的原文，没有改写、没有推断、没有补全。",
+        "- 它是一份可渲染的草稿，不是可以直接发布的文案。发布前必须人工看一遍。",
+        "",
+        "## 逐镜来源",
+        "",
+        "| 镜头 | 时长 | 来源 | 口播稿（原文） |",
+        "| --- | --- | --- | --- |",
+    ]
+    for shot in shots:
+        lines.append(
+            f"| {shot.shot_id} | {shot.seconds:g}s | {shot.source_id or '—'} | {shot.narration} |"
+        )
+    lines += ["", "## 本文引用到的资料", ""]
+    keep = {shot.source_id for shot in shots if shot.source_id}
+    for source in sources:
+        source_id = str(getattr(source, "source_id", "") or "")
+        if source_id not in keep:
+            continue
+        lines.append(
+            f"- `{source_id}` {getattr(source, 'title', '')} · {getattr(source, 'url', '')}"
+            f" · 发布 {getattr(source, 'published_at', '') or '未解析到'}"
+        )
+    return "\n".join(lines) + "\n"
+
+
+__all__ = [
+    "MAX_POINTS",
+    "NOTES_REL",
+    "OutlineError",
+    "OutlineResult",
+    "OutlineShot",
+    "SECONDS_PER_POINT",
+    "STORYBOARD_REL",
+    "build_outline",
+]

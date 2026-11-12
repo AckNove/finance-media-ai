@@ -1,0 +1,341 @@
+{
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 2150,
+    "bg": "#1d2a44"
+  },
+  "clips": {
+    "solid_1d2a44": {
+      "frames_dir": "plates/07975cfcd02a",
+      "n": 120,
+      "fps": 30.0,
+      "w": 1080,
+      "h": 1920,
+      "pattern": "%05d.png"
+    },
+    "CARD_sh02": {
+      "frames_dir": ".openkatana/compositions/85439bebc3ca425ab94dce179f829fe0/frames",
+      "pattern": "%05d.png",
+      "n": 230,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "CARD_sh04": {
+      "frames_dir": ".openkatana/compositions/166fbdcd16534bf9984d0a93182478dd/frames",
+      "pattern": "%05d.png",
+      "n": 215,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "CARD_sh05": {
+      "frames_dir": ".openkatana/compositions/1efd5b3d192d4ed7b86211465cbe29dc/frames",
+      "pattern": "%05d.png",
+      "n": 299,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "CARD_sh06": {
+      "frames_dir": ".openkatana/compositions/53cdb9f71fe142639a81516db4cf4cac/frames",
+      "pattern": "%05d.png",
+      "n": 221,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "CARD_sh07": {
+      "frames_dir": ".openkatana/compositions/c448daa320644575aec0df2850fccf25/frames",
+      "pattern": "%05d.png",
+      "n": 469,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    }
+  },
+  "shots": [
+    {
+      "f0": 0,
+      "f1": 221,
+      "bg": "#1d2a44",
+      "clip": "solid_1d2a44",
+      "src": 0,
+      "speed": 1,
+      "loop": "loop",
+      "cam": {
+        "push": {
+          "v": 0.03
+        }
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 221,
+      "f1": 451,
+      "clip": "CARD_sh02",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "pan": {
+          "dx": -0.05
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 451,
+      "f1": 675,
+      "bg": "#1d2a44",
+      "clip": "solid_1d2a44",
+      "src": 0,
+      "speed": 1,
+      "loop": "loop",
+      "cam": {
+        "push": {
+          "v": 0.03
+        }
+      },
+      "transition": {
+        "type": "slide",
+        "d": 0.4,
+        "dir": "up"
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 675,
+      "f1": 890,
+      "clip": "CARD_sh04",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "pan": {
+          "dy": 0.05
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 890,
+      "f1": 1189,
+      "clip": "CARD_sh05",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "wipe",
+        "d": 0.4,
+        "dir": "ltr"
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 1189,
+      "f1": 1410,
+      "clip": "CARD_sh06",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dip",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 1410,
+      "f1": 1879,
+      "clip": "CARD_sh07",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "pan": {
+          "dx": -0.05
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 1879,
+      "f1": 2150,
+      "bg": "#1d2a44",
+      "clip": "solid_1d2a44",
+      "src": 0,
+      "speed": 1,
+      "loop": "loop",
+      "cam": {
+        "push": {
+          "v": 0.03
+        }
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    }
+  ],
+  "fonts": [
+    {
+      "family": "AKSC",
+      "url": "fonts/NotoSansSC-VF.ttf"
+    }
+  ],
+  "text": [
+    {
+      "type": "caption",
+      "family": "AKSC",
+      "text": "分析：商业银行靠什么赚钱",
+      "f0": 0,
+      "f1": 221,
+      "pos": [
+        0.5,
+        0.84
+      ],
+      "size": 46,
+      "fill": "#f6f8fa",
+      "stroke": "#0b1220",
+      "lw": 3,
+      "shadow": "dark"
+    },
+    {
+      "type": "caption",
+      "family": "AKSC",
+      "text": "近日，国家金融监督管理总局公布了2…",
+      "f0": 451,
+      "f1": 675,
+      "pos": [
+        0.5,
+        0.84
+      ],
+      "size": 46,
+      "fill": "#f6f8fa",
+      "stroke": "#0b1220",
+      "lw": 3,
+      "shadow": "dark"
+    },
+    {
+      "type": "caption",
+      "family": "AKSC",
+      "text": "资料汇编 · 不是投资建议",
+      "f0": 1879,
+      "f1": 2150,
+      "pos": [
+        0.5,
+        0.84
+      ],
+      "size": 46,
+      "fill": "#f6f8fa",
+      "stroke": "#0b1220",
+      "lw": 3,
+      "shadow": "dark"
+    }
+  ],
+  "audio": {
+    "mode": "mix",
+    "gain": 1.0,
+    "tracks": [
+      {
+        "src": "audio/narration/sh01.mp3",
+        "at": 0.0,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh02.mp3",
+        "at": 7.367,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh03.mp3",
+        "at": 15.033,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh04.mp3",
+        "at": 22.5,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh05.mp3",
+        "at": 29.667,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh06.mp3",
+        "at": 39.633,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh07.mp3",
+        "at": 47.0,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh08.mp3",
+        "at": 62.633,
+        "volume": 1.0
+      }
+    ]
+  }
+}

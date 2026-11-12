@@ -129,6 +129,11 @@ content/jobs/*/project/*/timeline-*.json
 # 以及"project/timeline.json 已存在且内容不同"时另存的时间轴。都是产物，不入库。
 content/jobs/*/project/*/assets/
 content/jobs/*/project/timeline.render.json
+# 任务目录里的字体副本（17 MB，源自系统字体）、引擎调用参数与旁白音频都是可再生的中间产物。
+content/jobs/*/fonts/
+content/jobs/*/.openkatana_io/
+content/jobs/*/audio/narration/*.mp3
+content/jobs/*/audio/narration/*.wav
 # 成片改由本地保留：Phase 2 冻结轮按"不把 MP4 等大体积可再生资产提交到 Git"的口径，
 # 取消了原先的 !content/jobs/*/output/*.mp4 例外。文件仍在磁盘上，路径与 SHA-256 记在
 # docs/research_hub/phase2_artifact_index.md。需要重新入库时删除本节注释并 git add -f 即可。

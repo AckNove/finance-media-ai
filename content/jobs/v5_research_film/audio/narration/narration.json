@@ -1,0 +1,174 @@
+{
+  "ok": true,
+  "provider": "edge",
+  "voice": "zh-CN-YunxiNeural",
+  "clip_count": 8,
+  "total_seconds": 68.856,
+  "overrun_count": 0,
+  "clips": [
+    {
+      "shot_id": "sh01",
+      "file": "audio/narration/sh01.mp3",
+      "duration_seconds": 7.008,
+      "shot_seconds": 7.367,
+      "overrun_seconds": 0.0,
+      "sha256": "9329b4dcc84513bbbb5d9179310b4f54b57414b8f6b37cae51519949e9148bb4",
+      "byte_size": 42285,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 18,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "这一条讲的是：分析：商业银行靠什么赚钱。下面每一句话都能追到原文。"
+    },
+    {
+      "shot_id": "sh02",
+      "file": "audio/narration/sh02.mp3",
+      "duration_seconds": 7.32,
+      "shot_seconds": 7.667,
+      "overrun_seconds": 0.0,
+      "sha256": "0b40542b9c6efb4c4055df7f880be39a17d1a0c49b46eff5f8a543ed94719fec",
+      "byte_size": 44157,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 16,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "商业银行2024年第四季度净息差降至1.52% 业界预计未来仍面临下行压力"
+    },
+    {
+      "shot_id": "sh03",
+      "file": "audio/narration/sh03.mp3",
+      "duration_seconds": 7.104,
+      "shot_seconds": 7.467,
+      "overrun_seconds": 0.0,
+      "sha256": "1ed8ae3e14d43c458a2cac5303910269f4b4107b09be9b217bbfc5330b13b92d",
+      "byte_size": 42861,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 16,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "近日，国家金融监督管理总局公布了2024年第四季度商业银行主要监管指标数据。"
+    },
+    {
+      "shot_id": "sh04",
+      "file": "audio/narration/sh04.mp3",
+      "duration_seconds": 6.816,
+      "shot_seconds": 7.167,
+      "overrun_seconds": 0.0,
+      "sha256": "fb86e2ee15e18dff06bc6867ef7466550c7687b1390ade9ed29df0d6497ba5cf",
+      "byte_size": 41133,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 12,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "2024年第四季度，商业银行净息差为1.52%，环比下降0.01个百分点。"
+    },
+    {
+      "shot_id": "sh05",
+      "file": "audio/narration/sh05.mp3",
+      "duration_seconds": 9.624,
+      "shot_seconds": 9.967,
+      "overrun_seconds": 0.0,
+      "sha256": "1b7442316bf352a163fdf5a280bfea44d42deef27d85398d3b48c3cc3b59ddee",
+      "byte_size": 57981,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 18,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "其中，城商行第四季度的净息差为1.38%，环比下降0.05个百分点，较去年一季度下降0.07个百分点；"
+    },
+    {
+      "shot_id": "sh06",
+      "file": "audio/narration/sh06.mp3",
+      "duration_seconds": 7.008,
+      "shot_seconds": 7.367,
+      "overrun_seconds": 0.0,
+      "sha256": "e28204a934010a35368b278923304c4d2d4c62d55c6e985a2dbe03059748148d",
+      "byte_size": 42285,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 18,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "民生银行的2024年：营收净利双降 净息差探底至1.39%｜银行“年”景"
+    },
+    {
+      "shot_id": "sh07",
+      "file": "audio/narration/sh07.mp3",
+      "duration_seconds": 15.288,
+      "shot_seconds": 15.633,
+      "overrun_seconds": 0.0,
+      "sha256": "fe16fd5513272587202ffedc3c476e8ec386256b81f8a7dc28cd12dacda1dd06",
+      "byte_size": 91965,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 23,
+      "cue_count": 5,
+      "estimated_timing": false,
+      "text": "3月28日晚间，民生银行（600016.SH）发布的2024年度报告（下称“年报”）显示，2024年，该行实现营业收入1362.90亿元，同比下降3.21%；"
+    },
+    {
+      "shot_id": "sh08",
+      "file": "audio/narration/sh08.mp3",
+      "duration_seconds": 8.688,
+      "shot_seconds": 9.033,
+      "overrun_seconds": 0.0,
+      "sha256": "fea0137794e2745fbe3170654ae0116b95e7968144b51f389c9f55b6a8c90989",
+      "byte_size": 52365,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 19,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "以上 6 个数字来自 3 份资料（S01、S02、S03）。这只是资料汇编，不是投资建议。"
+    }
+  ],
+  "tracks": [
+    {
+      "src": "audio/narration/sh01.mp3",
+      "at": 0.0,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh02.mp3",
+      "at": 7.367,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh03.mp3",
+      "at": 15.033,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh04.mp3",
+      "at": 22.5,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh05.mp3",
+      "at": 29.667,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh06.mp3",
+      "at": 39.633,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh07.mp3",
+      "at": 47.0,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh08.mp3",
+      "at": 62.633,
+      "volume": 1.0
+    }
+  ],
+  "srt": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v5_research_film\\audio\\narration\\narration.srt",
+  "problems": []
+}

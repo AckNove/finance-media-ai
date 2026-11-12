@@ -45,6 +45,16 @@ class TimelineError(ValueError):
         self.code = code
 
 
+def solid_clip_id(colour: str) -> str:
+    """纯色底镜头在 ``clips`` 里的键，如 ``solid_0b1220``。
+
+    引擎的 clip id 只允许字母、数字、下划线和连字符（1..64 位），所以颜色里的
+    ``#`` 必须去掉。
+    """
+    safe = (colour or "").strip().lstrip("#").lower() or "0b1220"
+    return f"solid_{safe}"
+
+
 def build_timeline(
     storyboard: Storyboard,
     clips: Mapping[str, Mapping[str, Any]],
@@ -71,7 +81,20 @@ def build_timeline(
         f0, f1 = shot.frame_range(fps)
         entry: dict[str, Any] = {"f0": f0, "f1": f1}
         if shot.asset_type == "solid":
-            entry["bg"] = shot.asset_source or bg
+            colour = shot.asset_source or bg
+            entry["bg"] = colour
+            # 引擎要求每个镜头都指向一个真实 clip；纯色底镜头由渲染层生成一张
+            # 同色单帧图并登记成 ``solid:<color>``。没有这张图时退回只写 bg
+            # （旧行为，供不渲染的纯时间轴检查使用）。
+            plate_key = solid_clip_id(colour)
+            plate = clips.get(plate_key)
+            if plate is not None:
+                _require_keys(plate, SUPPORTED_CLIP_KEYS, f"clip {plate_key}")
+                used[plate_key] = dict(plate)
+                entry["clip"] = plate_key
+                entry["src"] = 0
+                entry["speed"] = 1
+                entry["loop"] = "loop"
         else:
             clip = clips.get(shot.asset_id)
             if clip is None:
@@ -369,6 +392,7 @@ __all__ = [
     "audio_mix",
     "build_timeline",
     "camera_block",
+    "solid_clip_id",
     "subtitle_events",
     "transition_block",
 ]

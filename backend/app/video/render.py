@@ -25,12 +25,19 @@ import re
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Iterable, Mapping
 
 from backend.app.capabilities.media.engine import MediaEngineError, VideoEngine
 from backend.app.media.manifest import read_manifest
 from backend.app.media.storyboard import Storyboard, StoryboardError, load_storyboard
-from backend.app.media.timeline import TimelineError, audio_mix, build_timeline, subtitle_events
+from backend.app.video.cards import INK as CARD_INK
+from backend.app.media.timeline import (
+    TimelineError,
+    audio_mix,
+    build_timeline,
+    solid_clip_id,
+    subtitle_events,
+)
 
 __all__ = [
     "QC_THRESHOLDS",
@@ -147,6 +154,51 @@ def _find_font(job_root: Path, font_path: str) -> Path | None:
     return None
 
 
+#: 本机可能已经装了同一个开源字体的位置。只在任务目录里没有字体时**复制**一份进来，
+#: 不修改系统字体、也不把 17MB 的二进制提交进仓库。
+SYSTEM_FONT_CANDIDATES: tuple[Path, ...] = (
+    Path("C:/Windows/Fonts/NotoSansSC-VF.ttf"),
+    Path("/usr/share/fonts/truetype/noto/NotoSansSC-VF.ttf"),
+)
+
+
+def ensure_font(job_root: Path, font_path: str, *, candidates: Iterable[Path] = ()) -> Path | None:
+    """确保任务目录里有分镜要用的字体；没有就从本机已知位置复制一份。"""
+    found = _find_font(job_root, font_path)
+    if found is not None:
+        return found
+    for candidate in tuple(candidates) + SYSTEM_FONT_CANDIDATES:
+        if Path(candidate).is_file():
+            target = job_root / font_path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(candidate, target)
+            return target
+    return None
+
+
+def _sync_audio(job_root: Path, project_dir: Path, tracks: Iterable[Mapping[str, Any]]) -> list[str]:
+    """把时间轴引用的音频复制进工程目录，返回复制过的相对路径。
+
+    时间轴里的 ``src`` 相对**工程目录**解析（引擎的规则），而旁白和配乐是任务
+    目录生成的，所以渲染前要放进工程里，否则引擎报 ``Audio track missing``。
+    """
+    copied: list[str] = []
+    for track in tracks:
+        relative = str(track.get("src") or "").strip()
+        if not relative:
+            continue
+        source = (job_root / relative).resolve()
+        if not source.is_file() or not source.is_relative_to(job_root.resolve()):
+            continue
+        target = project_dir / relative
+        if target.is_file() and target.stat().st_size == source.stat().st_size:
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        copied.append(relative.replace("\\", "/"))
+    return copied
+
+
 def _sync_fonts(job_root: Path, project_dir: Path) -> list[str]:
     """把任务目录 fonts/ 下的字体复制进工程目录，返回复制过的文件名。
 
@@ -201,10 +253,100 @@ def _import_composition(
     return clip
 
 
-def prepare_clips(    storyboard: Storyboard,
+def _solid_plate(job_root: Path, colour: str, *, width: int, height: int) -> Path:
+    """为纯色底镜头生成一张单帧图（引擎要求每个镜头都有真实 clip）。"""
+    from PIL import Image
+
+    safe = (colour or "#0b1220").strip().lstrip("#") or "0b1220"
+    target = job_root / "assets" / "plates" / f"solid_{safe}.png"
+    if target.is_file():
+        return target
+    target.parent.mkdir(parents=True, exist_ok=True)
+    rgb = tuple(int(safe[i : i + 2], 16) for i in (0, 2, 4)) if len(safe) == 6 else (11, 18, 32)
+    Image.new("RGB", (width, height), rgb).save(target, format="PNG")
+    return target
+
+
+PLATE_SECONDS = 4.0
+
+
+def _mix(colour: str, other: str, ratio: float) -> str:
+    """把两种 #rrggbb 按比例混合，用来给渐变底挑一个相邻色。"""
+    left = tuple(int(colour[i : i + 2], 16) for i in (0, 2, 4))
+    right = tuple(int(other[i : i + 2], 16) for i in (0, 2, 4))
+    mixed = tuple(int(round(a + (b - a) * ratio)) for a, b in zip(left, right))
+    return "".join(f"{value:02x}" for value in mixed)
+
+
+def _solid_gradient(
+    job_root: Path,
+    colour: str,
+    *,
+    width: int,
+    height: int,
+    fps: int,
+    seconds: float = PLATE_SECONDS,
+) -> Path | None:
+    """生成一段缓慢流动的渐变底片。
+
+    单帧纯色底 + 运镜仍会被 `freezedetect` 判成冻结（实测 66.9 秒）：均匀色块
+    缩放/平移后像素完全一样。所以纯色卡也做成"会动的渐变"，让运镜有东西可带动。
+    ffmpeg 不可用时返回 None，调用方退回单帧 PNG（并在 notes 里说明）。
+    """
+    safe = (colour or "#1d2a44").strip().lstrip("#") or "1d2a44"
+    if len(safe) != 6:
+        return None
+    target = job_root / "assets" / "plates" / f"solid_{safe}.mp4"
+    if target.is_file() and target.stat().st_size > 0:
+        return target
+    target.parent.mkdir(parents=True, exist_ok=True)
+    second = _mix(safe, "05070d", 0.85)
+    source = (
+        f"gradients=s={width}x{height}:c0=0x{safe}:c1=0x{second}"
+        f":speed=0.06:d={seconds:.2f}:r={fps}"
+    )
+    try:
+        from backend.app.capabilities.media.ffmpeg import resolve_toolchain
+        from backend.app.capabilities.media.ffmpeg import run_ffmpeg
+
+        toolchain = resolve_toolchain()
+        run_ffmpeg(
+            toolchain,
+            [
+                "-y",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                source,
+                "-c:v",
+                "libx264",
+                "-preset",
+                "veryfast",
+                "-crf",
+                "20",
+                "-pix_fmt",
+                "yuv420p",
+                "-movflags",
+                "+faststart",
+                str(target),
+            ],
+            timeout=120,
+        )
+    except Exception as error:  # noqa: BLE001 - 退回单帧图比直接失败更有用
+        logger.warning("渐变底片生成失败，退回单帧纯色：%s", error)
+        return None
+    return target if target.is_file() and target.stat().st_size > 0 else None
+
+
+def prepare_clips(
+    storyboard: Storyboard,
     *,
     job_root: Path,
     engine: VideoEngine,
+    animate_plates: bool = True,
 ) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]], list[str]]:
     """按分镜里出现的 asset_id 逐个导入素材，返回 (clips, asset_rows, 调用记录)。
 
@@ -216,7 +358,9 @@ def prepare_clips(    storyboard: Storyboard,
     if manifest_path.is_file():
         for row in read_manifest(manifest_path):
             rows[str(row.get("asset_id", ""))] = row
-    else:
+    elif any(shot.asset_type != "solid" and shot.asset_id for shot in storyboard.shots):
+        # 只有"确实要用外部素材"时清单才是必需的：纯色底镜头没有素材可登记，
+        # 逼人写一张空清单只会让交接流程假装完整。
         raise RenderError("missing_manifest", f"缺少素材清单：{manifest_path}")
 
     needed: list[tuple[str, float, float]] = []
@@ -230,6 +374,50 @@ def prepare_clips(    storyboard: Storyboard,
     clips: dict[str, dict[str, Any]] = {}
     asset_rows: list[dict[str, Any]] = []
     calls: list[str] = []
+
+    # 纯色底镜头：引擎不接受"只有 bg 没有 clip"的镜头，所以给它一张同色单帧图。
+    width, height = storyboard.width, storyboard.height
+    solids: list[str] = []
+    for shot in storyboard.shots:
+        if shot.asset_type != "solid":
+            continue
+        colour = shot.asset_source or "#0b1220"
+        if colour not in solids:
+            solids.append(colour)
+    for colour in solids:
+        # 先试"会动的渐变底片"，不行再退回单帧纯色图。
+        plate = None
+        if animate_plates:
+            plate = _solid_gradient(
+                job_root,
+                colour,
+                width=width,
+                height=height,
+                fps=storyboard.fps,
+            )
+        if plate is None:
+            plate = _solid_plate(job_root, colour, width=width, height=height)
+        key = solid_clip_id(colour)
+        result = engine.import_media(source=plate, rights="self-generated")
+        calls.append(f"import_media:{key}")
+        clip = dict(result.raw.get("clip") or {})
+        if not clip:
+            raise RenderError("empty_clip", f"{key}: 引擎没有返回帧序列")
+        clips[key] = clip
+        asset_rows.append(
+            {
+                "asset_id": key,
+                "registered_as": key,
+                "file": str(plate.relative_to(job_root)).replace("\\", "/"),
+                "sha256": _sha256(plate),
+                "asset_class": "B",
+                "license": "self-generated",
+                "commercial_use": "allowed",
+                "source_start": 0.0,
+                "frames": int(clip.get("n") or 1),
+            }
+        )
+
     for asset_id, source_start, duration in needed:
         row = rows.get(asset_id)
         registered_as = asset_id
@@ -298,9 +486,11 @@ def prepare_clips(    storyboard: Storyboard,
 def probe_media(path: Path, *, run_ffprobe: Callable[[list[str]], str] | None = None) -> dict[str, Any]:
     """读容器事实：分辨率、帧率、时长、流数量与编码。"""
     if run_ffprobe is None:
+        from backend.app.capabilities.media.ffmpeg import resolve_toolchain
         from backend.app.capabilities.media.ffmpeg import run_ffprobe as _run
 
-        run_ffprobe = _run
+        toolchain = resolve_toolchain()
+        run_ffprobe = lambda args: _run(toolchain, args)  # noqa: E731 - 绑定工具链的薄壳
     payload = json.loads(
         run_ffprobe(["-v", "error", "-print_format", "json", "-show_format", "-show_streams", str(path)])
     )
@@ -333,9 +523,11 @@ def scan_media(path: Path, *, run_ffmpeg: Callable[[list[str]], str] | None = No
     注意：**转场压黑是正常的**，所以阈值给到 0.45 秒而不是要求零黑帧。
     """
     if run_ffmpeg is None:
+        from backend.app.capabilities.media.ffmpeg import resolve_toolchain
         from backend.app.capabilities.media.ffmpeg import run_ffmpeg as _run
 
-        run_ffmpeg = _run
+        toolchain = resolve_toolchain()
+        run_ffmpeg = lambda args: _run(toolchain, args)  # noqa: E731 - 绑定工具链的薄壳
 
     def _segments(output: str, prefix: str) -> list[float]:
         # ffmpeg 把命中区间拆成多个 token：black_start:1 black_end:2.4 black_duration:1.4
@@ -357,13 +549,18 @@ def scan_media(path: Path, *, run_ffmpeg: Callable[[list[str]], str] | None = No
     black = _segments(black_out, "black")
     freeze = _segments(freeze_out, "freeze")
     silence = _segments(silence_out, "silence")
+    # 阈值名字叫 max_*_seconds，就该按"最长的一段"判，而不是把整片所有短段加总。
+    # 71 秒的片子里有 6 段各 0.6 秒的短暂停顿并不算"画面冻住"，加总判会冤枉它。
     return {
         "black_segments": len(black),
         "black_seconds": round(sum(black), 3),
+        "black_longest": round(max(black, default=0.0), 3),
         "freeze_segments": len(freeze),
         "freeze_seconds": round(sum(freeze), 3),
+        "freeze_longest": round(max(freeze, default=0.0), 3),
         "silence_segments": len(silence),
         "silence_seconds": round(sum(silence), 3),
+        "silence_longest": round(max(silence, default=0.0), 3),
     }
 
 
@@ -387,6 +584,8 @@ def render_job(
     narration_provider: str = "auto",
     narration_voice: str | None = None,
     synthesize_narration_fn: Callable[..., Any] | None = None,
+    fit_narration: bool = True,
+    animate_plates: bool = True,
 ) -> RenderReport:
     """分镜 → 时间轴 → 成片 → 质检。任何一步缺东西都如实报 blocked，不伪造产物。"""
     root = Path(job_root).resolve()
@@ -439,7 +638,7 @@ def render_job(
 
     try:
         clips, asset_rows, calls = prepare_clips(
-            storyboard, job_root=root, engine=engine
+            storyboard, job_root=root, engine=engine, animate_plates=animate_plates
         )
     except MediaEngineError as error:
         raise RenderError(error.code, str(error)) from error
@@ -461,12 +660,56 @@ def render_job(
         notes.extend(narration_notes(result, shot_count=len(storyboard.shots)))
         if result.tracks:
             narration_audio = audio_mix(list(result.tracks))
+        if fit_narration and result.clips:
+            # 口播稿多长，镜头就该多长：按真实配音时长重排分镜，再重新读一遍。
+            from backend.app.media.storyboard import write_storyboard
+            from backend.app.video.outline import retime_storyboard
+
+            durations = {clip.shot_id: clip.duration_seconds for clip in result.clips}
+            rows, changed = retime_storyboard(storyboard, durations)
+            if changed:
+                storyboard_path = root / "storyboard" / "storyboard.csv"
+                write_storyboard(
+                    storyboard_path,
+                    rows,
+                    fps=storyboard.fps,
+                    width=storyboard.width,
+                    height=storyboard.height,
+                )
+                storyboard = load_storyboard(storyboard_path)
+                narration_payload["retimed"] = changed
+                notes.append(
+                    f"分镜已按配音重排（{len(changed)} 个镜头加长），总时长 "
+                    f"{storyboard.duration:g} 秒；改的是时间，不改文案与素材"
+                )
+                # 音频起播点要跟着新的镜头起点走，重算一次轨道。
+                again = synthesize_narration(
+                    storyboard,
+                    job_root=root,
+                    provider=narration_provider,
+                    voice=narration_voice,
+                    synthesize=synthesize_narration_fn,
+                )
+                if again.tracks:
+                    narration_audio = audio_mix(list(again.tracks))
+                # 镜头变长了，数据卡画板也要按新时长重写，否则后半段是静止的最后一帧。
+                from backend.app.video.cards import resize_cards
+
+                resized = resize_cards(root, storyboard)
+                if resized:
+                    notes.append(f"按新时长重写了 {len(resized)} 张数据卡画板")
+                    clips, asset_rows, calls = prepare_clips(
+                        storyboard, job_root=root, engine=engine,
+                        animate_plates=animate_plates,
+                    )
 
     captions = subtitle_events(
         storyboard, family=font_family, size=font_size, source="subtitle"
     )
     fonts: list[dict[str, Any]] = []
-    font_file = _find_font(root, font_path) if font_path else None
+    # 字幕要有字体才能渲染。新任务目录里通常还没有字体文件，就从本机已知位置复制
+    # 一份进来（不改系统字体）；实在找不到才报 missing_font。
+    font_file = ensure_font(root, font_path) if (font_path and captions) else None
     if font_file is not None and project_dir is not None:
         target = project_dir / "fonts" / font_file.name
         if not target.is_file():
@@ -479,12 +722,25 @@ def render_job(
         # ContractError，不如在这里说清楚缺什么。
         raise RenderError(
             "missing_font",
-            f"{job_id}: 分镜里带了字幕，但任务目录里找不到字体 {font_path}；"
-            "把字体放进任务目录的 fonts/ 再跑（组合文档里的字体路径也相对工程目录）",
+            f"{job_id}: 分镜里带了字幕，但任务目录里找不到字体 {font_path}，"
+            f"本机也没有可复制的同名字体；把字体放进任务目录的 fonts/ 再跑"
+            "（组合文档里的字体路径也相对工程目录）",
         )
+    if narration_audio and project_dir is not None:
+        # 音频轨的 src 也是相对工程目录解析的，旁白生成在任务目录里，得搬过去。
+        copied_audio = _sync_audio(root, project_dir, narration_audio.get("tracks") or [])
+        if copied_audio:
+            notes.append(f"旁白音轨已复制进工程目录：{len(copied_audio)} 个文件")
     try:
         timeline = build_timeline(
-            storyboard, clips, audio=narration_audio, text=captions, fonts=fonts or None
+            storyboard,
+            clips,
+            audio=narration_audio,
+            text=captions,
+            fonts=fonts or None,
+            # 画布底色必须和数据卡底色一致：运镜平移会把画面挪出素材边界，
+            # 底色不同就会在边上露出一条异色竖条（抽帧实测过）。
+            bg=CARD_INK,
         )
     except TimelineError as error:
         raise RenderError(error.code, str(error)) from error
@@ -530,7 +786,9 @@ def render_job(
     if not do_render:
         return RenderReport(**report_kwargs)
 
-    saved = engine.save_timeline(timeline)
+    # 前面的 import_media 已经改过工程，revision 早就变了；直接存会被判"工程已变更"。
+    save = getattr(engine, "save_timeline_with_retry", None) or engine.save_timeline
+    saved = save(timeline)
     calls.append("save_timeline")
     revision = str(saved.get("revision") or "")
     # request_id 绑定时间轴版本：复用旧 ID 会被引擎拒绝
@@ -542,7 +800,13 @@ def render_job(
         raise RenderError("no_output", f"{job_id}: 引擎渲染结束但没有返回视频路径")
     produced = Path(rendered_path)
     if not produced.is_absolute():
-        produced = (root / "project" / produced).resolve()
+        # 引擎返回的路径相对**工程目录**（`<job>/project/<project_id>/`），不是任务根。
+        candidates = []
+        if project_dir is not None:
+            candidates.append((project_dir / produced).resolve())
+        candidates.append((root / "project" / produced).resolve())
+        candidates.append((root / produced).resolve())
+        produced = next((item for item in candidates if item.is_file()), candidates[0])
     if not produced.is_file():
         raise RenderError("no_output", f"{job_id}: 引擎声称产出 {produced}，但文件不存在")
 
@@ -561,9 +825,9 @@ def render_job(
             "fps_matches_storyboard": abs(media["fps"] - storyboard.fps) < 0.01,
             "duration_matches_storyboard": abs(media["duration"] - storyboard.duration) <= 0.2,
             "has_audio_stream": media["has_audio"],
-            "no_long_black": scan["black_seconds"] <= QC_THRESHOLDS["max_black_seconds"],
-            "no_long_freeze": scan["freeze_seconds"] <= QC_THRESHOLDS["max_freeze_seconds"],
-            "no_long_silence": scan["silence_seconds"] <= QC_THRESHOLDS["max_silence_seconds"],
+            "no_long_black": scan["black_longest"] <= QC_THRESHOLDS["max_black_seconds"],
+            "no_long_freeze": scan["freeze_longest"] <= QC_THRESHOLDS["max_freeze_seconds"],
+            "no_long_silence": scan["silence_longest"] <= QC_THRESHOLDS["max_silence_seconds"],
         }
         qc = {
             "media": media,

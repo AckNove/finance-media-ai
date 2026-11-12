@@ -38,6 +38,7 @@
 > | 分镜 → 时间轴（真实引擎，7 镜 1275 帧） | ✅ 已实测 | 只跑时间轴 79 秒；后台渲染进度写 `qc/render_run.json`，工作台可轮询 |
 > | 表格数据 → 指标 + 可复现图表 | ✅ 已实测 | 同输入同字节的 PNG，图上强制印出处行；图表自动登记为素材清单里的 B 类行 |
 > | 旁白音轨（分镜口播稿 → 真实 TTS → 时间轴音轨） | ✅ 已实测 | 7 镜 30.6 秒全部合成；超长只记 `overrun`，**不拉伸镜头**；TTS 不可用就明说"没有旁白" |
+> | 报告 → 规则分镜 → 数据卡 → 真实成片 | ✅ 已实测 | `content/jobs/v5_research_film/output/final.mp4`：71.667 秒 / 1080×1920 / 30fps / 旁白 8 段 / QC 七项全过（SHA-256 见交付报告 §S） |
 > | 统一模型网关（OpenAI 兼容、预算与成本闸门） | ⚠️ 代码就绪、**无密钥** | 缺 key 时返回 `not_configured`；价目未知直接拒绝请求 |
 > | 18 页工作台（真实接口，无假数据） | ✅ 可用 | `http://127.0.0.1:8000/app/` |
 >
@@ -180,7 +181,7 @@ backend/app/capabilities/media/   OpenKatana 与 FFmpeg 本地媒体适配层
 backend/app/research/             研究底稿 digest、逐字核查 verify、证据链落库 persistence
 backend/app/analysis/             表格数字→指标（parse_number/yoy/cagr/share/HHI）+ 可复现图表（line/bar/share_bar）
 backend/app/media/                分镜校验、素材清单与时间轴构建
-backend/app/video/                handoff（报告→视频任务）、render（分镜→时间轴→成片→质检）、narration（口播稿→旁白音轨）、generated（自绘图表登记为素材）
+backend/app/video/                handoff（报告→视频任务）、outline（底稿→规则分镜）、cards（数据卡画板）、render（分镜→时间轴→成片→质检）、narration（口播稿→旁白音轨）、generated（自绘图表登记为素材）
 backend/app/skills/registry.py    Skill Registry（sha256 固定、按 task_type 装载、工具门禁）
 backend/app/parsers/              解析产物与解析器 Protocol；实现位于 capabilities/adapters/
 backend/app/database/             session.py（连接级 PRAGMA）、wal.py（WAL 显式初始化，默认拒绝开发库）
@@ -198,7 +199,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（722 例）
+tests/                            pytest 回归测试（733 例）
 ```
 
 ## 文档

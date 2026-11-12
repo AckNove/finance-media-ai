@@ -427,3 +427,79 @@ content.*` 会从 BLOCKED 变成真实产出，不需要改架构。在那之前
   没有新增端点，权限清单无需变动）；
 - 旁白默认关闭：`render_job(narration=False)`，后台脚本加 `--narration` 才合成，
   工作台视频页有对应勾选框——因为真实 TTS 需要联网，不能悄悄跑。
+
+
+---
+
+## §S 再增补：报告 → 规则分镜 → 数据卡 → 真实成片（2026-11-12）
+
+上一节（§R）之前，从"研究底稿"到"能看的成片"中间还缺两段：报告不能直接进渲染，
+纯色底片子也只是"会动的幻灯片"。本节记录这两段怎么补上的，以及真实成片的结果。
+
+### S.1 报告 → 分镜：只做机械转换，不冒充创作
+
+`backend/app/video/outline.py`（`build_outline`）把底稿里**已经落库、带来源编号**的数据点
+排成"开场 + N 张数据卡 + 结尾"：
+
+- 来源少于 2 个直接拒绝（`insufficient_sources`），没有数据点也拒绝（`no_data_points`）——
+  单来源凑不出片，宁可不做；
+- 三重去重：每来源最多两条、同一组数字只讲一次、同一句话（去空白后前 20 字签名）只讲一次；
+- 口播稿 = 原文，一个字不改；屏幕上那行说明在标点处断开、**取数字附近的那一段**（不超过 18 字）；
+- 结尾固定一句"这只是资料汇编，不是投资建议"，并列出引用了哪几份资料；
+- 写完立刻用正式解析器 `load_storyboard` 读回，不合法当场报错。
+
+同时写 `storyboard/OUTLINE.md`：逐镜来源表 + "纯规则、没有调用任何模型"声明。
+模型可用时才是"创作"，模型缺席时这就是**诚实的下限**，不是假装它等于创作。
+
+### S.2 数据卡：让画面有层级
+
+`backend/app/video/cards.py` 生成 OpenKatana 组合画板：青色小标"原文数据"、176px 亮绿数字
+（带单位）、50px 说明、右下角"来源 S0x"。数字从 0.86 倍整段缓慢放大到 1.06 倍——**动画必须
+持续到最后一帧**，否则纯色卡停在中途就不再变像素，`freezedetect` 会判"画面冻结"。
+
+镜头按配音重排后会变长（4.5 秒 → 7 秒以上），`resize_cards()` 按新时长重写画板并重新登记，
+否则后 75 帧一直是最后一帧。
+
+### S.3 渲染链上修掉的真问题（都是真机跑出来的）
+
+| 现象 | 真因 | 处理 |
+| --- | --- | --- |
+| `ContractError: shots[0]: unknown clip` | 引擎要求每个镜头都有 clip | `timeline.solid_clip_id()` 生成 `solid_<hex>` 单帧/渐变 clip |
+| 整片被判黑 78.7 秒 | 底色 `#0b1220` 亮度低于 `blackdetect` 的 `pix_th=0.10` | 底色改 `#1d2a44`，画布 `bg` 与卡片同色 |
+| 冻结 66.9 秒 | 单帧纯色缩放后像素完全一样 | 用 ffmpeg `gradients` 生成 4 秒渐变视频，运动持续可见 |
+| 旁白比镜头长（75.9 s vs 36 s） | 先排分镜再合成配音 | `retime_storyboard()` 按配音重排，再合成一次让音轨跟新起点 |
+| 合法时间被判 `bad_time` | `storyboard._seconds()` 保留 6 位小数，248 帧被截成 8.266667 秒（×30=248.00001） | 直接返回原值，不再四舍五入 |
+| 每镜多留 0.9 秒静音 | 用 TTS 回报时长而非真实文件时长 | 修剪首尾静音后按磁盘实测时长排布 |
+| 被反爬页/空白页骗 | — | （§Q 已修）`page_quality()` 判 `thin_content`/`bot_wall` |
+| QC 把 6 段 0.6 秒的短暂停顿加总判"冻结" | 阈值名叫 `max_*_seconds`，代码却比较的是**总和** | 改为比较**最长单段**，同时在 `scan` 里保留总和与最长值 |
+
+最后一条是**度量口径**的修正，不是放宽阈值：判据仍是 0.45 / 1.5 / 2.0 秒，只是按"单段最长"
+来比，符合阈值本来的语义。
+
+### S.4 真实成片（这一条片子完全由规则 + 本地工具生成）
+
+产物：`content/jobs/v5_research_film/output/final.mp4`
+
+- **71.667 秒 / 2150 帧 / 1080×1920 / 30 fps / h264 + aac / 11,530,139 字节**
+- SHA-256：`c981c46390ee36977405f21c77add8b5177db28b5c591f375be0f9a9da73573b`
+- 8 个镜头：开场 1 + 数据卡 5 + 结尾 1（另有 1 颗开场卡）；旁白 8 段共 68.856 秒，
+  voice `zh-CN-YunxiNeural`，provider `edge`；
+- QC 七项全过：`canvas_matches_storyboard` / `fps_matches_storyboard` / `duration_matches_storyboard` /
+  `has_audio_stream` / `no_long_black`（最长 0.2 s）/ `no_long_freeze`（最长 0.967 s）/
+  `no_long_silence`（0 段）；
+- 素材全部 B 类（本仓库程序生成）：5 张数据卡 + 渐变底板 + 旁白；`assets_manifest.csv` 逐行有
+  sha256、许可与用途；
+- 数据来源是 §Q 那三条真实抓取（新浪财经、中国经济网、网易民生银行），数字来自
+  `content/research/task-1/digest.json`。
+
+**这条片子证明的是"链路上每一环都真跑通"**，不是"内容已经可以发布"：
+分析结论仍然是 BLOCKED（无模型密钥），视觉丰富度也远不及人工分镜。
+
+### S.5 终态数字
+
+- `pytest -o addopts="" -q` → **733 passed, 2 skipped, 1 warning in 122.30s**（唯一 warning
+  仍是 `agent_runs↔research_subtasks` 外键环的 SAWarning）；
+- 新增模块：`backend/app/video/{outline,cards}.py`；新增测试 `tests/test_video_outline.py`(7)、
+  `tests/test_video_render.py`(16)；
+- API 操作数不变（41）：规则分镜走既有 `POST /api/research-reports/{id}/video-job`
+  （`create_video_job(outline=True)` 默认就生成），渲染走既有后台渲染端点。

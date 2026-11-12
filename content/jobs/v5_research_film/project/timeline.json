@@ -1,0 +1,331 @@
+{
+ "canvas": {
+  "w": 1080,
+  "h": 1920,
+  "fps": 30,
+  "frames": 1080,
+  "bg": "#0b1220"
+ },
+ "clips": {},
+ "shots": [
+  {
+   "f0": 0,
+   "f1": 120,
+   "bg": "#0b1220",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 120,
+   "f1": 255,
+   "bg": "#0b1220",
+   "transition": {
+    "type": "dissolve",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 255,
+   "f1": 390,
+   "bg": "#0b1220",
+   "cam": {
+    "pan": {
+     "dx": -0.05
+    }
+   },
+   "transition": {
+    "type": "slide",
+    "d": 0.4,
+    "dir": "up"
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 390,
+   "f1": 525,
+   "bg": "#0b1220",
+   "cam": {
+    "punch": {
+     "v": 0.06,
+     "d": 0.25
+    }
+   },
+   "transition": {
+    "type": "dissolve",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 525,
+   "f1": 660,
+   "bg": "#0b1220",
+   "cam": {
+    "pan": {
+     "dy": 0.05
+    }
+   },
+   "transition": {
+    "type": "wipe",
+    "d": 0.4,
+    "dir": "ltr"
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 660,
+   "f1": 795,
+   "bg": "#0b1220",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "transition": {
+    "type": "dip",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 795,
+   "f1": 930,
+   "bg": "#0b1220",
+   "cam": {
+    "push": {
+     "v": 0.03
+    }
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  },
+  {
+   "f0": 930,
+   "f1": 1080,
+   "bg": "#0b1220",
+   "transition": {
+    "type": "dissolve",
+    "d": 0.4
+   },
+   "in": {
+    "type": "dip",
+    "d": 0.22,
+    "color": "#0b1220"
+   }
+  }
+ ],
+ "fonts": [
+  {
+   "family": "AKSC",
+   "url": "fonts/NotoSansSC-VF.ttf"
+  }
+ ],
+ "text": [
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "分析：商业银行靠什么赚钱",
+   "f0": 0,
+   "f1": 120,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "商业银行2024年第四季度净息差降至1.52% 业…",
+   "f0": 120,
+   "f1": 255,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "近日，国家金融监督管理总局公布了2024年第四季度…",
+   "f0": 255,
+   "f1": 390,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "2024年第四季度，商业银行净息差为1.52%，",
+   "f0": 390,
+   "f1": 525,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "其中，城商行第四季度的净息差为1.38%，",
+   "f0": 525,
+   "f1": 660,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "民生银行的2024年：营收净利双降 净息差探底至1…",
+   "f0": 660,
+   "f1": 795,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "3月28日晚间，民生银行（600016.SH）发布…",
+   "f0": 795,
+   "f1": 930,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  },
+  {
+   "type": "caption",
+   "family": "AKSC",
+   "text": "资料汇编 · 不是投资建议",
+   "f0": 930,
+   "f1": 1080,
+   "pos": [
+    0.5,
+    0.84
+   ],
+   "size": 46,
+   "fill": "#f6f8fa",
+   "stroke": "#0b1220",
+   "lw": 3,
+   "shadow": "dark"
+  }
+ ],
+ "audio": {
+  "mode": "mix",
+  "gain": 1.0,
+  "tracks": [
+   {
+    "src": "audio/narration/sh01.mp3",
+    "at": 0.0,
+    "volume": 1.0
+   },
+   {
+    "src": "audio/narration/sh02.mp3",
+    "at": 4.0,
+    "volume": 1.0
+   },
+   {
+    "src": "audio/narration/sh03.mp3",
+    "at": 8.5,
+    "volume": 1.0
+   },
+   {
+    "src": "audio/narration/sh04.mp3",
+    "at": 13.0,
+    "volume": 1.0
+   },
+   {
+    "src": "audio/narration/sh05.mp3",
+    "at": 17.5,
+    "volume": 1.0
+   },
+   {
+    "src": "audio/narration/sh06.mp3",
+    "at": 22.0,
+    "volume": 1.0
+   },
+   {
+    "src": "audio/narration/sh07.mp3",
+    "at": 26.5,
+    "volume": 1.0
+   },
+   {
+    "src": "audio/narration/sh08.mp3",
+    "at": 31.0,
+    "volume": 1.0
+   }
+  ]
+ }
+}

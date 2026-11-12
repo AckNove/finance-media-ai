@@ -5,15 +5,17 @@
 
 * 把报告正文、证据行、来源清单一并写进任务目录的 `research/`，每份都带 SHA-256。
   这样后面写脚本的人（或 Agent）手上有的是**带出处的材料**，而不是一段凭空的摘要。
-* 脚本与分镜目录**留空**。空是诚实的：没有模型（或有模型但价目未配）时，
-  我们无法生成符合 AK 风格的脚本，更不能塞一段模板文字冒充。
+* 脚本目录**留空**：没有模型（或有模型但价目未配）时，我们无法生成符合 AK 风格的
+  脚本，更不能塞一段模板文字冒充。
+* 分镜由**纯规则**排一份草稿（`backend/app/video/outline.py`）：每镜口播稿就是底稿里
+  的原文，逐镜写明来源，产物旁边放 `storyboard/OUTLINE.md` 说明它没有调用模型。
+  有至少两个来源且证据非空才排；排不出来就把原因写进 `job.json`，不硬凑。
 * `job.json` 明写 `stage` / `next_stage` / `blocked` / `blocked_reason`，
   以及继续推进需要什么。人打开目录就知道卡在哪。
 * 同一个报告重复建任务不会覆盖已有目录（`job_id` 已存在则报错），避免把人工已经
   改了的分镜覆盖掉。
 
-不做什么：不抓新资料、不调模型、不生成分镜、不渲染。这些都是后续阶段的事，而且
-必须由人看过报告之后再决定。
+不做什么：不抓新资料、不调模型、不渲染。这几件事必须由人看过报告之后再决定。
 """
 
 from __future__ import annotations
@@ -145,6 +147,60 @@ def _provider_ready() -> tuple[bool, str]:
     return False, "model_not_configured"
 
 
+def _digest_from_rows(report: Any, evidence_rows: list[Any], source_rows: list[Any]) -> Any:
+    """把库里的报告 + 证据 + 来源拼成规则分镜需要的底稿对象。"""
+    from backend.app.research.digest import DataPoint, Digest, SourceRef
+
+    labels: dict[Any, str] = {}
+    refs: list[SourceRef] = []
+    for index, source in enumerate(source_rows, start=1):
+        label = f"S{index:02d}"
+        labels[getattr(source, "id", None)] = label
+        refs.append(
+            SourceRef(
+                source_id=label,
+                title=str(getattr(source, "title", "") or ""),
+                url=str(getattr(source, "url", "") or ""),
+                site_name=str(getattr(source, "publisher", "") or ""),
+                author="",
+                published_at=str(getattr(source, "published_at", "") or ""),
+                sha256=str(getattr(source, "content_hash", "") or ""),
+                snapshot_path="",
+                char_count=0,
+                query="",
+            )
+        )
+    points = []
+    for item in evidence_rows:
+        label = labels.get(getattr(item, "source_id", None))
+        claim = str(getattr(item, "claim", "") or "").strip()
+        if label and claim:
+            points.append(DataPoint(source_id=label, text=claim))
+    return Digest(
+        title=str(getattr(report, "title", "") or ""),
+        objective=str(getattr(report, "summary", "") or "")[:200],
+        sources=tuple(refs),
+        data_points=tuple(points),
+    )
+
+
+def _try_outline(report: Any, evidence_rows: list[Any], source_rows: list[Any],
+                 directory: Path, identifier: str) -> dict[str, Any]:
+    """试着排一份规则分镜；排不出来就如实记原因，不让整个交接失败。"""
+    from backend.app.video.outline import OutlineError, build_outline
+
+    digest = _digest_from_rows(report, evidence_rows, source_rows)
+    try:
+        result = build_outline(digest, job_root=directory, job_id=identifier)
+    except OutlineError as error:
+        return {"ok": False, "reason": error.reason, "message": str(error)}
+    except Exception as error:  # noqa: BLE001 - 交接不能因为排版问题整体失败
+        return {"ok": False, "reason": "outline_failed", "message": f"{type(error).__name__}: {error}"}
+    payload = result.as_dict()
+    payload["ok"] = True
+    return payload
+
+
 def create_video_job(
     report: Any,
     *,
@@ -153,6 +209,7 @@ def create_video_job(
     job_id: str | None = None,
     root: Path | None = None,
     now: dt.datetime | None = None,
+    outline: bool = True,
 ) -> VideoJobScaffold:
     """把一份报告交接成一个视频任务目录（不生成脚本、不渲染）。"""
     base = root or JOBS_ROOT
@@ -217,24 +274,48 @@ def create_video_job(
     ]
 
     ready, provider_note = _provider_ready()
-    blocked = not ready
-    blocked_reason = "" if ready else provider_note
-    next_step = (
-        "按 research/report.md 写 script/script.md 与 storyboard/storyboard.csv，"
-        "素材登记进 assets_manifest.csv 后走 Phase 2 的渲染链"
-        if ready
-        else "先配好模型（.env 的 API Key + config/models.yaml 的 enabled 与价目），"
-        "再让脚本阶段生成 script/script.md；本轮不生成任何脚本，避免用模板文字冒充"
+    outline_result = (
+        _try_outline(report, evidence_rows, source_rows, directory, identifier)
+        if outline
+        else {"ok": False, "reason": "outline_disabled"}
     )
+    outline_ready = bool(outline_result.get("ok"))
+    blocked = not ready and not outline_ready
+    if outline_ready:
+        blocked_reason = ""
+        stage = "storyboard_ready"
+        next_stage = "render"
+        next_step = (
+            "分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。"
+            "先人工看一遍分镜，然后跑 python -m backend.scripts.render_job "
+            f"--job {identifier} --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。"
+        )
+    elif ready:
+        blocked_reason = ""
+        stage = "research_imported"
+        next_stage = "content_plan"
+        next_step = (
+            "按 research/report.md 写 script/script.md 与 storyboard/storyboard.csv，"
+            "素材登记进 assets_manifest.csv 后走 Phase 2 的渲染链"
+        )
+    else:
+        blocked_reason = provider_note
+        stage = "research_imported"
+        next_stage = "content_plan"
+        next_step = (
+            "先配好模型（.env 的 API Key + config/models.yaml 的 enabled 与价目），"
+            "再让脚本阶段生成 script/script.md；本轮不生成任何脚本，避免用模板文字冒充"
+        )
 
     manifest = {
         "job_id": identifier,
         "created_at": (now or dt.datetime.now(dt.UTC)).isoformat(),
-        "stage": "research_imported",
-        "next_stage": "content_plan",
+        "stage": stage,
+        "next_stage": next_stage,
         "blocked": blocked,
         "blocked_reason": blocked_reason,
         "model_provider": provider_note,
+        "outline": outline_result,
         "report": {
             "report_id": report.id,
             "research_task_id": getattr(report, "research_task_id", None),
@@ -250,10 +331,11 @@ def create_video_job(
         },
         "narrative_style": "AK（accessible-explainer + investigative-storytelling + ak-signature）",
         "not_done": [
-            "script/script.md（需要模型或人工撰写）",
-            "storyboard/storyboard.csv（禁止未经脚本直接生成）",
-            "assets_manifest.csv（素材必须先登记授权）",
-            "audio/ 与 output/（渲染属后续阶段）",
+            "script/script.md（需要模型或人工撰写；规则分镜里的口播稿是原文摘引，不是成稿）"
+            if not outline_ready
+            else "script/script.md（分镜已就位，但正式脚本仍需模型或人工）",
+            "assets_manifest.csv（素材必须先登记授权；纯色底镜头不需要）",
+            "audio/ 与 output/（跑 render_job 才会生成）",
         ],
     }
     files.append(
@@ -279,6 +361,19 @@ def create_video_job(
                     f"- `research/report.md`（sha256 `{manifest['report']['sha256']}`）",
                     f"- `research/evidence.json`（{len(evidence_rows)} 条证据）",
                     f"- `research/sources.json`（{len(source_rows)} 个来源）",
+                    *(
+                        [
+                            f"- `storyboard/storyboard.csv`（{outline_result.get('shot_count', 0)} 镜，"
+                            f"{outline_result.get('total_seconds', 0)} 秒）",
+                            "- `storyboard/OUTLINE.md`（逐镜来源，说明它是规则草稿）",
+                        ]
+                        if outline_ready
+                        else [
+                            "- 分镜：**没有排出来**"
+                            f"（原因 `{outline_result.get('reason')}`："
+                            f"{outline_result.get('message', '')}）"
+                        ]
+                    ),
                     "",
                     "## 还缺什么",
                     "",
@@ -303,8 +398,8 @@ def create_video_job(
     return VideoJobScaffold(
         job_id=identifier,
         path=str(directory),
-        stage=manifest["stage"],
-        next_stage=manifest["next_stage"],
+        stage=stage,
+        next_stage=next_stage,
         blocked=blocked,
         blocked_reason=blocked_reason,
         next_step=next_step,

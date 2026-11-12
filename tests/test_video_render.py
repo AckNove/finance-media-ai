@@ -17,7 +17,14 @@ from pathlib import Path
 import pytest
 
 from backend.app.capabilities.media.engine import EngineVersion, ImportResult
-from backend.app.video.render import RenderError, probe_media, render_job, scan_media
+from backend.app.media.storyboard import load_storyboard
+from backend.app.video.render import (
+    RenderError,
+    prepare_clips,
+    probe_media,
+    render_job,
+    scan_media,
+)
 
 STORYBOARD_ROWS = [
     {
@@ -278,11 +285,12 @@ def test_composition_asset_goes_through_the_compositor(tmp_path: Path) -> None:
     engine = _FakeEngine(tmp_path / "out.mp4")
     report = render_job(job, engine=engine, do_render=False, do_qc=False)
 
-    assert engine.calls[:2] == [
+    assert [call for call in engine.calls if "composition" in call][:2] == [
         "save_composition:assets/chart.json",
         "render_composition:assets/chart.json",
     ]
-    assert report.assets[0]["frames"] == 120
+    composition_rows = [row for row in report.assets if row["asset_id"] == "C_CHART"]
+    assert composition_rows and composition_rows[0]["frames"] == 120
     assert report.frames == 210
 
 
@@ -299,7 +307,8 @@ def test_timeline_only_run_writes_a_valid_document(tmp_path: Path) -> None:
     assert report.storyboard_shots == 2
     assert report.frames == 210  # 7 秒 × 30fps
     document = json.loads(report.timeline_path.read_text(encoding="utf-8"))
-    assert document["canvas"] == {"w": 1080, "h": 1920, "fps": 30, "frames": 210, "bg": "#0b1220"}
+    # 画布底色与数据卡同色，运镜平移时不会露出异色边
+    assert document["canvas"] == {"w": 1080, "h": 1920, "fps": 30, "frames": 210, "bg": "#1d2a44"}
     assert [shot["f0"] for shot in document["shots"]] == [0, 90]
     # 字幕来自 subtitle 列，不是 narration 自动生成
     assert [item["text"] for item in document["text"]] == ["银行靠什么赚钱？", "利息净收入占七成"]
@@ -448,3 +457,42 @@ def test_scan_media_sums_segment_durations(tmp_path: Path) -> None:
     assert scan["black_seconds"] == pytest.approx(0.3)
     assert scan["silence_seconds"] == pytest.approx(2.5)
     assert scan["freeze_segments"] == 0
+
+
+def test_solid_shots_use_a_moving_plate_not_a_still_frame(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """纯色卡也要动：单帧均匀色块缩放后像素不变，会被 freezedetect 判成冻结。"""
+    job = _write_job(tmp_path)
+    engine = _FakeEngine(tmp_path / "out.mp4")
+    moved = job / "assets" / "plates" / "solid_1d2a44.mp4"
+    moved.parent.mkdir(parents=True, exist_ok=True)
+    moved.write_bytes(b"fake-gradient")
+    monkeypatch.setattr(
+        "backend.app.video.render._solid_gradient", lambda *a, **k: moved
+    )
+    storyboard = load_storyboard(job / "storyboard" / "storyboard.csv")
+    clips, rows, _ = prepare_clips(
+        storyboard, job_root=job, engine=engine, animate_plates=True
+    )
+    assert any(name.endswith(".mp4") for name in engine.calls)
+    solid_rows = [row for row in rows if str(row["asset_id"]).startswith("solid_")]
+    assert solid_rows and solid_rows[0]["file"].endswith(".mp4")
+    assert clips
+
+
+def test_solid_shots_fall_back_to_a_still_plate_when_ffmpeg_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    job = _write_job(tmp_path)
+    engine = _FakeEngine(tmp_path / "out.mp4")
+    monkeypatch.setattr(
+        "backend.app.video.render._solid_gradient", lambda *a, **k: None
+    )
+    storyboard = load_storyboard(job / "storyboard" / "storyboard.csv")
+    _, rows, _ = prepare_clips(
+        storyboard, job_root=job, engine=engine, animate_plates=True
+    )
+    solid_rows = [row for row in rows if str(row["asset_id"]).startswith("solid_")]
+    assert solid_rows and solid_rows[0]["file"].endswith(".png")
+    assert (job / solid_rows[0]["file"]).is_file()

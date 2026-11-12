@@ -160,3 +160,58 @@ def test_video_job_api_creates_directory_and_reports_blocked(
 def test_video_job_api_returns_404_for_unknown_report(client, tmp_path: Path) -> None:
     response = client.post("/api/research-reports/999999/video-job")
     assert response.status_code == 404
+
+
+def test_two_sources_are_enough_for_a_rule_made_storyboard(
+    tmp_path: Path, no_model: None
+) -> None:
+    class _Second(_FakeSource):
+        id = 2
+        title = "监管机构统计口径"
+        url = "https://example.org/stats"
+
+    class _SecondEvidence(_FakeEvidence):
+        def __init__(self, evidence_id: int, claim: str) -> None:
+            super().__init__(evidence_id, claim)
+            self.source_id = 2
+
+    scaffold = create_video_job(
+        _FakeReport(),
+        evidence=[_FakeEvidence(1, "营业收入 4.28 万亿元"), _SecondEvidence(2, "净息差 1.52%")],
+        sources=[_FakeSource(), _Second()],
+        root=tmp_path,
+    )
+
+    job = tmp_path / scaffold.job_id
+    board = job / "storyboard" / "storyboard.csv"
+    assert board.is_file()
+    assert (job / "storyboard" / "OUTLINE.md").is_file()
+    assert scaffold.stage == "storyboard_ready"
+    assert scaffold.next_stage == "render"
+    # 有分镜就能出片，所以即使没有模型也不算阻塞
+    assert scaffold.blocked is False
+    assert "render_job" in scaffold.next_step
+
+    manifest = json.loads((job / "job.json").read_text(encoding="utf-8"))
+    assert manifest["outline"]["ok"] is True
+    assert manifest["outline"]["generated_by"] == "rules"
+    assert manifest["outline"]["shot_count"] >= 3
+    # 正式脚本仍然没有：规则分镜里的口播稿是原文摘引，不是成稿
+    assert list((job / "script").iterdir()) == []
+
+
+def test_outline_can_be_switched_off(tmp_path: Path, no_model: None) -> None:
+    class _Second(_FakeSource):
+        id = 2
+
+    scaffold = create_video_job(
+        _FakeReport(),
+        evidence=[_FakeEvidence(1, "a"), _FakeEvidence(2, "b")],
+        sources=[_FakeSource(), _Second()],
+        root=tmp_path,
+        outline=False,
+    )
+    assert list((tmp_path / scaffold.job_id / "storyboard").iterdir()) == []
+    manifest = json.loads((tmp_path / scaffold.job_id / "job.json").read_text(encoding="utf-8"))
+    assert manifest["outline"]["reason"] == "outline_disabled"
+    assert manifest["blocked"] is True

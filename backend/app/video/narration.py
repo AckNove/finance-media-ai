@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from backend.app.capabilities.tts import TtsError, synthesize as default_synthesize
+from backend.app.capabilities.tts.provider import WordTiming
 from backend.app.capabilities.tts.subtitle import cues_to_srt, group_words_into_cues, shift_cues
 from backend.app.media.storyboard import Shot, Storyboard
 
@@ -118,6 +119,132 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+TTS_SILENCE_DB = -35
+TTS_SILENCE_MIN = 0.25
+TRIM_KEEP_SECONDS = 0.06
+
+
+def measure_edge_silence(path: Path) -> tuple[float, float]:
+    """返回 (开头静音秒数, 结尾静音秒数)。
+
+    TTS 产出的音频两头常带 0.4–0.6 秒静音，直接拼到时间轴上会造成"每个镜头之间
+    空一拍"。这里用 ffmpeg 实测，不估算；量不出来就返回 (0, 0) 保持原样。
+    """
+    import re
+    import subprocess
+
+    try:
+        from backend.app.capabilities.media.ffmpeg import resolve_toolchain
+
+        toolchain = resolve_toolchain()
+    except Exception:  # noqa: BLE001 - 没装 ffmpeg 就跳过修剪
+        return (0.0, 0.0)
+    command = [
+        str(toolchain.ffmpeg),
+        "-hide_banner",
+        "-nostats",
+        "-i",
+        str(path),
+        "-af",
+        f"silencedetect=noise={TTS_SILENCE_DB}dB:d={TTS_SILENCE_MIN}",
+        "-f",
+        "null",
+        "-",
+    ]
+    try:
+        completed = subprocess.run(command, capture_output=True, text=True, timeout=120)
+    except Exception:  # noqa: BLE001
+        return (0.0, 0.0)
+    text = f"{completed.stderr or ''}\n{completed.stdout or ''}"
+    starts = [float(item) for item in re.findall(r"silence_start:\s*([\d.]+)", text)]
+    ends = [float(item) for item in re.findall(r"silence_end:\s*([\d.]+)", text)]
+    if not starts:
+        return (0.0, 0.0)
+    head = starts[0] if starts[0] <= 0.05 else 0.0
+    tail = 0.0
+    if ends:
+        # 结尾静音 = 最后一段静音的结束点缺失时，用总时长减去最后一段起点。
+        if len(starts) > len(ends):
+            total = _duration_of(path)
+            if total > 0:
+                tail = max(0.0, total - starts[-1])
+        else:
+            total = _duration_of(path)
+            if total > 0 and ends[-1] >= total - 0.05:
+                tail = max(0.0, total - starts[-1])
+    return (max(0.0, head), max(0.0, tail))
+
+
+def _duration_of(path: Path) -> float:
+    try:
+        from backend.app.capabilities.media.ffmpeg import resolve_toolchain, run_ffprobe
+
+        toolchain = resolve_toolchain()
+        output = run_ffprobe(
+            toolchain,
+            [
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=nw=1:nk=1",
+                str(path),
+            ],
+        )
+        return float((output or "").strip() or 0.0)
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
+def trim_edge_silence(path: Path) -> tuple[float, float]:
+    """把首尾静音剪掉（留 60ms 呼吸），返回 (剪掉的头, 剪掉的尾) 秒数。"""
+    head, tail = measure_edge_silence(path)
+    if head <= TTS_SILENCE_MIN and tail <= TTS_SILENCE_MIN:
+        return (0.0, 0.0)
+    total = _duration_of(path)
+    if total <= 0:
+        return (0.0, 0.0)
+    start = max(0.0, head - TRIM_KEEP_SECONDS)
+    end = min(total, total - tail + TRIM_KEEP_SECONDS)
+    if end <= start + 0.2:
+        return (0.0, 0.0)
+    try:
+        from backend.app.capabilities.media.ffmpeg import resolve_toolchain
+
+        toolchain = resolve_toolchain()
+    except Exception:  # noqa: BLE001
+        return (0.0, 0.0)
+    trimmed = path.with_name(f"{path.stem}.trimmed{path.suffix}")
+    command = [
+        str(toolchain.ffmpeg),
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-ss",
+        f"{start:.3f}",
+        "-to",
+        f"{end:.3f}",
+        "-i",
+        str(path),
+        "-c",
+        "copy",
+        str(trimmed),
+    ]
+    import subprocess
+
+    try:
+        completed = subprocess.run(command, capture_output=True, text=True, timeout=180)
+    except Exception:  # noqa: BLE001
+        return (0.0, 0.0)
+    if completed.returncode != 0 or not trimmed.is_file() or trimmed.stat().st_size == 0:
+        trimmed.unlink(missing_ok=True)
+        return (0.0, 0.0)
+    trimmed.replace(path)
+    return (start, max(0.0, total - end))
+
+
 def _narration_text(shot: Shot) -> str:
     return (getattr(shot, "narration", "") or "").strip()
 
@@ -131,11 +258,14 @@ def synthesize_narration(
     rate: str = "+0%",
     volume: str = "+0%",
     synthesize: Callable[..., Any] | None = None,
+    trim: bool = True,
+    trim_fn: Callable[[Path], tuple[float, float]] | None = None,
 ) -> NarrationResult:
     """逐个镜头合成旁白。一个镜头失败不影响其他镜头，但会记进 ``problems``。"""
     root = Path(job_root).resolve()
     target_dir = root / NARRATION_DIR
     synthesize_fn = synthesize or default_synthesize
+    trimmer = trim_fn or trim_edge_silence
 
     clips: list[NarrationClip] = []
     tracks: list[dict[str, Any]] = []
@@ -173,8 +303,28 @@ def synthesize_narration(
             continue
 
         shot_seconds = float(shot.end_time) - float(shot.start_time)
-        duration = float(getattr(result, "duration_seconds", 0.0) or 0.0)
+        reported = float(getattr(result, "duration_seconds", 0.0) or 0.0)
         words = tuple(getattr(result, "words", ()) or ())
+        head_trimmed = 0.0
+        if trim:
+            # TTS 两头常带静音，剪掉之后镜头之间的空拍才不会攒成"没有声音的几秒"。
+            try:
+                head_trimmed, _tail_trimmed = trimmer(produced)
+            except Exception as error:  # noqa: BLE001 - 修剪失败不拦合成
+                problems.append(f"{shot.shot_id}: 首尾静音修剪失败（保留原音频）：{error}")
+                head_trimmed = 0.0
+            if head_trimmed > 0:
+                words = tuple(
+                    WordTiming(
+                        text=word.text,
+                        start=max(0.0, float(word.start) - head_trimmed),
+                        end=max(0.0, float(word.end) - head_trimmed),
+                    )
+                    for word in words
+                    if float(word.end) - head_trimmed > 0
+                )
+        # 时长以磁盘上的真实文件为准（修剪之后再量），合成器报的数字可能偏大。
+        duration = _duration_of(produced) or reported
         cues = shift_cues(
             group_words_into_cues(words), float(shot.start_time)
         ) if words else ()
