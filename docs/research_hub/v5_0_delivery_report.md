@@ -368,3 +368,32 @@ $env:PYTHONPATH="C:\Users\25803\finance-media-ai"
 **一句话**：除了"真实模型"这一环，其余链路都是真跑过的；接上密钥后 `analyze → synthesize →
 content.*` 会从 BLOCKED 变成真实产出，不需要改架构。在那之前，系统会如实告诉你它卡在哪、
 要你做什么，而不是给你一份看起来完整的假报告。
+
+---
+
+## Q. 收尾增补（本报告首版之后继续做的部分）
+
+首版报告停在"研究链跑通、视频链沿用 V2.2"。之后又推进了六批，全部**真跑验证并已推送**：
+
+| 增补 | 状态 | 证据 |
+| --- | --- | --- |
+| 最后 5 个工具（`db_query`/`db_write`/`task_update`/`handoff`/`fact_check`） | ✅ 十个工具有真实实现 | `tests/test_local_tools.py` 24 例；`db_write` 要过白名单 + `db_scopes` + 禁写金额三关 |
+| 报告 → 视频任务交接（`POST /api/research-reports/{id}/video-job`） | ✅ | 落 `research/report.md`、`evidence.json`、`sources.json`、`job.json`、`HANDOFF.md`；脚本与分镜目录**故意留空**，不伪造 |
+| 表格数字 → 指标 + 可复现图表（`backend/app/analysis/`） | ✅ | `tests/test_analysis.py` 29 例；同输入同字节 PNG，图上强制印出处行 |
+| 分镜 → 时间轴 → 成片 → 质检（`backend/app/video/render.py`） | ✅ 真机 | 7 镜 1275 帧 1080×1920，只跑时间轴 79 秒；组合素材走引擎合成、同文件多入点、不覆盖已冻结的 `project/timeline.json` |
+| 常驻 worker（`python -m backend.scripts.run_worker`） | ✅ 真跑 | 采集格 completed、模型格 `blocked:model_not_configured`、空闲 3 秒后自动退出 |
+| 后台渲染（`python -m backend.scripts.render_job` + 工作台两个按钮） | ✅ 真跑 | 进度写 `qc/render_run.json`（原子替换，`running/done/failed` 三态）；实测 08:40:59 → 08:42:22 变 `done/timeline_ready` |
+
+增补后的终态数字（与前文 §E/§P 的旧数字不同，以本节为准）：
+
+- 测试：`pytest -o addopts="" -q` → **684 passed, 2 skipped, 1 warning in 83.53s**（唯一 warning 仍是 `agent_runs↔research_subtasks` FK 环）；
+- API：**41 个操作**（22 个基础 + 8 研究任务 + 3 监控 + 8 工作台含后台渲染）——权限清单 `ROUTE_CALLERS`、启动自检与 `tests/test_caller_permissions.py` 的绊线三处一致；
+- 工具：10 个全部真实实现（`README.md` 的"已实现 5 个"已改）。
+
+**一条必须记住的副作用**：真机渲染会让引擎在自己的工程目录里记账——`project/<pid>/project.json`
+会追加本次导入的素材，`assets/`、`media/`、`plates/` 会被写出（后三者已 gitignore）。
+对**已冻结**的任务跑完真机渲染后要 `git checkout -- project/<pid>/project.json` 恢复，
+否则冻结记录会被累计的素材列表污染。这条已写进 `backend/app/video/render.py` 的模块 docstring。
+
+本轮新增的真实研究产物：`content/research/task-1/{digest.md,digest.json}`（3 条真实来源、
+18 个候选数据点，正文里明写"规则汇编（未使用模型）"），作为"真实搜索→抓取→底稿"的入库证据。

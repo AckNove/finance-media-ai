@@ -31,9 +31,12 @@
 > | --- | --- | --- |
 > | 真实搜索 + 真实抓取（SSRF/robots/反爬拦截闸门） | ✅ 已实测 | 抓到今日头条/新浪财经等正文，解析出发布时间；验证命令见 `docs/research_hub/v5_0_delivery_report.md` |
 > | 任务运行时（队列/租约/重试/暂停/人工闸门） | ✅ 已实测 | 9 阶段 DAG + 3 道闸门，重启后可恢复 |
+> | 常驻 worker（`python -m backend.scripts.run_worker`） | ✅ 已实测 | 真跑：采集格完成、模型格 `blocked:model_not_configured`、空闲自动退出 |
 > | 证据链（来源/证据/报告落库，逐字核对） | ✅ 已实测 | 一次真实跑：sources=3 / reports=1 / evidence=11 / verified=11 |
 > | 语音合成（Edge TTS + SAPI 兜底，词级时间） | ✅ 已实测 | 中文拿到真实词级边界，可直接出 SRT/ASS |
 > | 视频渲染与质检（FFmpeg 8.1.2 + OpenKatana） | ✅ 已实测 | 42.5 秒 1080×1920 成片，17 项 QC |
+> | 分镜 → 时间轴（真实引擎，7 镜 1275 帧） | ✅ 已实测 | 只跑时间轴 79 秒；后台渲染进度写 `qc/render_run.json`，工作台可轮询 |
+> | 表格数据 → 指标 + 可复现图表 | ✅ 已实测 | 同输入同字节的 PNG，图上强制印出处行 |
 > | 统一模型网关（OpenAI 兼容、预算与成本闸门） | ⚠️ 代码就绪、**无密钥** | 缺 key 时返回 `not_configured`；价目未知直接拒绝请求 |
 > | 18 页工作台（真实接口，无假数据） | ✅ 可用 | `http://127.0.0.1:8000/app/` |
 >
@@ -136,10 +139,11 @@ $env:DATABASE_URL = "sqlite:///./data/quickstart.db"
   `forged_header` 告警；agent 上下文只能由执行层在进程内构造（`CallerContext.for_executor`）。
 - `dev` 端点仅限 `/api/_dev/*` 且 `APP_ENV != production`，生产环境返回 404。
 - 越权一律 422 `domain_validation_error` + `details.reason="permission_denied"`。
-- 工具登记表 `backend/app/capabilities/tools.py` 里 10 个工具**已实现 5 个**：
-  `web_search`、`fetch_url`、`parse_pdf`、`parse_xlsx`、`llm_complete`；
-  未实现的 5 个（`db_query`、`db_write`、`task_update`、`handoff`、`fact_check`）
-  调用时返回 `not_implemented`——这是刻意的诚实边界。
+- 工具登记表 `backend/app/capabilities/tools.py` 里 10 个工具**全部有真实实现**：
+  `web_search`、`fetch_url`、`parse_pdf`、`parse_xlsx`、`llm_complete`、
+  `db_query`、`db_write`、`task_update`、`handoff`、`fact_check`。
+  `db_write` 有三层闸门（可写表白名单、Agent 的 `db_scopes`、禁止写金额与租约字段），
+  读账本表一律拒绝——工具便捷不等于可以绕过审计。
 
 ## 一个研究任务会经过什么
 
@@ -163,31 +167,37 @@ BLOCKED 变成真正产出；在此之前它们**不会**用假文本冒充结�
 
 ```
 backend/app/{api,core,models,schemas,services,database}   服务代码
-backend/app/execution/            执行层：task_types / routing / runtime（队列租约）/ orchestrator（DAG）/ executor / worker
+backend/app/execution/            执行层：task_types / routing / runtime（队列租约）/ orchestrator（DAG）/ executor / worker / tools（task_update·handoff）
 backend/app/capabilities/         权限闸门 guard.py、工具登记 tools.py、成本闸门 budget.py
 backend/app/capabilities/model/   统一模型网关：providers / tokens / gateway（预算·缓存·重试·成本复算）/ tool
 backend/app/capabilities/search/  真实搜索与抓取：safety（SSRF/robots）/ fetcher / engine（三引擎 + 真实地址还原）
 backend/app/capabilities/tts/     语音：provider（契约）/ edge（Edge TTS，词级时间）/ sapi（离线兜底）/ subtitle（SRT·ASS）
+backend/app/capabilities/storage/ db_query / db_write（三层闸门：白名单·db_scopes·禁写金额与租约）
+backend/app/capabilities/verification/ fact_check（只查已落盘快照，逐字核对，不联网）
 backend/app/capabilities/adapters/ MarkItDown 解析、structured（带页码/行号定位的抽取）、search·model·tts 工具适配器
 backend/app/capabilities/media/   OpenKatana 与 FFmpeg 本地媒体适配层
 backend/app/research/             研究底稿 digest、逐字核查 verify、证据链落库 persistence
+backend/app/analysis/             表格数字→指标（parse_number/yoy/cagr/share/HHI）+ 可复现图表（line/bar/share_bar）
 backend/app/media/                分镜校验、素材清单与时间轴构建
+backend/app/video/                handoff（报告→视频任务）、render（分镜→时间轴→成片→质检）
 backend/app/skills/registry.py    Skill Registry（sha256 固定、按 task_type 装载、工具门禁）
 backend/app/parsers/              解析产物与解析器 Protocol；实现位于 capabilities/adapters/
 backend/app/database/             session.py（连接级 PRAGMA）、wal.py（WAL 显式初始化，默认拒绝开发库）
 backend/migrations/               Alembic 迁移（初始 de8148733a9b + B1/B2/B3 + B4 成本精度）
 backend/scripts/                  seed_collections / enable_wal / install_ffmpeg / check_media_toolchain
-                                  / media_selftest / research_task / preflight / recover_tasks
+                                  / media_selftest / research_task / run_worker / render_job
+                                  / preflight / recover_tasks
 scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
 agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
 skills/                           Skill 目录（ak/ 三个自研 + vendor/anthropic 的 pdf、xlsx）
 knowledge/{8 个子域}/              知识条目 Markdown（规范见 knowledge/README.md）
 content/jobs/<job_id>/            每条视频一个任务目录（分镜、素材清单、时间轴、成片、质检）
+content/research/<task_id>/        研究底稿（digest.md / digest.json，规则汇编，未使用模型）
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（607 例）
+tests/                            pytest 回归测试（684 例）
 ```
 
 ## 文档
@@ -218,22 +228,25 @@ tests/                            pytest 回归测试（607 例）
 
 ## 尚未实现（避免误解）
 
-研究执行层（`TaskRuntime` / `Orchestrator` / `AgentExecutor`）、模型适配层（`ModelGateway` 与真实
-provider）、搜索与抓取、文档解析接入研究工作流、证据抽取、报表生成、
-研究/内容任务到视频渲染管线的集成、配音生成、图表生成（matplotlib 未安装）、
-脚本/审核/发布接口、知识库 Markdown 自动同步、
-语义检索与向量库、真实鉴权、CI 与云部署。逐项状态见 `docs/phase1_acceptance.md`
-与 `docs/research_hub/m2_0_delivery_report.md`；视频管线的范围与发布阻断项见
-`docs/research_hub/phase2_handover_report.md` 和 `docs/research_hub/phase2_remaining_issues.md`。
+**硬阻塞：真实模型调用。** 仓库里没有任何 API Key、也没有本机模型服务，所以
+`research.analyze / research.synthesize / verify.claims / content.*` 一律停在
+`blocked: model_not_configured`，并把"下一步该配什么"写进任务输出。解除只需三步
+（`.env` 写 `DEEPSEEK_API_KEY` → `config/models.yaml` 打开 enabled 并填价目 →
+`python -m backend.scripts.preflight` 复查）。在此之前**不会**用假文本冒充分析结论。
 
-M2.0 之后仍然存在的结构性事实（不是 bug，是尚未到达的阶段）：
-`model_calls` / `tool_calls` / `research_tasks` / `research_subtasks` 四张表建好了但**一行没写**；
-`capabilities/tools.py` 里十个工具全部 `implemented=False`；`config/models.yaml` 里两个模型的
-价目都是 `null`，因此任何真实模型调用都会被 `budget.evaluate_model_call()` 以
-`pricing_missing` 拒绝（M1.2 决策 Q8=B）。
+以下几项确实还没做（不是没跑通，是没写）：
 
-**另外两项已知缺口**（`docs/content_strategy.md` §3、§9 有详细说明）：
+- 语义检索与向量库；知识库 Markdown 的自动同步（只能人工按 `knowledge/README.md` 落条目）。
+- 真实鉴权/多用户、限流、CI 与云部署（当前是本地单机，`networkExposure: loopback`）。
+- 选题多合集分类的写入接口（`topic_collections` / `topic_tags` 表在，接口没做，
+  `topics.column_id` 仍是双写期）；概念类知识条目还只能落 `knowledge_domain=general`。
+- 脚本/审核/发布接口：发布是人工动作，系统按设计**不会自动发布**。
 
-- 选题的**多合集分类**在库里已有 `topic_collections` 表（M2.0 B1 建好），但还没有写入路径，
-  `topics.column_id` 仍在双写期；多标签 `topic_tags` 同样只有表没有接口。
-- 概念类知识条目只能落在 `knowledge_domain=general`，枚举里没有 `concepts` 取值。
+数据层面的现状（`data/finance_media.db` 只读，所有真实跑都在临时库）：
+`model_calls` 仍是 0 行（没有一次真实模型调用发生过，这是实话不是漏记）；
+`config/models.yaml` 里两条模型的价目仍是 `null`，因此任何真实模型调用都会先被
+`budget.evaluate_model_call()` 以 `pricing_missing` 拒绝（M1.2 决策 Q8=B，宁可拒绝也不按 0 元记账）。
+
+逐项状态见 `docs/research_hub/v5_0_delivery_report.md`（V5.0 二十个模块的落地状态、
+真实运行证据与 BLOCKED 项）；视频侧的发布阻断项见
+`docs/research_hub/phase2_handover_report.md` 与 `docs/research_hub/phase2_remaining_issues.md`。
