@@ -13,7 +13,15 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from backend.app.api.routes import health, knowledge, research_reports, sources, topics
+from backend.app.api.routes import (
+    health,
+    knowledge,
+    monitoring,
+    research_reports,
+    research_tasks,
+    sources,
+    topics,
+)
 from backend.app.core.caller import CallerKind
 
 HUMAN_ONLY = frozenset({CallerKind.HUMAN})
@@ -47,6 +55,19 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("POST", "/api/research-reports"): HUMAN_ONLY,
     ("GET", "/api/research-reports"): HUMAN_ONLY,
     ("GET", "/api/research-reports/{report_id}"): HUMAN_ONLY,
+    # M8：研究任务编排/执行（人工建任务，人工推进，人工闸门）
+    ("POST", "/api/research-tasks"): HUMAN_ONLY,
+    ("GET", "/api/research-tasks"): HUMAN_ONLY,
+    ("GET", "/api/research-tasks/{task_id}"): HUMAN_ONLY,
+    ("GET", "/api/research-tasks/{task_id}/events"): HUMAN_ONLY,
+    ("POST", "/api/research-tasks/{task_id}/run"): HUMAN_ONLY,
+    ("POST", "/api/research-tasks/{task_id}/pause"): HUMAN_ONLY,
+    ("POST", "/api/research-tasks/{task_id}/resume"): HUMAN_ONLY,
+    ("POST", "/api/research-tasks/{task_id}/cancel"): HUMAN_ONLY,
+    # M9：运行监控（成本/服务商/名册）
+    ("GET", "/api/system/costs"): HUMAN_ONLY,
+    ("GET", "/api/system/providers"): HUMAN_ONLY,
+    ("GET", "/api/system/agents"): HUMAN_ONLY,
 }
 
 
@@ -66,6 +87,8 @@ def build_api_router(prefix: str) -> APIRouter:
     router.include_router(sources.sources_router)
     router.include_router(sources.evidence_router)
     router.include_router(research_reports.router)
+    router.include_router(research_tasks.router)
+    router.include_router(monitoring.router)
     return router
 
 
