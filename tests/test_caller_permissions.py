@@ -179,7 +179,7 @@ def test_every_openapi_operation_has_a_caller_declaration(client):
     # 21 个既有操作 + 8 个研究任务 + 3 个监控 + 5 个工作台 + 1 个视频交接
     # + 1 个渲染流水线 + 2 个后台渲染（起进程 / 看进度）= 41。
     # 这个数字是刻意的"绊线"：新增端点必须同步改这里，逼人确认权限声明也补上了。
-    assert len(operations) == 44
+    assert len(operations) == 51
 
 
 def test_only_health_is_public():
@@ -200,7 +200,11 @@ def test_no_http_endpoint_accepts_agent_identity():
 def test_api_still_works_for_human_and_ignores_spoofed_header(client):
     response = client.get("/api/topics", headers={UNTRUSTED_CALLER_HEADER: "agent"})
     assert response.status_code == 200
-    assert response.json()["total"] == 0
+    # 不断言 total == 0：整个测试会话共用一个临时库，别的用例会建选题。
+    # 这里要验证的是"伪造的身份头没有把请求变成 agent"，而不是库里有没有数据。
+    body = response.json()
+    assert isinstance(body["total"], int)
+    assert isinstance(body["items"], list)
 
 
 def test_health_needs_no_authorization(client):
@@ -284,8 +288,8 @@ def test_route_walk_finds_every_operation_and_its_attached_dependency(client):
     routes = iter_api_routes(app)
     seen = {(method, route.path): route for route in routes for method in route.methods}
 
-    # 44 个 API 操作 + 1 个豁免端点（GET /）
-    assert len(seen) == 45
+    # 51 个 API 操作 + 1 个豁免端点（GET /）
+    assert len(seen) == 52
     for key, allowed in ROUTE_CALLERS.items():
         if allowed == PUBLIC:
             assert seen[key].allowed is None, f"{key} 是公开端点，不应挂 require_caller"

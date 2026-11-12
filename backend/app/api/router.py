@@ -19,6 +19,8 @@ from backend.app.api.routes import (
     monitoring,
     research_reports,
     research_tasks,
+    reviews,
+    scripts,
     sources,
     topics,
     workspace,
@@ -60,6 +62,13 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("GET", "/api/research-reports"): HUMAN_ONLY,
     ("GET", "/api/research-reports/{report_id}"): HUMAN_ONLY,
     ("POST", "/api/research-reports/{report_id}/video-job"): HUMAN_ONLY,
+    ("POST", "/api/reviews"): HUMAN_ONLY,
+    ("GET", "/api/reviews"): HUMAN_ONLY,
+    ("GET", "/api/reviews/{review_id}"): HUMAN_ONLY,
+    ("POST", "/api/scripts"): HUMAN_ONLY,
+    ("GET", "/api/scripts"): HUMAN_ONLY,
+    ("GET", "/api/scripts/{script_id}"): HUMAN_ONLY,
+    ("PATCH", "/api/scripts/{script_id}/status"): HUMAN_ONLY,
     # M8：研究任务编排/执行（人工建任务，人工推进，人工闸门）
     ("POST", "/api/research-tasks"): HUMAN_ONLY,
     ("GET", "/api/research-tasks"): HUMAN_ONLY,
@@ -102,6 +111,8 @@ def build_api_router(prefix: str) -> APIRouter:
     router.include_router(sources.evidence_router)
     router.include_router(research_reports.router)
     router.include_router(research_tasks.router)
+    router.include_router(reviews.router)
+    router.include_router(scripts.router)
     router.include_router(monitoring.router)
     router.include_router(workspace.router)
     return router
