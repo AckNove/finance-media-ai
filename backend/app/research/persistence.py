@@ -182,15 +182,23 @@ def record_report(
     agent_run_id: int | None = None,
     outline: list[dict[str, Any]] | None = None,
     tier_stats: dict[str, Any] | None = None,
+    summary_override: str | None = None,
+    findings_override: list[dict[str, Any]] | None = None,
+    model_label: str = "",
 ) -> ResearchReport:
     """创建/更新一条研究报告草稿（摘要来自底稿，不是模型编的结论）。
 
     同一个任务重复跑分析阶段时**复用同一条报告**：一个任务对应一份研究底稿，
     不会因为多跑一次就多出一份"报告"，否则资料库会被草稿塞满。
+
+    ``summary_override`` / ``findings_override`` 是给"模型已给出分析"的场景用的：
+    调用方负责保证这些结论**每条都挂了证据编号**（见 ``research.analysis``）。
+    ``model_label``（形如 ``deepseek/deepseek-flash``）用于在局限说明里如实写明
+    "这一版是模型写的"，而不是沿用底稿里"未使用模型"那句话。
     """
-    summary = _summary_of(digest)
-    findings = _findings_of(digest)
-    limitations = _limitations_of(digest)
+    summary = summary_override or _summary_of(digest)
+    findings = findings_override if findings_override is not None else _findings_of(digest)
+    limitations = _limitations_of(digest, model_label=model_label)
     stats = tier_stats or _tier_stats_of(digest)
     report = None
     if research_task_id is not None:
@@ -257,13 +265,28 @@ def _findings_of(digest: Digest) -> list[dict[str, Any]]:
     ]
 
 
-def _limitations_of(digest: Digest) -> str:
-    """局限说明：先把"这一版没做什么"写清楚，再把交叉比对看到的坑摆出来。
+def _limitations_of(digest: Digest, *, model_label: str = "") -> str:
+    """局限说明：先把"这一版做了什么、没做什么"写清楚，再把交叉比对看到的坑摆出来。
 
     报告最容易被当成"结论"直接引用，所以单一来源与冲突必须写在最显眼的位置，
     而不是藏在一份附带的 markdown 里。
+
+    ``model_label`` 非空表示这一版摘要/结论是模型写的——此时**必须换掉**底稿里
+    「未使用模型、只有规则汇编」那几句，否则报告会写着"没有用模型"而正文是模型写的。
     """
-    parts = list(digest.notes) or ["未使用模型，只有规则汇编"]
+    notes = [note for note in digest.notes]
+    if model_label:
+        notes = [
+            note
+            for note in notes
+            if not any(marker in note for marker in ("未使用模型", "没有使用模型", "不含分析"))
+        ]
+        parts = [
+            f"本稿的摘要与结论由模型（{model_label}）基于下方列出的证据生成，"
+            "每条结论都挂了来源编号；但**模型结论不等于事实核查结论**，引用前必须回原文核对口径与时点"
+        ]
+    else:
+        parts = notes or ["未使用模型，只有规则汇编"]
     cross = digest.corroboration
     if cross is not None:
         if getattr(cross, "conflicts", ()):

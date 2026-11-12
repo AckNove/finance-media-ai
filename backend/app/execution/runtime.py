@@ -1020,7 +1020,14 @@ class TaskRuntime:
             upstream = [by_id.get(dep) for dep in dependencies.get(subtask.id, [])]
             if any(item is None for item in upstream):
                 continue
-            if any(item.status in {SubtaskStatus.FAILED, SubtaskStatus.CANCELLED} for item in upstream):
+            # 失败会传染：上游 failed/cancelled **以及 blocked** 都要把下游按死。
+            # 少了 BLOCKED，下游会一直停在 pending —— 任务既不结束也不报错，
+            # worker 空转，而人看到的是"还在跑"。
+            if any(
+                item.status
+                in {SubtaskStatus.FAILED, SubtaskStatus.CANCELLED, SubtaskStatus.BLOCKED}
+                for item in upstream
+            ):
                 subtask.status = SubtaskStatus.BLOCKED
                 subtask.failure_reason = "upstream_failed"
                 continue

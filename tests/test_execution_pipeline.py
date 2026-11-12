@@ -575,8 +575,40 @@ def test_run_until_idle_stops_when_the_gate_pauses_the_task(
     assert runtime.task(task.id).counts().get("ready", 0) == 1
 
 
-# --- 正文质量闸门 ---------------------------------------------------------
-# 反爬拦截页也是 HTTP 200，把"正在验证浏览器环境，请稍候…"记成"抓到了资料"
+def test_failure_cascades_so_the_task_ends_instead_of_hanging_in_running(
+    runtime: TaskRuntime, factory
+) -> None:
+    """一格彻底失败后，下游必须一路 blocked，任务收尾为 failed。
+
+    回归背景：上游是 ``blocked``（而不是 ``failed``）时旧逻辑不传染，下游一直停在
+    ``pending``——任务既不改状态也不报错，worker 空转，人看到的是"还在跑"。
+    """
+    task = runtime.create_task(title="失败传染", objective="第一格必败")
+    for sequence, task_type in ((1, "research.collect"), (2, "research.extract")):
+        runtime.add_subtask(
+            task.id,
+            sequence=sequence,
+            question=f"第 {sequence} 格",
+            task_type=task_type,
+            input_payload={"queries": ["净息差"]},
+            depends_on=[sequence - 1] if sequence > 1 else [],
+        )
+    runtime.start_task(task.id)
+
+    tools = FakeTools(fetch_ok=False)
+    worker = Worker(runtime, AgentExecutor(tools=tools, session_factory=factory))
+    # 第一次失败只是重试；重试到 max_attempts 用尽才真失败，之后必须传染。
+    worker.run_until_idle(max_iterations=6)
+
+    snapshot = runtime.task(task.id)
+    assert snapshot.status == "failed", f"任务不该停在 {snapshot.status}"
+    assert snapshot.counts()["failed"] == 1
+    assert snapshot.counts()["blocked"] == 1
+    assert snapshot.counts().get("pending", 0) == 0
+    assert snapshot.failure_reason
+
+
+# --- 正文质量闸门 ---------------------------------------------------------# 反爬拦截页也是 HTTP 200，把"正在验证浏览器环境，请稍候…"记成"抓到了资料"
 # 等于用假数据往下游喂。这组用例钉住判据。
 
 
@@ -673,7 +705,7 @@ _UPSTREAM = [
 ]
 
 
-def _run_stage(factory, runtime, task_type: str, artifacts_root, *, extra=None):
+def _run_stage(factory, runtime, task_type: str, artifacts_root, *, extra=None, model_gateway=None):
     task = runtime.create_task(title="研究阶段", objective="搞清楚净息差")
     runtime.add_subtask(
         task.id,
@@ -684,7 +716,10 @@ def _run_stage(factory, runtime, task_type: str, artifacts_root, *, extra=None):
     )
     runtime.start_task(task.id)
     executor = AgentExecutor(
-        tools=FakeTools(), session_factory=factory, artifacts_root=artifacts_root
+        tools=FakeTools(),
+        session_factory=factory,
+        artifacts_root=artifacts_root,
+        model_gateway=model_gateway,
     )
     worker = Worker(runtime, executor)
     report = worker.run_once()
@@ -731,6 +766,149 @@ def test_verify_claims_checks_quotes_against_the_source_excerpt(factory, runtime
     assert output["checked"] >= 1
     assert output["found"] >= 1, "摘录里确实有这句带数字的原话"
     assert output["semantic_check_done"] is False, "语义核查要模型，不能在规则层冒充"
+
+
+ANALYSIS_JSON = json.dumps(
+    {
+        "summary": "净息差收窄正在压缩利息收入这块基本盘。",
+        "findings": [
+            {
+                "claim": "净息差已降至1.53%，量价基础变薄",
+                "kind": "fact",
+                "source_ids": ["S01"],
+                "numbers": ["1.53%"],
+            }
+        ],
+        "data_gaps": ["缺少手续费净收入的同业分位数"],
+    },
+    ensure_ascii=False,
+)
+
+
+def _mock_gateway(factory=None):
+    """一个只走内存的模型网关：**不联网、不花钱**，但走真实网关代码路径。"""
+    import httpx
+
+    from backend.app.capabilities.model import ModelGateway
+    from backend.app.core.config_schema import ModelsConfig
+
+    config = ModelsConfig.model_validate(
+        {
+            "version": 1,
+            "updated_at": "2026-11-12",
+            "cost": {
+                "currency": "CNY",
+                "pricing_policy": "reject_unknown",
+                "approved_exceptions": [],
+                "cache_ttl_hours": 0,
+            },
+            "providers": {
+                "deepseek": {
+                    "display_name": "DeepSeek",
+                    "base_url_env": "DEEPSEEK_BASE_URL",
+                    "api_key_env": "DEEPSEEK_API_KEY",
+                    "enabled": True,
+                }
+            },
+            "models": [
+                {
+                    "provider": "deepseek",
+                    "model": "deepseek-flash",
+                    "display_name": "flash",
+                    "input_price_per_1k_cny": 0.00213,
+                    "output_price_per_1k_cny": 0.00852,
+                    "enabled": True,
+                }
+            ],
+        }
+    )
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "id": "chatcmpl-test",
+                "model": "deepseek-flash",
+                "choices": [
+                    {"index": 0, "message": {"role": "assistant", "content": ANALYSIS_JSON}}
+                ],
+                "usage": {"prompt_tokens": 900, "completion_tokens": 260, "total_tokens": 1160},
+            },
+        )
+
+    return ModelGateway(
+        models_config=config,
+        transport=httpx.MockTransport(handler),
+        session_factory=factory,
+        environ={"DEEPSEEK_API_KEY": "sk-test-not-real"},
+        retries=0,
+    )
+
+
+def test_analyze_uses_the_model_when_one_is_available(factory, runtime, tmp_path):
+    """有可用模型时，分析阶段必须真把它用上，并如实记 Token 与成本。"""
+    report, snapshot = _run_stage(
+        factory, runtime, "research.analyze", tmp_path, model_gateway=_mock_gateway(factory)
+    )
+    output = snapshot.subtasks[0].output
+    assert report.completed == [1], {
+        "failed": report.failed,
+        "blocked": report.blocked,
+        "task_status": snapshot.status,
+        "subtask_status": snapshot.subtasks[0].status,
+        "failure_reason": snapshot.subtasks[0].failure_reason,
+        "task_failure": snapshot.failure_reason,
+    }
+    assert output["analysis_done"] is True
+    assert output["generated_by"] == "model+rules"
+    analysis = output["analysis"]
+    assert analysis["provider"] == "deepseek"
+    assert analysis["findings"][0]["claim"].startswith("净息差已降至1.53%")
+    assert analysis["data_gaps"] == ["缺少手续费净收入的同业分位数"]
+    files = output["analysis_files"]
+    assert Path(files["markdown"]).exists()
+    assert "净息差" in Path(files["markdown"]).read_text(encoding="utf-8")
+    # 成本与 Token 从网关回执算出来，不是估的（记账记在任务上）
+    assert snapshot.tokens_spent == 1160
+    # 900/1000*0.00213 + 260/1000*0.00852 = 0.004132
+    assert float(snapshot.cost_spent_cny) == pytest.approx(0.004132, abs=1e-6)
+    assert snapshot.calls_spent == 1
+    assert snapshot.status != "paused"
+    # 真的往 model_calls 写了审计行（换了测试库也是真表真行）
+    from backend.app.models.metering import ModelCall
+
+    with factory() as session:
+        rows = session.query(ModelCall).all()
+        assert len(rows) == 1
+        assert rows[0].purpose == "research.analyze"
+        assert rows[0].provider == "deepseek"
+        assert "sk-test-not-real" not in (rows[0].prompt_preview or "")
+
+
+def test_synthesize_writes_the_model_conclusions_into_the_report(factory, runtime, tmp_path):
+    """结论段由模型写，并且要回写到报告行——报告不能只有一句模板。"""
+    report, snapshot = _run_stage(
+        factory, runtime, "research.synthesize", tmp_path, model_gateway=_mock_gateway(factory)
+    )
+    output = snapshot.subtasks[0].output
+    assert report.completed == [1]
+    assert output["report_ready"] is True
+    persisted = output["report"]
+    assert persisted["report_id"] >= 1
+    # 报告行的摘要与结论来自模型，但每条结论都挂着来源
+    from backend.app.models.research import ResearchReport
+
+    with factory() as session:
+        row = session.get(ResearchReport, persisted["report_id"])
+        assert row is not None
+        assert "净息差收窄" in row.summary
+        assert row.findings[0]["source_ids"] == ["S01"]
+        assert row.findings[0]["kind"] == "fact"
+        # 局限说明必须如实写"这版是模型写的"，不能留着底稿那句"未使用模型"
+        assert "未使用模型" not in row.limitations
+        assert "deepseek/deepseek-flash" in row.limitations
+    assert snapshot.calls_spent == 1
+    assert float(snapshot.cost_spent_cny) > 0
 
 
 def test_plan_derives_keyword_queries_without_a_model(factory, runtime, tmp_path):

@@ -301,6 +301,25 @@ class ModelGateway:
     def models_config(self) -> ModelsConfig:
         return self._config
 
+    def ready_providers(self) -> list[str]:
+        """本网关**这套配置与密钥**下真正可用的 provider。
+
+        为什么不直接问全局 ``provider_status()``：那个函数读的是进程级 ``os.environ``，
+        而网关可能被注入了别的 environ（测试、多账号、CI）。两边不一致时，
+        "以为有模型、实际没有"会让调用方做错决定。
+        """
+        from backend.app.capabilities.model.providers import provider_status
+
+        status = provider_status(
+            models_config=self._config,
+            environ=self._environ if self._environ is not None else None,
+        )
+        return [
+            name
+            for name, info in status.items()
+            if isinstance(info, dict) and info.get("status") == "ready"
+        ]
+
     def _session(self) -> Any:
         if self._session_factory is not None:
             return self._session_factory()
@@ -564,7 +583,17 @@ class ModelGateway:
                         usage = body.get("usage") or {}
                         if not isinstance(usage, Mapping):
                             usage = {}
-                        return text, dict(usage), None
+                        usage = dict(usage)
+                        # finish_reason 是"这次回答有没有被截断"的唯一权威信号：
+                        # ``length`` 表示撞到 max_tokens，正文不完整（JSON 尤其致命）。
+                        choices = body.get("choices")
+                        if isinstance(choices, list) and choices:
+                            first = choices[0]
+                            if isinstance(first, Mapping):
+                                reason = first.get("finish_reason")
+                                if isinstance(reason, str) and reason:
+                                    usage["finish_reason"] = reason
+                        return text, usage, None
                     except (ValueError, KeyError) as error:
                         return "", {}, ("error", "bad_response", f"响应不是合法 JSON：{error}")
                 status = response.status_code

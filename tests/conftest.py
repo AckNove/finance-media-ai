@@ -24,6 +24,25 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 os.environ["APP_ENV"] = "test"
 os.environ.pop("DATABASE_ECHO", None)
 
+# **测试绝不调用真实模型**：开发者本机 .env 里可能有真密钥，这里既禁止 .env 注入，
+# 又把可能已导出的 key 抹掉。要用密钥的用例自己给 ModelGateway 传 environ={...}。
+os.environ["FM_SKIP_DOTENV"] = "1"
+MODEL_KEY_ENV_VARS = (
+    "DEEPSEEK_API_KEY",
+    "OPENAI_API_KEY",
+    "DASHSCOPE_API_KEY",
+    "MOONSHOT_API_KEY",
+)
+for _key in MODEL_KEY_ENV_VARS:
+    os.environ.pop(_key, None)
+
+
+@pytest.fixture(autouse=True)
+def no_real_model_keys(monkeypatch: pytest.MonkeyPatch) -> None:
+    """每个用例都保证进程里没有真实密钥（防止一次手滑就产生费用）。"""
+    for name in MODEL_KEY_ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def test_database(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:

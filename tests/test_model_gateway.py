@@ -189,9 +189,18 @@ def test_cost_uses_separate_input_and_output_prices():
 # --- 前置闸门（一个都不能放行） ----------------------------------------------
 
 
-def test_feature_flag_off_blocks_before_any_provider_work():
+def test_feature_flag_off_blocks_before_any_provider_work(monkeypatch):
+    # 显式关掉开关：不能依赖 config/settings.yaml 的当前值（用户可能已开启真实模型）
+    from backend.app.capabilities.model import gateway as gw
+    from backend.app.core.config_schema import FeaturesSettings
+
+    monkeypatch.setattr(
+        gw,
+        "get_features_settings",
+        lambda: FeaturesSettings(model=False, search=False, execution=False),
+    )
     recorder = Recorder(ok_response())
-    gateway = make_gateway(recorder)  # features.model 默认 false
+    gateway = make_gateway(recorder)
     reply = gateway.complete(CallerContext.human(), simple_request())
     assert reply.status == "disabled"
     assert reply.error_code == "feature_disabled"

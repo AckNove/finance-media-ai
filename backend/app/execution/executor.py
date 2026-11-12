@@ -223,6 +223,7 @@ class AgentExecutor:
         fetch_per_query: int = FETCH_PER_QUERY,
         clock: Callable[[], float] = time.monotonic,
         artifacts_root: Path | None = None,
+        model_gateway: Any = None,
     ) -> None:
         self._tools = tools or get_tool_registry()
         self._session_factory = session_factory or get_session_factory()
@@ -230,6 +231,8 @@ class AgentExecutor:
         self._clock = clock
         #: 研究产物落盘根目录（默认 content/research，测试里换成临时目录）
         self.artifacts_root = artifacts_root
+        #: 模型网关（缺省用全局单例；测试注入 MockTransport，绝不真发请求）
+        self._model_gateway = model_gateway
         self._handlers: dict[str, Callable[[Claim, CallerContext], ExecutionOutcome]] = {
             TaskType.RESEARCH_PLAN.value: self._plan,
             TaskType.RESEARCH_COLLECT.value: self._collect,
@@ -505,10 +508,17 @@ class AgentExecutor:
             for name, entry in status.items()
             if isinstance(entry, dict) and entry.get("status") == "ready"
         ]
+        # 注入了网关时，以**网关自己的配置与密钥**为准：全局 os.environ 与它可能不一致
+        # （测试、多账号、CI），两边不一致时"以为有模型、实际没有"会让判断错。
+        if self._model_gateway is not None and hasattr(
+            self._model_gateway, "ready_providers"
+        ):
+            ready = list(self._model_gateway.ready_providers())
         if ready:
-            reason = "model_handler_not_implemented:" + ",".join(ready)
-        else:
-            reason = "model_not_configured"
+            # 有可用模型：不再拦在这里，交回各处理器去真的调用模型。
+            # （早期这里会返回 model_handler_not_implemented，导致"配了 key 也跑不动"。）
+            return ExecutionOutcome(status="completed", output={"ready_providers": ready})
+        reason = "model_not_configured"
         return ExecutionOutcome(
             status="blocked",
             reason=reason,
@@ -562,13 +572,89 @@ class AgentExecutor:
             "conflicts": [item.as_dict() for item in result.conflicts[:5]],
         }
 
+    def _budget_for(self, claim: Claim) -> Any:
+        """把任务当前的已花费用喂给模型网关，让预算闸门看得见真实进度。"""
+        from backend.app.capabilities.model import BudgetContext
+        from backend.app.models.execution import ResearchTask
+
+        calls_spent = 0
+        cost_spent = 0.0
+        found = False
+        try:
+            with self._session_factory() as session:
+                row = session.get(ResearchTask, claim.task_id)
+                if row is not None:
+                    found = True
+                    calls_spent = int(row.calls_spent or 0)
+                    cost_spent = float(row.cost_spent or 0)
+        except Exception as error:  # noqa: BLE001 - 读不到就按 0 处理，闸门仍会拦单次上限
+            logger.warning("读取任务预算进度失败，按 0 处理：%s", error)
+        return BudgetContext(
+            # 任务行不存在时不要带 id，否则 model_calls 的外键会指空
+            task_id=claim.task_id if found else None,
+            subtask_id=claim.subtask_id if found else None,
+            calls_spent=calls_spent,
+            cost_spent_cny=cost_spent,
+            max_calls=claim.budget_max_calls,
+            max_cost_cny=(
+                float(claim.budget_max_cost_cny)
+                if claim.budget_max_cost_cny is not None
+                else None
+            ),
+        )
+
+    def _analyse_with_model(
+        self, claim: Claim, digest: Any, caller: CallerContext, *, purpose: str
+    ) -> Any:
+        """调真实模型做一次分析（失败抛 ``AnalysisError``，绝不用模板假装成功）。"""
+        from backend.app.research.analysis import analyze
+
+        return analyze(
+            digest,
+            gateway=self._model_gateway,
+            caller=caller,
+            budget=self._budget_for(claim),
+            purpose=purpose,
+        )
+
+    def _write_analysis(
+        self, paths: dict[str, Path], analysis: Any, *, objective: str
+    ) -> dict[str, str]:
+        """把分析结果落到与底稿同目录（人看 md，程序读 json）。"""
+        directory = Path(paths["markdown"]).parent
+        markdown_path = directory / "analysis.md"
+        json_path = directory / "analysis.json"
+        markdown_path.write_text(
+            analysis.to_markdown(objective=objective), encoding="utf-8"
+        )
+        json_path.write_text(
+            json.dumps(analysis.as_dict(), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return {"markdown": str(markdown_path), "json": str(json_path)}
+
+    def _analysis_failed(
+        self, output: dict[str, Any], error: Exception
+    ) -> ExecutionOutcome:
+        reason = getattr(error, "reason", "") or "analysis_failed"
+        output["analysis_done"] = False
+        output["analysis_error"] = {"reason": reason, "message": str(error)}
+        output["note"] = (
+            "模型分析失败；底稿、来源与证据行仍然有效，先看 analysis_error。"
+            "本次没有生成任何结论，不会用模板补一段。"
+        )
+        return ExecutionOutcome(
+            status="failed", reason=f"analysis_failed: {reason}", output=output
+        )
+
     def _analyze(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """把上游资料汇编成"候选数据点表"，并在没有模型时如实标 blocked。"""
         from backend.app.research.verify import verify_points
 
         digest, _payload, paths = self._digest_for(claim)
+        verification = verify_points(digest)
         # 即使是草稿也先落库：证据链不能等"有模型了"才存在
-        persisted = self._persist_report(claim, digest, verify_points(digest))
+        persisted = self._persist_report(claim, digest, verification)
         blocked = self._model_blocked(claim)
         output = {
             "generated_by": "rules",
@@ -593,7 +679,38 @@ class AgentExecutor:
                 reason=blocked.reason,
                 output=output,
             )
-        return ExecutionOutcome(status="completed", output=output)
+
+        # 有可用模型：真的让它读证据、写结论（每条结论都必须挂来源）
+        try:
+            analysis = self._analyse_with_model(
+                claim, digest, caller, purpose="research.analyze"
+            )
+        except Exception as error:  # noqa: BLE001 - 分析失败要如实记，不能假装完成
+            return self._analysis_failed(output, error)
+
+        files = self._write_analysis(paths, analysis, objective=digest.objective)
+        model_report = self._persist_report(claim, digest, verification, analysis=analysis)
+        output.update(
+            {
+                "generated_by": "model+rules",
+                "analysis_done": True,
+                "analysis": analysis.as_dict(),
+                "analysis_files": files,
+                "note": (
+                    "小结与结论由模型基于上述证据生成，每条都挂了来源编号；"
+                    "证据不足的部分写在 data_gaps 里，未填。"
+                ),
+            }
+        )
+        if model_report is not None:
+            output["report"] = model_report
+        return ExecutionOutcome(
+            status="completed",
+            output=output,
+            calls=1,
+            tokens=analysis.prompt_tokens + analysis.completion_tokens,
+            cost_cny=Decimal(str(round(analysis.cost_cny, 6))),
+        )
 
     def _synthesize(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
         """汇总成研究底稿；分析小结需要模型，缺模型时标 blocked 并保留底稿。"""
@@ -626,18 +743,74 @@ class AgentExecutor:
                 reason=blocked.reason,
                 output=output,
             )
-        return ExecutionOutcome(status="completed", output=output)
+
+        # 有可用模型：写出结论段，并把结论回写进报告行
+        try:
+            analysis = self._analyse_with_model(
+                claim, digest, caller, purpose="research.synthesize"
+            )
+        except Exception as error:  # noqa: BLE001 - 同上：失败要记，不补模板
+            return self._analysis_failed(output, error)
+
+        files = self._write_analysis(paths, analysis, objective=digest.objective)
+        model_report = self._persist_report(claim, digest, verification, analysis=analysis)
+        output.update(
+            {
+                "generated_by": "model+rules",
+                "report_ready": True,
+                "analysis": analysis.as_dict(),
+                "analysis_files": files,
+                "note": (
+                    "结论段由模型基于已抓取证据写成，每条结论都挂了来源编号；"
+                    "data_gaps 里列出还缺什么证据。"
+                ),
+            }
+        )
+        if model_report is not None:
+            output["report"] = model_report
+        return ExecutionOutcome(
+            status="completed",
+            output=output,
+            calls=1,
+            tokens=analysis.prompt_tokens + analysis.completion_tokens,
+            cost_cny=Decimal(str(round(analysis.cost_cny, 6))),
+        )
 
     def _persist_report(
-        self, claim: Claim, digest: Any, verification: dict[str, Any]
+        self,
+        claim: Claim,
+        digest: Any,
+        verification: dict[str, Any],
+        analysis: Any = None,
     ) -> dict[str, Any] | None:
-        """把来源、报告骨架与证据行写进库——证据链必须是**库里的数据**。"""
+        """把来源、报告骨架与证据行写进库——证据链必须是**库里的数据**。
+
+        ``analysis`` 非空时（模型已经给出分析），报告的摘要与结论用模型的产出，
+        但每条结论仍然必须挂 ``source_ids``——挂不上的在 ``analysis`` 里已被丢弃。
+        """
         from backend.app.research.persistence import (
             digest_fingerprint,
             record_evidence,
             record_report,
             record_sources,
         )
+
+        summary_override = None
+        findings_override = None
+        model_label = ""
+        if analysis is not None:
+            summary_override = analysis.summary or None
+            model_label = f"{analysis.provider}/{analysis.model}"
+            findings_override = [
+                {
+                    "text": item.claim,
+                    "kind": item.kind,
+                    "source_ids": list(item.source_ids),
+                    "numbers": list(item.numbers),
+                    "verified": False,
+                }
+                for item in analysis.findings
+            ]
 
         try:
             with self._session_factory() as session:
@@ -650,6 +823,9 @@ class AgentExecutor:
                         {"source_id": ref.source_id, "title": ref.title, "url": ref.url}
                         for ref in digest.sources
                     ],
+                    summary_override=summary_override,
+                    findings_override=findings_override,
+                    model_label=model_label,
                 )
                 rows = record_evidence(
                     session,

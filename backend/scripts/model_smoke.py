@@ -137,7 +137,7 @@ def run(
         temperature=0.2,
         cacheable=False,  # 冒烟要的是真实请求，命中缓存等于没测
     )
-    reply = gateway.complete(CallerContext.for_human(), request)
+    reply = gateway.complete(CallerContext.human(), request)
 
     result: dict[str, Any] = {
         "ok": reply.ok,

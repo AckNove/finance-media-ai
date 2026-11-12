@@ -71,7 +71,9 @@ cost:
 # 注意：llm_providers / web_search / vector_store / video_rendering 四个键
 # 继续由上面的 integrations 段与 video 段派生，这里只放 2.0 新增的三个开关。
 features:
-  model: false
+  # 真实模型调用开关。2026-11-12 用户提供 DeepSeek API Key 并授权启用。
+  # 关掉它就是"一键停服"：网关会在发请求之前返回 feature_disabled，不花钱。
+  model: true
   search: false
   execution: false
 

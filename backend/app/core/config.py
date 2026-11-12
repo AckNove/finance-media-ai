@@ -30,6 +30,35 @@ PROJECT_ROOT: Path = Path(__file__).resolve().parents[3]
 DEFAULT_CONFIG_DIR: Path = PROJECT_ROOT / "config"
 
 
+def load_dotenv_into_environ(path: Path | None = None) -> bool:
+    """把仓库根目录的 ``.env`` 读进进程环境变量（不覆盖已有值）。
+
+    为什么需要这一步：``Settings`` 自己会读 ``.env``，但**模型网关和 provider 解析
+    读的是 ``os.environ``**（`capabilities/model/providers.py` 的 `_env()`）。如果只写
+    了 ``.env`` 而不注入进程环境，密钥在网关看来永远是"没配置"——这正是之前冒烟
+    一直报 `missing_api_key` 的原因。
+
+    写入是"只补不改"（``override=False``）：已经导出的环境变量优先，便于临时覆盖。
+    设置 ``FM_SKIP_DOTENV=1`` 可跳过（测试或只想用真实环境变量时）。
+    """
+    import os
+
+    if os.environ.get("FM_SKIP_DOTENV") == "1":
+        return False
+    target = path or (PROJECT_ROOT / ".env")
+    if not target.is_file():
+        return False
+    try:
+        from dotenv import load_dotenv
+    except ImportError:  # 没装 python-dotenv 就只认真实环境变量
+        return False
+    load_dotenv(target, override=False)
+    return True
+
+
+load_dotenv_into_environ()
+
+
 class Settings(BaseSettings):
     """环境变量配置（前缀无强制要求，字段名即环境变量名，大小写不敏感）。"""
 

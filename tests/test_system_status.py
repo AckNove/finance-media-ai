@@ -27,17 +27,32 @@ def test_system_status_masks_database_path(client):
     assert url.startswith("sqlite:///")
 
 
-def test_system_status_reports_features_disabled(client):
+def test_system_status_reports_the_real_feature_flags(client):
+    """七个开关必须**如实反映配置**，而不是写死 false。
+
+    2026-11-12 起用户可以显式打开 ``features.model``（接入真实模型），
+    所以这里断言"接口 == 配置"，并单独锁死 M2.0 遗留的四项仍为 false。
+    """
+    from backend.app.core.config import get_features_settings
+
     features = client.get("/api/system/status").json()["features"]
-    # 2.0 阶段没有接入任何外部能力，七个开关必须全部为 false
-    assert features == {
-        "llm_providers": False,
-        "web_search": False,
-        "vector_store": False,
-        "video_rendering": False,
-        "model": False,
-        "search": False,
-        "execution": False,
+    settings = get_features_settings()
+    assert features["model"] == settings.model
+    assert features["search"] == settings.search
+    assert features["execution"] == settings.execution
+    # 这四项属于后续里程碑，本阶段仍未接入
+    assert features["llm_providers"] is False
+    assert features["web_search"] is False
+    assert features["vector_store"] is False
+    assert features["video_rendering"] is False
+    assert set(features) == {
+        "llm_providers",
+        "web_search",
+        "vector_store",
+        "video_rendering",
+        "model",
+        "search",
+        "execution",
     }
 
 

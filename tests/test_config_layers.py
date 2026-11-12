@@ -105,11 +105,26 @@ def test_execution_settings_rejects_heartbeat_longer_than_half_lease():
 # --- features -------------------------------------------------------------
 
 
-def test_features_default_off():
+def test_features_default_off_in_the_schema():
+    """**代码默认**必须全关：新装的机器不该一上手就能花钱。
+
+    ``config/settings.yaml`` 是人工开关，可以被显式打开（例如接入真实模型后
+    把 ``features.model`` 打开）。所以这里断言 schema 默认值，
+    而不是当前配置文件的值——否则"默认关着"这条规矩就没法验证了。
+    """
+    from backend.app.core.config_schema import FeaturesSettings
+
+    defaults = FeaturesSettings()
+    assert defaults.model is False
+    assert defaults.search is False
+    assert defaults.execution is False
+
+
+def test_features_in_the_shipped_config_are_explicit_booleans():
+    """配置文件里的开关必须是显式布尔值，不能靠"读不到就当关着"混过去。"""
     features = get_features_settings()
-    assert features.model is False
-    assert features.search is False
-    assert features.execution is False
+    for name in ("model", "search", "execution"):
+        assert isinstance(getattr(features, name), bool)
 
 
 # --- models ---------------------------------------------------------------
