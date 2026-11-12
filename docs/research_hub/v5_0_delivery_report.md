@@ -523,3 +523,82 @@ content.*` 会从 BLOCKED 变成真实产出，不需要改架构。在那之前
 
 测试：`pytest -o addopts="" -q` → **737 passed, 2 skipped, 1 warning**（新增
 `tests/test_produce_video.py` 4 例：拒保护库、缺报告、正常出分镜、单来源被挡）。
+
+### S.7 底稿可导入复现（不必重跑联网研究）
+
+`backend/scripts/import_digest.py --digest content/research/task-1/digest.json --database-url ...`
+把仓库里**已经提交的真实底稿**导入独立库：`record_sources → record_report → verify_points →
+record_evidence` 一个事务提交，返回 `{report_id, sources_created, sources_updated, evidence_rows,
+data_points}`；拒绝 `data/finance_media.db`（退出码 2），缺底稿返回 3。
+
+真机验证：3 来源 / 18 证据行 / 18 数据点 / `report_id=1`，随后 `produce_video --report-id 1
+--no-render` 得 8 镜 36.0 秒、5 张 `CARD_sh*`；再 `render_job --narration` 出片 71.667 秒、
+QC 七项全过。评审者不需要联网就能复现"报告 → 成片"。
+
+顺手修掉两个只有在**生产路径**上才会出现的缺陷（自己造底稿时看不出）：
+
+1. `handoff._digest_from_rows()` 从数据库行还原的 `DataPoint.numbers` 是空元组 →
+   `outline._number_set()` 拿不到数字 → 所有镜头 `number=""` → **一张数据卡都不生成**，
+   整片退化成纯色底。修法：`key_numbers()` 为空时回退到从 `point.text` 里抠数字（过滤年份）。
+2. 卡面取哪个数字：原按排序后第一个，于是「净息差降至 1.52%，收窄 0.03 个百分点」会显示
+   `0.03 个百分点`。改为**按原文出现位置**取第一个带单位的数字。
+3. 字体顺序：`_sync_fonts()` 在 `prepare_clips()` 之前，而 `ensure_font()` 在最后 →
+   保存组合画板时报 `ContractError: Asset missing or unsupported: fonts/NotoSansSC-VF.ttf`。
+   把 `ensure_font → _sync_fonts → prepare_clips` 顺序理顺。
+
+## §T 再增补：把"人过一遍"变成系统里的记录（2026-11-12）
+
+§S 之后仍然缺一件对日常生产最要命的东西：**人工审核在系统里没有痕迹**。
+`scripts` 与 `review_records` 两张表从 M1 就建好，却没有任何写入路径。本节补齐，
+并顺手把标签体系接通。
+
+### T.1 选题多合集 / 选题标签（可写、可读）
+
+| 能力 | 端点 | 关键约束 |
+| --- | --- | --- |
+| 选题的几个合集 | `GET/POST /api/topics/{id}/collections`、`DELETE .../{column_id}` | 一个选题**最多一个主合集**（部分唯一索引 `uq_topic_primary_collection` 兜底）；重复挂 = 更新权重 |
+| 选题的标签 | `GET/POST /api/topics/{id}/tags`、`DELETE .../{tag_id}` | 标签按 `namespace+name` 复用（同名挂第二个选题时复用同一行、`usage_count` 递增）；摘干净后挂回来计数回到 1 |
+| 按标签反查选题 | `GET /api/topics?tag_id=1` 或 `?tag=净息差&tag_namespace=mechanism` | 同名标签跨命名空间时 **422 并列出候选**，不替你猜；标签不存在 404 而不是空列表 |
+
+### T.2 脚本状态机与审核结论
+
+- **脚本**（`backend/app/services/script_service.py`）：版本号按 `(topic_id, template)` 自增，
+  改正文要新开一版；状态机 `draft → in_review → approved|rejected →（approved 之后）
+  storyboard_ready → produced → published → archived`，非法迁移 409 且 `details.allowed`
+  列出允许项；只有 `approved` 写 `approved_at/approved_by`（谁批的必须能查）。
+- **审核**（`backend/app/services/review_service.py`）：`(target_type, target_id)` 弱多态，
+  结论回写研究报告核查状态 `pass → verified` / `needs_revision → disputed` /
+  `reject → refuted`；**脚本与知识条目只记流水、不改业务状态**——审核通过不等于可以发布。
+  `needs_revision` 必须写清要改什么（否则 422），这条规则前后端各挡一次。
+- **权限**：脚本与审核整组只接受人类身份，agent 不能自审。
+
+### T.3 工作台的脚本页与审核页接上真接口
+
+`web/app.js`：脚本页能新建一版、按状态机给出"送审/通过/驳回"等按钮并即时刷新；
+审核页能提交一次审核（对象类型/ID/结论/审核人/阶段/意见）并展示最近 20 条流水。
+每个按钮都打真请求，失败把 `error.details` 原样显示出来。
+
+真服务冒烟（临时库 + uvicorn，全部走 HTTP）：建选题 201 → 建脚本 201（v1/draft/12 字）→
+送审 200 `in_review` → 通过 200 `approved`（`approved_by=smoke`）→ 非法迁移 409
+（`allowed=[produced, storyboard_ready]`）→ 列表 `total=1` → `needs_revision` 缺意见 422 →
+记审核 201（`target_version=1`）→ 流水 `total=1` → `/app/` 200 → 真实开发库字节数未变。
+
+### T.4 终态数字（截至本节）
+
+- `pytest -o addopts="" -q` → **769 passed, 2 skipped, 1 warning**（唯一 warning 仍是
+  `agent_runs↔research_subtasks` 外键环的 SAWarning）；
+- API **41 个路径 / 54 个操作**（含 3 个合集 + 3 个标签 + 4 个脚本 + 3 个审核）；
+  启动自检的"权限清单 ↔ 真实挂载"双向比对通过：54 个操作、受保护 53、公开 1、豁免 1；
+- 新增测试：`tests/test_topic_collections.py`(6)、`tests/test_topic_tags.py`(12)、
+  `tests/test_scripts.py`(6)、`tests/test_reviews.py`(7)；
+- 真实开发库只读核验：`sha256=2df764e565c2b89644b70e3abc9143088761730fccf438f801683afa7fb48203`、
+  540,672 B、19 表、`revision=de8148733a9b`、`journal_mode=delete`、无 `-wal`/`-shm`、
+  非空表只有 `alembic_version`（1 行）。
+
+### T.5 仍然缺的（如实列出）
+
+- **真实模型调用 BLOCKED**：无 API Key、无本机模型服务，`research.analyze / synthesize /
+  verify.claims / content.*` 全部 `blocked: model_not_configured`；解除三步见 §0。
+- 语义检索/向量库、知识库自动同步、真实鉴权与云部署、发布接口（按设计不自动发布）。
+- 标签只做了"打/摘/反查"，没有共现分析与热度衰减。
+- 视觉质量仍要人看片：程序只判技术指标（分辨率、音画等长、黑帧、冻结、静音、峰值）。
