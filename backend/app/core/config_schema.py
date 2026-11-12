@@ -128,9 +128,18 @@ class ModelSettings(BaseModel):
     model: str = Field(min_length=1)
     display_name: str | None = None
     context_window: int | None = Field(default=None, gt=0)
+    max_output_tokens: int | None = Field(default=None, gt=0)
     input_price_per_1k_cny: float | None = Field(default=None, ge=0)
     output_price_per_1k_cny: float | None = Field(default=None, ge=0)
     enabled: bool = False
+    # 价目出处：谁核的、什么时候核的、按什么口径换算的。
+    # 这三项不是装饰——价格会变，没有出处的数字等于没核过（报告里要能追）。
+    price_source: str | None = None
+    price_checked_at: str | None = None
+    price_basis: str | None = None
+    # 本地限流：官方并发上限之外，自己在进程内先摁住节奏，避免 429 才回头重试。
+    requests_per_minute: int | None = Field(default=None, gt=0)
+    max_concurrency: int | None = Field(default=None, ge=1)
     note: str | None = None
 
     @property
@@ -138,6 +147,15 @@ class ModelSettings(BaseModel):
         if self.input_price_per_1k_cny is None or self.output_price_per_1k_cny is None:
             return "missing"
         return "known"
+
+    @property
+    def price_provenance(self) -> dict[str, str]:
+        """价目出处摘要；缺项写空串，由调用方决定是否提示"未复核"。"""
+        return {
+            "source": self.price_source or "",
+            "checked_at": self.price_checked_at or "",
+            "basis": self.price_basis or "",
+        }
 
 
 class ModelsConfig(BaseModel):

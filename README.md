@@ -199,6 +199,7 @@ backend/migrations/               Alembic 迁移（初始 de8148733a9b + B1/B2/B
 backend/scripts/                  seed_collections / enable_wal / install_ffmpeg / check_media_toolchain
                                   / media_selftest / research_task / run_worker / render_job
                                   / produce_video / preflight / recover_tasks
+                                  / model_smoke（真实模型冒烟）/ import_digest（底稿导入复现）
 scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
 agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
@@ -209,7 +210,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（769 例）
+tests/                            pytest 回归测试（782 例）
 ```
 
 ## 文档
@@ -242,9 +243,27 @@ tests/                            pytest 回归测试（769 例）
 
 **硬阻塞：真实模型调用。** 仓库里没有任何 API Key、也没有本机模型服务，所以
 `research.analyze / research.synthesize / verify.claims / content.*` 一律停在
-`blocked: model_not_configured`，并把"下一步该配什么"写进任务输出。解除只需三步
-（`.env` 写 `DEEPSEEK_API_KEY` → `config/models.yaml` 打开 enabled 并填价目 →
-`python -m backend.scripts.preflight` 复查）。在此之前**不会**用假文本冒充分析结论。
+`blocked: model_not_configured`，并把"下一步该配什么"写进任务输出。解除只需三步：
+
+```powershell
+# 1) 在项目根目录的 .env 里写（只在本机，不进 Git）
+#    DEEPSEEK_API_KEY=sk-你的真实密钥
+# 2) config/settings.yaml 里把 features.model 改成 true（人工开关）
+# 3) 复查并冒烟
+.\.venv\Scripts\python.exe -m backend.scripts.preflight
+.\.venv\Scripts\python.exe -m backend.scripts.model_smoke
+```
+
+`model_smoke` 会把两个闸门一起报（缺密钥 / 开关没开），成功时退出码 0 并打印真实
+`text`、`usage`、`audit.cost_estimate_cny` 与 `audit.id`。在此之前**不会**用假文本
+冒充分析结论，也不会产生任何费用。
+
+模型与价目现状（`config/models.yaml`，2026-11-12 按官方文档核对）：
+`deepseek-flash`（输入 0.00213 / 输出 0.00852 元每千 token）、
+`deepseek-v4-pro`（0.009372 / 0.028116），均按**高峰·缓存未命中**折算，
+每条都带 `price_source` / `price_checked_at` / `price_basis`。
+旧的 `deepseek-chat` / `deepseek-reasoner` 已不在官方模型表里，保留为禁用条目、价目留空。
+
 
 以下几项确实还没做（不是没跑通，是没写）：
 

@@ -42,17 +42,47 @@ def test_all_checks_pass_in_repository_state():
 
 
 def test_report_marks_pricing_as_warning_not_error():
-    """价目缺失是已知状态（Q8=B），只能是 warning，绝不能阻塞启动。"""
+    """价目检查永远是 warning 级：缺价只是"调用会被拒"，不是启动阻塞。
+
+    2026-11-12 起 deepseek-flash / deepseek-v4-pro 已按官方文档核价并写了核对日期，
+    所以这里不再假设"一定有缺失"；要验的是**级别**与"不阻塞启动"，
+    缺价时的行为由 ``test_pricing_warning_lists_only_enabled_models`` 单独覆盖。
+    """
     app = _app()
     report = run_startup_checks(app)
     pricing = next(r for r in report.results if r.name == "pricing")
 
     assert pricing.severity == "warning"
-    assert pricing.ok is False  # 当前 config/models.yaml 里确实没有价目
-    assert "missing" in pricing.detail or "缺失" in pricing.detail
-    # 但整体依然可以启动
+    assert pricing.detail  # 必须有说明，不能只是一个布尔
+    # 无论 ok 与否，整体都必须能启动
     assert report.ok is True
     assert_startup_ok(report)
+
+
+def test_pricing_warning_lists_only_enabled_models(monkeypatch: pytest.MonkeyPatch):
+    """被禁用的历史条目不该出现在告警里——否则真出问题也会被噪声淹没。"""
+    from backend.app.core import config as config_module
+
+    models = config_module.get_models_config()
+    monkeypatch.setattr(
+        checks,
+        "get_models_config",
+        lambda: models.model_copy(
+            update={
+                "models": [
+                    entry.model_copy(update={"enabled": False, "input_price_per_1k_cny": None,
+                                              "output_price_per_1k_cny": None})
+                    if entry.model == "deepseek-flash"
+                    else entry
+                    for entry in models.models
+                ]
+            }
+        ),
+    )
+    detail = checks._check_pricing(settings=None).detail  # noqa: SLF001 - 直接测检查项
+    assert "deepseek-flash" not in detail, "禁用之后不该再被列进告警"
+    assert "deepseek-v4-pro" not in detail
+
 
 
 def test_task_type_registry_error_is_reported(monkeypatch: pytest.MonkeyPatch):

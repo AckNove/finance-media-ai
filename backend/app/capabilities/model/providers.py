@@ -45,12 +45,17 @@ class ProviderError(RuntimeError):
 
 
 def mask_secret(value: str | None) -> str:
-    """把密钥变成可安全展示的形式：空 / 太短都只回长度信息。"""
+    """把密钥变成可安全展示的形式。
+
+    只保留长度和最多 3 位前缀（够判断"是不是配错了类型的密钥"），
+    **不保留尾部字符**：尾部和前缀合起来足以让人在小圈子里对号入座，
+    而展示密钥的任何一段对排查都没有帮助。
+    """
     if not value:
         return ""
     if len(value) <= 8:
         return "*" * len(value)
-    return f"{value[:4]}…{value[-4:]}（len={len(value)}）"
+    return f"{value[:3]}***（len={len(value)}）"
 
 
 @dataclass(frozen=True, slots=True)

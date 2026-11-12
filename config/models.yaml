@@ -1,15 +1,18 @@
 # ============================================================
-# 模型与价目表（M2.0 T02 新增）
+# 模型与价目表（M2.0 T02 新增；V5.0 M2 接入真实协议后按官方文档更新）
 # 原则：
 #   1. 本文件不含任何密钥。API Key / base_url 一律走环境变量。
 #   2. 价目缺失（pricing_status=missing）时按决策 Q8=B 默认拒绝调用。
-#   3. 所有模型默认 enabled: false，2.1 阶段由人工启用并填写真实价目。
+#   3. 价格必须写清出处（price_source / price_checked_at / price_basis）：
+#      没有出处的数字等于没核过，宁可留空。
+#   4. 本地限流（requests_per_minute / max_concurrency）用于在 429 之前自己减速。
 # 读取方：backend/app/core/config_schema.py（schema 校验）
-#         backend/app/capabilities/budget.py（2.1 起用于成本估算）
+#         backend/app/capabilities/budget.py（成本估算与闸门）
+#         backend/app/capabilities/model/gateway.py（调用与计费）
 # ============================================================
 
 version: 1
-updated_at: "2026-11-10"
+updated_at: "2026-11-12"
 
 cost:
   currency: CNY
@@ -26,7 +29,7 @@ providers:
     display_name: DeepSeek
     base_url_env: DEEPSEEK_BASE_URL
     api_key_env: DEEPSEEK_API_KEY
-    enabled: false
+    enabled: true
   openai:
     display_name: OpenAI
     base_url_env: OPENAI_BASE_URL
@@ -38,22 +41,60 @@ providers:
     api_key_env: null
     enabled: false
 
-# 价目单位：人民币元 / 千 token。
-# 未填写的价格视为"未知"（pricing_status=missing），不得默认为 0。
+# 价目单位：人民币元 / 千 token（输入与输出分别计价）。
+# 换算口径见每条的 price_basis；官方以美元/百万 token 挂牌，这里按
+# 1 美元 = 7.1 元、每百万除以 1000 折成千 token，并且一律取【高峰期、缓存未命中】
+# 这一档作为估算基准——宁可高估成本，也不能低估。
+#
+# 官方价目（2026-11-12 核对，https://api-docs.deepseek.com/quick_start/pricing）：
+#   deepseek-flash   输入(缓存未命中) 高峰 $0.30 / 1M   输出 高峰 $1.20 / 1M
+#   deepseek-v4-pro  输入(缓存未命中) 高峰 $1.32 / 1M   输出 高峰 $3.96 / 1M
+#   高峰时段：UTC 周一至周五 01:00-04:00、06:00-10:00；其余时间与节假日为半价。
 models:
   - provider: deepseek
+    model: deepseek-flash
+    display_name: DeepSeek Flash（DeepSeek-V4.1-Flash-1017）
+    context_window: 1000000
+    max_output_tokens: 393216
+    input_price_per_1k_cny: 0.00213
+    output_price_per_1k_cny: 0.00852
+    enabled: true
+    price_source: https://api-docs.deepseek.com/quick_start/pricing
+    price_checked_at: "2026-11-12"
+    price_basis: 高峰价·缓存未命中；$0.30/1M 输入、$1.20/1M 输出；1 USD = 7.1 CNY
+    requests_per_minute: 60
+    max_concurrency: 2
+    note: 通用研究与改写用这个；非高峰时段官方半价，这里仍按高峰估算
+  - provider: deepseek
+    model: deepseek-v4-pro
+    display_name: DeepSeek V4 Pro（DeepSeek-V4-Pro-0813）
+    context_window: 1000000
+    max_output_tokens: 393216
+    input_price_per_1k_cny: 0.009372
+    output_price_per_1k_cny: 0.028116
+    enabled: true
+    price_source: https://api-docs.deepseek.com/quick_start/pricing
+    price_checked_at: "2026-11-12"
+    price_basis: 高峰价·缓存未命中；$1.32/1M 输入、$3.96/1M 输出；1 USD = 7.1 CNY
+    requests_per_minute: 20
+    max_concurrency: 1
+    note: 需要更强推理时才用；单价是 Flash 的 4.4 倍，不适合批量子任务
+  # 以下两条是历史条目：官方文档 2026-11-12 的模型表里已不再列出（改为
+  # deepseek-flash / deepseek-v4-pro，旧名 deepseek-v4-flash 等由 Flash 承接）。
+  # 保留条目只为让旧配置与旧日志仍能解释得通，价格留空并禁用。
+  - provider: deepseek
     model: deepseek-chat
-    display_name: DeepSeek Chat
+    display_name: DeepSeek Chat（历史名，官方已不再列出）
     context_window: 65536
     input_price_per_1k_cny: null
     output_price_per_1k_cny: null
     enabled: false
-    note: 2.1 阶段由人工填写价目后启用
+    note: 历史条目；价目留空即 pricing_missing，调用会被拒绝
   - provider: deepseek
     model: deepseek-reasoner
-    display_name: DeepSeek Reasoner
+    display_name: DeepSeek Reasoner（历史名，官方已不再列出）
     context_window: 65536
     input_price_per_1k_cny: null
     output_price_per_1k_cny: null
     enabled: false
-    note: 推理模型，成本更高，默认不用于批量任务
+    note: 历史条目；推理模型成本更高，默认不用于批量任务

@@ -116,15 +116,35 @@ def test_features_default_off():
 
 
 def test_models_config_price_is_missing_not_zero():
+    """价目只有两种状态：核过（带出处）或没核（留空）。绝不允许用 0 冒充已知。"""
     models = get_models_config()
     assert models.providers, "至少登记一个 provider"
     assert models.models, "至少登记一个模型条目"
     for entry in models.models:
-        assert entry.pricing_status == "missing", f"{entry.model} 的价目未填，必须是 missing"
-        assert entry.input_price_per_1k_cny is None
-        assert entry.output_price_per_1k_cny is None
-    assert models.find_model("deepseek", "deepseek-chat") is not None
+        assert entry.input_price_per_1k_cny != 0, f"{entry.model} 的输入价不得写 0"
+        assert entry.output_price_per_1k_cny != 0, f"{entry.model} 的输出价不得写 0"
+        if entry.pricing_status == "missing":
+            assert entry.input_price_per_1k_cny is None
+            assert entry.output_price_per_1k_cny is None
+            assert entry.enabled is False, f"{entry.model} 没核价却被启用"
+        else:
+            # 核过价的条目必须留下出处，否则无法复核价格是否还有效
+            provenance = entry.price_provenance
+            assert provenance["source"].startswith("http"), f"{entry.model} 缺价目出处"
+            assert provenance["checked_at"], f"{entry.model} 缺核对日期"
+            assert provenance["basis"], f"{entry.model} 缺换算口径"
+    assert models.find_model("deepseek", "deepseek-flash") is not None
     assert models.find_model("deepseek", "no-such-model") is None
+
+
+def test_price_provenance_is_exposed_for_verified_models():
+    models = get_models_config()
+    entry = models.find_model("deepseek", "deepseek-flash")
+    assert entry is not None
+    assert entry.pricing_status == "known"
+    assert entry.max_output_tokens and entry.max_output_tokens > 0
+    assert entry.requests_per_minute and entry.requests_per_minute > 0
+
 
 
 def test_models_config_rejects_unknown_provider_reference():

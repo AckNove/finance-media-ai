@@ -299,21 +299,38 @@ def _check_route_callers(app: FastAPI) -> CheckResult:
 
 
 def _check_pricing(settings: Settings) -> CheckResult:
-    """价目缺失不是启动阻塞项（Q8=B 已经决定在调用时拒绝），但必须被看见。"""
+    """价目缺失不是启动阻塞项（Q8=B 已经决定在调用时拒绝），但必须被看见。
+
+    只看**已启用**的模型：被禁用的历史条目本来就不会被调用，把它们列进告警
+    只会让真正的缺价淹没在噪声里（这一条是实测踩出来的——深色终端里一行
+    8 项告警没人会读完）。
+    """
     models = get_models_config()
-    missing = [
+    enabled = [m for m in models.models if m.enabled]
+    missing = [f"{m.provider}/{m.model}" for m in enabled if m.pricing_status != "known"]
+    missing_provenance = [
         f"{m.provider}/{m.model}"
-        for m in models.models
-        if m.pricing_status != "known"
+        for m in enabled
+        if m.pricing_status == "known" and not m.price_provenance["checked_at"]
     ]
-    if not missing:
-        return CheckResult("pricing", True, "warning", "全部模型价目已知")
+    if not missing and not missing_provenance:
+        return CheckResult(
+            "pricing",
+            True,
+            "warning",
+            f"{len(enabled)} 个已启用模型价目齐全且都有核对日期",
+        )
     policy = get_cost_settings().pricing_policy
+    detail = []
+    if missing:
+        detail.append(f"价目缺失={missing}")
+    if missing_provenance:
+        detail.append(f"价目没有核对日期={missing_provenance}（价格会变，无法判断是否过期）")
     return CheckResult(
         "pricing",
         False,
         "warning",
-        f"价目缺失={missing}，pricing_policy={policy}（调用会被直接拒绝，不会按 0 元记账）",
+        f"{'；'.join(detail)}，pricing_policy={policy}（缺失的调用会被直接拒绝，不会按 0 元记账）",
     )
 
 

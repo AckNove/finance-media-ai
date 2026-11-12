@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -112,7 +113,11 @@ def test_monitoring_endpoints_are_read_only_and_real(client: Any) -> None:
     providers = client.get("/api/system/providers").json()
     assert {item["name"] for item in providers} >= {"deepseek", "openai", "local"}
     for item in providers:
-        assert "api_key" not in json.dumps(item)
+        # 环境变量**名字**（DEEPSEEK_API_KEY）可以出现，密钥**值**不行：
+        # 名字是排查必需的信息，值一旦出现在响应里就等于泄漏。
+        assert "api_key" not in item, f"{item['name']} 不该返回密钥字段"
+        blob = json.dumps(item, ensure_ascii=False)
+        assert not re.search(r"sk-[A-Za-z0-9_\-]{8,}", blob), f"{item['name']} 的响应里出现了密钥形态的串"
     agents = client.get("/api/system/agents").json()
     assert agents["count"] == 9
 

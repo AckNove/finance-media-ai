@@ -20,6 +20,7 @@ import hashlib
 import json
 import logging
 import time
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Literal, Mapping, Sequence
@@ -184,9 +185,96 @@ def _day_start(now: datetime) -> datetime:
     return now.astimezone(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
 
+def _redact(text: str, api_key: str | None) -> str:
+    """把服务端错误体里可能回显的密钥片段抹掉。
+
+    实测 DeepSeek 的鉴权失败响应会带 ``Your api key: ****0000``——尾部 4 位。
+    这种片段写进错误日志就等于把密钥的一部分留在了数据里，所以这里按
+    "出现完整密钥" 与 "出现尾部 4 位" 两种形态一起清掉。
+    """
+    if not text:
+        return text
+    if api_key:
+        if api_key in text:
+            return "[服务端响应含密钥，已隐去]"
+        tail = api_key[-4:]
+        if len(api_key) >= 8 and tail in text:
+            return text.replace(tail, "****")
+    return text
+
+
+class LocalRateLimitError(RuntimeError):
+    """本地限流拦下的调用：没发出去，可以稍后重试，但不是"服务端拒绝"。"""
+
+    def __init__(self, reason: str, message: str, *, retry_after_seconds: float) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.message = message
+        self.retry_after_seconds = retry_after_seconds
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "reason": self.reason,
+            "message": self.message,
+            "retry_after_seconds": round(self.retry_after_seconds, 3),
+        }
+
+
+class _LocalLimiter:
+    """进程内节流：每分钟次数 + 同时在途数量。
+
+    官方有并发上限（DeepSeek 是 2500 / 500），但那是账号级的天花板，不是"我该多快"。
+    这里按模型配速，是为了在拿到 429 之前自己先减速——429 之后重试会放大延迟，
+    而且一次失败调用同样要写审计行，没必要制造这种噪声。
+
+    刻意做得保守：只统计本进程的调用，不做跨进程协调。
+    """
+
+    def __init__(self, *, clock: Callable[[], float] | None = None) -> None:
+        self._clock = clock or time.monotonic
+        self._recent: dict[str, deque[float]] = {}
+        self._inflight: dict[str, int] = {}
+
+    def acquire(
+        self, key: str, *, requests_per_minute: int | None, max_concurrency: int | None
+    ) -> None:
+        now = self._clock()
+        if max_concurrency is not None and self._inflight.get(key, 0) >= max_concurrency:
+            raise LocalRateLimitError(
+                "local_concurrency_exceeded",
+                f"{key} 同时进行的请求已达上限 {max_concurrency}",
+                retry_after_seconds=1.0,
+            )
+        if requests_per_minute is not None and requests_per_minute > 0:
+            window = 60.0 / requests_per_minute
+            marks = self._recent.setdefault(key, deque())
+            while marks and now - marks[0] >= 60.0:
+                marks.popleft()
+            if len(marks) >= requests_per_minute:
+                retry_after = max(0.0, 60.0 - (now - marks[0]))
+                raise LocalRateLimitError(
+                    "local_rate_limited",
+                    f"{key} 每分钟最多 {requests_per_minute} 次，请 {retry_after:.1f} 秒后再试",
+                    retry_after_seconds=retry_after,
+                )
+            marks.append(now)
+            del window  # 间隔口径写在这里是为了让读者看到 60/rpm 的关系
+        self._inflight[key] = self._inflight.get(key, 0) + 1
+
+    def release(self, key: str) -> None:
+        current = self._inflight.get(key, 0)
+        if current <= 1:
+            self._inflight.pop(key, None)
+        else:
+            self._inflight[key] = current - 1
+
+    def reset(self) -> None:
+        self._recent.clear()
+        self._inflight.clear()
+
+
 class ModelGateway:
     """真实模型调用的唯一入口。"""
-
     def __init__(
         self,
         *,
@@ -196,6 +284,7 @@ class ModelGateway:
         environ: Mapping[str, str] | None = None,
         retries: int = 2,
         backoff_seconds: float = 1.0,
+        clock: Callable[[], float] | None = None,
     ) -> None:
         self._config = models_config or get_models_config()
         self._transport = transport
@@ -204,6 +293,7 @@ class ModelGateway:
         self._retries = max(0, retries)
         self._backoff = backoff_seconds
         self._cache = _ReplyCache(self._config.cost.cache_ttl_hours)
+        self._limiter = _LocalLimiter(clock=clock)
 
     # -- 只读辅助 ---------------------------------------------------------
 
@@ -351,7 +441,34 @@ class ModelGateway:
         if request.response_format == "json_object":
             payload["response_format"] = {"type": "json_object"}
 
-        text, usage, error = self._post(provider, payload)
+        # 6.5) 本地限流：在发请求之前先摁住节奏，429 不是唯一的减速方式
+        limit_key = f"{request.provider}/{request.model}"
+        try:
+            self._limiter.acquire(
+                limit_key,
+                requests_per_minute=getattr(entry, "requests_per_minute", None),
+                max_concurrency=getattr(entry, "max_concurrency", None),
+            )
+        except LocalRateLimitError as error:
+            self._log(
+                caller,
+                request,
+                context,
+                status="error",
+                prompt_tokens=est_prompt,
+                completion_tokens=0,
+                cost=0.0,
+                pricing_unknown=False,
+                cache_hit=False,
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                error=error.message,
+            )
+            return self._fail("rate_limited", error.reason, error.message)
+
+        try:
+            text, usage, error = self._post(provider, payload)
+        finally:
+            self._limiter.release(limit_key)
         latency = int((time.perf_counter() - started) * 1000)
         prompt_tokens = int(usage.get("prompt_tokens") or 0)
         completion_tokens = int(usage.get("completion_tokens") or 0)
@@ -451,7 +568,7 @@ class ModelGateway:
                     except (ValueError, KeyError) as error:
                         return "", {}, ("error", "bad_response", f"响应不是合法 JSON：{error}")
                 status = response.status_code
-                detail = response.text[:300]
+                detail = _redact(response.text[:300], provider.api_key)
                 if status in (401, 403):
                     return "", {}, (
                         "error",
