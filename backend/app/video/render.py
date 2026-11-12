@@ -8,6 +8,12 @@
 
 **分镜只能由人（或模型）先写出来**：这里不生成脚本、不猜镜头，
 分镜缺失就直接报 `missing_storyboard`，不拿模板文字凑数。
+
+**副作用要说清**：真机渲染会让引擎在自己的工程目录里记账——`project/<pid>/project.json`
+会追加本次导入的素材、`assets/`、`media/`、`plates/` 会被写出。后三者在 `.gitignore` 里，
+但 `project.json` 是入库的：对**已冻结**的任务（如 `phase2_media_engine_demo`）跑完真机渲染后
+要 `git checkout -- project/<pid>/project.json` 恢复，否则冻结记录会被累计的素材列表污染。
+`project/timeline.json` 不会被覆盖，本次时间轴写进 `project/timeline.render.json`。
 """
 
 from __future__ import annotations

@@ -215,3 +215,73 @@ def test_pipeline_builds_timeline_from_storyboard(client: Any, monkeypatch: pyte
         "银行靠什么赚钱？",
         "利息净收入占七成",
     ]
+
+
+# ---------------------------------------------------------------- 后台渲染
+
+
+def test_background_render_refuses_a_job_without_storyboard(
+    client: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    _make_job(tmp_path, "empty_job", with_storyboard=False)
+    body = client.post("/api/workspace/jobs/empty_job/render", json={}).json()
+    assert body["ok"] is False
+    assert body["blocked_reason"] == "missing_storyboard"
+
+
+def test_background_render_starts_a_process_and_reports_progress(
+    client: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+    from backend.scripts import render_job as runner
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    started: list[list[str]] = []
+    monkeypatch.setattr(workspace_routes, "_spawn", lambda command: started.append(command))
+    job = _make_job(tmp_path, "demo_job", with_storyboard=True)
+
+    # 还没有渲染记录时如实说"没点过"，不是假装 0%
+    before = client.get("/api/workspace/jobs/demo_job/render").json()
+    assert before["status"] == "none"
+
+    body = client.post("/api/workspace/jobs/demo_job/render", json={}).json()
+    assert body["ok"] is True and body["started"] is True
+    assert started and started[0][1:3] == ["-m", "backend.scripts.render_job"]
+    assert "demo_job" in started[0]
+
+    # 进程写进度 → 接口原样读出来
+    runner._write(
+        runner.status_path(job),
+        {
+            "job_id": "demo_job",
+            "status": "running",
+            "stage": "rendering",
+            "started_at": "2026-11-12T08:00:00Z",
+            "updated_at": "2026-11-12T08:01:00Z",
+            "finished_at": None,
+            "log": ["进程已启动，正在读分镜与素材清单"],
+            "report": None,
+            "error": "",
+        },
+    )
+    during = client.get("/api/workspace/jobs/demo_job/render").json()
+    assert during["status"] == "running"
+    assert during["stage"] == "rendering"
+
+    # 已经在跑的时候不允许再起一个，避免两个进程抢同一个工程目录
+    again = client.post("/api/workspace/jobs/demo_job/render", json={}).json()
+    assert again["ok"] is False
+    assert again["blocked_reason"] == "render_running"
+
+
+def test_render_status_of_unknown_job_is_404(client: Any, monkeypatch: pytest.MonkeyPatch,
+                                            tmp_path: Path) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    response = client.get("/api/workspace/jobs/nope/render")
+    assert response.status_code == 404
+    assert response.json()["error"]["details"]["reason"] == "unknown_job"

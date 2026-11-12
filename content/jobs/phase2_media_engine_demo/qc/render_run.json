@@ -1,0 +1,128 @@
+{
+ "job_id": "phase2_media_engine_demo",
+ "status": "done",
+ "stage": "timeline_ready",
+ "started_at": "2026-11-12T08:40:59Z",
+ "updated_at": "2026-11-12T08:42:22Z",
+ "finished_at": "2026-11-12T08:42:22Z",
+ "render": false,
+ "output_name": "output/final.mp4",
+ "log": [
+  "进程已启动，正在读分镜与素材清单",
+  "完成：timeline_ready"
+ ],
+ "report": {
+  "job_id": "phase2_media_engine_demo",
+  "stage": "timeline_ready",
+  "blocked": false,
+  "blocked_reason": "",
+  "storyboard_shots": 7,
+  "frames": 1275,
+  "fps": 30,
+  "canvas": {
+   "w": 1080,
+   "h": 1920
+  },
+  "assets": [
+   {
+    "asset_id": "S01",
+    "registered_as": "S01",
+    "file": "input/approved_sources/nasa_apollo17_earthrise.jpg",
+    "sha256": "13419b34c17722be52b4a71a7f0beb3ecc8673183c8a2cee8572d5cd9bbe3f93",
+    "asset_class": "A",
+    "license": "NASA public-domain media (media-use policy applies)",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 1
+   },
+   {
+    "asset_id": "S03A",
+    "registered_as": "S03",
+    "file": "input/approved_sources/nasa_earth_rotation.mp4",
+    "sha256": "6f436803b09f1fc93ec648ec441921c1fd537959af3ce09561927d3800bb2ae7",
+    "asset_class": "A",
+    "license": "NASA public-domain media (media-use policy applies)",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 180
+   },
+   {
+    "asset_id": "S02",
+    "registered_as": "S02",
+    "file": "input/approved_sources/nasa_blue_marble_starfield.jpg",
+    "sha256": "7dbf717a55aa845cb5446685d89cfca07e74ff3f7c05ee7b43b0c8b779b7c2ab",
+    "asset_class": "A",
+    "license": "NASA public-domain media (media-use policy applies)",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 1
+   },
+   {
+    "asset_id": "C_CHART",
+    "registered_as": "C_CHART",
+    "file": "assets/compositions/chart.json",
+    "sha256": "e48cc6dcfa2a92b99016968561ee118c19800aa3ba93a272c1330064a61925e2",
+    "asset_class": "B",
+    "license": "原创（本仓库内容）",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 210
+   },
+   {
+    "asset_id": "C_DIAGRAM",
+    "registered_as": "C_DIAGRAM",
+    "file": "assets/compositions/diagram.json",
+    "sha256": "343d524f914d898419ae5a1214c57fa28273cbab8047984ea5b732828012687e",
+    "asset_class": "B",
+    "license": "原创（本仓库内容）",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 210
+   },
+   {
+    "asset_id": "S03B",
+    "registered_as": "S03",
+    "file": "input/approved_sources/nasa_earth_rotation.mp4",
+    "sha256": "6f436803b09f1fc93ec648ec441921c1fd537959af3ce09561927d3800bb2ae7",
+    "asset_class": "A",
+    "license": "NASA public-domain media (media-use policy applies)",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 150
+   },
+   {
+    "asset_id": "C_OUTRO",
+    "registered_as": "C_OUTRO",
+    "file": "assets/compositions/outro.json",
+    "sha256": "657692f97bf207b760995ae2b6a26d59b40bf9bdeb84435776230f2056b37e52",
+    "asset_class": "B",
+    "license": "原创（本仓库内容）",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 240
+   }
+  ],
+  "timeline_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\timeline.render.json",
+  "timeline_revision": "",
+  "output_path": "",
+  "output_sha256": "",
+  "output_byte_size": 0,
+  "engine_calls": [
+   "import_media:S01",
+   "import_media:S03A",
+   "import_media:S02",
+   "render_composition:C_CHART",
+   "render_composition:C_DIAGRAM",
+   "import_media:S03B",
+   "render_composition:C_OUTRO",
+   "validate_timeline"
+  ],
+  "qc": {},
+  "notes": [
+   "project/timeline.json 已存在且内容不同，本次写到 timeline.render.json，没有覆盖原文件",
+   "时间轴已写入 C:\\Users\\25803\\finance-media-ai\\content\\jobs\\phase2_media_engine_demo\\project\\timeline.render.json"
+  ],
+  "ok": false
+ },
+ "error": ""
+}

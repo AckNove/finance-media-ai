@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import csv
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -171,6 +173,94 @@ def run_job_pipeline(
             str(error), details={"reason": error.reason}
         ) from error
     return report.as_dict()
+
+
+def _spawn(command: list[str]) -> None:
+    """起一个后台进程。单独抽出来是为了测试里能替换掉，不去真的启动渲染。"""
+    subprocess.Popen(
+        command,
+        cwd=str(PROJECT_ROOT),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        close_fds=True,
+    )
+
+
+@router.post("/jobs/{job_id}/render", summary="后台渲染成片（立刻返回，用 GET 看进度）")
+def start_job_render(
+    job_id: str = PathParam(min_length=1, max_length=80),
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """起一个独立进程去渲染，接口立刻返回。
+
+    为什么不在请求里同步跑：一条 40 秒竖屏要十几分钟，浏览器中途断网或刷新就白跑了。
+    进程把进度写进 ``qc/render_run.json``，页面轮询 ``GET .../render`` 看状态。
+    """
+    body = payload or {}
+    job_dir = _resolve_inside(JOBS_ROOT / job_id, JOBS_ROOT)
+    if not job_dir.is_dir():
+        raise NotFoundError(f"任务目录不存在：{job_id}", details={"reason": "unknown_job"})
+    if not (job_dir / "storyboard" / "storyboard.csv").is_file():
+        return {
+            "ok": False,
+            "blocked": True,
+            "blocked_reason": "missing_storyboard",
+            "message": "这个任务还没有分镜文件，先写 storyboard/storyboard.csv 再跑",
+        }
+
+    from backend.scripts import render_job as runner
+
+    current = runner.read_status(job_dir)
+    if current and current.get("status") == "running":
+        return {
+            "ok": False,
+            "blocked": True,
+            "blocked_reason": "render_running",
+            "message": "这个任务已经有一个渲染进程在跑，等它结束或者去看进度",
+            "status": current,
+        }
+
+    command = [
+        sys.executable,
+        "-m",
+        "backend.scripts.render_job",
+        "--job",
+        job_id,
+        "--jobs-root",
+        str(JOBS_ROOT),
+        "--output",
+        str(body.get("output_name") or "output/final.mp4"),
+    ]
+    if body.get("render") is False:
+        command.append("--no-render")
+    _spawn(command)
+    return {
+        "ok": True,
+        "job_id": job_id,
+        "started": True,
+        "status_file": str(runner.status_path(job_dir)),
+        "message": "渲染进程已启动；用 GET /api/workspace/jobs/{job_id}/render 看进度",
+    }
+
+
+@router.get("/jobs/{job_id}/render", summary="看后台渲染进度（读 qc/render_run.json）")
+def get_job_render(
+    job_id: str = PathParam(min_length=1, max_length=80),
+) -> dict[str, Any]:
+    job_dir = _resolve_inside(JOBS_ROOT / job_id, JOBS_ROOT)
+    if not job_dir.is_dir():
+        raise NotFoundError(f"任务目录不存在：{job_id}", details={"reason": "unknown_job"})
+    from backend.scripts import render_job as runner
+
+    status = runner.read_status(job_dir)
+    if status is None:
+        return {
+            "ok": True,
+            "job_id": job_id,
+            "status": "none",
+            "message": "还没有渲染记录（还没点过渲染）",
+        }
+    return {"ok": True, "job_id": job_id, **status}
 
 
 @router.get("/jobs/{job_id}/file", summary="读取任务产物文件（?path=output/xxx.mp4）")
