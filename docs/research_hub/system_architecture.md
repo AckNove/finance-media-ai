@@ -500,3 +500,139 @@ flowchart TB
    只能在服务层与巡检 SQL 里保证一致性（见 `database_design.md` §4.21）。
 7. **成本口径依赖人工维护的价目表**：`config/models.yaml` 由人填，价目缺失时按上界保守计费；
    系统不会自动去问供应商要价格。
+
+---
+
+## 12. 现状快照：V5–V6 落地后的真实架构（2026-11-14 实测）
+
+> **读法**：§1–§11 是 M1.2/M2.0 阶段写的**设计**，其中 §4（能力层要点）、§6（目录映射）描述的
+> 目录已经不是今天的目录。这一节全部按**磁盘上的真实文件**重写，两者冲突时以本节为准。
+> 数据来自：`backend/app` 目录树、`create_app().openapi()`（55 路径 / 71 操作）、
+> `Base.metadata.tables`（31 张表）、`TOOL_NAMES`（11 个工具）、`skills/registry.yaml`（5 个 Skill）。
+
+### 12.1 目录与模块映射（实测）
+
+```
+backend/app/
+  core/            caller.py（身份三型）config.py / config_schema.py（六段配置的强类型）
+                   errors.py（统一错误信封）job_paths.py（素材白名单）logging.py
+                   request_context.py（X-Request-Id）startup_checks.py（启动自检 8 项）utils.py
+  database/        base.py（Base + 命名约定）session.py（连接级 PRAGMA）wal.py（WAL 显式入口）
+  models/          19 个文件 / 31 张表：agent cases enums evidence execution finance industry
+                   institution knowledge media metering operations publication research review
+                   script source taxonomy topic types
+  schemas/         13 个文件：request/response 的 Pydantic 契约（与 models 一一对应）
+  api/
+    deps.py        DbSession / HumanCaller / DevCaller
+    router.py      ROUTE_CALLERS：71 个操作逐个声明允许的调用者
+    middleware.py  纯 ASGI 请求追踪
+    routes/        health knowledge monitoring operations research_reports research_tasks
+                   reviews scripts sources topics workspace
+  services/        领域服务层：agent_registry export metrics_import operations research review
+                   script source system topic knowledge + base
+  capabilities/    budget.py guard.py tools.py（闸门与工具注册表）
+    model/         gateway.py（七步调用链 + 限流 + 降级）providers.py tokens.py tool.py
+    search/        engine.py fetcher.py safety.py tool.py（SSRF / robots / 快照）
+    adapters/      markitdown_adapter.py（PDF/DOCX/XLSX）+ structured.py（页码/表格/单元格定位）
+    media/         engine.py（引擎门面）ffmpeg.py（26 项能力探测）openkatana.py
+    tts/           provider.py edge.py sapi.py subtitle.py
+    storage/ verification/  tool.py（素材与核查工具）
+  execution/       task_types.py routing.py orchestrator.py runtime.py executor.py worker.py tools.py
+  research/        planning.py analysis.py semantic.py frameworks.py digest.py corroborate.py
+                   dedupe.py source_quality.py verify.py persistence.py draft_gate.py
+                   topic_suggestions.py
+  content/         stages.py（脚本/分镜/制作三阶段）platform_adapt.py（一稿三版）
+  video/           outline.py cards.py chain.py narration.py bgm.py render.py handoff.py
+                   generated.py content_qc.py
+  media/           storyboard.py timeline.py manifest.py（分镜/时间轴/素材清单契约）
+  analysis/        metrics.py charts.py（确定性图表）
+  skills/          registry.py（按角色 + task_type 授权，注入前 1800 字上限）
+
+backend/scripts/   30 个运维与验收脚本（见 §12.6）
+web/               index.html + app.js（91 KB）+ styles.css，20 个页面，挂在 /app/
+skills/            ak/{accessible-explainer,investigative-storytelling,ak-signature}
+                   vendor/anthropic/{pdf,xlsx}（Apache-2.0，固定 commit）
+config/            8 份 YAML：settings models agent_routing pipelines content_taxonomy
+                   content_rules brand research_sources
+```
+
+### 12.2 三条主链路（每一步都能在磁盘上找到产物）
+
+**① 请求链**：`uvicorn` → `RequestContextMiddleware`（`X-Request-Id`）→ `require_caller(...)`
+（人/开发/Agent 三型，`X-Caller` 只记录不采信）→ 路由 → `services/*` → `models/*` → 统一错误信封。
+
+**② 研究链**（`Orchestrator.plan_task` 按 `config/pipelines.yaml` 建 10 段）：
+
+```
+topic.discover → [闸门 topic_approval] → research.plan（模型规划，失败降级 keywords）
+  → research.collect（真实搜索 + 抓取 + 快照）→ research.extract（解析 + 结构化）
+  → research.analyze（模型 + 研究骨架）→ research.synthesize（报告落库）
+  → verify.claims（逐字核对 + 语义核查五档）→ content.script（模型改写 + 逐句校验）
+  → content.visual（分镜）→ content.produce（制作计划）
+```
+
+产物统一落在 `content/research/task-<id>-<objective 指纹>/`：`digest.{md,json}`、
+`analysis.{md,json}`、`semantic_check.{md,json}`、`content/{discovery,script_draft,visual_plan,production_plan}.*`。
+目录指纹来自任务 objective 的 sha256 前 8 位——**同一个 task_id 换成另一个研究目标，不会覆盖前一份底稿**。
+
+**③ 内容/视频链**：报告 → `draft_gate.readiness_of`（**没有人工确认就不许成稿**）→
+`video.handoff.create_video_job`（搬研究产物 + 规则分镜 + 产业链图 + 数据卡）→
+`video.render.render_job`（配音、按配音双向重排、引擎渲染、技术 QC）→ `video.content_qc`（数字出处/来源覆盖/字幕来源/素材授权）。
+
+### 12.3 十个 task_type 与处理者
+
+| task_type | handler | 是否用模型 | 人工闸门 |
+| --- | --- | --- | --- |
+| `topic.discover` | `AgentExecutor._discover` | 否（骨架拆题） | 之后有 `topic_approval` |
+| `research.plan` | `_plan` | 是（失败降级关键词） | — |
+| `research.collect` | `_collect` | 否 | — |
+| `research.extract` | `_extract` | 否 | — |
+| `research.analyze` | `_analyze` | 是 | — |
+| `research.synthesize` | `_synthesize` | 是 | — |
+| `verify.claims` | `_verify_claims` | 是（五档判定） | 停在 `fact_check_gate` |
+| `content.script` | `_script` | 是（逐句校验来源与数字） | 停在 `script_approval` + 成稿闸门 |
+| `content.visual` | `_visual` | 否 | — |
+| `content.produce` | `_produce` | 否 | 停在人工复核 |
+
+> **纪律**：`MODEL_TASK_TYPES` 里的类型如果没注册 handler，以前会被 `_model_blocked` 当成
+> "completed"——这就出现过"三阶段什么都没做却报成功"。现在 10 个类型全部有真实实现，
+> `tests/test_content_stages.py` 盯着这条。
+
+### 12.4 视频任务目录（`content/jobs/<job_id>/`）
+
+```
+research/     report.md evidence.json sources.json digest.md（来自报告，只含可引用的部分）
+storyboard/   storyboard.csv OUTLINE.md
+assets/       compositions/*.json（数据卡、产业链图，均为 B 类原创）+ assets_manifest.csv
+audio/        narration/*.mp3 + score.m4a
+project/      timeline.json timeline.render.json（引擎工程与真渲染用的时间轴）
+output/       final.mp4
+qc/           render_run.json content_qc.{json,md} frames/*.png
+job.json      counts + draft_gate（usable/check_ids/失效原因）
+```
+
+### 12.5 四道"不许自动越过"的闸门
+
+| 闸门 | 位置 | 判定 | 拒绝时 |
+| --- | --- | --- | --- |
+| 人工闸门 | `worker._pause_for_gate` | 计划里标了 `human_gate` 的阶段完成后 | 任务 `paused`，等人放行 |
+| 成稿闸门 | `research/draft_gate.py` | 报告里每条结论都要 `human_review_status=confirmed` | 建视频任务/建脚本/`produce_video` 一律 409 并给出 readiness |
+| 撤回失效 | `video/handoff.invalidate_jobs` | 人工把确认改回 `pending/rejected` | 已有任务写 `INVALIDATED.md`、`usable=false`，**不删产物** |
+| 素材白名单 | `core/job_paths.py` | 只在 `input/approved_sources/` 内、登记过 sha256 | 越界/未登记/符号链接一律拒绝渲染 |
+
+### 12.6 运维脚本（30 个，按用途分组）
+
+- **每天**：`daily_check`（任务/核查/花费/备份/磁盘一条命令）、`doctor`（环境 22 项）、`preflight`
+- **跑研究**：`research_task`、`run_worker`、`recover_tasks`、`model_smoke`、`model_e2e_check`
+- **出视频**：`produce_video`、`render_job`、`content_qc`、`chain_diagram`、`chart_from_table`、`bgm_check`、`mix_bgm`
+- **数据**：`seed_collections`、`backup_db`、`restore_db`、`enable_wal`
+- **媒体与工具链**：`install_ffmpeg`、`check_media_toolchain`、`media_selftest`
+- **验收与取证**：`flow_check`、`ui_acceptance`、`v6_acceptance`、`v51_evidence`、`import_digest`、`dump_api_doc`
+
+### 12.7 本节的诚实边界
+
+- 九个 Agent **共用同一个模型网关与同一套价目**，没有"每个角色一个模型"；
+- 语义核查只看被选中的证据子集（默认 30 条，先按结论自身来源挑），不是全量；
+- 内容 QC 只核对技术性事实（数字是否在材料里、每镜有无来源、字幕是否来自旁白、素材授权），
+  **不判断好不好看**；
+- 真实素材获取与云渲染/发布仍是 BLOCKED，多平台账号 API 仍是 NOT_IMPLEMENTED（见交付报告 §9）。

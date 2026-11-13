@@ -235,23 +235,23 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 
 ## 8. 交付清单（第十部分 1–15）
 
-| # | 交付物 | 路径 |
+| # | 交付物 | 路径（2026-11-14 复核） |
 | --- | --- | --- |
-| 1 | 源代码 | `backend/`、`web/`、`scripts/` |
-| 2 | 配置模板 | `config/{settings,models,agent_routing,pipelines,content_taxonomy}.yaml` |
-| 3 | 库初始化与迁移 | `backend/migrations/`、`backend/scripts/{backup_db,restore_db}.py` |
-| 4 | 启动脚本 | `scripts/start.ps1` |
-| 5 | 停止脚本 | `scripts/stop.ps1` |
-| 6 | 环境诊断 | `backend/scripts/doctor.py`（另有 `scripts/watchdog.ps1` 做自愈） |
-| 7 | 测试 | `tests/`（964 passed / 2 skipped） |
-| 8 | 端到端验收脚本 | `backend/scripts/v6_acceptance.py`（另有 `ui_acceptance.py` 做浏览器点击） |
-| 9 | 用户操作手册 | `README.md`（含"三步开始用"） |
-| 10 | 架构文档 | `docs/research_hub/{system_architecture,module_design,api_design,database_design}.md` |
-| 11 | Agent / Skill 文档 | `agents/*/PROMPT.md` + `skills/README.md` + `skills/registry.yaml` |
-| 12 | API 文档 | 运行时 `/docs`（OpenAPI），设计见 `docs/research_hub/api_design.md` |
-| 13 | 成本与预算说明 | `docs/research_hub/v5_0_model_integration_report.md` §10 + 本文件 §5 |
-| 14 | 安全说明 | 本文件 §6 + `AGENTS.md` §2/§3 |
-| 15 | 最终验收报告 | 本文件 |
+| 1 | 源代码 | `backend/`（19 个模块目录）、`web/`（20 页工作台）、`scripts/`（4 个 PowerShell） |
+| 2 | 配置模板 | `config/{settings,models,agent_routing,pipelines,content_taxonomy,content_rules,brand,research_sources}.yaml`（8 份，全部 `extra="forbid"` 强类型校验） |
+| 3 | 库初始化与迁移 | `backend/migrations/versions/`（初始 + B1–B6 共 7 个 revision），配套 `backend/scripts/{backup_db,restore_db}.py` |
+| 4 | 启动脚本 | `scripts/start.ps1`（建库、预检、端口占用检查、起服务、健康探测、开浏览器） |
+| 5 | 停止脚本 | `scripts/stop.ps1`（只杀 uvicorn + `backend.app.main` 的进程，`-Force` 才强杀） |
+| 6 | 环境诊断 | `backend/scripts/doctor.py`（22 项）+ `backend/scripts/daily_check.py`（每日业务体检）+ `scripts/watchdog.ps1`（自愈） |
+| 7 | 测试 | `tests/`（**1118 passed / 2 skipped / 1 known warning**） |
+| 8 | 端到端验收脚本 | `backend/scripts/v6_acceptance.py`（三主题 + 内容链路）、`ui_acceptance.py`（Playwright 真点击）、`flow_check.py`、`model_e2e_check.py` |
+| 9 | 用户操作手册 | `docs/research_hub/v6_0_operator_manual.md`（10 节）+ `README.md`（三步开始用） |
+| 10 | 架构文档 | `docs/research_hub/system_architecture.md`（**§12 是 V5–V6 现状快照**）+ `module_design.md` / `api_design.md` / `database_design.md` |
+| 11 | Agent / Skill 文档 | `docs/agent_manual.md`（已按现状重写）+ `agents/*/PROMPT.md` + `skills/README.md` + `skills/registry.yaml` |
+| 12 | API 文档 | `docs/research_hub/v6_0_api_reference.md`（由 `backend/scripts/dump_api_doc.py` 从 OpenAPI 生成，71 个操作带允许调用者）+ 运行时 `/docs` |
+| 13 | 成本与预算说明 | `docs/research_hub/v6_0_cost_and_budget.md` |
+| 14 | 安全说明 | `docs/research_hub/v6_0_security_notes.md`（含"没做到的六件事"）+ `AGENTS.md` §2/§3 |
+| 15 | 最终验收报告 | 本文件（§1–§24） |
 
 ## 9. 需求状态总表（六状态口径）
 
