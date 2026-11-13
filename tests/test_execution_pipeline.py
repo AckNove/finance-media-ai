@@ -1278,3 +1278,60 @@ def test_task_spend_equals_the_sum_of_model_calls(factory, runtime, tmp_path):
     assert rows, "这条用例要求真的发生了模型调用"
     assert Decimal(str(snapshot.cost_spent_cny)) == total
     assert snapshot.calls_spent == len(rows)
+
+
+def test_a_failed_attempt_that_already_burned_tokens_is_charged_too(factory, runtime, tmp_path):
+    """重试的那一次也要记账：模型已经回了话、只是没用上，钱是真花掉的。
+
+    这是一条真实缺陷的回归。`Worker._apply` 的 ``retry`` / ``failed`` 分支调
+    ``runtime.fail(...)`` 时原来不带 ``calls/tokens/cost_cny``，于是"失败的尝试"
+    在 ``model_calls`` 里有一行、在任务账上却不见——任务累计成本小于审计总额，
+    预算闸门因此低估花销（真实验收里出现过差 ¥0.0468 的一笔）。
+    """
+    from decimal import Decimal
+
+    from backend.app.models.metering import ModelCall
+
+    task = runtime.create_task(title="核查重试", objective="搞清楚净息差")
+    synthesize_sub = runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="综述：商业银行怎么赚钱",
+        task_type="research.synthesize",
+        input_payload={"_upstream": _UPSTREAM},
+    )
+    verify_sub = runtime.add_subtask(
+        task.id,
+        sequence=2,
+        question="核查报告结论",
+        task_type="verify.claims",
+        input_payload={"_upstream": _UPSTREAM},
+        depends_on=[synthesize_sub.id],
+    )
+    runtime.start_task(task.id)
+
+    executor = AgentExecutor(
+        tools=FakeTools(),
+        session_factory=factory,
+        artifacts_root=tmp_path,
+        # 核查一律撞上限 → 阶梯全撞 → 这一格进 retry，但钱已经花了
+        model_gateway=_mock_gateway(factory, truncate="核查"),
+    )
+    worker = Worker(runtime, executor)
+    worker.run_once()  # 综述：写出报告与证据（一次分析调用）
+    report = worker.run_once()  # 核查：撞上限 → retry
+
+    assert report.retried == [verify_sub.id], {"completed": report.completed}
+    verify_rows = None
+    with factory() as session:
+        rows = session.query(ModelCall).all()
+        verify_rows = [row for row in rows if row.purpose == "research.verify"]
+    assert verify_rows, "这条用例要求核查真的调过模型"
+    assert len(verify_rows) >= 2, "阶梯重试应当留下不止一次调用"
+
+    snapshot = runtime.task(task.id)
+    charged = sum((Decimal(str(row.cost_estimate)) for row in rows), Decimal("0"))
+    assert charged > 0
+    assert snapshot.calls_spent == len(rows), "调用次数要把失败的尝试算进去"
+    assert Decimal(str(snapshot.cost_spent_cny)) == charged, "任务账必须等于账本合计"
+

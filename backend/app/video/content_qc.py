@@ -37,6 +37,13 @@ _NUMBER_WITH_UNIT = re.compile(
 _UNIT_SPLIT = re.compile(r"^(\d+(?:\.\d+)?)(.*)$")
 _ALLOWED_LICENCE = {"allowed", "cc0", "public_domain", "public-domain", "publicdomain"}
 
+#: 框景镜头（开场、收尾）允许不挂来源：它们不落具体数字，只是"这一条讲什么"。
+#: 一旦旁白/字幕里出现**带单位的量**，就必须挂来源——规矩靠"有没有可核查的数字"来判，
+#: 不靠镜头名糊过去；年份与"以上 2 个数字"这类计数不算数据主张。
+FRAMING_PURPOSES = ("开场", "收尾", "opening", "outro", "closing")
+#: 字幕允许是旁白的压缩版，只要用字基本重合（默认七成）就算同一句。
+_SUBTITLE_OVERLAP = 0.7
+
 
 class ContentQcError(RuntimeError):
     """内容质检无法进行（缺分镜、缺报告等）。"""
@@ -201,6 +208,20 @@ def _split_unit(raw: str) -> tuple[Decimal | None, str, int]:
         return None, unit, decimals
 
 
+def _mostly_from(part: str, whole: str, *, threshold: float = _SUBTITLE_OVERLAP) -> bool:
+    """`part` 的用字有多大比例出现在 `whole` 里（判断"是不是同一句的压缩版"）。
+
+    只比字符集合，不做语义判断：字幕本来就允许截短、加分隔符，但一旦换了一整句
+    无关文案，重合率会掉得很明显。
+    """
+
+    chars = [ch for ch in part if not ch.isspace()]
+    if not chars:
+        return True
+    inside = sum(1 for ch in chars if ch in whole)
+    return inside / len(chars) >= threshold
+
+
 def _close_enough(shown: str, material: str) -> bool:
     """`shown` 是不是 `material` 的四舍五入写法（单位必须相同）。
 
@@ -250,24 +271,52 @@ def review_job(job_dir: Path | str, *, job_id: str | None = None) -> ContentQcRe
             narration_count += 1
 
         if not sources:
-            report.checks.append(
-                QcFinding(
-                    check="shot_without_source",
-                    severity="error",
-                    shot_id=shot_id,
-                    detail="这一镜没有挂任何来源编号，画面上的说法无法回溯",
-                )
+            purpose = str(row.get("narrative_purpose") or "").strip()
+            # 判定"这一镜有没有落数字"只看**带单位的量**：年份（2024 年）和"以上 2 个数字"
+            # 这类计数不是可核查的数据主张，拿它去要求来源会让每个开场/收尾都过不了。
+            carries_figures = any(
+                _NUMBER_WITH_UNIT.search(text) for text in (narration, subtitle, on_screen)
             )
+            if purpose in FRAMING_PURPOSES and not carries_figures:
+                # 框景镜头可以不挂来源，但只能"不落数字"的那种；落了数字就照样算硬错
+                report.checks.append(
+                    QcFinding(
+                        check="framing_shot_without_source",
+                        severity="info",
+                        shot_id=shot_id,
+                        detail="框景镜头没挂来源（它不落具体数字，属允许）",
+                    )
+                )
+            else:
+                report.checks.append(
+                    QcFinding(
+                        check="shot_without_source",
+                        severity="error",
+                        shot_id=shot_id,
+                        detail="这一镜没有挂任何来源编号，画面上的说法无法回溯",
+                    )
+                )
 
         if subtitle and narration and subtitle not in narration:
-            report.checks.append(
-                QcFinding(
-                    check="subtitle_not_from_narration",
-                    severity="warning",
-                    shot_id=shot_id,
-                    detail="字幕不是旁白的片段：可能是另写的文案，需要人确认口播与字幕一致",
+            if _mostly_from(subtitle, narration):
+                # 字幕本来就允许是旁白的压缩版（规则分镜会截短），只要字面来源一致就不吵人
+                report.checks.append(
+                    QcFinding(
+                        check="subtitle_condensed_from_narration",
+                        severity="info",
+                        shot_id=shot_id,
+                        detail="字幕是旁白的压缩版（用字基本重合，属允许）",
+                    )
                 )
-            )
+            else:
+                report.checks.append(
+                    QcFinding(
+                        check="subtitle_not_from_narration",
+                        severity="warning",
+                        shot_id=shot_id,
+                        detail="字幕不是旁白的片段：可能是另写的文案，需要人确认口播与字幕一致",
+                    )
+                )
 
         if on_screen and on_screen == previous_on_screen:
             report.checks.append(

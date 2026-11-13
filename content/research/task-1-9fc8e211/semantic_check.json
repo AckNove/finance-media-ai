@@ -1,0 +1,238 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 4,
+  "prompt_tokens": 9178,
+  "completion_tokens": 2558,
+  "cost_cny": 0.041343,
+  "checked_at": "2026-11-13T05:12:16+00:00",
+  "counts": {
+    "supported": 1,
+    "partially_supported": 2,
+    "contradicted": 0,
+    "insufficient_evidence": 3,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "2024年营收825.82亿元同比降36.23%，归母净亏损86.18亿元，与预告的82亿至88亿元区间一致",
+      "claim_kind": "fact",
+      "verdict": "supported",
+      "reason": "年报营收、同比降幅、净亏损三项数字均与来源原文一致，且86.18亿元落在预告的82亿—88亿元区间内",
+      "evidence_ids": [
+        75,
+        1
+      ],
+      "source_ids": [
+        "S11",
+        "S25",
+        "S01",
+        "S24"
+      ],
+      "supporting": [
+        "全年营收825.82亿元，同比下滑36.23%，净利润亏损86.18亿元",
+        "预计2024年度实现归属于上市公司股东的净亏损为82亿元到88亿元"
+      ],
+      "contradicting": [],
+      "missing": [
+        "原文只写“净利润亏损86.18亿元”，未明确标注“归母”，严格口径需以年报原文核对"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1529,
+      "completion_tokens": 426,
+      "cost_cny": 0.00689,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T05:12:16+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "收入主体是组件及电池663.34亿元（-33.13%），硅片及硅棒82.07亿元（-66.53%）是降幅最大的板块",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "给出的S11原文摘录只到“营收下滑显著 隆基绿能2024年实现营业收”，未出现组件及电池663.34亿元、硅片82.07亿元及各板块同比数据",
+      "evidence_ids": [],
+      "source_ids": [
+        "S11"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "分产品（组件及电池、硅片及硅棒）的收入金额与同比增速原文",
+        "各板块降幅排序的原文依据"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1529,
+      "completion_tokens": 426,
+      "cost_cny": 0.00689,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T05:12:16+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "2024上半年毛利率7.66%、净利率-13.65%，盈利能力因产品价格下跌而大幅恶化",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "毛利率7.66%、净利率-13.65%两个数值有原文支持，但“因产品价格下跌而大幅恶化”的因果表述在证据中没有对应文字",
+      "evidence_ids": [
+        54
+      ],
+      "source_ids": [
+        "S18"
+      ],
+      "supporting": [
+        "毛利率7.66%，同比减61.6%，净利率-13.65%，同比减196.43%"
+      ],
+      "contradicting": [],
+      "missing": [
+        "产品价格下跌与盈利能力恶化之间关系的原文表述"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "数值部分有据，因果归因部分无证据支撑"
+        },
+        {
+          "code": "causal_leap",
+          "note": "将毛利率、净利率下滑直接归因于产品价格下跌，证据仅给出降幅"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1529,
+      "completion_tokens": 426,
+      "cost_cny": 0.00689,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T05:12:16+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "亏损主要由光伏产品端造成：光伏产品毛利率仅0.48%，电站分部毛利率36.91%，后者难以对冲前者的亏损（期次未标注）",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "两个分部毛利率数值与收入占比有原文支持，但“亏损主要由光伏产品端造成”“难以对冲”属于推断，证据只有收入占比和毛利率，未给出亏损归因或对冲测算",
+      "evidence_ids": [
+        11
+      ],
+      "source_ids": [
+        "S06"
+      ],
+      "supporting": [
+        "光伏产品-分部 2570426.88 （95.04%） 2558023.18 （95.87%） 34.21% 0.48%",
+        "光伏电站-分部 81456.29 （3.01%） 51393.66 （1.93%） 82.91% 36.91%"
+      ],
+      "contradicting": [],
+      "missing": [
+        "所指报告期（期次）标注",
+        "光伏产品端造成亏损的归因数据或原文表述",
+        "电站分部利润规模能否对冲亏损的测算"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "数字吻合，但亏损归因与对冲判断超出证据所给的分部收入占比和毛利率"
+        },
+        {
+          "code": "stale_evidence",
+          "note": "证据未标注报告期，无法确认口径适用期"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1529,
+      "completion_tokens": 426,
+      "cost_cny": 0.00689,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T05:12:16+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 4,
+      "claim": "管理层将亏损的成因归于外部的供需失衡与价格下跌、技术迭代导致的资产减值，以及内部的HPBC1.0研产销脱节",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "供需失衡、价格下跌、技术迭代致资产减值以及内部经营失策均有原文，但HPBC1.0研产销脱节在给定证据中找不到",
+      "evidence_ids": [],
+      "source_ids": [
+        "S03",
+        "S01",
+        "S24"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "管理层关于HPBC1.0研产销脱节的原文表述"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "外部与内部成因可对上，但HPBC1.0研产销脱节这一具体归因无证据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1529,
+      "completion_tokens": 426,
+      "cost_cny": 0.00689,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T05:12:16+00:00",
+      "notes": [
+        "supporting_quote_not_found",
+        "downgraded:no_verifiable_supporting_quote",
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 5,
+      "claim": "2024上半年每股经营性现金流-0.85元、同比降223.46%，经营现金流与当期亏损方向一致",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S18摘录只包含毛利率、净利率、三费数据，未出现每股经营性现金流-0.85元或同比降223.46%",
+      "evidence_ids": [],
+      "source_ids": [
+        "S18"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "2024上半年每股经营性现金流数值及同比变动原文",
+        "经营现金流与净利润方向一致性的原文表述"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1529,
+      "completion_tokens": 426,
+      "cost_cny": 0.00689,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T05:12:16+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    }
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

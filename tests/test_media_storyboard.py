@@ -179,13 +179,25 @@ def test_inconsistent_canvas_across_rows_is_rejected() -> None:
 
 def test_round_trip_through_disk_keeps_chinese_text(tmp_path: Path) -> None:
     target = tmp_path / "storyboard.csv"
-    write_storyboard(target, [_row(), _row(shot_id="sh02", start_time="4.0", end_time="8.0")])
+    write_storyboard(
+        target,
+        [_row(), _row(shot_id="sh02", start_time="4.0", end_time="8.0", source_ids="S01,S02")],
+    )
     storyboard = load_storyboard(target)
     assert storyboard.shots[0].narration == "这是一句旁白。"
     assert storyboard.shots[0].subtitle == "字幕一"
+    # 逐镜来源编号是可追溯性的载体，必须原样过一遍磁盘
+    assert storyboard.shots[1].source_ids == "S01,S02"
     with target.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
-        assert reader.fieldnames == list(REQUIRED_COLUMNS) + ["fps", "canvas_width", "canvas_height", "notes", "source_start"]
+        assert reader.fieldnames == list(REQUIRED_COLUMNS) + [
+            "fps",
+            "canvas_width",
+            "canvas_height",
+            "notes",
+            "source_start",
+            "source_ids",
+        ]
 
 
 def test_missing_file_raises(tmp_path: Path) -> None:

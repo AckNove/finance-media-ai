@@ -1,0 +1,229 @@
+{
+ "job_id": "v6_accept_company_v2",
+ "status": "done",
+ "stage": "rendered",
+ "started_at": "2026-11-13T06:06:31Z",
+ "updated_at": "2026-11-13T06:10:01Z",
+ "finished_at": "2026-11-13T06:10:01Z",
+ "render": true,
+ "narration": true,
+ "output_name": "output/final.mp4",
+ "log": [
+  "进程已启动，正在读分镜与素材清单",
+  "完成：rendered"
+ ],
+ "report": {
+  "job_id": "v6_accept_company_v2",
+  "stage": "rendered",
+  "blocked": false,
+  "blocked_reason": "",
+  "storyboard_shots": 4,
+  "frames": 878,
+  "fps": 30,
+  "canvas": {
+   "w": 1080,
+   "h": 1920
+  },
+  "assets": [
+   {
+    "asset_id": "solid_1d2a44",
+    "registered_as": "solid_1d2a44",
+    "file": "assets/plates/solid_1d2a44.mp4",
+    "sha256": "d5d3bbe886ca1e130b20e8ae12601339a1f565aefcb9a39694e805ae9c9a0fbb",
+    "asset_class": "B",
+    "license": "self-generated",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 120
+   },
+   {
+    "asset_id": "CARD_sh02",
+    "registered_as": "CARD_sh02",
+    "file": "assets/compositions/card_sh02.json",
+    "sha256": "c6f8306bec3a4aedf34e40b834eeceb26d00e6b3b247857bd88fc3c7e77fb3ac",
+    "asset_class": "B",
+    "license": "self-generated",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 214
+   },
+   {
+    "asset_id": "CARD_sh03",
+    "registered_as": "CARD_sh03",
+    "file": "assets/compositions/card_sh03.json",
+    "sha256": "717be58528c7b1fb6fac143d051df48b843690e6c2451311de4dfbdafe303a45",
+    "asset_class": "B",
+    "license": "self-generated",
+    "commercial_use": "allowed",
+    "source_start": 0.0,
+    "frames": 160
+   }
+  ],
+  "timeline_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\project\\timeline.json",
+  "timeline_revision": "17b9e4f592c030b00f26df30ba0df75ac937356e4e94470a6f4b128ce76a6c45",
+  "output_path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\output\\final.mp4",
+  "output_sha256": "153f7327e10c2e0b77e5df8cdb3471af0faf5ee4848607c5f833d0eaa8a79794",
+  "output_byte_size": 5600359,
+  "engine_calls": [
+   "import_media:solid_1d2a44",
+   "render_composition:CARD_sh02",
+   "render_composition:CARD_sh03",
+   "validate_timeline",
+   "save_timeline",
+   "render"
+  ],
+  "qc": {
+   "media": {
+    "duration": 29.267,
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "streams": 2,
+    "has_audio": true,
+    "byte_size": 5600359
+   },
+   "scan": {
+    "black_segments": 0,
+    "black_seconds": 0,
+    "black_longest": 0.0,
+    "freeze_segments": 3,
+    "freeze_seconds": 1.9,
+    "freeze_longest": 0.833,
+    "silence_segments": 0,
+    "silence_seconds": 0,
+    "silence_longest": 0.0
+   },
+   "checks": {
+    "canvas_matches_storyboard": true,
+    "fps_matches_storyboard": true,
+    "duration_matches_storyboard": true,
+    "has_audio_stream": true,
+    "no_long_black": true,
+    "no_long_freeze": true,
+    "no_long_silence": true
+   },
+   "failures": [],
+   "ok": true,
+   "thresholds": {
+    "max_black_seconds": 0.45,
+    "max_freeze_seconds": 1.5,
+    "max_silence_seconds": 2.0,
+    "clip_warn_db": -1.0
+   },
+   "note": "这里只判技术指标（尺寸/帧率/时长/黑帧/冻结/静音），画面好不好看要人看"
+  },
+  "notes": [
+   "旁白：4/4 个镜头有配音，共 27.8 秒（edge / zh-CN-YunxiNeural）",
+   "其中 4 段比镜头长（sh01 超 4.38s、sh02 超 2.27s、sh03 超 0.49s、sh04 超 2.70s）：没有拉伸镜头，需改稿或改分镜",
+   "分镜已按配音重排（4 个镜头加长），总时长 29.2667 秒；改的是时间，不改文案与素材",
+   "按新时长重写了 2 张数据卡画板",
+   "旁白音轨已复制进工程目录：4 个文件",
+   "时间轴已写入 C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\project\\timeline.json",
+   "成片已复制到 C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\output\\final.mp4"
+  ],
+  "narration": {
+   "ok": true,
+   "provider": "edge",
+   "voice": "zh-CN-YunxiNeural",
+   "clip_count": 4,
+   "total_seconds": 27.84,
+   "overrun_count": 4,
+   "clips": [
+    {
+     "shot_id": "sh01",
+     "file": "audio/narration/sh01.mp3",
+     "duration_seconds": 8.376,
+     "shot_seconds": 4.0,
+     "overrun_seconds": 4.376,
+     "sha256": "a8b99504540afc4c11488720a91b4cc93337a01540acd9815a5380d15dee0cbb",
+     "byte_size": 50493,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 24,
+     "cue_count": 3,
+     "estimated_timing": false,
+     "text": "这一条讲的是：请基于公开财报与公告研究隆基绿能 2024 年的…。下面每一句话都能追到原文。"
+    },
+    {
+     "shot_id": "sh02",
+     "file": "audio/narration/sh02.mp3",
+     "duration_seconds": 6.768,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 2.268,
+     "sha256": "ade248ad1305271e818f7f6d29baa9c8e9a0a33a794870c9b47c1093e361277a",
+     "byte_size": 40845,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 13,
+     "cue_count": 2,
+     "estimated_timing": false,
+     "text": "光伏巨头隆基绿能发布年报预告，2024年度净亏损82亿到88亿元"
+    },
+    {
+     "shot_id": "sh03",
+     "file": "audio/narration/sh03.mp3",
+     "duration_seconds": 4.992,
+     "shot_seconds": 4.5,
+     "overrun_seconds": 0.492,
+     "sha256": "2cda905b812d9e1154864c6fc03140940341a66e37af5c606800d6bbb917aa22",
+     "byte_size": 30189,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 9,
+     "cue_count": 2,
+     "estimated_timing": false,
+     "text": "净利润亏损86.18亿元，隆基绿能如何走出至暗时刻？"
+    },
+    {
+     "shot_id": "sh04",
+     "file": "audio/narration/sh04.mp3",
+     "duration_seconds": 7.704,
+     "shot_seconds": 5.0,
+     "overrun_seconds": 2.704,
+     "sha256": "e2aeb8f8b6db30c845126a6e26b5f9c82754dba951e2808a5af7ecd5b56c6431",
+     "byte_size": 46461,
+     "provider": "edge",
+     "voice": "zh-CN-YunxiNeural",
+     "word_count": 17,
+     "cue_count": 2,
+     "estimated_timing": false,
+     "text": "以上 2 个数字来自 21 份资料（S01、S20）。这只是资料汇编，不是投资建议。"
+    }
+   ],
+   "tracks": [
+    {
+     "src": "audio/narration/sh01.mp3",
+     "at": 0.0,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh02.mp3",
+     "at": 4.0,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh03.mp3",
+     "at": 8.5,
+     "volume": 1.0
+    },
+    {
+     "src": "audio/narration/sh04.mp3",
+     "at": 13.0,
+     "volume": 1.0
+    }
+   ],
+   "srt": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\audio\\narration\\narration.srt",
+   "problems": [],
+   "retimed": [
+    "sh01: 4s → 8.73s（配音 8.38s）",
+    "sh02: 4.5s → 7.13s（配音 6.77s）",
+    "sh03: 4.5s → 5.33s（配音 4.99s）",
+    "sh04: 5s → 8.07s（配音 7.70s）"
+   ]
+  },
+  "ok": true
+ },
+ "error": ""
+}

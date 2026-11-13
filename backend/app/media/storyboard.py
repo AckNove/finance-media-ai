@@ -61,8 +61,16 @@ REQUIRED_COLUMNS = (
     "safety_zone",
 )
 
-#: Optional columns; when present they must be identical on every row.
-OPTIONAL_COLUMNS = ("fps", "canvas_width", "canvas_height", "notes", "source_start")
+#: Optional columns; ``fps``/``canvas_*`` must be identical on every row.
+#: ``notes``、``source_start``、``source_ids`` 是**逐镜头**的，允许每行不同。
+OPTIONAL_COLUMNS = (
+    "fps",
+    "canvas_width",
+    "canvas_height",
+    "notes",
+    "source_start",
+    "source_ids",
+)
 
 #: What a shot's picture comes from. A and B are documented in the V2.1 report:
 #: ``real_*`` is licensed real media, ``generated_*`` is authored by us, and a
@@ -136,6 +144,10 @@ class Shot:
     #: 从素材内部第几秒开始取画（只对视频/音频有意义）。
     #: 同一份登记素材可以在不同镜头用不同入点，比如 S03 的第 0 秒与第 12 秒。
     source_start: float = 0.0
+    #: 这一镜的旁白/字幕能追到哪些来源编号（分号分隔，如 ``S01;S03``）。
+    #: 空表示"这一镜没有引用任何资料"——只允许出现在不落具体数字的框景镜头里，
+    #: 内容质检（``backend/app/video/content_qc.py``）会按这个规则判。
+    source_ids: str = ""
 
     @property
     def duration(self) -> float:
@@ -412,6 +424,7 @@ def parse_storyboard(
                 safety_zone=safety,
                 notes=row.get("notes", ""),
                 source_start=_optional_seconds(row, "source_start", shot_id),
+                source_ids=row.get("source_ids", ""),
             )
         )
     return Storyboard(shots=tuple(shots), fps=fps_value, width=width, height=height)
@@ -433,6 +446,7 @@ def write_storyboard(path: Path | str, shots: Iterable[dict[str, Any]], *,
             row["canvas_width"] = width
             row["canvas_height"] = height
             row["notes"] = shot.get("notes", "")
+            row["source_ids"] = shot.get("source_ids", "")
             writer.writerow(row)
     return target
 

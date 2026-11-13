@@ -1,0 +1,4 @@
+shot_id,start_time,end_time,narrative_purpose,narration,visual_description,asset_id,asset_type,asset_source,license,animation,camera_motion,transition,subtitle,sound_effect,safety_zone,fps,canvas_width,canvas_height,notes,source_start
+sh01,0.000000000,26.233333333,开场,这一条讲的是：结论整合：2025 年储能装机仍在增长，但电芯与系统价格持续下行、部分企业毛利转负。请研究：这个行业当前处在什么阶段，市场规模与增速、供需结构、竞争格局、驱动因素与政策变化分别是什么，主要风险在哪里？请给可核对的公开数据。。下面每一句话都能追到原文。,纯色底 + 大字排版,,solid,#1d2a44,原创（纯色底，程序生成）,fade_in,push,none,结论整合：2025 年储能装机仍在增,none,bottom,30,1080,1920,规则草稿,
+sh02,26.233333333,31.033333333,引用数据点,到2030年 全国新型储能规模将达3亿千瓦,数据卡：放大数字 + 来源标注,CARD_sh02,composition,assets/compositions/card_sh02.json,原创（程序生成）,fade_in,pan_right,dissolve,,none,bottom,30,1080,1920,规则草稿；来源 S01,
+sh03,31.033333333,37.833333333,收尾,以上 1 个数字来自 22 份资料（S01）。这只是资料汇编，不是投资建议。,纯色底 + 大字排版,,solid,#1d2a44,原创（纯色底，程序生成）,fade_in,push,slide,资料汇编 · 不是投资建议,none,bottom,30,1080,1920,规则草稿,

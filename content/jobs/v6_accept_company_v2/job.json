@@ -1,0 +1,88 @@
+{
+ "job_id": "v6_accept_company_v2",
+ "created_at": "2026-11-13T06:06:29.865962+00:00",
+ "stage": "storyboard_ready",
+ "next_stage": "render",
+ "blocked": false,
+ "blocked_reason": "",
+ "model_provider": "deepseek",
+ "outline": {
+  "job_id": "v6_accept_company_v2",
+  "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\storyboard\\storyboard.csv",
+  "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\storyboard\\OUTLINE.md",
+  "shots": [
+   {
+    "shot_id": "sh01",
+    "seconds": 4.0,
+    "narration": "这一条讲的是：请基于公开财报与公告研究隆基绿能 2024 年的…。下面每一句话都能追到原文。",
+    "subtitle": "请基于公开财报与公告研究隆基绿能…",
+    "source_id": "",
+    "number": ""
+   },
+   {
+    "shot_id": "sh02",
+    "seconds": 4.5,
+    "narration": "光伏巨头隆基绿能发布年报预告，2024年度净亏损82亿到88亿元",
+    "subtitle": "光伏巨头隆基绿能发布年报预告，",
+    "source_id": "S01",
+    "number": "82亿"
+   },
+   {
+    "shot_id": "sh03",
+    "seconds": 4.5,
+    "narration": "净利润亏损86.18亿元，隆基绿能如何走出至暗时刻？",
+    "subtitle": "净利润亏损86.18亿元，",
+    "source_id": "S20",
+    "number": "86.18亿元"
+   },
+   {
+    "shot_id": "sh04",
+    "seconds": 5.0,
+    "narration": "以上 2 个数字来自 21 份资料（S01、S20）。这只是资料汇编，不是投资建议。",
+    "subtitle": "资料汇编 · 不是投资建议",
+    "source_id": "",
+    "number": ""
+   }
+  ],
+  "shot_count": 4,
+  "total_seconds": 18.0,
+  "frames": 540,
+  "source_ids": [
+   "S01",
+   "S20"
+  ],
+  "warnings": [
+   "只引用了 21 份资料里的 2 份"
+  ],
+  "generated_by": "rules",
+  "ok": true
+ },
+ "report": {
+  "report_id": 1,
+  "research_task_id": 1,
+  "title": "结论整合：请基于公开财报与公告研究隆基绿能 2024 年的经营情况：主营业务与商业模式、收入与利润结构变化、盈利能力与现金流、资产负债与存货减值、与同行的差异、以及主要风险。请标注数据口径与时点。",
+  "verification_status": "unverified",
+  "sha256": "a9be4c2d7f3e831f08fd561bbea1ad5b3ab78300d29ab1d5ef271e14965e3686"
+ },
+ "counts": {
+  "evidence": 344,
+  "sources": 21,
+  "confirmed_findings": 1,
+  "draft_evidence": 2
+ },
+ "draft_gate": {
+  "rule": "只有 human_review_status=confirmed 的结论可以进入成稿",
+  "confirmed_findings": [
+   0
+  ],
+  "check_ids": [
+   1
+  ]
+ },
+ "narrative_style": "AK（accessible-explainer + investigative-storytelling + ak-signature）",
+ "not_done": [
+  "script/script.md（分镜已就位，但正式脚本仍需模型或人工）",
+  "assets_manifest.csv（素材必须先登记授权；纯色底镜头不需要）",
+  "audio/ 与 output/（跑 render_job 才会生成）"
+ ]
+}

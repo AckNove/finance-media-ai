@@ -1,0 +1,242 @@
+{
+  "summary": "2024年隆基绿能营收825.82亿元、同比降36.23%，归母净利由2023年盈利107.51亿元转为亏损86.18亿元，属量价齐跌叠加技术迭代的阶段性亏损：硅片及硅棒收入降66.53%，降幅大于组件电池的33.13%；毛利率降至个位数、加权ROE -13.10%，经营现金流由+81.17亿元转为-47.25亿元。BC技术方向明确，但2024年BC二代产量占比很低，未能对冲PERC/TOPCon的盈利下滑。",
+  "findings": [
+    {
+      "claim": "2024年营收825.82亿元同比降36.23%，归母净利-86.18亿元，由盈转亏",
+      "kind": "fact",
+      "source_ids": [
+        "S01",
+        "S02",
+        "S12"
+      ],
+      "numbers": [
+        "825.82",
+        "36.23",
+        "-86.18",
+        "107.51"
+      ],
+      "section": "financials"
+    },
+    {
+      "claim": "组件及电池仍是收入主体663.34亿元，硅片及硅棒降幅66.53%远大于前者33.13%",
+      "kind": "fact",
+      "source_ids": [
+        "S01"
+      ],
+      "numbers": [
+        "663.34",
+        "33.13",
+        "82.07",
+        "66.53",
+        "63.43"
+      ],
+      "section": "business_mix"
+    },
+    {
+      "claim": "亏损主因是产品价格大跌叠加BC二代产量占比低、开工率受限与资产减值",
+      "kind": "inference",
+      "source_ids": [
+        "S10",
+        "S12",
+        "S14"
+      ],
+      "numbers": [
+        "39",
+        "50",
+        "30"
+      ],
+      "section": "model"
+    },
+    {
+      "claim": "毛利率7.4%、净利率-10.5%、加权ROE -13.10%，盈利能力指标全面转负",
+      "kind": "fact",
+      "source_ids": [
+        "S21",
+        "S02"
+      ],
+      "numbers": [
+        "7.4",
+        "-10.5",
+        "13.10"
+      ],
+      "section": "profitability"
+    },
+    {
+      "claim": "经营现金流净额由上年+81.17亿元转为-47.25亿元，利润恶化同步传导至现金",
+      "kind": "fact",
+      "source_ids": [
+        "S02"
+      ],
+      "numbers": [
+        "-47.25",
+        "81.17"
+      ],
+      "section": "cashflow"
+    },
+    {
+      "claim": "BC为技术主攻方向，但2024年BC二代产量占比很低，当期不构成盈利支撑",
+      "kind": "inference",
+      "source_ids": [
+        "S10",
+        "S13"
+      ],
+      "numbers": [],
+      "section": "products"
+    }
+  ],
+  "data_gaps": [
+    "缺少同业可比公司同口径指标（毛利率、经营现金流等），无法完成peers差异比较",
+    "现金流量表的投资与筹资分项、存货与应收账款具体金额、有息负债规模及到期结构未获取",
+    "客户与供应商前五大集中度、议价关系证据缺失",
+    "资产负债率60%、存货周转82天、应收周转54天等仅见于社区帖，需以年报核对",
+    "2024年BC组件出货量与分部毛利拆分缺失，难以量化技术转型的实际贡献",
+    "证据中2025年及之后的产能与良率数据（BC产能超50GW、良率98.5%）属期后信息，不能用于2024年经营判断"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 11,
+  "prompt_tokens": 13353,
+  "completion_tokens": 2059,
+  "cost_cny": 0.045985,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "company",
+  "checklist": {
+    "framework": "company",
+    "title": "公司研究",
+    "sections": {
+      "profile": {
+        "title": "公司概况",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "business_mix": {
+        "title": "业务构成",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S01"
+        ]
+      },
+      "model": {
+        "title": "商业模式",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S10",
+          "S12",
+          "S14"
+        ]
+      },
+      "products": {
+        "title": "产品与服务",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S10",
+          "S13"
+        ]
+      },
+      "moat": {
+        "title": "竞争优势",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "customers_suppliers": {
+        "title": "客户与供应商",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "financials": {
+        "title": "财务表现",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S01",
+          "S02",
+          "S12"
+        ]
+      },
+      "profitability": {
+        "title": "盈利能力",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S21",
+          "S02"
+        ]
+      },
+      "cashflow": {
+        "title": "现金流",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S02"
+        ]
+      },
+      "balance": {
+        "title": "资产负债结构",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "efficiency": {
+        "title": "经营效率",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "peers": {
+        "title": "同业比较",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "risks": {
+        "title": "重大风险",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "updates": {
+        "title": "最新动态",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      }
+    },
+    "empty_sections": [
+      "profile",
+      "moat",
+      "customers_suppliers",
+      "balance",
+      "efficiency",
+      "peers",
+      "risks",
+      "updates"
+    ],
+    "inference_only_sections": [
+      "model",
+      "products"
+    ],
+    "unsectioned": [],
+    "coverage": 0.429
+  }
+}

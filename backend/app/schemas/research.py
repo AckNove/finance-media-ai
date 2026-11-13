@@ -46,6 +46,7 @@ class ResearchReportOut(ORMBase):
     id: int
     title: str
     topic_id: int | None = None
+    research_task_id: int | None = None
     summary: str
     findings: list[dict]
     limitations: str

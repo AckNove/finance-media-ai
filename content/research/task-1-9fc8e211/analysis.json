@@ -1,0 +1,243 @@
+{
+  "summary": "隆基绿能2024年营收825.82亿元、同比下降36.23%，归母净亏损86.18亿元，为2013年以来首次年度亏损（S11,S25）。亏损来自三重因素：行业供需失衡导致PERC/TOPCon产品价格与毛利率下滑、开工率受限；技术迭代下计提资产减值；参股硅料企业出现投资亏损（S01,S24）。分业务看，硅片及硅棒收入降幅最大（-66.53%），组件及电池为收入主体（S11）。2024上半年毛利率降至7.66%、每股经营现金流为-0.85元（S18）。现金流、资产负债率与同业比较等证据不足，因此无法就这些方面给出结论。",
+  "findings": [
+    {
+      "claim": "2024年营收825.82亿元同比降36.23%，归母净亏损86.18亿元，与预告的82亿至88亿元区间一致",
+      "kind": "fact",
+      "source_ids": [
+        "S11",
+        "S25",
+        "S01",
+        "S24"
+      ],
+      "numbers": [
+        "825.82",
+        "36.23",
+        "86.18",
+        "82",
+        "88"
+      ],
+      "section": "financials"
+    },
+    {
+      "claim": "收入主体是组件及电池663.34亿元（-33.13%），硅片及硅棒82.07亿元（-66.53%）是降幅最大的板块",
+      "kind": "fact",
+      "source_ids": [
+        "S11"
+      ],
+      "numbers": [
+        "663.34",
+        "33.13",
+        "82.07",
+        "66.53",
+        "63.43"
+      ],
+      "section": "business_mix"
+    },
+    {
+      "claim": "2024上半年毛利率7.66%、净利率-13.65%，盈利能力因产品价格下跌而大幅恶化",
+      "kind": "fact",
+      "source_ids": [
+        "S18"
+      ],
+      "numbers": [
+        "7.66",
+        "13.65",
+        "40.41"
+      ],
+      "section": "profitability"
+    },
+    {
+      "claim": "亏损主要由光伏产品端造成：光伏产品毛利率仅0.48%，电站分部毛利率36.91%，后者难以对冲前者的亏损（期次未标注）",
+      "kind": "inference",
+      "source_ids": [
+        "S06"
+      ],
+      "numbers": [
+        "0.48",
+        "36.91",
+        "95.04"
+      ],
+      "section": "model"
+    },
+    {
+      "claim": "管理层将亏损的成因归于外部的供需失衡与价格下跌、技术迭代导致的资产减值，以及内部的HPBC1.0研产销脱节",
+      "kind": "fact",
+      "source_ids": [
+        "S03",
+        "S01",
+        "S24"
+      ],
+      "numbers": [
+        "1.0"
+      ],
+      "section": "risks"
+    },
+    {
+      "claim": "2024上半年每股经营性现金流-0.85元、同比降223.46%，经营现金流与当期亏损方向一致",
+      "kind": "fact",
+      "source_ids": [
+        "S18"
+      ],
+      "numbers": [
+        "0.85",
+        "223.46"
+      ],
+      "section": "cashflow"
+    }
+  ],
+  "data_gaps": [
+    "缺2024年报口径的经营/投资/筹资现金流净额与货币资金，无法判断现金流与利润的匹配度和资金去向（所给现金流表为2025/2026期数据）",
+    "缺2024年末资产负债率、有息负债与到期结构，无法评估偿债压力；仅有2024Q1资产总计1682.88亿元",
+    "缺前五大客户与供应商占比，无法判断集中度与议价关系",
+    "缺同业公司同口径2024年营收、毛利率与减值对比数据，无法做同业比较",
+    "S06主营构成未标注报告期与口径，需核实是否为2024年度分部数据后再用",
+    "缺2024年资产减值计提金额明细及参股硅料企业的具体投资损失金额",
+    "缺2024年ROE、存货与应收周转率等效率指标"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 3,
+  "prompt_tokens": 15089,
+  "completion_tokens": 1785,
+  "cost_cny": 0.047348,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "company",
+  "checklist": {
+    "framework": "company",
+    "title": "公司研究",
+    "sections": {
+      "profile": {
+        "title": "公司概况",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "business_mix": {
+        "title": "业务构成",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S11"
+        ]
+      },
+      "model": {
+        "title": "商业模式",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S06"
+        ]
+      },
+      "products": {
+        "title": "产品与服务",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "moat": {
+        "title": "竞争优势",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "customers_suppliers": {
+        "title": "客户与供应商",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "financials": {
+        "title": "财务表现",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S11",
+          "S25",
+          "S01",
+          "S24"
+        ]
+      },
+      "profitability": {
+        "title": "盈利能力",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S18"
+        ]
+      },
+      "cashflow": {
+        "title": "现金流",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S18"
+        ]
+      },
+      "balance": {
+        "title": "资产负债结构",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "efficiency": {
+        "title": "经营效率",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "peers": {
+        "title": "同业比较",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "risks": {
+        "title": "重大风险",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S03",
+          "S01",
+          "S24"
+        ]
+      },
+      "updates": {
+        "title": "最新动态",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      }
+    },
+    "empty_sections": [
+      "profile",
+      "products",
+      "moat",
+      "customers_suppliers",
+      "balance",
+      "efficiency",
+      "peers",
+      "updates"
+    ],
+    "inference_only_sections": [
+      "model"
+    ],
+    "unsectioned": [],
+    "coverage": 0.429
+  }
+}

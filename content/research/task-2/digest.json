@@ -1,0 +1,1278 @@
+{
+  "schema": 1,
+  "title": "事实核查（强制闸门）：请沿光伏产业链拆解上游硅料、中游硅片电池组件、下游电站与辅材设备的成本结构与价值分配：各环节的钱是怎么赚的、当前瓶颈在哪、利润为什么会在不同环节之间迁移？请给出可核对的公开数据与来源。",
+  "objective": "请沿光伏产业链拆解上游硅料、中游硅片电池组件、下游电站与辅材设备的成本结构与价值分配：各环节的钱是怎么赚的、当前瓶颈在哪、利润为什么会在不同环节之间迁移？请给出可核对的公开数据与来源。",
+  "generated_at": "2026-11-13T04:52:22+00:00",
+  "generated_by": "rules",
+  "queries": [
+    "多晶硅 现金成本",
+    "硅料价格 走势",
+    "多晶硅 产能 产量",
+    "硅料 成本构成 电价",
+    "多晶硅致密料成交价",
+    "硅料环节盈利",
+    "硅片 非硅成本",
+    "单晶硅片 毛利率",
+    "电池片 加工费",
+    "光伏 一体化 成本优势",
+    "硅片 成本拆分",
+    "电池片 盈利",
+    "组件 价格 报价",
+    "组件 单瓦盈利",
+    "光伏组件 成本结构",
+    "组件 出口 海外溢价",
+    "组件环节利润率",
+    "组件招标价格",
+    "光伏电站 系统造价 元/W",
+    "光伏 度电成本 LCOE",
+    "光伏 利用小时数",
+    "新能源 上网电价 政策",
+    "光伏项目 收益率",
+    "集中式光伏 投资成本",
+    "光伏 产业链 利润分配",
+    "光伏 产能过剩 周期",
+    "硅料 涨价 传导",
+    "N型电池 技术迭代 溢价",
+    "光伏 环节毛利对比",
+    "产业链 价值迁移",
+    "光伏玻璃 毛利率",
+    "逆变器 市占率",
+    "光伏胶膜 竞争格局",
+    "光伏支架 单瓦价值量",
+    "辅材 盈利能力",
+    "光伏设备 龙头"
+  ],
+  "source_count": 26,
+  "data_point_count": 64,
+  "sources": [
+    {
+      "source_id": "S01",
+      "title": "没啥，蒙头赌。建立在极致低的工业硅基础上，多晶硅现金成本依旧在42000-43000。注意这是现金成本。那么41000的... - 雪球",
+      "url": "https://www.xueqiu.com/9135070491/318203789",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "7724aa2bd972c9513f5bc436bc9d1ecb33172ef4ac1656d3886b62b032c79eaa",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\7724aa2bd972c9513f5bc436bc9d1ecb33172ef4ac1656d3886b62b032c79eaa.html",
+      "char_count": 641,
+      "query": "多晶硅 现金成本",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S02",
+      "title": "大全能源:2023年多晶硅现金成本仅为42.70元/kg 处于行业领先水平-...",
+      "url": "https://guangfu.bjx.com.cn/news/20240403/1369834.shtml",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "6864cd426f6061e59c7ce0943f48b3b973bf11de2500370248be1248bf1cd72c",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\6864cd426f6061e59c7ce0943f48b3b973bf11de2500370248be1248bf1cd72c.html",
+      "char_count": 507,
+      "query": "多晶硅 现金成本",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S03",
+      "title": "1吨多晶硅成本_多晶硅现货价格_供需库存数据 - 我的钢铁网 (Mysteel)",
+      "url": "https://list1.mysteel.com/zhishi/1ddjgcb.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "abc7b3adb0ce0e654edcf47111499c06c464ca3f859fe8748f7e5c5be7ea5927",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\list1.mysteel.com\\abc7b3adb0ce0e654edcf47111499c06c464ca3f859fe8748f7e5c5be7ea5927.html",
+      "char_count": 6627,
+      "query": "多晶硅 现金成本",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S04",
+      "title": "多晶硅价格网_多晶硅价格网今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1570552.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "d69476593dd7d976812137643cdb7f1b195314fa1033ecc04e388f376b731684",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\d69476593dd7d976812137643cdb7f1b195314fa1033ecc04e388f376b731684.html",
+      "char_count": 6719,
+      "query": "硅料价格 走势",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S05",
+      "title": "硅料价格-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/topics/guiliaojiage/",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "aff9af010c86037a6541272602a3f34873616295e8ff36f273b126dc2d1a57ca",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\aff9af010c86037a6541272602a3f34873616295e8ff36f273b126dc2d1a57ca.html",
+      "char_count": 507,
+      "query": "硅料价格 走势",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S06",
+      "title": "硅料价格连跌6周,最低5.6万元/吨!(2023.12.6)-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/news/20231206/1348280.shtml",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "d63b6ef9c9e1e6d26788bbd80a43d9e94d6758f278ba498d09998732e51aef94",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\d63b6ef9c9e1e6d26788bbd80a43d9e94d6758f278ba498d09998732e51aef94.html",
+      "char_count": 507,
+      "query": "硅料价格 走势",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S07",
+      "title": "多晶硅产量-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/topics/duojingguichanliang/",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "09bf2d158f44570129b9d77c23f15d704b77ee0b8cda9acf065ff31f65b18328",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\09bf2d158f44570129b9d77c23f15d704b77ee0b8cda9acf065ff31f65b18328.html",
+      "char_count": 507,
+      "query": "多晶硅 产能 产量",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S08",
+      "title": "多晶硅产能-北极星太阳能光伏网",
+      "url": "https://guangfu.bjx.com.cn/topics/duojingguichanneng/",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "eada79688d8c82463972c9d8670bf121d3544a374cd1b9f3929dcfecfe72cf8d",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guangfu.bjx.com.cn\\eada79688d8c82463972c9d8670bf121d3544a374cd1b9f3929dcfecfe72cf8d.html",
+      "char_count": 507,
+      "query": "多晶硅 产能 产量",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S09",
+      "title": "上半年多晶硅产量54.1万吨，库存51万吨！",
+      "url": "https://k.sina.com.cn/article_5953740931_162dee08306703peao.html",
+      "site_name": "新浪网",
+      "author": "滚动消息",
+      "published_at": "2026-07-22T21:06",
+      "sha256": "e551c52a6104588729fcb6642f855f95d44b93405b8dd96d4d3adaa703ef8cb6",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\k.sina.com.cn\\e551c52a6104588729fcb6642f855f95d44b93405b8dd96d4d3adaa703ef8cb6.html",
+      "char_count": 2058,
+      "query": "多晶硅 产能 产量",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S10",
+      "title": "东方日升：异质结电池非硅成本约为0.21元/w",
+      "url": "https://www.163.com/dy/article/JBBH15II0519QIKK.html",
+      "site_name": "",
+      "author": "网易",
+      "published_at": "2024-09-05T18:45",
+      "sha256": "2cbadaf8b92bb19c6b39a418d9a86b3f594306bed4f48f2e0f093abcd25bb63e",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.163.com\\2cbadaf8b92bb19c6b39a418d9a86b3f594306bed4f48f2e0f093abcd25bb63e.html",
+      "char_count": 5435,
+      "query": "硅片 非硅成本",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S11",
+      "title": "科学网—英利集团成为全球非硅成本最低企业",
+      "url": "https://news.sciencenet.cn/sbhtmlnews/2009/1/215201.html?id=215201",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "7ee1f5fb331d2cde995a95622561542018dc175b82b1b177cbad70d7d730ae9e",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\news.sciencenet.cn\\7ee1f5fb331d2cde995a95622561542018dc175b82b1b177cbad70d7d730ae9e.html",
+      "char_count": 716,
+      "query": "硅片 非硅成本",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S12",
+      "title": "光伏硅料亏本甩卖，吨价已较高点下跌近九成",
+      "url": "https://www.163.com/dy/article/J1P84K600534A4SC.html",
+      "site_name": "",
+      "author": "网易",
+      "published_at": "2024-05-09T20:02",
+      "sha256": "c4b381abc9b66fc4dc837ce4344240cdc881c463b9c2c22f2cb459a6460fa34e",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.163.com\\c4b381abc9b66fc4dc837ce4344240cdc881c463b9c2c22f2cb459a6460fa34e.html",
+      "char_count": 6734,
+      "query": "硅片 非硅成本",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S13",
+      "title": "硅片毛利率降至负数，TCL中环三个季度亏掉近60亿",
+      "url": "https://finance.sina.com.cn/jjxw/2024-08-24/doc-incktsmm7039192.shtml",
+      "site_name": "",
+      "author": "界面新闻",
+      "published_at": "2024-08-24T14:50",
+      "sha256": "e2898546efd691f300f0b47b1ca5e0914462ec5bba607ac7ecdb949e25990244",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\finance.sina.com.cn\\e2898546efd691f300f0b47b1ca5e0914462ec5bba607ac7ecdb949e25990244.html",
+      "char_count": 4847,
+      "query": "单晶硅片 毛利率",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S14",
+      "title": "2024第三季度单晶硅相关企业毛利率排行榜 - 南方财富网",
+      "url": "http://www.southmoney.com/guangfu/202503/448777.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "4203771ea1f23defab86082354353e9250875f33c51b05c116a30e6eaeddfa9d",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.southmoney.com\\4203771ea1f23defab86082354353e9250875f33c51b05c116a30e6eaeddfa9d.html",
+      "char_count": 2273,
+      "query": "单晶硅片 毛利率",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S15",
+      "title": "弘元绿能(603185) 经营分析_F10_同花顺金融服务网",
+      "url": "http://basic.10jqka.com.cn/603185/operate.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "6565aafb757b84a8a868b537b9b3a035919e22cf190ff8d9dba62522355b74e3",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\basic.10jqka.com.cn\\6565aafb757b84a8a868b537b9b3a035919e22cf190ff8d9dba62522355b74e3.html",
+      "char_count": 112522,
+      "query": "单晶硅片 毛利率",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S16",
+      "title": "éçµæ± å å·¥ç»è£è´¹å¤å°é±ä¸ä¸ª_ç¾åº¦é®ä¸é®",
+      "url": "https://wen.baidu.com/question/378394919349991604.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "8c4e1e6e4b4d33d55b97801060bcb7824cd0eeaaa75920b50fe100b205367745",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\wen.baidu.com\\8c4e1e6e4b4d33d55b97801060bcb7824cd0eeaaa75920b50fe100b205367745.html",
+      "char_count": 1739,
+      "query": "电池片 加工费",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S17",
+      "title": "éçµæ± å å·¥éè¦æèµå¤å°é±_ç¾åº¦é®ä¸é®",
+      "url": "https://wen.baidu.com/question/1441111973674792979.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "a8933d51df7de88eab229a4d2a23b58f856e25e4dac30d3799b0f8a4f1cb900a",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\wen.baidu.com\\a8933d51df7de88eab229a4d2a23b58f856e25e4dac30d3799b0f8a4f1cb900a.html",
+      "char_count": 2067,
+      "query": "电池片 加工费",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S18",
+      "title": "ä¸å¨çµæ± çº§ç¢³é¸éçå å·¥è´¹å¤å°é±_ç¾åº¦é®ä¸é®",
+      "url": "https://wen.baidu.com/question/1956916568441602548.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "b922f2641608ceda2d8c9c5357171176a1d29d03adb988c1cdad321fa7858498",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\wen.baidu.com\\b922f2641608ceda2d8c9c5357171176a1d29d03adb988c1cdad321fa7858498.html",
+      "char_count": 2764,
+      "query": "电池片 加工费",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S19",
+      "title": "光伏组件实时行情_光伏组件实时行情今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1565618.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "7121e7bda82f70ebf92ed6f999b1e0b8bc4b2bbd0779e66c1d56ffd76ce81574",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\7121e7bda82f70ebf92ed6f999b1e0b8bc4b2bbd0779e66c1d56ffd76ce81574.html",
+      "char_count": 6872,
+      "query": "组件 价格 报价",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S20",
+      "title": "组件价格查询_2026.11.13组件行情-水泥网",
+      "url": "https://price.ccement.com/photovoltaic/Price_list-1-s0-e0-p350000-m1-k0-b0.html",
+      "site_name": "水泥网",
+      "author": "",
+      "published_at": "",
+      "sha256": "847abce1a64338245e2ba10a87bb037e3d3192c89b37ca0c227f4bdf7f1d27bb",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\price.ccement.com\\847abce1a64338245e2ba10a87bb037e3d3192c89b37ca0c227f4bdf7f1d27bb.html",
+      "char_count": 359,
+      "query": "组件 价格 报价",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S21",
+      "title": "光伏组件今日价格一览表_今日光伏组件价格行情_全国现货报价 - 我的钢铁网 (Mysteel)",
+      "url": "https://list1.mysteel.com/zhishi/gfzjjrjgylb.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "eccecb9ffd32b3f7179415cd786cb70329a7b03485e86bf5cb4be6a04e5d7cf1",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\list1.mysteel.com\\eccecb9ffd32b3f7179415cd786cb70329a7b03485e86bf5cb4be6a04e5d7cf1.html",
+      "char_count": 4394,
+      "query": "组件 价格 报价",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S22",
+      "title": "光伏行业周报：电池组件单瓦盈利持续改善 美国装机数据向好__新浪财经_新浪网",
+      "url": "http://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/lastest/rptid/740511403202/index.phtml",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "c86825ca1d13fac40d909b2a686a1c470b259534dad92e8a12a094d4b50310b0",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\stock.finance.sina.com.cn\\c86825ca1d13fac40d909b2a686a1c470b259534dad92e8a12a094d4b50310b0.html",
+      "char_count": 2049,
+      "query": "组件 单瓦盈利",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S23",
+      "title": "天合光能(688599)：组件单瓦盈利环比提升 分布式系统增长亮眼__新浪财经_新浪网",
+      "url": "http://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/lastest/rptid/695985284597/index.phtml",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "15f59d42968983089ca601a8fe3a4c8baba0f929672a8d0add64d891b3fc9a96",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\stock.finance.sina.com.cn\\15f59d42968983089ca601a8fe3a4c8baba0f929672a8d0add64d891b3fc9a96.html",
+      "char_count": 1454,
+      "query": "组件 单瓦盈利",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S24",
+      "title": "光伏组件单瓦盈利的思考",
+      "url": "http://news.sohu.com/a/542122361_121123896",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "f741676f407086a2267773c55c887ee1ec9c4fc3c93abaa93116bc0099ddc6ff",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\news.sohu.com\\f741676f407086a2267773c55c887ee1ec9c4fc3c93abaa93116bc0099ddc6ff.html",
+      "char_count": 1273,
+      "query": "组件 单瓦盈利",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S25",
+      "title": "光伏组件成本结构解析：当前价格与材料构成_新能源车_什么值得买",
+      "url": "https://post.smzdm.com/p/anvpdx93/",
+      "site_name": "什么值得买",
+      "author": "",
+      "published_at": "2026-05-11T13:08",
+      "sha256": "9a77d4a7a908e43752ce9d4101d7bd50f585f0e89da04f87b2bc02bb4610e22f",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\post.smzdm.com\\9a77d4a7a908e43752ce9d4101d7bd50f585f0e89da04f87b2bc02bb4610e22f.html",
+      "char_count": 1169,
+      "query": "光伏组件 成本结构",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S26",
+      "title": "2024年中国光伏组件行业价值链现状及成本结构分析 电池片成本占比较高且具有附加值优势_研究报告 - 前瞻产业研究院",
+      "url": "https://bg.qianzhan.com/report/detail/300/240611-fd8d45f6.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "de9924103139b3bd45993e66f236d1cdee6930ab7d7162cd26cfab09a57a4b9b",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\bg.qianzhan.com\\de9924103139b3bd45993e66f236d1cdee6930ab7d7162cd26cfab09a57a4b9b.html",
+      "char_count": 3987,
+      "query": "光伏组件 成本结构",
+      "verification_status": "unverified"
+    }
+  ],
+  "data_points": [
+    {
+      "source_id": "S01",
+      "text": "风险度保持100%做期货，还能剩下200万，🐮",
+      "numbers": [
+        "100",
+        "200"
+      ]
+    },
+    {
+      "source_id": "S03",
+      "text": "Si≥99.9999%",
+      "numbers": [
+        "99.9999"
+      ]
+    },
+    {
+      "source_id": "S03",
+      "text": "Mysteel：多晶硅：N型：致密料：Si≥99.9999%：中间价：中国（日）",
+      "numbers": [
+        "99.9999"
+      ]
+    },
+    {
+      "source_id": "S03",
+      "text": "现货价格整体维持平稳运行，N型致密料报价43元/kg，N型混包料报价40元/千克。",
+      "numbers": [
+        "43",
+        "40"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "期货PS2711合约交易手续费为成交金额的万分之一，日内平今仓手续费为万分之二点五，最小开仓5手、平仓1手，单日开仓上限200手。",
+      "numbers": [
+        "2711",
+        "5",
+        "1",
+        "200"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "碳酸锂期货LC2711合约交易手续费及日内平今仓手续费均为成交金额的万分之零点八，最小开仓2手、平仓1手，单日开仓上限800手。",
+      "numbers": [
+        "2711",
+        "2",
+        "1",
+        "800"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "市场N型致密料38-43元/千克；",
+      "numbers": [
+        "38",
+        "43"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "N型颗粒硅37-41元/千克；",
+      "numbers": [
+        "37",
+        "41"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "N型混包料37-43元/千克。",
+      "numbers": [
+        "37",
+        "43"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "【Mysteel工业硅收盘评述】11月10日工业硅主力2612合约收盘价格8485元，跌幅0.18%，单日减仓2004手。",
+      "numbers": [
+        "11",
+        "10",
+        "2612",
+        "8485",
+        "0.18",
+        "2004"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "上半年多晶硅产量54.1万吨，库存51万吨！",
+      "numbers": [
+        "54.1",
+        "51"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "7月22日，在浙江宁波举办的“2026光伏行业供应链发展（宁波）研讨会”上，中国光伏行业协会/多晶硅材料制备技术国家工程实验室监事长/主任严大洲做《多晶硅市场供应与产业发展》主题报告。",
+      "numbers": [
+        "7",
+        "22",
+        "2026"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "报告显示，2025年全球多晶硅在产28家，有效产能为365万吨/年，同比增加7.5%；",
+      "numbers": [
+        "2025",
+        "28",
+        "365",
+        "7.5"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "全球多晶硅产量为148.5万吨，同比",
+      "numbers": [
+        "148.5"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "，其中太阳能级块状硅约为116.1万吨，颗粒硅约为26.9万吨，在全球多晶硅总产量中的占比分别为78.2%和18.1%。",
+      "numbers": [
+        "116.1",
+        "26.9",
+        "78.2",
+        "18.1"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "，严大洲预计全球多晶硅在产16家企业，总产能约为365.8万吨/年。",
+      "numbers": [
+        "16",
+        "365.8"
+      ]
+    },
+    {
+      "source_id": "S10",
+      "text": "东方日升：异质结电池非硅成本约为0.21元/w",
+      "numbers": [
+        "0.21"
+      ]
+    },
+    {
+      "source_id": "S10",
+      "text": "从目前满产产线的电池生产数据来看，公司异质结电池非硅成本约为0.21元/w。",
+      "numbers": [
+        "0.21"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "2008年，英利实现销售收入85亿元，利润达13.5亿元，实现出口10.3亿美元，实际利用外资6.53亿美元。",
+      "numbers": [
+        "2008",
+        "85",
+        "13.5",
+        "10.3",
+        "6.53"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "投资近5亿元建成我国第一座使用光伏玻璃幕墙并网发电的五星级酒店已营业。",
+      "numbers": [
+        "5"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "其中，N型棒状硅成交价格区间为4.3万-4.8万元/吨，成交均价为4.53万元/吨，环比下跌7.93%。",
+      "numbers": [
+        "4.3",
+        "4.8",
+        "4.53",
+        "7.93"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "P型致密料成交价格区间为3.8万-4.3万元/吨，成交均价为3.9万元/吨，环比下跌8.88%。",
+      "numbers": [
+        "3.8",
+        "4.3",
+        "3.9",
+        "8.88"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "N型颗粒硅成交价格区间为3.9万-4.1万元/吨，成交均价为4万元/吨，环比下降6.98%。",
+      "numbers": [
+        "3.9",
+        "4.1",
+        "4",
+        "6.98"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "目前，N/P棒状硅价差为0.43万元/吨。",
+      "numbers": [
+        "0.43"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "截至本周，P型硅料均价已跌至4万元/吨以下。",
+      "numbers": [
+        "4"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "N型颗粒硅最低价也已跌破4万关口，棒状硅最低价逼近该水平。",
+      "numbers": [
+        "4"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "硅片毛利率降至负数，TCL中环三个季度亏掉近60亿",
+      "numbers": [
+        "60"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "月23日晚，TCL中环发布财报，其上半年实现营业总收入162.13亿元，同比下降53.54%；",
+      "numbers": [
+        "23",
+        "162.13",
+        "53.54"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "归母净利润亏损30.64亿元，上年同期为盈利45.36亿元。",
+      "numbers": [
+        "30.64",
+        "45.36"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "此前，TCL中环预告亏损29亿-32亿元，实际数据约是预告的中位数。",
+      "numbers": [
+        "29",
+        "32"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "今年一季度，TCL中环亏损8.8亿元。",
+      "numbers": [
+        "8.8"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "以此计算，二季度亏损21.84亿元。",
+      "numbers": [
+        "21.84"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "毛利率43.01%。",
+      "numbers": [
+        "43.01"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "3月28日收盘消息，神工股份3日内股价上涨1.82%，最新报24.170元，成交额1.29亿元。",
+      "numbers": [
+        "3",
+        "28",
+        "1.82",
+        "24.170",
+        "1.29"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "毛利率34.16%。",
+      "numbers": [
+        "34.16"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "3月28日收盘消息，银星能源开盘报价5.04元，收盘于4.870元。",
+      "numbers": [
+        "3",
+        "28",
+        "5.04",
+        "4.870"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "7日内股价下跌9.65%，总市值为44.7亿元。",
+      "numbers": [
+        "7",
+        "9.65",
+        "44.7"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "毛利率33.23%。",
+      "numbers": [
+        "33.23"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "可以直接输入你想要的问句啦，比如输入“近一周涨幅超过30%的股票”赶紧行动吧！",
+      "numbers": [
+        "30"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "价格】210单/双面TOPcon分布式组件0.71-0.735元/瓦。",
+      "numbers": [
+        "210",
+        "0.71",
+        "0.735"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "210R双面TOPcon分布式组件0.695-0.725元/瓦；",
+      "numbers": [
+        "210",
+        "0.695",
+        "0.725"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "210R双面BC分布式组件0.74-0.77元/瓦。",
+      "numbers": [
+        "210",
+        "0.74",
+        "0.77"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "产能利用率环比涨0.6%】2026年10月",
+      "numbers": [
+        "0.6",
+        "2026",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "国内企业产能利用率44.3%，与9月相比涨0.6%。",
+      "numbers": [
+        "44.3",
+        "9",
+        "0.6"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "产能利用率在45%左右，环比上涨0.7%。",
+      "numbers": [
+        "45",
+        "0.7"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "据PVInfoLink 6 月14 日报价，多晶硅致密料报78 元/kg，较23Q1 均价下跌62%；",
+      "numbers": [
+        "6",
+        "14",
+        "78",
+        "23",
+        "1",
+        "62"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "182mmP 型硅片报3.05 元/片，较23Q1 均价下跌46%；",
+      "numbers": [
+        "182",
+        "3.05",
+        "23",
+        "1",
+        "46"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "182mmPERC 电池/组件分别报0.78/1.45 元/W，分别较23Q1 均价下跌23%/17%。",
+      "numbers": [
+        "182",
+        "0.78",
+        "1.45",
+        "23",
+        "1",
+        "17"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "按Solarzoom 6 月14 日的价格水平测算，硅料/硅片/电池/组件/一体化组件的单瓦净利分别为0.057/0.067/0.168/-0.061/0.212 元/W ， 对应净利率33%/18%/24%/-5%/16%。",
+      "numbers": [
+        "6",
+        "14",
+        "0.057",
+        "0.067",
+        "0.168",
+        "0.061",
+        "0.212",
+        "33",
+        "18",
+        "24",
+        "5",
+        "16"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "2023 年4 月，美国新增光伏装机1.86GW，同比增长20%，环比减少35%；",
+      "numbers": [
+        "2023",
+        "4",
+        "1.86",
+        "20",
+        "35"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "1-4 月累计新增装机8.86GW，同比增长34%。",
+      "numbers": [
+        "1",
+        "4",
+        "8.86",
+        "34"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "事件：公司发布2021 年业绩预告，公司预计2021 年实现归母净利润17.2-20.5 亿元，同增39.9-66.8%，其中2021Q4 实现归母净利润5.64-8.94 亿元，同增41.7-124.6%，环增25.1-98.2%。",
+      "numbers": [
+        "2021",
+        "17.2",
+        "20.5",
+        "39.9",
+        "66.8",
+        "4",
+        "5.64",
+        "8.94",
+        "41.7",
+        "124.6",
+        "25.1",
+        "98.2"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "鉴于2021Q4 组件售价提升，硅片价格下行，户用装机超预期，我们预计公司业绩在中值偏上，则2021 年归母净利润18.5-19 亿元，略超市场预期。",
+      "numbers": [
+        "2021",
+        "4",
+        "18.5",
+        "19"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "我们预计公司2021年组件出货25GW 左右，同增56%，其中2021Q4 出货8GW 左右，同增31%，环增27%。",
+      "numbers": [
+        "2021",
+        "25",
+        "56",
+        "4",
+        "8",
+        "31",
+        "27"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "我们预计到2021 年底公司拥有电池、组件产能35GW、50GW，同比+180%、+125%，电池组件一体化比例提升至70%。",
+      "numbers": [
+        "2021",
+        "35",
+        "50",
+        "180",
+        "125",
+        "70"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "扩产加速一体化布局，我们预计公司2022 年组件出货40-50GW，市占率提升至18%左右，叠加硅料价格下行，看好2022年组件量利双升。",
+      "numbers": [
+        "2022",
+        "40",
+        "50",
+        "18"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "近期年报和一季报陆续公布，多家组件企业的去年Q4和今年Q1的组件单瓦盈利情况也陆续从各渠道得以获知，略作收集如下：",
+      "numbers": [
+        "4",
+        "1"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "☞☞25.7%！",
+      "numbers": [
+        "25.7"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "波普压哨三分杀死比赛：詹姆斯缺阵、落后16分，76人靠替补37分完成逆转",
+      "numbers": [
+        "16",
+        "76",
+        "37"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "六座带三零重力座椅，新款问界M8全家出行体验有哪些升级",
+      "numbers": [
+        "8"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "全新腾势N8，26.99万起大五座，纯电续航970km，易三方零百2.98s",
+      "numbers": [
+        "8",
+        "26.99",
+        "970",
+        "2.98"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "避坑，买京东plus，不要超过49元",
+      "numbers": [
+        "49"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡",
+      "numbers": [
+        "10",
+        "100"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "千元极空间NAS Z4Air 适合谁？",
+      "numbers": [
+        "4"
+      ]
+    }
+  ],
+  "notes": [
+    "本文件由规则汇编生成，**没有使用模型**：不含分析、对比、归因与结论。",
+    "候选数据点是从正文里原样摘出的句子，**未做事实核查**，引用前必须回原文确认。",
+    "同一篇资料可能被多个检索词命中，已按 URL 去重。",
+    "“跨来源比对”只做机械比对（上下文相似度 + 数字是否相同），标出“多来源印证”与“两处说法不一致”，**不判断谁对**。"
+  ],
+  "meta": {
+    "upstream_stages": 9,
+    "excerpts": {
+      "S01": "作者：\n武士刀\n发布于:\n2024-12-26 10:04\nAndroid\n转发：0\n回复：24\n喜欢：1\n没啥，蒙头赌。建立在极致低的工业硅基础上，多晶硅现金成本依旧在42000-43000。注意这是现金成本\n。那么41000的多晶硅，我肯定要蒙头赌的，死了就算！我坚信：杀头的买卖有人做，亏本的买卖没人做\n全部讨论\n小明同学1\n2024-12-26 10:17\n亏自己钱肯定不做啊，亏别人钱为啥不做\n风吹叶\n2024-12-26 10:34\n风险度保持100%做期货，还能剩下200万，🐮\nwater2017\n2024-12-26 11:02\n上市第一天。没有趋势可以参考。\n你也不分批建仓。\n一把梭哈，赌的痛快。\nsirxvmz\n2024-12-26 10:22\n太不了解中国企业的尿性了，亏本的生意一样做，中国企业最喜欢的就是熬死同行了\n阿帅养基\n2024-12-26 10:18\n多的棕榈油，和刀哥成对手盘了\n不外于吾心\n2024-12-26 13:02\n这不是今天回不了本尾盘要减仓了\ntyywl\n2024-12-26 12:11\n11月是交货合约，怎么你想买现货不成？\n哈尼哈尼笑嘻嘻\n2024-12-26 11:51\n牛逼中的牛逼啊！赌得这么猛，一般人的小心脏真的受不了啊……\n进化论2026\n2024-12-26 11:11\n做空国债！\n清泉洗心之从头再来\n2024-12-26 10:58\n多晶硅过剩，目前在关门去产能，一旦市场发生好转，立马开工，价格又要砸下来",
+      "S02": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"f61ced43e4cbfaed65b1d5564f1dc90d\",\"traceid\":\"276077c117945452400434974ee5f7\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-oEFTZiJ+yqa5i02HInY+hRUUOgw6iSq47DfZjsuKAP+KJT70ICRJBTYNEO0kFNIGXMbZdtHbpqVr1o4nsl53xJ3jMNeHsNNVWztshjLEFr0=\",\"_waf_698b2709\":0}",
+      "S03": "1吨多晶硅成本\n搜索\n今日价格\n实时快讯\n热点资讯\n登录\n注册\n当前位置：\n我的钢铁网\n>\n多晶硅\n>\n1吨多晶硅成本\n品名\n型号\n规格\n最低价\n最高价\n中间价\n走势\n多晶硅\nN型致密料\nSi≥99.9999%\n38\n43\n40.5\n多晶硅\nN型颗粒硅\nSi≥99.9999%\n37\n41\n39\n多晶硅\nN型混包料\nSi≥99.9999%\n37\n43\n40\n多晶硅\nN型复投料\nSi≥99.9999%\n38\n43\n40.5\n查看更多价格\n2026-10-30\n多晶硅\n价格指数\nMysteel：多晶硅：N型：致密料：Si≥99.9999%：中间价：中国（日）\n40.5\n(0.00)\n多晶硅：致密料：单晶用料：改良西门子法：N型：市场价：中国（日）\n42\n(0.00)\n多晶硅：产能利用率：中国（月）\n38.21\n(3.35)\n多晶硅：产量：中国（月）\n105000\n(9200.00)\n多晶硅：库存：中国（周）\n36.59\n(0.19)\n1吨多晶硅成本\n相关价格\n-\n重置\n确认\n按综合排序\n按综合排序\n按最新排序\n国内\n多晶硅\n价格行情（2026-10-29 10:28）\n多晶硅\n2026-10-29 10:28\n国内\n多晶硅\n价格行情（2026-10-28 10:23）\n多晶硅\n2026-10-28 10:23\n国内\n多晶硅\n价格行情（2026-10-27 10:33）\n多晶硅\n2026-10-27 10:33\n国内\n多晶硅\n价格行情（2026-10-26 10:18）\n多晶硅\n2026-10-26 10:18\n国内\n多晶硅\n价格行情（2026-10-23 10:20）\n多晶硅\n2026-10-23 10:20\n国内\n多晶硅\n价格行情（2026-10-22 10:27）\n多晶硅\n2026-10-22 10:27\n国内\n多晶硅\n价格行情（2026-10-21 10:25）\n多晶硅\n2026-10-21 10:25\n国内\n多晶硅\n价格行情（2026-10-20 10:26）\n多晶硅\n2026-10-20 10:26\n国内\n多晶硅\n价格行情（2026-10-19 10:37）\n多晶硅\n2026-10-19 10:37\n国内\n多晶硅\n价格行情（2026-10-16 10:25）\n多晶硅\n2026-10-16 10:25\n点击加载更多\n快讯播报\n1吨多晶硅成本\n快讯\n2026-10-23\n17:18\n【Mysteel晶硅光伏周评2026\n1\n023】本周国内\n多晶硅\n现货价格整体维持平稳运行，N型致密料报价43元/kg，N型混包料报价40元/千克。硅料坚守全\n成本\n销售底线，挺价意愿明确；下游采购偏谨慎，以刚需补库为主，或从期现商、贸易商进行补库。下游大规模集中采购尚未启动，新订单落地节奏偏慢，成交多集中于前期订单交付，市场观望情绪浓厚。当前行情核心矛盾在于：行业自律共识托底",
+      "S04": "碳酸锂\n89200\n-200.00\n-0.22%\n磷酸铁锂\n41600\n-200.00\n-0.48%\n金属锂\n600000\n0.00\n0.00%\n硫酸镍\n24350\n0.00\n0.00%\n三元材料\n120000\n2000.00\n1.69%\n三元前驱体\n92000\n0.00\n0.00%\n多晶硅\n42\n0.00\n0.00%\n电池片\n0.62\n0.00\n0%\n锂电池废料\n16340\n0.00\n0.00%\n锂电池负极片\n26841\n0.00\n0.00%\n电池硫酸锰\n7540\n0.00\n0.00%\n工业硅\n8850\n0.00\n0.00%\n硫酸钴\n48000\n2000.00\n4.35%\n磷酸铁\n16200\n0.00\n0.00%\n锂辉石精矿\n940\n0.00\n0.00%\n电解锰\n18100\n0.00\n0.00%\n硅片\n1.41\n0.00\n0.00%\n光伏组件\n0.66\n0.00\n0%\n人造石墨\n26200\n0.00\n0.00%\n天然石墨\n32000\n0.00\n0.00%\n三元电芯\n0.56\n0.00\n0%\n锂电池回收\n41802\n-5550.00\n-11.72%\n镍生铁\n1050\n0.00\n0.00%\n碳酸钴\n135\n0.00\n0.00%\n镍矿\n689\n0.00\n0.00%\n多晶硅价格网\n当前位置：\n我的钢铁网\n>\n新能源\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n新能源\n>\n多晶硅价格网\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n多晶硅价格网\n快讯\n2026-11-11\n16:56\n2026年11月11日，广州期货交易所发布公告，明确\n多晶硅\n期货PS2711合约交易手续费为成交金额的万分之一，日内平今仓手续费为万分之二点五，最小开仓5手、平仓1手，单日开仓上限200手。碳酸锂期货LC2711合约交易手续费及日内平今仓手续费均为成交金额的万分之零点八，最小开仓2手、平仓1手，单日开仓上限800手。\n2026-11-11\n10:42\n【2026年11月11日\n多晶硅\n价格】\n多晶硅\n市场N型致密料38-43元/千克；N型颗粒硅37-41元/千克；N型混包料37-43元/千克。\n2026-11-10\n15:43\n【Mysteel工业硅收盘评述】11月10日工业硅主力2612合约收盘价格8485元，跌幅0.18%，单日减仓2004手。今日工业硅市场现货价格维稳，日内期货盘面震荡运行。期货方面，近期无宏观利好消息驱动，叠加近期下游\n多晶硅\n企业召开会议，督促减产执行力度，需求收窄预期影响，工业硅盘面弱势整理。上游工厂当前多交付前期订单为主；当前持货期现商及贸易商较少，基差报价走强；临近仓单集中注销日，部分持有老仓单的硅企及期现商有让价出货操作；下游需求侧收窄，原料维持刚需采买。开工方面，西北维持稳定生产，西南首批减产已落地。",
+      "S05": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"f7e2601df41895e2e44a1b6d4cba4a20\",\"traceid\":\"2760823617945452684237321ee54e\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-ffwu+AhQ3zKmU2YIynmP9pNxA1cKnRGpjsfgatu2br7qrg0eg2h7OPfaLFzpSBuH8wvSRIjjZbcAwLUV0uNh7sjdn6uaDgogyusiRgrzy0A=\",\"_waf_698b2709\":0}",
+      "S06": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"a27c3644ba1effd2f9017adf3d64b5ed\",\"traceid\":\"276077a917945452710663028ef66a\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-HZirzXFxxPgSb/wg0BBsW6dJNR6F4UyxvGnsoBbm8K/KSF/zHdVx/uiSfUoSN1T3mSJy0QN0Lm3iI13WLFJ1DslGbczq53gf/I2z7sU8Cz0=\",\"_waf_698b2709\":0}",
+      "S07": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"1370cd68575a09f3bc0c43c5ea1f4ad5\",\"traceid\":\"276077f517945453243356252e340e\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-hKtqC5OW3OCe3at1ZUD0eXoywmuCLL/Tl209U38q+nVePeI3trarIgDME4rSpvMwQPMden/OqmjB7oehdE4oSkwJK6ouMzRR4xPNeC5xf44=\",\"_waf_698b2709\":0}",
+      "S08": "appkey: \"CF_APP_WAF\", // 应用标识var AC_Opt = {userUserId: requestInfo.userUserId\nvar requestInfo = {\"data\":\"\",\"region\":\"cn\",\"sceneId\":\"19x5u7lo\",\"token\":\"9f27e7882ebaa730d226bb68110c23be\",\"traceid\":\"3ccdc17517945453269711335e85db\",\"type\":\"GET\",\"userId\":\"HpadJlQnz2zSKcSmjXBaqQvjYUvP4jMJIk/ZwGNDNiM=\",\"userUserId\":\"eZfhZLVeFbhiB15Q66VSz4JPR528C4zjlZHqngB2BeU=\"};\n{\"_waf_3d7faf79\":\"1-5xQvQbrFFdpvjn5DrEkw6Fgo/AeHUV2bTeAcTzXnFMr3ZlV0KW+p22hr0mznA+J9x6C63zTC3xs7elZp39sC9UYpcKqf7cR8t+2bstBmdOY=\",\"_waf_698b2709\":0}",
+      "S09": "新浪首页\n新闻\n体育\n财经\n娱乐\n科技\n博客\n图片\n专栏\n更多\n汽车\n教育\n时尚\n女性\n星座\n健康\n房产\n历史\n视频\n收藏\n育儿\n读书\n佛学\n游戏\n旅游\n邮箱\n导航\n移动客户端\n新浪微博\n新浪新闻\n新浪财经\n新浪体育\n新浪众测\n新浪博客\n新浪视频\n新浪游戏\n天气通\n我的收藏\n注册\n登录\n新浪看点\n正文\n新浪新闻客户端\n新浪新闻公众号\n新浪新闻视频号\n新浪新闻抖音\n新浪新闻快手\n新浪新闻小红书\n新浪新闻B站\n热搜时代小宇宙\n×\n点击任意位置关闭\n上半年多晶硅产量54.1万吨，库存51万吨！\n上半年多晶硅产量54.1万吨，库存51万吨！\n2026年07月22日 21:06\n新浪网\n作者\n滚动消息\n缩小字体\n放大字体\n收藏\n微博\n微信\n分享\n0\n腾讯QQ\nQQ空间\n（来源：数字新能源DNE）\n7月22日，在浙江宁波举办的“2026光伏行业供应链发展（宁波）研讨会”上，中国光伏行业协会/多晶硅材料制备技术国家工程实验室监事长/主任严大洲做《多晶硅市场供应与产业发展》主题报告。\n报告显示，2025年全球多晶硅在产28家，有效产能为365万吨/年，同比增加7.5%；全球多晶硅产量为148.5万吨，同比\n降低24.1%\n，其中太阳能级块状硅约为116.1万吨，颗粒硅约为26.9万吨，在全球多晶硅总产量中的占比分别为78.2%和18.1%。\n2026年上半年，中国多晶硅产量约\n54.1万吨\n，同比\n下降9.3%\n，多晶硅企业平均开工率\n33.8%\n。截至6月底，国内多晶硅库存总量约为\n51万吨\n，\n相当于近半年的产量\n。严大洲预计7月产量\n10.2万吨。\n展望2026年全年\n，严大洲预计全球多晶硅在产16家企业，总产能约为365.8万吨/年。产量方面，今年全球多晶硅产量预计为137万吨，同比减少7.7%。其中太阳能级块状硅约为106.1万吨，颗粒硅约为25万吨，在全球多晶硅总产量中分别占比72.3%和23.4%。其中，中国在产企业11家，总产能为350万吨/年，预计全年产量约\n125万吨\n，同比下降约\n8.5%\n。\n国内供应方面，预计今年全年供应约175万吨（含电子级），其中自产约125万吨，年出库存约为50万吨。\n下游需求端方面，严大洲预计2026年国内硅片产量580GW，消耗多晶硅约145万吨，预计2026年底硅片有效产能为\n1200GW\n，产能利用率约为\n48.3%\n。\n报告中，严大洲对多晶硅产业发展进行了整体回顾与展望。面对当前多晶硅发展困境，严大洲提出5点建议：\n一是做好多晶硅产业顶层设计，严控新增产能，淘汰落后产能，严格执行行业准入标准，通过\n市场化手段和环保、能耗指标、生产要素差异化等政策倒逼高耗能、低质、低效的落后产能退出\n；\n二是坚持“以销定产”，自律减产，优先消化现有库存，保持低负荷运行，\n避免恶性价格战\n；\n三是加大核心技术研发，推动产品向高端领域转型",
+      "S10": "网易首页\n应用\n网易新闻\n网易公开课\n网易红彩\n网易严选\n邮箱大师\n网易云课堂\n快速导航\n新闻\n国内\n国际\n王三三\n体育\nNBA\nCBA\n综合\n中超\n国际足球\n英超\n西甲\n意甲\n娱乐\n明星\n电影\n电视\n音乐\n封面故事\n财经\n股票\n原创\n智库\n汽车\n购车\n车型库\n科技\n网易智能\n原创\nIT\n互联网\n通信\n时尚\n艺术\n旅游\n手机\n/\n数码\n惊奇科技\n易评机\n家电\n房产\n/\n家居\n北京房产\n上海房产\n广州房产\n楼盘库\n设计师库\n案例库\n教育\n留学\n高考\n查看网易地图\n登录\n注册免费邮箱\n注册VIP邮箱（特权邮箱，付费）\n免费下载网易官方手机邮箱应用\n安全退出\n移动端\n网易公开课\nTED\n中国大学视频公开课\n国际名校公开课\n赏课·纪录片\n付费精品课程\n北京大学公开课\n英语课程学习\n网易严选\n新人特价\n9.9专区\n新品热卖\n人气好物\n居家生活\n服饰鞋包\n母婴亲子\n美食酒水\n支付\n一卡通充值\n一卡通购买\n我的网易支付\n网易跨境支付\n邮箱\n免费邮箱\nVIP邮箱\n企业邮箱\n免费注册\n客户端下载\n网易首页\n>\n网易号\n> 正文\n申请入驻\n东方日升：异质结电池非硅成本约为0.21元/w\n2024-09-05 18:45:52　来源:\n金融界\n北京\n举报\n0\n分享至\n用微信扫码二维码\n分享至好友和朋友圈\n金融界9月5日消息，有投资者在互动平台向东方日升提问：亲爱的董秘你好，请问贵司HJT异质结和topcon总体成本相差多少？\n公司回答表示：亲爱公司对于异质结技术已有多年技术积累。从目前满产产线的电池生产数据来看，公司异质结电池非硅成本约为0.21元/w。旗下超低碳210 HJT 伏曦系列产品，在工艺上采用了独特的低温双面钝化接触、升连接无应力互联技术、双面微晶技术；在材料上采用了210半片薄硅片、低银含浆料、钢边框等材料。在拥有高功率和高转换效率的同时，伏曦系列产品应用升连接无应力互联技术、薄硅片、低银含浆料等降本手段控制其成本，使该系列产品的度电成本有着较大优势。异质结技术增效的方向多样化，目前的增效方向包括但不限于 TCO（透明导电层）图形化优化、金属化线型优化、光转膜等。公司将继续进取，不断巩固旗下光伏产品在市场中的比较优势，力争将技术优势转化为公司业绩。\n本文源自：金融界AI电报\n作者：公告君\n特别声明：以上内容(如有图片或视频亦包括在内)为自媒体平台“网易号”用户上传并发布，本平台仅提供信息存储服务。\nNotice: The content above (including the pictures and videos if any) is uploaded and posted by a user of NetEase Hao, which is a social media platform and only provides information storag",
+      "S11": "新闻\n论坛\n博客\n招生招聘\n论文\n科研网址\n实名举报\n科学时报社\n|\n电子杂志订阅\n|\nEnglish\n|\nRSS\n|\n直播\n科学网首页\n>\n科学时报\n>正文\n生命科学\n医药健康\n基础科学\n工程技术\n信息科学\n资源环境\n前沿交叉\n政策管理\n作者：高长安 李伟 庞超   来源：\n科学时报\n发布时间：2009-1-18 21:38:27\n英利集团成为全球非硅成本最低企业\n本报讯 依靠完善产业链、技术创新、成本控制和精细化管理，河北保定英利集团成为2008年全球非硅成本最低的企业。2008年，英利实现销售收入85亿元，利润达13.5亿元，实现出口10.3亿美元，实际利用外资6.53亿美元。\n2008年英利集团加快自主创新步伐，在产能提高的同时，单位硅锭的铸锭成本明显降低，生产单个硅锭所消耗的电力大大减少。英利集团还全面实现了180微米硅片切割，实现了180微米多晶硅片的产业化生产，标志着在多晶硅硅片生产领域走在了世界同行业前列。该集团坚持以新能源及高科技能源投资与经营管理为主业，实行绿色食品、城市公共设施、酒店、房地产、投资贸易多元化发展战略。投资近5亿元建成我国第一座使用光伏玻璃幕墙并网发电的五星级酒店已营业。此外，年产800兆瓦多晶硅太阳能项目、英利产业园EVA、坩埚、钢化玻璃等生产项目也将陆续开工建设。\n《科学时报》 (2009-1-19 B3    地方 综合)\n|  打印\n|\n评论\n|\n论坛\n|\n博客\n|\n小字号\n中字号\n大字号\n关于我们\n|\n网站声明\n|\n服务条款\n|\n联系方式\n|\n电子地图\n京ICP备07017567\nCopyright @ 2007 科学时报社 All Rights Reserved",
+      "S12": "网易首页\n应用\n网易新闻\n网易公开课\n网易红彩\n网易严选\n邮箱大师\n网易云课堂\n快速导航\n新闻\n国内\n国际\n王三三\n体育\nNBA\nCBA\n综合\n中超\n国际足球\n英超\n西甲\n意甲\n娱乐\n明星\n电影\n电视\n音乐\n封面故事\n财经\n股票\n原创\n智库\n汽车\n购车\n车型库\n科技\n网易智能\n原创\nIT\n互联网\n通信\n时尚\n艺术\n旅游\n手机\n/\n数码\n惊奇科技\n易评机\n家电\n房产\n/\n家居\n北京房产\n上海房产\n广州房产\n楼盘库\n设计师库\n案例库\n教育\n留学\n高考\n查看网易地图\n登录\n注册免费邮箱\n注册VIP邮箱（特权邮箱，付费）\n免费下载网易官方手机邮箱应用\n安全退出\n移动端\n网易公开课\nTED\n中国大学视频公开课\n国际名校公开课\n赏课·纪录片\n付费精品课程\n北京大学公开课\n英语课程学习\n网易严选\n新人特价\n9.9专区\n新品热卖\n人气好物\n居家生活\n服饰鞋包\n母婴亲子\n美食酒水\n支付\n一卡通充值\n一卡通购买\n我的网易支付\n网易跨境支付\n邮箱\n免费邮箱\nVIP邮箱\n企业邮箱\n免费注册\n客户端下载\n网易首页\n>\n网易号\n> 正文\n申请入驻\n光伏硅料亏本甩卖，吨价已较高点下跌近九成\n2024-05-09 20:02:52　来源:\n界面新闻\n上海\n举报\n0\n分享至\n用微信扫码二维码\n分享至好友和朋友圈\n界面新闻记者｜马悦然\n光伏硅料价格仍在非理性下跌。\n5月8日，中国有色金属工业协会硅业分会最新报价显示，包含五一节前、节后两周，多晶硅价格再度下调。\n其中，N型棒状硅成交价格区间为4.3万-4.8万元/吨，成交均价为4.53万元/吨，环比下跌7.93%。P型致密料成交价格区间为3.8万-4.3万元/吨，成交均价为3.9万元/吨，环比下跌8.88%。N型颗粒硅成交价格区间为3.9万-4.1万元/吨，成交均价为4万元/吨，环比下降6.98%。\n目前，N/P棒状硅价差为0.43万元/吨。\n截至本周，P型硅料均价已跌至4万元/吨以下。N型颗粒硅最低价也已跌破4万关口，棒状硅最低价逼近该水平。\n相对于2022年30万元/吨以上的高点，目前硅料价格已经跌去近九成。\n对于本周价格，硅业分会表示，目前下游采购硅料策略以少量多次为主，也存在部分订单以一口价混包料的形式打包出售，整体来看签单动力不足，硅料库存持续累计。\n“对于市场的悲观预期和高库存压力，是导致价格持续下滑的主要因素。目前硅料价格已经突破绝大多数企业现金成本，企业检修预期加剧。”该机构称。\n据硅业分会不完全统计，截至本周国内多晶硅生产企业共计17家，3家企业正常检修。还有5家企业将在本月内提前展开检修计划或进行技改，外加3家新投产企业产能释放速度不及预期，硅料供应增速过快的局面有望得到缓解。预计5月多晶硅产量19万吨左右，和4月份持平为主。\n上游降价，下游单晶硅片价格同样经历非理性下行。\n5月9日硅业分会公布的数据显示，两周以来，P型M1",
+      "S13": "新浪首页\n新闻\n体育\n财经\n娱乐\n科技\n博客\n图片\n专栏\n更多\n汽车\n教育\n时尚\n女性\n星座\n健康\n房产\n历史\n视频\n收藏\n育儿\n读书\n佛学\n游戏\n旅游\n邮箱\n导航\n移动客户端\n新浪微博\n新浪新闻\n新浪财经\n新浪体育\n新浪众测\n新浪博客\n新浪视频\n新浪游戏\n天气通\n我的收藏\n注册\n登录\n经济新闻滚动\n>\n正文\n硅片毛利率降至负数，TCL中环三个季度亏掉近60亿\n硅片毛利率降至负数，TCL中环三个季度亏掉近60亿\n2024年08月24日 14:48\n界面新闻\n新浪财经APP\n缩小字体\n放大字体\n收藏\n微博\n微信\n分享\n腾讯QQ\nQQ空间\n光伏硅片老大\nTCL中环\n（002129.SZ）交出历史最差半年报。\n8\n月23日晚，TCL中环发布财报，其上半年实现营业总收入162.13亿元，同比下降53.54%；归母净利润亏损30.64亿元，上年同期为盈利45.36亿元。\n此前，TCL中环预告亏损29亿-32亿元，实际数据约是预告的中位数。\n今年一季度，TCL中环亏损8.8亿元。以此计算，二季度亏损21.84亿元。去年四季度起，TCL中环陷入连续亏损的境地，近三个季度共亏损近60亿元。\nTCL\n中环将上半年业绩亏损归结为三方面因素影响。首先，行业供需失衡加剧，其新能源材料业务板块进入非理性价格竞争状态，虽仍保持单瓦成本行业领先，但降本不及市场价格下跌速度，亏损总额加大。\n其次，TCL中环还首次提及了电池组件下游板块对业绩的负面影响。该公司称，电池组件业务板块相对竞争力不足，整体表现落后于同业领先企业，在产业市场价格下行周期，进一步拖累经营业绩。\n第三仍是参股公司Maxeon的负面影响。TCL中环表示，作为Maxeon产品的主要市场所在地，欧美地区光伏产品价格快速下行、光伏补贴政策调整、并维持高利率环境；Maxeon经营转型较慢，报告期内业绩及股价均大幅下跌，导致公司亏损加剧。该公司还提及，Maxeon北美3 GW电池组件扩产项目进度迟于预期。\n去年，Maxeon合计对TCL中环业绩带来了16.9亿元的负向影响。\n今年上半年，光伏行业进入“困难期”。\nTCL\n中环指出，二季度主产业链各环节价格与成本倒挂，净利润亏损，6月底进入现金成本亏损阶段，行业进入周期底部。\n分行业看，光伏行业仍是TCL中环最主要的营收来源，上半年占比达到82.44%。\n分产品看，上半年TCL中环硅片营收104.32亿元，同比降幅超过六成，在总营收的比重为64.34%。这部分毛利率大幅下滑34.13个百分点，目前仅为-9.25%。\n组件营收约27.62亿元，同比降幅46.95%，占比提升了约两个百分点至17.04%。其组件毛利率也仅为0.94%，同比下滑11.3个百分点。\n图片来源：TCL中环公告\nTCL\n中环毛利率最高的业务是光伏电站，达到42.34%，但这部分营收1.71亿元，占比仅1%。其他硅材",
+      "S14": "App下载\n注册 / 登录\n首页\n概念\n行情\n股票\n资讯\n主题\n2024第三季度单晶硅相关企业毛利率排行榜\n南方财富网\n2025-03-29 18:21\n《南方财富网概念查询工具》财报工具数据整理，截至2024第三季度，单晶硅相关企业毛利率排行榜情况如下（数据仅供参考）：\n第1名、神工股份：\n毛利率43.01%。3月28日收盘消息，神工股份3日内股价上涨1.82%，最新报24.170元，成交额1.29亿元。\n第2名、银星\n能源\n：\n毛利率34.16%。3月28日收盘消息，银星能源开盘报价5.04元，收盘于4.870元。7日内股价下跌9.65%，总市值为44.7亿元。\n第3名、众合科技：\n毛利率33.23%。3月28日众合科技消息，7日内股价下跌12.05%，该股最新报8.130元跌0.85%，成交总金额1.48亿元，市值为55.14亿元。\n第4名、晶盛机电：\n毛利率32.24%。3月28日消息，晶盛机电5日内股价下跌2.27%，今年来涨幅上涨2.15%，最新报32.600元，市盈率为9.34。\n第5名、中晶科技：\n毛利率29.58%。中晶科技截至15点，该股跌1.33%，股价报29.600元，换手率1.56%，成交量125.67万手，总市值38.55亿。\n南方财富网发布此信息的目的在于传播更多信息，与本站立场无关。不保证该信息（包括但不限于文字、视频、音频、数据及图表）全部或者部分内容的准确性、真实性、完整性、有效性、及时性、原创性等。相关信息并未经过本网站证实，不对您构成任何投资建议，据此操作，风险自担。\n南方财富网声明：资讯仅代表作者个人观点。不保证该信息（包括但不限于文字、数据及图表）全部或者部分内容的准确性、真实性、完整性、有效性、及时性、原创性等，若有侵权，请第一时间告知删除。仅供投资者参考，并不构成投资建议。投资者据此操作，风险自担。\n延伸阅读\n2025年三家光伏屋顶概念股龙头（干货分享）（2025/3/28）\n东南网架（002135）： 龙头股。东南网架消息，3月28日该股开盘报4.38元，截至收盘，股价报4.310元跌1.37%，成交量1419.74万手，换手率1.36%，总市值为48.08亿元。 2023年东南网架公司营业总收\n十大单晶炉排行榜-3月28日相关股票成交额前十名\n南方财富网概念查询工具股票工具数据整理，截至3月28日，单晶炉相关股票成交额排行榜中，北方华创位列第一位，成交额达到29.83亿元；晶澳科技排名第二，成交额为7.23亿元；TCL中环\n钙钛矿太阳能电池上市公司十强：2024第三季度上市公司营收排行榜\n南方财富网概念查询工具财报工具数据整理，截至2024第三季度，钙钛矿太阳能电池上市公司营收排行榜中，通威股份位列第一位，营收达到244.75亿元；隆基绿能排名第二，营收为200.6\n3月28日：光伏板块概念股市值排行榜来了",
+      "S15": "谢谢您的宝贵意见\n您的支持是我们最大的动力\n谢谢您的支持\n同花顺F10\n最新价：\n--\n涨跌幅：\n--\n换肤\n上一个股\n下一个股\n弘元绿能\ni问董秘\n企业号\n603185\n最新动态\n公司资料\n股东研究\n经营分析\n股本结构\n资本运作\n盈利预测\n新闻公告\n概念题材\n主力持仓\n财务分析\n分红融资\n公司大事\n行业对比\n白酒价格\n主营介绍\n运营业务数据\n主营构成分析\n主要客户及供应商\n产品价格\n董事会经营评述\nF10 功能找不到？在搜索框里直接输入您想要的功能！比如输入“龙虎榜”，赶快试一下哦！\n跳过\n下一步\n选股选不好？可以直接输入你想要的问句啦，比如输入“近一周涨幅超过30%的股票”赶紧行动吧！\n上一步\n完成\n主营介绍\n主营业务：\n光伏晶硅产业链相关业务及高端智能化装备业务。\n产品类型：\n硅片及硅棒、太阳能组件及电池\n产品名称：\n高端智能装备\t\t\t\t\t\t\t\t\t\t\t\t    、\t\t\t\t\t高纯晶硅\t\t\t\t\t\t\t\t\t\t\t\t    、\t\t\t\t\t单晶硅片\t\t\t\t\t\t\t\t\t\t\t\t    、\t\t\t\t\t高效电池\t\t\t\t\t\t\t\t\t\t\t\t    、\t\t\t\t\t组件\n经营范围：\n数控机床、通用机床、自动化控制设备、检测设备、金属结构件、机床零部件及配件的制造、加工、销售；五金加工；数控软件的开发；自营和代理各类商品及技术的进出口业务（国家限定企业经营或禁止进出口的商品和技术除外）。（依法须经批准的项目，经相关部门批准后方可开展经营活动）一般项目：电子专用材料研发；电子专用材料制造；电子专用材料销售；半导体器件专用设备制造；半导体器件专用设备销售；非金属矿物制品制造；非金属矿及制品销售；光伏设备及元器件制造；光伏设备及元器件销售（除依法须经批准的项目外，凭营业执照依法自主开展经营活动）\n运营业务数据\n期末值\n累计值\n最新公告日期：\n2026-04-29\n业务名称\n2025-12-31\n2024-12-31\n2023-12-31\n2022-12-31\n2021-12-31\n库存量:单晶硅片(GW)\n3.95\n3.08\n1.63\n-\n-\n库存量:单晶硅电池(MW)\n1994.00\n424.62\n563.75\n-\n-\n库存量:单晶组件(MW)\n392.96\n420.87\n313.58\n-\n-\n库存量:机械制造专用设备(台)\n-\n275.00\n-\n-\n-\n库存量:高纯晶硅(吨)\n-\n4927.46\n1747.19\n-\n-\n库存量:光伏专用设备(台)\n-\n-\n118.00\n-\n-\n库存量:半导体设备(台)\n-\n-\n81.00\n-\n-\n库存量:单晶硅棒(吨)\n-\n-\n1229.96\n-\n-\n库存量:通用磨床(台)\n-\n-\n69.00\n-\n-\n光伏专用设备库存量(台)\n-\n-\n-\n147.00\n277.00\n半导体设备库存量(台)\n-\n-\n-\n25.00\n12.00\n单晶硅库存量(吨)\n-\n-\n-\n36",
+      "S16": "ç¾åº¦é¦é¡µ\næ³¨å\nç»å½\néçµæ± å å·¥ç»è£\nè´¹å¤å°é±ä¸ä¸ª\néçµæ± å å·¥ç»è£\nè´¹å¤å°é±ä¸ä¸ª\n1ä¸ªåç­\nååæ°ç \nä¸ä¸ç­ä¸» æå¡æä¿é\nå\n³æ³¨\nå±å¼å\n¨é¨\nå¨è¯¢è®°å½ Â· åç­äº2023-02-18\néçµæ± å å·¥ç»è£\nè´¹å¤å°é±ä¸ä¸ª\néçµæ± å å·¥ç»è£\nè´¹ç¨å ææãè§æ ¼ãéçº§ç­å ç´ èå¼ï¼ä»·æ ¼ä¸è½ä¸æ¦èè®ºãå¤§å¤æ°æ\nåµä¸ï¼éçµæ± å å·¥ç»è£\nè´¹ç¨å¤§æ¦å¨5å\nå·¦å³/ä¸ªï¼ä½ä¹å¯è½æ´é«ãå æ­¤ï¼å\n·ä½ä»·æ ¼å¯è½æ ¹æ®å®¢æ·è¦æ±çåå·ãçµæ± æ°éãå°ºå¯¸ååè½ç­èå®ãä»¥ä¸å°±æ¯æçåç­ï¼å¸æè½å¤å¸®å©å°ä½ ï¼ç¥æ¨çæ´»æå¿«ï¼\nå·²èµè¿\nä½ å¯¹è¿ä¸ªåç­çè¯ä»·æ¯ï¼\nè¯è®º\næ¶èµ·\nèå·æ¼è¥¿ç²¾å¯æºæ¢°\n2024-09-26\nå¹¿å\nèå·æ¼è¥¿ç²¾å¯æºæ¢°æéå\n¬å¸ä¸æ³¨äºæ³¨å¡æºé\nä»¶ççäº§å å·¥ï¼å\næ¬èºæãæç®¡ãå°å¤´ç»ãæ³å\n°ãå°å´ç­ï¼æ¥æå®æ´ãç§å­¦çè´¨éç®¡çä½ç³»ãæä»¬çè¯ä¿¡ãå®ååäº§åè´¨éå¨ä¸çè·å¾å¹¿æ³è®¤å¯ãå¯¹äºæµ·å¤ªæ³¨å¡æºé\nä»¶ï¼èå·æ¼è¥¿ç²¾å¯æºæ¢°æéå\n¬å¸è½å¤æä¾é«è´¨éãéé\næ§å¼ºçäº§å...\nç¹å»è¿å\n¥è¯¦æ\né¡µ\næ¬åç­ç±\nèå·æ¼è¥¿ç²¾å¯æºæ¢°\næä¾\nä¸è½½ç¾åº¦ç¥éAPPï¼æ¢é²ä½éª\nä½¿ç¨",
+      "S17": "ç¾åº¦é¦é¡µ\næ³¨å\nç»å½\néçµæ± å å·¥éè¦æèµå¤å°é±\néçµæ± å å·¥éè¦æèµå¤å°é±\n1ä¸ªåç­\næ°ç è¾¾äººæé£\nä¸ä¸ç­ä¸» æå¡æä¿é\nå\n³æ³¨\nå±å¼å\n¨é¨\nå¨è¯¢è®°å½ Â· åç­äº2023-02-21\néçµæ± å å·¥éè¦æèµå¤å°é±\nå¦ææ¯å°è§æ¨¡çéçµæ± å å·¥ï¼æèµéé¢å°±ä¼ç¸åºè¾å°ãä»¥ä¸æ¯ä¸äºå¤§è´çä¼°ç®ï¼çäº§çº¿è®¾å¤ï¼å°è§æ¨¡éçµæ± å å·¥å¯ä»¥èèéç¨ä¸äºä¸­å°åççäº§çº¿è®¾å¤ï¼è®¾å¤ææ¬éå¸¸å¨å åä¸å\nè³æ°ç¾ä¸å\nä¸ç­ãåæ¿ååå°ï¼å°è§æ¨¡éçµæ± å å·¥å¯ä»¥èèç§èµè¾å°çåæ¿ï¼ç§éç¸åºè¾ä½ï¼ææ¬ä¹ä¼åå°ãäººå·¥ææ¬ï¼å°è§æ¨¡ççäº§çº¿éè¦çå·¥äººåææ¯äººåç¸å¯¹è¾å°ï¼äººå·¥ææ¬ç¸åºåå°ãåææææ¬ï¼åææææ¬ä¼æ ¹æ®çäº§è§æ¨¡èååï¼å°è§æ¨¡ççäº§çº¿éè¦çåææç¸å¯¹è¾å°ï¼ææ¬ä¹ä¼éä½ãç»¼åèèä»¥ä¸å ä¸ªæ¹é¢çææ¬ï¼å°è§æ¨¡çéçµæ± å å·¥çæèµéé¢éå¸¸å¨å åä¸å\nè³æ°ç¾ä¸å\nä¹é´ï¼å\n·ä½éé¢è¿éè¦æ ¹æ®å®é\næ\nåµèå®ã\nå·²èµè¿\nä½ å¯¹è¿ä¸ªåç­çè¯ä»·æ¯ï¼\nè¯è®º\næ¶èµ·\nä¸­å½èµå®\n2024-07-12\nå¹¿å\næåéçµæ± è®¤è¯ââä¸­å½èµå®20å¤ä½ä¸å®¶",
+      "S18": "ç¾åº¦é¦é¡µ\næ³¨å\nç»å½\nä¸å¨çµæ± çº§ç¢³é\n¸éçå å·¥è´¹å¤å°é±\nä¸å¨çµæ± çº§ç¢³é\n¸éçå å·¥è´¹å¤å°é±\n1ä¸ªåç­\næ°ç è¾¾äººå±ä¸é£\nä¸ä¸ç­ä¸» æå¡æä¿é\nå\n³æ³¨\nå±å¼å\n¨é¨\næè¦\näº²äº²ï¼ä¸é¢æ¯ç»æ¨çæå±å~\næ ¹æ®ç®åå¸åºä»·æ ¼æ¯ä¸å¨çµæ± çº§ç¢³é\n¸éçå å·¥è´¹ä¸å¨çå¤§æ¦8000-2.6ä¸ã2022å¹´éå®æºå¶å¯¼è´ä»·æ ¼é¾ä»¥å¿«éååãåºå«äºä»¥åçè®¢åæ¨¡å¼æ£åæ¯ä¾æ¯è¾é«ï¼ç°å¨åºæ¬90%çéçé½ä»¥é¿åå½¢å¼éå®äºï¼æµéå°å¸åºä¸çæ£åæ¯ä¾å¾å°ï¼è¿äºé¿åçéçåºæ¬æ¯ä»¥ç½ç«ä»·æ ¼æ¥äº¤ä»ï¼èç½ç«ä»·æ ¼åæ¯æ ¹æ®æ£åæ¥è°æ´ãç°å¨æ£åæäº¤è¿å°ä¼åä½ç¨äºéä¸­äº¤æä»·æ ¼ï¼ç¸å\n³é¨é¨å¯¹éçåå®¶è¿è¡ä¸äºæå¯¼å»ºè®®ï¼è¿å¯¹æ¶¨ä»·çéåº¦ææéå¶\nå¨è¯¢è®°å½ Â· åç­äº2023-03-23\nä¸å¨çµæ± çº§ç¢³é\n¸éçå å·¥è´¹å¤å°é±\näº²äº²æ¨å¥½ï¼å¾é«å\n´ä¸ºæ¨è§£ç­\nä¸å¨çµæ± çº§ç¢³é\n¸éçå å·¥è´¹8000å\nè®¡ç®å\n¬å¼å¦ä¸1*8000=8000å\n\näº²äº²ï¼ä¸é¢æ¯ç»æ¨çæå±å~\næ ¹æ®ç®åå¸åºä»·æ ¼æ¯ä¸å¨çµæ± çº§ç¢³é\n¸éçå å·¥è´¹ä¸å¨çå¤§æ¦8000-2.6ä¸ã2022å¹´éå®æºå¶å¯¼è´ä»·æ ¼é¾ä»¥å¿«éååãåºå«äºä»¥åçè®¢åæ¨¡å¼æ£",
+      "S19": "碳酸锂\n89200\n-200.00\n-0.22%\n磷酸铁锂\n41600\n-200.00\n-0.48%\n金属锂\n600000\n0.00\n0.00%\n硫酸镍\n24350\n0.00\n0.00%\n三元材料\n120000\n2000.00\n1.69%\n三元前驱体\n92000\n0.00\n0.00%\n多晶硅\n42\n0.00\n0.00%\n电池片\n0.62\n0.00\n0%\n锂电池废料\n16340\n0.00\n0.00%\n锂电池负极片\n26841\n0.00\n0.00%\n电池硫酸锰\n7540\n0.00\n0.00%\n工业硅\n8850\n0.00\n0.00%\n硫酸钴\n48000\n2000.00\n4.35%\n磷酸铁\n16200\n0.00\n0.00%\n锂辉石精矿\n940\n0.00\n0.00%\n电解锰\n18100\n0.00\n0.00%\n硅片\n1.41\n0.00\n0.00%\n光伏组件\n0.66\n0.00\n0%\n人造石墨\n26200\n0.00\n0.00%\n天然石墨\n32000\n0.00\n0.00%\n三元电芯\n0.56\n0.00\n0%\n锂电池回收\n41802\n-5550.00\n-11.72%\n镍生铁\n1050\n0.00\n0.00%\n碳酸钴\n135\n0.00\n0.00%\n镍矿\n689\n0.00\n0.00%\n光伏组件实时行情\n当前位置：\n我的钢铁网\n>\n新能源\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n光伏材料\n>\n光伏组件实时行情\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n光伏组件实时行情\n快讯\n2026-11-11\n10:42\n【2026年11月11日\n光伏组件\n价格】210单/双面TOPcon分布式组件0.71-0.735元/瓦。210R双面TOPcon分布式组件0.695-0.725元/瓦；210R双面BC分布式组件0.74-0.77元/瓦。\n2026-11-10\n15:14\n《山东省建材产业高质量发展行动计划（2026—2030年）》印发，其中提出，加快推进钙钛矿、碲化镉\n光伏组件\n及TCO玻璃量产，发展建筑光伏一体化绿色建材。\n2026-11-10\n15:03\n《山西省固体废物污染防治“十五五”规划》印发，其中提出，强化新能源退役设备环境管理。强化退役新能源设备产废源头管理，严格废动力电池、废风电设备、废\n光伏组件\n等回收处理过程污染防控。\n2026-11-09\n16:06\n【10月中国\n光伏组件\n产能利用率环比涨0.6%】2026年10月\n光伏组件\n国内企业产能利用率44.3%，与9月相比涨0.6%。据Mysteel预计，2026年11月份\n光伏组件\n产能利用率在45%左右，环比上涨0.7%。\n2026-11-09\n14:41\n【10月中国\n光伏组件\n产量环比上涨1.39%】2026年10月中国\n光伏组件\n企业产量40.38GW，环比上涨",
+      "S20": "温馨提醒\n您已是行情通会员\n可免费订阅\n5\n个省份\n查看价格详情与走势\n立即订阅\n行情通首页\n项目通\n水泥价格\n混凝土价格\n矿渣微粉价格\n砂石骨料价格\n砂浆价格\n网价计算器\n商城\n矿权\n热门标签\n周评\n月评\n行情月报下载\n|\n行情地图\n|\n特种水泥\n|\n行情公告\n|\n会员指南\n|\n价格说明\n|\n矿权招拍挂\n品类\n水泥\n混凝土\n矿渣微粉\n砂石骨料\n砂浆\n水渣\n粉煤灰\n软土固化剂\n组件\n电池片\n玻璃\n多晶硅\n硅片\n工业硅\n石材\n碳酸钙\n石英\n萤石\n省份\n品种\n收起\n\n展开\n\n已选品种\n品牌\n收起\n\n展开\n\n已选品牌\n日期\n日期段\n日期点\n\n\n生产厂家\n\n\n\n开始搜索\n重置\n搜索历史：\n首页 >\n全国组件价格 >\n全部结果 >\n品牌\n品种\n地区\n生产厂家\n功率\n价格\n单位\n涨跌\n涨跌幅\n日期\n查看",
+      "S21": "光伏组件今日价格一览表\n搜索\n今日价格\n实时快讯\n热点资讯\n登录\n注册\n当前位置：\n我的钢铁网\n>\n光伏组件\n>\n光伏组件今日价格一览表\n品名\n型号\n规格(mm)\n最低价\n最高价\n中间价\n走势\n光伏组件\n210双面HJT（分布式）\n2384*1303*30\n0.715\n0.74\n0.728\n光伏组件\n182单面topcon（分布式）\n2278*1134*30\n0.7\n0.725\n0.713\n光伏组件\n210R双面BC（分布式）\n2382*1134*30\n0.74\n0.77\n0.755\n光伏组件\n210双面topcon（分布式）\n2384*1303*30\n0.71\n0.735\n0.723\n光伏组件\n210R双面topcon（分布式）\n2382*1134*30\n0.7\n0.73\n0.715\n查看更多价格\n2026-10-30\n光伏组件\n价格指数\n光伏组件：产量：中国（年）\n533\n(-50.10)\n光伏组件：产能利用率：中国（年）\n60.92\n(-25.06)\n光伏组件：出口数量环比：中国（月）\n35.01\n(36.49)\n光伏组件：看跌比例：中国（周）\n40\n(0.00)\n光伏组件：有效产能：中国（年）\n798\n(56.93)\n光伏组件今日价格一览表\n相关价格\n-\n重置\n确认\n按综合排序\n按综合排序\n按最新排序\n国内\n光伏组件\n价格行情（2026-10-29 10:28）\n光伏组件\n2026-10-29 10:28\n国内\n光伏组件\n价格行情（2026-10-28 10:23）\n光伏组件\n2026-10-28 10:23\n国内\n光伏组件\n价格行情（2026-10-27 10:33）\n光伏组件\n2026-10-27 10:33\n国内\n光伏组件\n价格行情（2026-10-26 10:19）\n光伏组件\n2026-10-26 10:19\n国内\n光伏组件\n价格行情（2026-10-23 10:20）\n光伏组件\n2026-10-23 10:20\n国内\n光伏组件\n价格行情（2026-10-22 10:27）\n光伏组件\n2026-10-22 10:27\n国内\n光伏组件\n价格行情（2026-10-21 10:25）\n光伏组件\n2026-10-21 10:25\n国内\n光伏组件\n价格行情（2026-10-20 10:26）\n光伏组件\n2026-10-20 10:26\n国内\n光伏组件\n价格行情（2026-10-19 10:37）\n光伏组件\n2026-10-19 10:37\n国内\n光伏组件\n价格行情（2026-10-16 10:25）\n光伏组件\n2026-10-16 10:25\n点击加载更多\n快讯播报\n光伏组件今日价格一览表\n快讯\n2025-12-17\n17:20\n【Mysteel晶硅光伏日评20251217】\n今日\n光伏组件\n市场\n价格\n整体维稳，但出现局部挺价信号。受上游环节\n价格\n",
+      "S22": "财经首页\n|\n新浪首页\n|\n新浪导航\n研究报告\n最新滚动\n主力动向\n个股评级\n公司研究\n行业研究\n投资策略\n宏观研究\n金麒麟研报\n更多\n晨报\n创业板\n基金\n债券\n金融工程\n个股点评\n光伏行业周报：电池组件单瓦盈利持续改善 美国装机数据向好\n类别：行业\n机构：\n华创证券有限责任公司\n研究员：\n黄麟/盛炜\n日期：2023-06-19\n硅料价格加速赶底，未来下行空间或有限。据PVInfoLink 6 月14 日报价，多晶硅致密料报78 元/kg，较23Q1 均价下跌62%；182mmP 型硅片报3.05 元/片，较23Q1 均价下跌46%；182mmPERC 电池/组件分别报0.78/1.45 元/W，分别较23Q1 均价下跌23%/17%。硅料价格快速回落，已经基本接近成本线。部分硅料企业已因亏损停产，东立、宝丰等企业选择延迟投产，综合来看，硅料价格下行空间有限。\n硅料向下游释放利润，一体化组件和电池片环节的盈利接近历史较高水平。\n按Solarzoom 6 月14 日的价格水平测算，硅料/硅片/电池/组件/一体化组件的单瓦净利分别为0.057/0.067/0.168/-0.061/0.212 元/W ， 对应净利率33%/18%/24%/-5%/16%。\n美国电池组件进口数据高增，带动装机数据向好。2023 年4 月，美国新增光伏装机1.86GW，同比增长20%，环比减少35%；1-4 月累计新增装机8.86GW，同比增长34%。4 月美国电池组件进口3.87GW，同比增长14%，环比减少24%；1-4 月累计进口17.09GW，同比增长52%。从1-4 月累计数据来看， 美国光伏装机及电池组件进口数据同比明显增长。据WoodMackenzie 数据，2023Q1 美国集中式光伏装机3.8GW，同比增长75%，增速大幅高于户用及工商业。随着美国组件逐步清关，进口量增长，预计将推动集中式光伏电站装机修复。若贸易摩擦因素改善，我们预计2023 年美国光伏装机弹性较大，装机需求有望达到30-50GW。\n光伏产业跟踪：\n产业链价格：主材环节：本周硅料硅片价格下跌。本周多晶硅致密料价格报78 元 /kg，环比上周下跌22.0%。182/210mm 单晶硅片分别报3.05/4.65 元/片，环比上周下跌15.3%/7.0%。本周电池片价格下跌。单晶PERC 电池片182/210mm 价格分别报0.78/0.84 元/W，环比上周下跌8.2%/8.7%。本周组件价格下跌。182/210mm单面单玻PERC 组件价格报1.45/1.46 元/W，环比上周下跌7.1%/7.0%。182mm/210mm 双面双玻PERC 组件价格报1.48/1.49 元/W，环比上周下跌6.3%/6.3%。辅材方面：光伏玻璃价格与上周持平， 2.0/3.2mm 镀膜光伏玻璃价格均报18.5/26.",
+      "S23": "财经首页\n|\n新浪首页\n|\n新浪导航\n研究报告\n最新滚动\n主力动向\n个股评级\n公司研究\n行业研究\n投资策略\n宏观研究\n金麒麟研报\n更多\n晨报\n创业板\n基金\n债券\n金融工程\n个股点评\n天合光能(688599)：组件单瓦盈利环比提升 分布式系统增长亮眼\n类别：公司\n机构：\n东吴证券股份有限公司\n研究员：\n曾朵红/陈瑶/郭亚男\n日期：2022-01-20\n投资要点\n事件：公司发布2021 年业绩预告，公司预计2021 年实现归母净利润17.2-20.5 亿元，同增39.9-66.8%，其中2021Q4 实现归母净利润5.64-8.94 亿元，同增41.7-124.6%，环增25.1-98.2%。鉴于2021Q4 组件售价提升，硅片价格下行，户用装机超预期，我们预计公司业绩在中值偏上，则2021 年归母净利润18.5-19 亿元，略超市场预期。\n2021Q4 单瓦盈利环比提升，看好2022 年量利双升。我们预计公司2021年组件出货25GW 左右，同增56%，其中2021Q4 出货8GW 左右，同增31%，环增27%。在硅料价格维持高位的情况下，公司组件单瓦盈利超市场预期，原因：1）硅片价格从2021 年11 月中开始下行，让利下游；2）大尺寸占比提升，盈利结构改善。我们预计到2021 年底公司拥有电池、组件产能35GW、50GW，同比+180%、+125%，电池组件一体化比例提升至70%。扩产加速一体化布局，我们预计公司2022 年组件出货40-50GW，市占率提升至18%左右，叠加硅料价格下行，看好2022年组件量利双升。\n分布式光伏系统增长亮眼，成为业绩新动能。我们预计公司2021 年分布式系统出货1.8-2GW，其中2021Q4 约0.5-0.6GW。国内2022Q1 分布式光伏推进如火如荼，我们预计2022 年将达45GW+（户用30GW+，工商业15GW+），公司前瞻布局、充分受益，我们预计公司2022 年分布式系统出货4GW，增长潜力大。\n跟踪支架短期承压，2022 年盈利反转。我们预计公司2021 年跟踪支架出货1.8-2GW，其中2021Q4 出货约0.6-0.8GW，但因钢材价格的快速上涨，有量无利，处于盈利底部，我们预计2022 年需求起量+跟踪支架渗透率提升，我们预计2022 年出货将提升至4GW，且盈利将有所修复。\n盈利预测与投资评级：基于成本上升、竞争加剧，我们下调2021 年公司盈利，同时基于2022 年光伏需求超预期、户用分布式快速增长，公司分布式光伏系统发力，我们上调2022 年和2023 年盈利预测，我们预计2021-2023 年归母净利润为19.1/38.1/51.5 亿，（ 前值为20.72/35.67/45.33 亿元）， 同增55%/100%/35% ， 对应PE 为85.85/42.97/31.74 倍。我们给予公司20",
+      "S24": "新闻\n体育\n汽车\n房产\n旅游\n教育\n时尚\n科技\n财经\n娱乐\n2026年11月13日 商业频道最新文章\n商业频道最新文章\n光伏组件单瓦盈利的思考\n钱包厚度精算师\n文章\n总阅读\n查看TA的文章>\n光伏组件单瓦盈利的思考\n2022-04-28 17:11\n从硅料的产能规划来看，近一两年新产能的逐步投放将会逐步的打开制约行业装机量的供给瓶颈，如无意外，光伏装机量的增速的提升是大概率的事情，而随着硅料产能的投放，各环节的利润分配会是如何的变化则是一个充满博弈和不确定性的课题。\n市场上普遍有观点认为，组件环节将是一个受益较大，盈利水平将会有较大幅度的改善，事实是否如此，笔者将尝试进行跟踪和分析。\n近期年报和一季报陆续公布，多家组件企业的去年Q4和今年Q1的组件单瓦盈利情况也陆续从各渠道得以获知，略作收集如下：\n几家企业的组件业务的单瓦盈利均获得了不同程度的改善。\n粗略统计一下光伏几个主要环节的价格变化，如下：\n由于组件从订单到交货需要一定的时间周期，假设按Q4的组件价格，然后采购硅料、硅片、电池片等假设按照当季Q1的价格（实际上还需考究各个项目的交付周期，例如分布式可能就会很快，一个月左右，地面电站和海外的可能就要长些了），可见组件的价格Q4比Q3是有所上涨的，而采购物料的价格Q1相对于Q4均价是持平（电池片）或者下跌的，因此整体而言，组件企业的盈利水平是有改善的条件的。\n因此，虽然东方日升还没有透露1季度组件的单瓦盈利，但是从大环境来看，大概率还是可以实现单瓦盈利的改善的，昨晚公布的一季报也可作为佐证（东方日升一季报硅料业务的盈利应该也贡献了不少）。\n而Q1组件的价格均价相对Q4是有下降的，而Q2的硅料价格仍维持小幅上涨，因此二季度组件的盈利提升还是有不小的压力。\n大致罗列一下对组件单瓦盈利的影响因素，主要有以下几点：\n1、硅料成本（假如硅料价格下降，一体化程度低的组件企业受益更多，反之，在硅料价格保持高位的情况下，一体化程度高的组件企业则更为稳健）\n2、技术带来的效益，例如N型硅片带来的溢价，在多个场合可以了解到topcon技术可以带来一定的溢价。至于HJT和大尺寸是否可以带来多少溢价，这个还需要后续继续研究研究。因此新技术的产能投产可能会对业绩带来提升。\n3、各项费用的节约，例如\n晶科能源\n上市带来的财务费用的节约。近期的汇率贬值是否会给组件出口比例较大的企业带来费用的受益，从而提升单瓦盈利。\n来源：雪球；\n作者：价值主升浪\n免责声明：\n本公众号原创或转载文章仅代表作者本人观点，公众号平台对文中观点不持态度。如内容有不实或者侵权，请留言与本站联系。\n往期精彩内容\n☞☞25.7%！182n型TOPCon电池效率创纪录\n☞☞纯POE胶膜：光伏组件封装的王者！\n☞☞TOPCon是怎么爬上屋顶的？\n☞☞突破1太瓦，全球光伏进入“T”时代\n☞☞地面电站新宠：n型TOPCon",
+      "S25": "集团官网\n商业合作\n爆料投稿\n好价爆料\n写篇文章\n视频上传\n提报百科\n创作活动\n条新消息\n条新评论\n登录\n注册\n个人中心\n我的关注\n我的文章\n我的爆料\n我的笔记\n我的视频\n我的百科\n我的评论\n我的众测\n我的消息\n我的收藏\n退出登录\n社区\n写篇文章\n张大妈\n光伏组件成本结构解析：当前价格与材料构成\n源自抖音：BIPV老男孩\n05-11 13:08\n精选参考来源\n光伏组件是不是已经降价了？#光伏组件#源头工厂 #光伏发电 #光伏\nBIPV老男孩\n2026-05-07\n来自抖音\n内容由AI生成\n精选参考来源\n光伏组件是不是已经降价了？#光伏组件#源头工厂 #光伏发电 #光伏\n抖音\n2026-05-07 00:00:00\n0\n0\n微信扫一扫\n新浪微博\nQQ空间\nQQ好友\n豆瓣\n扫一下，分享更方便，购买更轻松\n0\n评论\n当前文章无评论，是时候发表评论了\n精彩\n最新\n提示信息\n取消\n确认\n评论举报\n垃圾广告！\n低俗色情！\n人身攻击！\n疑似水军评论！\n其他有害！\n请输入举报内容，最少输入2个字\n最新文章\n热门文章\n查看更多\n特雷杨37+14仍空砍：奇才六连败问题真出在他身上吗\n0\n0\n特雷杨37+14仍空砍：奇才六连败问题真出在他身上吗\n中国公司操盘的日本代工洗发水卡蓓诺，买了算踩坑吗\n0\n0\n中国公司操盘的日本代工洗发水卡蓓诺，买了算踩坑吗\n波普压哨三分杀死比赛：詹姆斯缺阵、落后16分，76人靠替补37分完成逆转\n0\n0\n波普压哨三分杀死比赛：詹姆斯缺阵、落后16分，76人靠替补37分完成逆转\n六座带三零重力座椅，新款问界M8全家出行体验有哪些升级\n0\n0\n六座带三零重力座椅，新款问界M8全家出行体验有哪些升级\n全新腾势N8，26.99万起大五座，纯电续航970km，易三方零百2.98s\n0\n0\n全新腾势N8，26.99万起大五座，纯电续航970km，易三方零百2.98s\n避坑，买京东plus，不要超过49元\n43\n94\n避坑，买京东plus，不要超过49元\n实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡\n30\n270\n实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡\n国产芯、有AI、支持SSD、四盘位！千元极空间NAS Z4Air 适合谁？\n249\n16\n国产芯、有AI、支持SSD、四盘位！千元极空间NAS Z4Air 适合谁？\n我做了一个监控全网免费Token的网站，今天向所有人免费开放。\n72\n18\n我做了一个监控全网免费Token的网站，今天向所有人免费开放。\n3458天的京东Plus会员，今年选择了不续费\n86\n261\n3458天的京东Plus会员，今年选择了不续费\n下一篇：\n长安和奇瑞谁更经得起长年开？老修车师傅大实话：开满7年，高下立判\n已收藏\n去我的收藏夹",
+      "S26": "前瞻网\n可行性研究\n专项市场调研\n白皮书/蓝皮书\n请登录\n|\n购物车\n|\n我的订单\n|\n免费注册\n报告服务热线\n400-068-7188\n首页\n风口·洞察\nI\n经济学人\n行业洞察\n前瞻趋势\n行业全景图谱\n产业研究\nI\n能源电力\n节能环保\n金融/保险/投资\n医疗/健康/养老\n互联网/信息技术\n通信/电子/芯片\n家用电器\n智能/高端装备\n机械设备\n电气设备\n仪器仪表\n交通/物流/仓储\n汽车产业\n化工/新材料\n钢铁有色\n房产建筑\n建材家居\n城市规划\n现代服务\n旅游/酒店/餐饮\n文教/体育/娱乐\n包装/印刷/纸\n食品/饮料/酒\n纺织/服装/鞋\n零售/日化/快消\n农林牧渔\n安防/公用其他\n精选专题报告\n3000+精品报告\n产业链招商报告\n技术咨询报告\n全球产业报告\n100大行业全景\n行业专题套餐\n出海专题报告\n产业链决策套餐\n前瞻免费报告\n两链（图、库、清单）报告\n城市企业全景分析报告\n专项定制\n行业地位证明\nHOT\nIPO募投可研\n可行性研究\n招股说明书撰写\n行业白/蓝皮书\nIPO细分市场研究\n银行授信研究\n尽职调查研究\n专项市场调研\nHOT\n专精特新申报\n小巨人申报\n单项冠军申报\n行业地位证明\nI\n行业地位证明\n专精特新申报\n小巨人申报\n单项冠军申报\n产业大数据\nI\n经济数据\n中国宏观\n省市宏观\n全球宏观\n行业经济\n进出口\n&nbsp\n&nbsp\n数据系统\n全国产业园库\nHOT\n上市大数据\n企业大数据\n前瞻图表库\n智慧招商系统\nHOT\n政策大数据\n产业决策大数据系统\nHOT\n产业规划\nI\n产业规划\nHOT\n十五五规划\n低空经济\n电子信息\n新能源汽车\n生物医药\n集成电路\n海洋经济\n高端装备\n人工智能\n现代物流\n新能源\n食品产业\n生产性服务\n应急产业\n医疗器械\n新材料\n新消费\n关于我们\nI\n关于我们\n加入我们\n公司动态\n决策精品报告\n研究报告\n研究报告\n经济数据\n产业资讯\n上市数据\n企业信息\n380+行业全景图谱 »\n当前位置：\n前瞻产业研究院\n»\n风口·洞察\n»\n行业洞察\n2024年中国光伏组件行业价值链现状及成本结构分析 电池片成本占比较高且具有附加值优势\nU\nV\nc\n分享到：\n2024-06-11 18:02:21\n来源：前瞻产业研究院\nE\n9454\nG\n0\n2026-2031年中国\n光伏组件\n行业发展前景预测与投资战略规划分析报告\n行业主要上市公司：\n晶科能源\n(688223.SH)、\n天合光能\n(688599.SH)、\n晶澳科技\n(002459.SZ)、隆基绿能(601012.SH)、\n通威股份\n(600438.SH)、阿特斯(688472.SH)、\n东方日升\n(300118.SZ)、\n协鑫集成\n(002506.SZ)、\n亿晶光电\n(600537.SH)等\n本文核心数据：\n成本结构，光伏组件价值链\n光伏组件成本结构分析：电池片占据主要成本\n当下，我国光伏组件"
+    }
+  },
+  "corroboration": {
+    "checked_points": 64,
+    "corroborated_count": 0,
+    "conflict_count": 0,
+    "single_source_count": 64,
+    "min_overlap": 0.5,
+    "min_sources": 2,
+    "rules": [
+      "上下文 4-gram 相似度 ≥ 0.50 的不同来源数据点 → 视为在说同一件事",
+      "同一簇内某数字（不含年份）被不少于 2 个来源说到 → 记为印证",
+      "同一簇内两条数据点的关键数字集合完全不相交 → 记为冲突（不判断谁对）",
+      "不做同义词归并、不做单位换算、不给可信度打分"
+    ],
+    "corroborated": [],
+    "conflicts": [],
+    "single_source": [
+      {
+        "source_id": "S01",
+        "text": "风险度保持100%做期货，还能剩下200万，🐮"
+      },
+      {
+        "source_id": "S03",
+        "text": "Si≥99.9999%"
+      },
+      {
+        "source_id": "S03",
+        "text": "Mysteel：多晶硅：N型：致密料：Si≥99.9999%：中间价：中国（日）"
+      },
+      {
+        "source_id": "S03",
+        "text": "现货价格整体维持平稳运行，N型致密料报价43元/kg，N型混包料报价40元/千克。"
+      },
+      {
+        "source_id": "S04",
+        "text": "期货PS2711合约交易手续费为成交金额的万分之一，日内平今仓手续费为万分之二点五，最小开仓5手、平仓1手，单日开仓上限200手。"
+      },
+      {
+        "source_id": "S04",
+        "text": "碳酸锂期货LC2711合约交易手续费及日内平今仓手续费均为成交金额的万分之零点八，最小开仓2手、平仓1手，单日开仓上限800手。"
+      },
+      {
+        "source_id": "S04",
+        "text": "市场N型致密料38-43元/千克；"
+      },
+      {
+        "source_id": "S04",
+        "text": "N型颗粒硅37-41元/千克；"
+      },
+      {
+        "source_id": "S04",
+        "text": "N型混包料37-43元/千克。"
+      },
+      {
+        "source_id": "S04",
+        "text": "【Mysteel工业硅收盘评述】11月10日工业硅主力2612合约收盘价格8485元，跌幅0.18%，单日减仓2004手。"
+      },
+      {
+        "source_id": "S09",
+        "text": "上半年多晶硅产量54.1万吨，库存51万吨！"
+      },
+      {
+        "source_id": "S09",
+        "text": "7月22日，在浙江宁波举办的“2026光伏行业供应链发展（宁波）研讨会”上，中国光伏行业协会/多晶硅材料制备技术国家工程实验室监事长/主任严大洲做《多晶硅市场供应与产业发展》主题报告。"
+      },
+      {
+        "source_id": "S09",
+        "text": "报告显示，2025年全球多晶硅在产28家，有效产能为365万吨/年，同比增加7.5%；"
+      },
+      {
+        "source_id": "S09",
+        "text": "全球多晶硅产量为148.5万吨，同比"
+      },
+      {
+        "source_id": "S09",
+        "text": "，其中太阳能级块状硅约为116.1万吨，颗粒硅约为26.9万吨，在全球多晶硅总产量中的占比分别为78.2%和18.1%。"
+      },
+      {
+        "source_id": "S09",
+        "text": "，严大洲预计全球多晶硅在产16家企业，总产能约为365.8万吨/年。"
+      },
+      {
+        "source_id": "S10",
+        "text": "东方日升：异质结电池非硅成本约为0.21元/w"
+      },
+      {
+        "source_id": "S10",
+        "text": "从目前满产产线的电池生产数据来看，公司异质结电池非硅成本约为0.21元/w。"
+      },
+      {
+        "source_id": "S11",
+        "text": "2008年，英利实现销售收入85亿元，利润达13.5亿元，实现出口10.3亿美元，实际利用外资6.53亿美元。"
+      },
+      {
+        "source_id": "S11",
+        "text": "投资近5亿元建成我国第一座使用光伏玻璃幕墙并网发电的五星级酒店已营业。"
+      },
+      {
+        "source_id": "S12",
+        "text": "其中，N型棒状硅成交价格区间为4.3万-4.8万元/吨，成交均价为4.53万元/吨，环比下跌7.93%。"
+      },
+      {
+        "source_id": "S12",
+        "text": "P型致密料成交价格区间为3.8万-4.3万元/吨，成交均价为3.9万元/吨，环比下跌8.88%。"
+      },
+      {
+        "source_id": "S12",
+        "text": "N型颗粒硅成交价格区间为3.9万-4.1万元/吨，成交均价为4万元/吨，环比下降6.98%。"
+      },
+      {
+        "source_id": "S12",
+        "text": "目前，N/P棒状硅价差为0.43万元/吨。"
+      },
+      {
+        "source_id": "S12",
+        "text": "截至本周，P型硅料均价已跌至4万元/吨以下。"
+      },
+      {
+        "source_id": "S12",
+        "text": "N型颗粒硅最低价也已跌破4万关口，棒状硅最低价逼近该水平。"
+      },
+      {
+        "source_id": "S13",
+        "text": "硅片毛利率降至负数，TCL中环三个季度亏掉近60亿"
+      },
+      {
+        "source_id": "S13",
+        "text": "月23日晚，TCL中环发布财报，其上半年实现营业总收入162.13亿元，同比下降53.54%；"
+      },
+      {
+        "source_id": "S13",
+        "text": "归母净利润亏损30.64亿元，上年同期为盈利45.36亿元。"
+      },
+      {
+        "source_id": "S13",
+        "text": "此前，TCL中环预告亏损29亿-32亿元，实际数据约是预告的中位数。"
+      },
+      {
+        "source_id": "S13",
+        "text": "今年一季度，TCL中环亏损8.8亿元。"
+      },
+      {
+        "source_id": "S13",
+        "text": "以此计算，二季度亏损21.84亿元。"
+      },
+      {
+        "source_id": "S14",
+        "text": "毛利率43.01%。"
+      },
+      {
+        "source_id": "S14",
+        "text": "3月28日收盘消息，神工股份3日内股价上涨1.82%，最新报24.170元，成交额1.29亿元。"
+      },
+      {
+        "source_id": "S14",
+        "text": "毛利率34.16%。"
+      },
+      {
+        "source_id": "S14",
+        "text": "3月28日收盘消息，银星能源开盘报价5.04元，收盘于4.870元。"
+      },
+      {
+        "source_id": "S14",
+        "text": "7日内股价下跌9.65%，总市值为44.7亿元。"
+      },
+      {
+        "source_id": "S14",
+        "text": "毛利率33.23%。"
+      },
+      {
+        "source_id": "S15",
+        "text": "可以直接输入你想要的问句啦，比如输入“近一周涨幅超过30%的股票”赶紧行动吧！"
+      },
+      {
+        "source_id": "S19",
+        "text": "价格】210单/双面TOPcon分布式组件0.71-0.735元/瓦。"
+      },
+      {
+        "source_id": "S19",
+        "text": "210R双面TOPcon分布式组件0.695-0.725元/瓦；"
+      },
+      {
+        "source_id": "S19",
+        "text": "210R双面BC分布式组件0.74-0.77元/瓦。"
+      },
+      {
+        "source_id": "S19",
+        "text": "产能利用率环比涨0.6%】2026年10月"
+      },
+      {
+        "source_id": "S19",
+        "text": "国内企业产能利用率44.3%，与9月相比涨0.6%。"
+      },
+      {
+        "source_id": "S19",
+        "text": "产能利用率在45%左右，环比上涨0.7%。"
+      },
+      {
+        "source_id": "S22",
+        "text": "据PVInfoLink 6 月14 日报价，多晶硅致密料报78 元/kg，较23Q1 均价下跌62%；"
+      },
+      {
+        "source_id": "S22",
+        "text": "182mmP 型硅片报3.05 元/片，较23Q1 均价下跌46%；"
+      },
+      {
+        "source_id": "S22",
+        "text": "182mmPERC 电池/组件分别报0.78/1.45 元/W，分别较23Q1 均价下跌23%/17%。"
+      },
+      {
+        "source_id": "S22",
+        "text": "按Solarzoom 6 月14 日的价格水平测算，硅料/硅片/电池/组件/一体化组件的单瓦净利分别为0.057/0.067/0.168/-0.061/0.212 元/W ， 对应净利率33%/18%/24%/-5%/16%。"
+      },
+      {
+        "source_id": "S22",
+        "text": "2023 年4 月，美国新增光伏装机1.86GW，同比增长20%，环比减少35%；"
+      },
+      {
+        "source_id": "S22",
+        "text": "1-4 月累计新增装机8.86GW，同比增长34%。"
+      },
+      {
+        "source_id": "S23",
+        "text": "事件：公司发布2021 年业绩预告，公司预计2021 年实现归母净利润17.2-20.5 亿元，同增39.9-66.8%，其中2021Q4 实现归母净利润5.64-8.94 亿元，同增41.7-124.6%，环增25.1-98.2%。"
+      },
+      {
+        "source_id": "S23",
+        "text": "鉴于2021Q4 组件售价提升，硅片价格下行，户用装机超预期，我们预计公司业绩在中值偏上，则2021 年归母净利润18.5-19 亿元，略超市场预期。"
+      },
+      {
+        "source_id": "S23",
+        "text": "我们预计公司2021年组件出货25GW 左右，同增56%，其中2021Q4 出货8GW 左右，同增31%，环增27%。"
+      },
+      {
+        "source_id": "S23",
+        "text": "我们预计到2021 年底公司拥有电池、组件产能35GW、50GW，同比+180%、+125%，电池组件一体化比例提升至70%。"
+      },
+      {
+        "source_id": "S23",
+        "text": "扩产加速一体化布局，我们预计公司2022 年组件出货40-50GW，市占率提升至18%左右，叠加硅料价格下行，看好2022年组件量利双升。"
+      },
+      {
+        "source_id": "S24",
+        "text": "近期年报和一季报陆续公布，多家组件企业的去年Q4和今年Q1的组件单瓦盈利情况也陆续从各渠道得以获知，略作收集如下："
+      },
+      {
+        "source_id": "S24",
+        "text": "☞☞25.7%！"
+      },
+      {
+        "source_id": "S25",
+        "text": "波普压哨三分杀死比赛：詹姆斯缺阵、落后16分，76人靠替补37分完成逆转"
+      },
+      {
+        "source_id": "S25",
+        "text": "六座带三零重力座椅，新款问界M8全家出行体验有哪些升级"
+      },
+      {
+        "source_id": "S25",
+        "text": "全新腾势N8，26.99万起大五座，纯电续航970km，易三方零百2.98s"
+      },
+      {
+        "source_id": "S25",
+        "text": "避坑，买京东plus，不要超过49元"
+      },
+      {
+        "source_id": "S25",
+        "text": "实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡"
+      },
+      {
+        "source_id": "S25",
+        "text": "千元极空间NAS Z4Air 适合谁？"
+      }
+    ]
+  }
+}

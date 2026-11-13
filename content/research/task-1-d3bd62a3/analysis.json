@@ -1,0 +1,227 @@
+{
+  "summary": "新型储能仍处规模化成长期：2026年6月底累计投运1.53亿千瓦/3.96亿千瓦时，同比增长61%，2030年目标为3亿千瓦。但装机上升没有带动盈利：储能系统中标均价2024年同比下降43%至628.07元/kWh，部分集采报价低至0.466元/Wh，电芯建成产能预计1.2-1.5TWh，远超需求，鹏辉等企业毛利率仅11.40%、净利润转负。行业已进入产能出清与价格战阶段，竞争核心从拿指标转向压低成本与现金周转。",
+  "findings": [
+    {
+      "claim": "累计投运装机达1.53亿千瓦/3.96亿千瓦时，同比增长61%，规模仍在扩张",
+      "kind": "fact",
+      "source_ids": [
+        "S01",
+        "S02"
+      ],
+      "numbers": [
+        "1.53",
+        "3.96",
+        "61"
+      ],
+      "section": "market_size"
+    },
+    {
+      "claim": "电芯规划产能超2TWh、年底建成1.2-1.5TWh，远超全球需求，供给严重过剩",
+      "kind": "inference",
+      "source_ids": [
+        "S18",
+        "S15"
+      ],
+      "numbers": [
+        "2",
+        "1.2",
+        "1.5",
+        "68.39"
+      ],
+      "section": "supply_demand"
+    },
+    {
+      "claim": "竞争以价格战为主：2024年2小时储能系统中标均价628.07元/kWh，同比下降43%",
+      "kind": "fact",
+      "source_ids": [
+        "S10",
+        "S14"
+      ],
+      "numbers": [
+        "628.07",
+        "43",
+        "0.466"
+      ],
+      "section": "competition"
+    },
+    {
+      "claim": "头部集中度上升，前15家系统集成商中标规模占总量的57%，二线企业受压",
+      "kind": "fact",
+      "source_ids": [
+        "S06"
+      ],
+      "numbers": [
+        "15",
+        "57"
+      ],
+      "section": "structure"
+    },
+    {
+      "claim": "行业处于成长期后段：装机翻倍但价格腰斩，企业毛利率降至11.40%且净利润转负",
+      "kind": "inference",
+      "source_ids": [
+        "S01",
+        "S15",
+        "S10"
+      ],
+      "numbers": [
+        "11.40",
+        "-2.52",
+        "43"
+      ],
+      "section": "stage"
+    },
+    {
+      "claim": "驱动从强制配储转向市场化收益：等效利用小时数由611小时升至1195小时",
+      "kind": "inference",
+      "source_ids": [
+        "S01",
+        "S05"
+      ],
+      "numbers": [
+        "611",
+        "911",
+        "1195"
+      ],
+      "section": "drivers"
+    },
+    {
+      "claim": "若产能出清慢于需求放缓，价格战延续，二三线电芯与集成商毛利将持续为负",
+      "kind": "hypothesis",
+      "source_ids": [
+        "S18",
+        "S17",
+        "S15"
+      ],
+      "numbers": [],
+      "section": "risks"
+    }
+  ],
+  "data_gaps": [
+    "缺少行业整体收入口径的市场规模数据，现有仅为装机与中标价格",
+    "缺少CR5/CR10等精确集中度份额，仅有内部前15家合计57%的数据",
+    "缺少电芯环节库存、开工率与产能利用率的历史序列，无法精确定位周期底部",
+    "2025年全年电芯与储能系统价格的连续序列不完整，仅有部分月度与集采报价",
+    "缺少各技术路线（锂电、液流、钠电）装机占比与成本对比以支撑结构判断"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 3,
+  "prompt_tokens": 13592,
+  "completion_tokens": 1459,
+  "cost_cny": 0.041382,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "industry",
+  "checklist": {
+    "framework": "industry",
+    "title": "行业研究",
+    "sections": {
+      "definition": {
+        "title": "行业定义与边界",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "stage": {
+        "title": "发展阶段",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S01",
+          "S15",
+          "S10"
+        ]
+      },
+      "market_size": {
+        "title": "市场规模",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S01",
+          "S02"
+        ]
+      },
+      "structure": {
+        "title": "产业结构",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S06"
+        ]
+      },
+      "supply_demand": {
+        "title": "供需关系",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S18",
+          "S15"
+        ]
+      },
+      "competition": {
+        "title": "竞争格局",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S10",
+          "S14"
+        ]
+      },
+      "drivers": {
+        "title": "驱动因素",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S01",
+          "S05"
+        ]
+      },
+      "cycle": {
+        "title": "周期位置",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "policy": {
+        "title": "政策与监管",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "risks": {
+        "title": "主要风险",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S18",
+          "S17",
+          "S15"
+        ]
+      }
+    },
+    "empty_sections": [
+      "definition",
+      "cycle",
+      "policy"
+    ],
+    "inference_only_sections": [
+      "stage",
+      "supply_demand",
+      "drivers",
+      "risks"
+    ],
+    "unsectioned": [],
+    "coverage": 0.7
+  }
+}

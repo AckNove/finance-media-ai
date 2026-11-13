@@ -871,15 +871,24 @@ class TaskRuntime:
         *,
         reason: str,
         retryable: bool = True,
+        calls: int = 0,
+        tokens: int = 0,
         cost_cny: Decimal | float = 0,
     ) -> TaskSnapshot:
-        """标记失败。可重试且还有次数就放回 ready，否则终结。"""
+        """标记失败。可重试且还有次数就放回 ready，否则终结。
+
+        失败的尝试**也要记账**：模型可能已经回了话然后被截断/校验不过，Token 与费用是
+        真花掉的（``model_calls`` 里有行）。只记成功的那一次，任务累计成本就会小于审计
+        总额，预算闸门也就低估了花销。
+        """
         with self._session() as session:
             task = self._require_token(session, claim)
             subtask = session.get(ResearchSubtask, claim.subtask_id)
             if subtask is None:
                 raise TaskRuntimeError("unknown_subtask", f"子任务 {claim.subtask_id} 不存在")
             cost = Decimal(str(cost_cny))
+            task.calls_spent += max(0, calls)
+            task.tokens_spent += max(0, tokens)
             if cost:
                 task.cost_spent = (task.cost_spent or Decimal("0")) + cost
             subtask.failure_reason = reason
@@ -903,7 +912,12 @@ class TaskRuntime:
                     TaskEventType.SUBTASK_FAILED,
                     subtask=subtask,
                     actor=task.claimed_by,
-                    payload={"reason": reason, "attempt": subtask.attempts},
+                    payload={
+                        "reason": reason,
+                        "attempt": subtask.attempts,
+                        "calls": calls,
+                        "tokens": tokens,
+                    },
                     cost_delta=cost or None,
                 )
             self._clear_lease(task)

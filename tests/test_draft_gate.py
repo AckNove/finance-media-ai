@@ -93,6 +93,22 @@ def _seed_report(db_session: Any) -> Any:
 
 
 @pytest.fixture(autouse=True)
+def isolated_jobs_root(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """把视频任务根目录钉到临时目录。
+
+    审稿接口在"确认被撤回"时会去扫 `content/jobs/` 给相关任务打失效标记——测试如果
+    打真实的 `content/jobs/`，就会把仓库里真实的成片任务标成失效（本文件确实干过：
+    2026-11-13 跑全量测试时把三个验收任务写上了 `INVALIDATED.md`）。
+    """
+
+    from backend.app.video import handoff as handoff_module
+
+    root = tmp_path_factory.mktemp("jobs")
+    monkeypatch.setattr(handoff_module, "JOBS_ROOT", root)
+    return root
+
+
+@pytest.fixture(autouse=True)
 def clean_gate_tables() -> Any:
     """测试库是整场共享的：每个用例先把本文件用到的两张表清干净。"""
     from sqlalchemy import delete
@@ -416,3 +432,38 @@ def test_checks_list_survives_the_notes_and_quotes_columns(client, db_session: A
     assert items[0]["contradicting"] == []
     assert items[1]["notes"] == {"why": "没有可比口径"}
     assert items[1]["missing"] == ["缺少点值"]
+
+
+def test_review_endpoint_only_touches_the_configured_jobs_root(
+    client, db_session: Any, isolated_jobs_root: Path
+) -> None:
+    """撤回确认会去给视频任务打失效标记——只许动配置的任务根目录。
+
+    回归的是真事故：本文件早先没隔离 `JOBS_ROOT`，跑一次全量测试就把仓库里三个
+    验收成片任务写上了 `INVALIDATED.md`。测试不许改用户仓库里的东西。
+    """
+
+    import json
+
+    report = _seed_report(db_session)
+    check_id = _check(db_session, index=0, status="confirmed", report_id=report.id)
+
+    job_dir = isolated_jobs_root / "tmp_job"
+    job_dir.mkdir()
+    (job_dir / "job.json").write_text(
+        json.dumps({"job_id": "tmp_job", "draft_gate": {"check_ids": [check_id]}}),
+        encoding="utf-8",
+    )
+
+    real_root = Path(__file__).resolve().parents[1] / "content" / "jobs"
+    before = sorted(p.relative_to(real_root).as_posix() for p in real_root.rglob("INVALIDATED.md"))
+
+    response = client.post(
+        f"/api/research-reports/{report.id}/checks/{check_id}/review",
+        json={"status": "rejected", "note": "证据只覆盖一般情况"},
+    )
+    assert response.status_code == 200, response.text
+
+    after = sorted(p.relative_to(real_root).as_posix() for p in real_root.rglob("INVALIDATED.md"))
+    assert after == before, f"测试动了仓库里的真实任务：{set(after) - set(before)}"
+    assert (job_dir / "INVALIDATED.md").exists(), "被撤回确认的任务应当被标记失效"

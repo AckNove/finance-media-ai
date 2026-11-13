@@ -1,0 +1,85 @@
+{
+ "job_id": "v6_accept_industry",
+ "created_at": "2026-11-13T04:57:35.242823+00:00",
+ "stage": "storyboard_ready",
+ "next_stage": "render",
+ "blocked": false,
+ "blocked_reason": "",
+ "model_provider": "deepseek",
+ "outline": {
+  "job_id": "v6_accept_industry",
+  "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\storyboard\\storyboard.csv",
+  "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\storyboard\\OUTLINE.md",
+  "shots": [
+   {
+    "shot_id": "sh01",
+    "seconds": 4.0,
+    "narration": "这一条讲的是：结论整合：2025 年储能装机仍在增长，但电芯与系统价格持续下行、部分企业毛利转负。请研究：这个行业当前处在什么阶段，市场规模与增速、供需结构、竞争格局、驱动因素与政策变化分别是什么，主要风险在哪里？请给可核对的公开数据。。下面每一句话都能追到原文。",
+    "subtitle": "结论整合：2025 年储能装机仍在增",
+    "source_id": "",
+    "number": ""
+   },
+   {
+    "shot_id": "sh02",
+    "seconds": 4.5,
+    "narration": "到2030年 全国新型储能规模将达3亿千瓦",
+    "subtitle": "到2030年 全国新型储能规模将达…",
+    "source_id": "S01",
+    "number": "3亿"
+   },
+   {
+    "shot_id": "sh03",
+    "seconds": 5.0,
+    "narration": "以上 1 个数字来自 22 份资料（S01）。这只是资料汇编，不是投资建议。",
+    "subtitle": "资料汇编 · 不是投资建议",
+    "source_id": "",
+    "number": ""
+   }
+  ],
+  "shot_count": 3,
+  "total_seconds": 13.5,
+  "frames": 405,
+  "source_ids": [
+   "S01"
+  ],
+  "warnings": [
+   "只引用了 22 份资料里的 1 份"
+  ],
+  "generated_by": "rules",
+  "ok": true
+ },
+ "report": {
+  "report_id": 1,
+  "research_task_id": 1,
+  "title": "结论整合：2025 年储能装机仍在增长，但电芯与系统价格持续下行、部分企业毛利转负。请研究：这个行业当前处在什么阶段，市场规模与增速、供需结构、竞争格局、驱动因素与政策变化分别是什么，主要风险在哪里？请给可核对的公开数据。",
+  "verification_status": "unverified",
+  "sha256": "037eafc5bddde5cbcd4a4ac81e5a9828eb3cd3a91061f35173df2be55455f45e"
+ },
+ "counts": {
+  "evidence": 424,
+  "sources": 22,
+  "confirmed_findings": 1,
+  "draft_evidence": 1
+ },
+ "draft_gate": {
+  "rule": "只有 human_review_status=confirmed 的结论可以进入成稿",
+  "confirmed_findings": [
+   0
+  ],
+  "check_ids": [
+   1
+  ],
+  "invalidated_at": "2026-11-13T05:59:30+00:00",
+  "invalidated_reason": "人工把核查记录 1 的确认撤回到 rejected",
+  "invalidated_check_ids": [
+   1
+  ],
+  "usable": false
+ },
+ "narrative_style": "AK（accessible-explainer + investigative-storytelling + ak-signature）",
+ "not_done": [
+  "script/script.md（分镜已就位，但正式脚本仍需模型或人工）",
+  "assets_manifest.csv（素材必须先登记授权；纯色底镜头不需要）",
+  "audio/ 与 output/（跑 render_job 才会生成）"
+ ]
+}

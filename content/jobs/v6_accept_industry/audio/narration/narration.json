@@ -1,0 +1,74 @@
+{
+  "ok": true,
+  "provider": "edge",
+  "voice": "zh-CN-YunxiNeural",
+  "clip_count": 3,
+  "total_seconds": 36.792,
+  "overrun_count": 0,
+  "clips": [
+    {
+      "shot_id": "sh01",
+      "file": "audio/narration/sh01.mp3",
+      "duration_seconds": 25.896,
+      "shot_seconds": 26.233,
+      "overrun_seconds": 0.0,
+      "sha256": "56c48a5f6d20c1783fb80e4810288a23f519fea8cf58b19adebe7ec2854cb4ce",
+      "byte_size": 155613,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 67,
+      "cue_count": 7,
+      "estimated_timing": false,
+      "text": "这一条讲的是：结论整合：2025 年储能装机仍在增长，但电芯与系统价格持续下行、部分企业毛利转负。请研究：这个行业当前处在什么阶段，市场规模与增速、供需结构、竞争格局、驱动因素与政策变化分别是什么，主要风险在哪里？请给可核对的公开数据。。下面每一句话都能追到原文。"
+    },
+    {
+      "shot_id": "sh02",
+      "file": "audio/narration/sh02.mp3",
+      "duration_seconds": 4.44,
+      "shot_seconds": 4.8,
+      "overrun_seconds": 0.0,
+      "sha256": "73f1edc35d7974459b32b85c69dc685899d90641cb54e0706be2337a93201e50",
+      "byte_size": 26877,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 11,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "到2030年 全国新型储能规模将达3亿千瓦"
+    },
+    {
+      "shot_id": "sh03",
+      "file": "audio/narration/sh03.mp3",
+      "duration_seconds": 6.456,
+      "shot_seconds": 6.8,
+      "overrun_seconds": 0.0,
+      "sha256": "e915e407d513bb4ec52b2a23ce5cd91ddefa5c86963e004cf96fbfddd6f1547b",
+      "byte_size": 38973,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 15,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "以上 1 个数字来自 22 份资料（S01）。这只是资料汇编，不是投资建议。"
+    }
+  ],
+  "tracks": [
+    {
+      "src": "audio/narration/sh01.mp3",
+      "at": 0.0,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh02.mp3",
+      "at": 26.233,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh03.mp3",
+      "at": 31.033,
+      "volume": 1.0
+    }
+  ],
+  "srt": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\audio\\narration\\narration.srt",
+  "problems": []
+}

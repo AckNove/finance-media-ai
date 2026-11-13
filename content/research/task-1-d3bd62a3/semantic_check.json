@@ -1,0 +1,270 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 4,
+  "prompt_tokens": 9420,
+  "completion_tokens": 3019,
+  "cost_cny": 0.045786,
+  "checked_at": "2026-11-13T04:46:11+00:00",
+  "counts": {
+    "supported": 1,
+    "partially_supported": 2,
+    "contradicted": 0,
+    "insufficient_evidence": 3,
+    "unverifiable": 1
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "累计投运装机达1.53亿千瓦/3.96亿千瓦时，同比增长61%，规模仍在扩张",
+      "claim_kind": "fact",
+      "verdict": "supported",
+      "reason": "证据原文逐字给出截至6月底1.53亿千瓦/3.96亿千瓦时、同比增长61%，与结论中的数字一致",
+      "evidence_ids": [
+        1
+      ],
+      "source_ids": [
+        "S01",
+        "S02"
+      ],
+      "supporting": [
+        "截至6月底，全国已建成投运新型储能装机规模达1.53亿千瓦/3.96亿千瓦时，同比增长61%。"
+      ],
+      "contradicting": [],
+      "missing": [],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1345,
+      "completion_tokens": 431,
+      "cost_cny": 0.006541,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:46:11+00:00",
+      "notes": [
+        "usage_share:1/7"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "电芯规划产能超2TWh、年底建成1.2-1.5TWh，远超全球需求，供给严重过剩",
+      "claim_kind": "inference",
+      "verdict": "insufficient_evidence",
+      "reason": "给定证据中没有电芯规划产能超2TWh、年底建成1.2-1.5TWh或全球需求规模的数据；S15的68.39%只是单家企业的产能利用率",
+      "evidence_ids": [],
+      "source_ids": [
+        "S18",
+        "S15"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "电芯规划产能超2TWh、年底建成1.2-1.5TWh的具体来源",
+        "全球储能需求的规模数据（用于比较是否“远超”）",
+        "S18 的原文证据缺失"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1345,
+      "completion_tokens": 431,
+      "cost_cny": 0.006541,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:46:11+00:00",
+      "notes": [
+        "usage_share:1/7"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "竞争以价格战为主：2024年2小时储能系统中标均价628.07元/kWh，同比下降43%",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "证据标题只支持“2024年储能系统中标均价下降43%”，没有628.07元/kWh或“2小时储能系统”的具体口径数据；S14的摘录只有网页导航内容",
+      "evidence_ids": [
+        42
+      ],
+      "source_ids": [
+        "S10",
+        "S14"
+      ],
+      "supporting": [
+        "2024年储能系统中标均价下降43%"
+      ],
+      "contradicting": [],
+      "missing": [
+        "2024年2小时储能系统中标均价628.07元/kWh的原文",
+        "由均价下降推出“竞争以价格战为主”的更多依据"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "只有降幅43%被原文支持，具体均价数值与时长口径无证据"
+        },
+        {
+          "code": "overgeneralized",
+          "note": "仅凭中标均价下降这一指标就概括为“竞争以价格战为主”"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1345,
+      "completion_tokens": 431,
+      "cost_cny": 0.006541,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:46:11+00:00",
+      "notes": [
+        "usage_share:1/7"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "头部集中度上升，前15家系统集成商中标规模占总量的57%，二线企业受压",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S06的摘录只有标题“CNESA：2025年预计新型储能新增装机40.8GW-51.9GW 呈现五大趋势”，没有前15家占57%的内容",
+      "evidence_ids": [],
+      "source_ids": [
+        "S06"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "前15家系统集成商中标规模占总量的57%的原文数据",
+        "二线企业受压的相关数据"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1345,
+      "completion_tokens": 431,
+      "cost_cny": 0.006541,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:46:11+00:00",
+      "notes": [
+        "usage_share:1/7"
+      ]
+    },
+    {
+      "index": 4,
+      "claim": "行业处于成长期后段：装机翻倍但价格腰斩，企业毛利率降至11.40%且净利润转负",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "毛利率11.40%来自鹏辉能源单家企业的年报数据，净利润转负、装机翻倍、价格腰斩均无原文支持，且“腰斩”与证据中的43%降幅、“翻倍”与61%增速不符",
+      "evidence_ids": [
+        68,
+        42,
+        1
+      ],
+      "source_ids": [
+        "S01",
+        "S15",
+        "S10"
+      ],
+      "supporting": [
+        "鹏辉能源2024：锂离子电池营收73.63亿元，毛利率11.40%，产能约25GWh，产能利用率68.39%"
+      ],
+      "contradicting": [
+        "2024年储能系统中标均价下降43%",
+        "截至6月底，全国已建成投运新型储能装机规模达1.53亿千瓦/3.96亿千瓦时，同比增长61%。"
+      ],
+      "missing": [
+        "净利润转负（-2.52）的原文数据",
+        "“价格腰斩”“装机翻倍”的对应数据",
+        "行业整体毛利率而非单一企业毛利率"
+      ],
+      "issues": [
+        {
+          "code": "overgeneralized",
+          "note": "用鹏辉能源单家企业的毛利率11.40%代表整个行业"
+        },
+        {
+          "code": "number_unit_mismatch",
+          "note": "结论称“价格腰斩”“装机翻倍”，证据分别为下降43%和增长61%"
+        },
+        {
+          "code": "partial_support",
+          "note": "仅毛利率一项数字有原文依据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1345,
+      "completion_tokens": 431,
+      "cost_cny": 0.006541,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:46:11+00:00",
+      "notes": [
+        "usage_share:1/7"
+      ]
+    },
+    {
+      "index": 5,
+      "claim": "驱动从强制配储转向市场化收益：等效利用小时数由611小时升至1195小时",
+      "claim_kind": "inference",
+      "verdict": "insufficient_evidence",
+      "reason": "S01与S05的摘录中都没有等效利用小时数611小时、1195小时，也没有关于由强制配储转向市场化收益的原文",
+      "evidence_ids": [],
+      "source_ids": [
+        "S01",
+        "S05"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "等效利用小时数由611升至1195小时的数据来源",
+        "强制配储转向市场化收益的政策或数据依据"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1345,
+      "completion_tokens": 431,
+      "cost_cny": 0.006541,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:46:11+00:00",
+      "notes": [
+        "usage_share:1/7"
+      ]
+    },
+    {
+      "index": 6,
+      "claim": "若产能出清慢于需求放缓，价格战延续，二三线电芯与集成商毛利将持续为负",
+      "claim_kind": "hypothesis",
+      "verdict": "unverifiable",
+      "reason": "这是对未来条件的假设性推断；给定证据只有亿纬锂能产能利用率走低和鹏辉能源毛利率11.40%等片段，不足以验证“二三线毛利将持续为负”",
+      "evidence_ids": [],
+      "source_ids": [
+        "S18",
+        "S17",
+        "S15"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "产能出清速度与需求放缓的量化判断",
+        "二三线电芯企业与集成商未来毛利率的预测数据"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1345,
+      "completion_tokens": 431,
+      "cost_cny": 0.006541,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:46:11+00:00",
+      "notes": [
+        "usage_share:1/7"
+      ]
+    }
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

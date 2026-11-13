@@ -7,6 +7,10 @@
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
 > 本文件随开发推进**就地更新**，不另开副本。
+>
+> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、66 个 API 操作、
+> 20 个前端页面、`pytest` 929 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
 
@@ -25,15 +29,15 @@
 | 目录与模块边界 | `backend/app/{api,core,capabilities,execution,research,video,services,models,schemas}` | DONE | — |
 | 配置管理 | `config/*.yaml` + `core/config.py` + `core/config_schema.py`（全 `extra="forbid"`） | DONE | — |
 | 数据库访问层 | `database/session.py`（连接级 3 条 PRAGMA）+ `models/` | DONE | — |
-| 迁移框架 | `backend/migrations/versions/` 6 个版本 | DONE | — |
+| 迁移框架 | `backend/migrations/versions/` 7 个版本（到 `b6_v6_operations`） | DONE | — |
 | 日志与异常 | `core/logging.py` + `core/errors.py` + `api/middleware.py`（request_id） | DONE | — |
 | 任务队列 / 状态持久化 / 并发 | `execution/{runtime,worker,orchestrator}.py`（租约 + attempt_token + 事件序号） | DONE | — |
 | Windows 启动脚本 | `scripts/start.ps1`（BOM、端口检查、健康探测） | DONE | — |
-| Windows 停止脚本 | — | **NOT_IMPLEMENTED** | 本轮补 |
-| 数据备份与恢复 | — | **NOT_IMPLEMENTED** | 本轮补 |
-| 环境诊断 | `backend/scripts/preflight.py` | PARTIAL | 只查依赖/配置，不查 FFmpeg/浏览器/端口/库版本 |
+| Windows 停止脚本 | `scripts/stop.ps1`（只杀 `uvicorn backend.app.main`，`-Force` 才强杀） | DONE | 已实测杀掉真实监听 |
+| 数据备份与恢复 | `backend/scripts/{backup_db,restore_db}.py`（在线备份 + sha256 说明 + 受保护库拒写 + 恢复前留副本） | DONE | `tests/test_backup_restore.py` 13 例 |
+| 环境诊断 | `backend/scripts/doctor.py`（22 项：依赖/FFmpeg/字体/浏览器/端口/磁盘/库版本/配置/Provider） | DONE | 仍保留更轻的 `preflight.py` |
 | 服务健康检查 | `GET /health`、`GET /api/system/status` | DONE | — |
-| 服务自动恢复 | — | **NOT_IMPLEMENTED** | 本轮补（watchdog + 崩溃日志） |
+| 服务自动恢复 | `scripts/watchdog.ps1`（健康探测 + 退避 3→6→12→24 封顶 60 秒 + 日志） | DONE | 8031 端口实测起服务并通过健康检查 |
 | 系统运行监控 | `GET /api/system/{costs,providers,agents}` | PARTIAL | 只有当前快照，无历史曲线 |
 
 ## B. 模型系统
@@ -83,11 +87,11 @@
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
 | 通用研究闭环 | `research/{digest,analysis,verify,corroborate,persistence}.py` | DONE | — |
-| 行业研究十维度（定义/阶段/规模/结构/供需/格局/驱动/周期/政策/风险） | — | **NOT_IMPLEMENTED** | 本轮补结构化框架 |
-| 产业链研究十二维度（上中下游/原材料/设备/技术/环节/成本/供应链/价值分配/瓶颈/机会） | — | **NOT_IMPLEMENTED** | 同上 |
-| 公司研究十四维度（基本信息…最新动态） | — | **NOT_IMPLEMENTED** | 同上 |
+| 行业研究十维度（定义/阶段/规模/结构/供需/格局/驱动/周期/政策/风险） | `research/frameworks.py` 的 `INDUSTRY`（10 节，`market_size` 只允许 fact） | DONE | 已真跑：储能主题产出按节分组的分析 |
+| 产业链研究十二维度（上中下游/原材料/设备/技术/环节/成本/供应链/价值分配/瓶颈/机会） | `frameworks.py` 的 `CHAIN`（11 节） | DONE | 已真跑：光伏产业链主题 |
+| 公司研究十四维度（基本信息…最新动态） | `frameworks.py` 的 `COMPANY`（14 节，财务四节只允许 fact） | DONE | 已真跑：隆基绿能主题 |
 | 事实 / 推断 / 观点区分 | `analysis.py` 的 `kind` + 语义核查 | DONE | — |
-| 数据缺口 / 冲突 / 时效 / 局限 | 报告 `limitations` + `data_gaps` | PARTIAL | 缺口没有独立结构化输出 |
+| 数据缺口 / 冲突 / 时效 / 局限 | 报告 `limitations` + `data_gaps` + `framework.checklist` 的覆盖率 | PARTIAL | 时效判定还没做（D 段） |
 
 ## F. 语义核查与人工审核
 
@@ -99,7 +103,7 @@
 | 模型状态与人工状态分离 | `verdict` vs `human_review_status` | DONE | — |
 | 只有人工确认才能成稿 | `research/draft_gate.py`（视频任务 + 脚本两个出口） | DONE | — |
 | 视频任务锁定 Finding/Evidence/Source | `video/handoff.py`（`job.json.draft_gate`） | DONE | — |
-| 审核撤销后已有任务失效处理 | — | **NOT_IMPLEMENTED** | 本轮补 |
+| 审核撤销后已有任务失效处理 | `handoff.py` 的 `jobs_using_checks/invalidate_jobs` + 复核接口联动（写 `INVALIDATED.md`，**不删产物**） | DONE | `tests/test_review_invalidation.py` 5 例 |
 
 ## G. 内容策划与脚本
 
@@ -128,7 +132,8 @@
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
 | 技术 QC 十项 | `video/qc.py`（黑帧/静帧/静音/时长/音画等长…） | DONE | — |
-| 内容 QC（数字/单位/日期/图表与旁白一致/来源可追溯） | 卡片数字规则 + `corroborate` 部分覆盖 | PARTIAL | 缺程序化内容 QC 报告 |
+| 内容 QC（数字/单位/日期/图表与旁白一致/来源可追溯） | `video/content_qc.py`（8 类检查：上屏数字必须能在材料里找到、四舍五入只算提醒、每镜要有来源、字幕必须来自旁白、素材授权）+ `POST /api/workspace/jobs/{id}/content-qc` | DONE | 真片 `v6_accept_company_v2` 已从 3 条硬错修到 `ok: true`；仍不判断好坏（叙事/节奏/观感靠人看片） |
+| 逐镜来源可机读 | `media/storyboard.py` 的 `source_ids` 列 + `video/outline.py` 写入 | DONE | 框景镜头允许空，落带单位的量就必须挂来源 |
 | 字幕错字 / 节奏 / 开头吸引力 | — | BLOCKED | 需人看片，不做假装 |
 
 ## J. 前端工作台
@@ -144,9 +149,9 @@
 
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
-| 内容日历 / 排期 / 状态 | — | **NOT_IMPLEMENTED** | 本轮补 |
-| 导出记录 / 发布记录 / 多平台适配 | — | **NOT_IMPLEMENTED** | 本轮补（发布只记录，不自动发） |
-| 账号数据导入 / 播放量 / 互动分析 | — | **NOT_IMPLEMENTED** | 本轮补（CSV 导入 + 汇总） |
+| 内容日历 / 排期 / 状态 | `models/operations.py` 的 `content_calendar` + `/api/calendar/*`（7 个端点）+ `web/app.js#pageOperations` | DONE | 迁移 `b6_v6_operations`；`tests/test_operations.py` 14 例 |
+| 导出记录 / 发布记录 / 多平台适配 | 同表 `export_path`/`publish_state`/`published_url`/`published_at`（**发布必须有链接**，撤回留痕） | PARTIAL | 多平台内容适配（一稿三版）没做 |
+| 账号数据导入 / 播放量 / 互动分析 | `platform_metrics` + `POST /api/calendar/{id}/metrics` + `GET /api/calendar/analytics`（取最新快照，不累加） | PARTIAL | 只能手工回填，CSV 批量导入没做 |
 
 ## 优先级与执行顺序（自主决定，不等确认）
 

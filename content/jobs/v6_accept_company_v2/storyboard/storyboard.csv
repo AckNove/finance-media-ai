@@ -1,0 +1,5 @@
+shot_id,start_time,end_time,narrative_purpose,narration,visual_description,asset_id,asset_type,asset_source,license,animation,camera_motion,transition,subtitle,sound_effect,safety_zone,fps,canvas_width,canvas_height,notes,source_start,source_ids
+sh01,0.000000000,8.733333333,开场,这一条讲的是：请基于公开财报与公告研究隆基绿能 2024 年的…。下面每一句话都能追到原文。,纯色底 + 大字排版,,solid,#1d2a44,原创（纯色底，程序生成）,fade_in,push,none,请基于公开财报与公告研究隆基绿能…,none,bottom,30,1080,1920,规则草稿,,
+sh02,8.733333333,15.866666667,引用数据点,光伏巨头隆基绿能发布年报预告，2024年度净亏损82亿到88亿元,数据卡：放大数字 + 来源标注,CARD_sh02,composition,assets/compositions/card_sh02.json,原创（程序生成）,fade_in,pan_right,dissolve,,none,bottom,30,1080,1920,规则草稿；来源 S01,,S01
+sh03,15.866666667,21.200000000,引用数据点,净利润亏损86.18亿元，隆基绿能如何走出至暗时刻？,数据卡：放大数字 + 来源标注,CARD_sh03,composition,assets/compositions/card_sh03.json,原创（程序生成）,fade_in,punch,slide,,none,bottom,30,1080,1920,规则草稿；来源 S20,,S20
+sh04,21.200000000,29.266666667,收尾,以上 2 个数字来自 21 份资料（S01、S20）。这只是资料汇编，不是投资建议。,纯色底 + 大字排版,,solid,#1d2a44,原创（纯色底，程序生成）,fade_in,push,dissolve,资料汇编 · 不是投资建议,none,bottom,30,1080,1920,规则草稿,,

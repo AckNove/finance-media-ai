@@ -1,0 +1,14 @@
+{
+  "job_id": "v6_accept_company_v2",
+  "ok": true,
+  "stats": {
+    "shots": 4,
+    "shots_with_narration": 4,
+    "distinct_numbers_on_screen": 3,
+    "numbers_in_material": 121,
+    "assets_listed": 2
+  },
+  "errors": [],
+  "warnings": [],
+  "note": "这里只说明画面上的数字/来源/字幕能对得上材料，**不判断内容好坏**：叙事、节奏、观感必须人看片。"
+}

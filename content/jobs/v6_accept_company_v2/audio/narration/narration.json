@@ -1,0 +1,94 @@
+{
+  "ok": true,
+  "provider": "edge",
+  "voice": "zh-CN-YunxiNeural",
+  "clip_count": 4,
+  "total_seconds": 27.84,
+  "overrun_count": 0,
+  "clips": [
+    {
+      "shot_id": "sh01",
+      "file": "audio/narration/sh01.mp3",
+      "duration_seconds": 8.376,
+      "shot_seconds": 8.733,
+      "overrun_seconds": 0.0,
+      "sha256": "a8b99504540afc4c11488720a91b4cc93337a01540acd9815a5380d15dee0cbb",
+      "byte_size": 50493,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 24,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "这一条讲的是：请基于公开财报与公告研究隆基绿能 2024 年的…。下面每一句话都能追到原文。"
+    },
+    {
+      "shot_id": "sh02",
+      "file": "audio/narration/sh02.mp3",
+      "duration_seconds": 6.768,
+      "shot_seconds": 7.133,
+      "overrun_seconds": 0.0,
+      "sha256": "ade248ad1305271e818f7f6d29baa9c8e9a0a33a794870c9b47c1093e361277a",
+      "byte_size": 40845,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 13,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "光伏巨头隆基绿能发布年报预告，2024年度净亏损82亿到88亿元"
+    },
+    {
+      "shot_id": "sh03",
+      "file": "audio/narration/sh03.mp3",
+      "duration_seconds": 4.992,
+      "shot_seconds": 5.333,
+      "overrun_seconds": 0.0,
+      "sha256": "2cda905b812d9e1154864c6fc03140940341a66e37af5c606800d6bbb917aa22",
+      "byte_size": 30189,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 9,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "净利润亏损86.18亿元，隆基绿能如何走出至暗时刻？"
+    },
+    {
+      "shot_id": "sh04",
+      "file": "audio/narration/sh04.mp3",
+      "duration_seconds": 7.704,
+      "shot_seconds": 8.067,
+      "overrun_seconds": 0.0,
+      "sha256": "e2aeb8f8b6db30c845126a6e26b5f9c82754dba951e2808a5af7ecd5b56c6431",
+      "byte_size": 46461,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 17,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "以上 2 个数字来自 21 份资料（S01、S20）。这只是资料汇编，不是投资建议。"
+    }
+  ],
+  "tracks": [
+    {
+      "src": "audio/narration/sh01.mp3",
+      "at": 0.0,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh02.mp3",
+      "at": 8.733,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh03.mp3",
+      "at": 15.867,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh04.mp3",
+      "at": 21.2,
+      "volume": 1.0
+    }
+  ],
+  "srt": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company_v2\\audio\\narration\\narration.srt",
+  "problems": []
+}

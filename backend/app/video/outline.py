@@ -35,6 +35,18 @@ SECONDS_PER_POINT = 4.5
 SECONDS_OPENING = 4.0
 SECONDS_CLOSING = 5.0
 
+#: 流水线内部阶段名，会出现在报告标题前面（"结论整合：…"）。念给观众听时要剥掉。
+_STAGE_LABELS = (
+    "结论整合：",
+    "结论整合:",
+    "事实核查（强制闸门）：",
+    "事实核查：",
+    "分析：",
+    "资料收集：",
+    "研究规划：",
+    "底稿：",
+)
+
 #: 一屏最多放几个数据点。超过就别塞，宁可少讲两句。
 MAX_POINTS = 6
 
@@ -264,6 +276,34 @@ def _caption_around(text: str, number: str) -> str:
     return window
 
 
+def _short_title(title: str, *, limit: int = 24) -> str:
+    """把底稿标题压成一句能念的短标题：取第一个句子，或前 ``limit`` 个字。
+
+    研究任务的标题往往就是整句研究目标，原样念出来开场要二十多秒；这里只取
+    "这一段讲什么"的那半句，剩下的留给正文。流水线阶段名（结论整合、事实核查…）
+    是内部标签，念出来像机器在自言自语，先剥掉。
+    """
+
+    text = " ".join(str(title).split())
+    for label in _STAGE_LABELS:
+        if text.startswith(label):
+            text = text[len(label) :].lstrip("：: ")
+            break
+    for mark in ("。", "！", "？", "；", ";", "!", "?"):
+        head, sep, _ = text.partition(mark)
+        if sep and head.strip():
+            text = head.strip()
+            break
+    if len(text) > limit:
+        cut = text[:limit]
+        # 别把一个数字切成半截（"…研究隆基绿能 2" 这种看着像错字）
+        while cut and (cut[-1].isdigit() or cut[-1].isspace()):
+            cut = cut[:-1]
+        cut = cut.rstrip("，,、：: （(")
+        text = (cut or text[:limit]) + "…"
+    return text or "未命名研究"
+
+
 def _points(digest: Any, limit: int) -> list[Any]:
     """按来源顺序取数据点：每来源最多两条，同一组数字/同一句话只讲一次。"""
     picked: list[Any] = []
@@ -317,11 +357,14 @@ def build_outline(
         raise OutlineError("no_data_points", "底稿里没有可引用的数据点，先补充资料再排分镜")
 
     title = str(getattr(digest, "title", "") or "").strip() or "未命名研究"
+    # 底稿标题常常就是整句研究目标（三四十字），直接念出来开场会拖到二十多秒、
+    # 画面上还要被截断。开场只念"这是什么"，取第一个句子或前 N 个字（以先到者为准）。
+    spoken = _short_title(title)
     openings = OutlineShot(
         shot_id="sh01",
         seconds=SECONDS_OPENING,
-        narration=f"这一条讲的是：{title}。下面每一句话都能追到原文。",
-        subtitle=title[:MAX_CAPTION_CHARS],
+        narration=f"这一条讲的是：{spoken}。下面每一句话都能追到原文。",
+        subtitle=_short_title(title, limit=MAX_CAPTION_CHARS),
         source_id="",
     )
     shots: list[OutlineShot] = [openings]
@@ -406,6 +449,9 @@ def build_outline(
                 "canvas_width": str(canvas[0]),
                 "canvas_height": str(canvas[1]),
                 "notes": f"规则草稿；来源 {shot.source_id}" if shot.source_id else "规则草稿",
+                # 可追溯性落到结构化列上：内容质检靠这一列判「这一镜的说法能不能回溯」
+                "source_ids": shot.source_id,
+                "source_start": "",
             }
         )
 
@@ -519,10 +565,13 @@ def retime_storyboard(
                 "safety_zone",
                 "notes",
                 "source_start",
+                "source_ids",
             )
         }
         row["start_time"] = f"{shot.start_time:.3f}"
         row["end_time"] = f"{shot.end_time:.3f}"
+        # 这一镜引用了哪几份资料：写进 `source_ids` 列，别只藏在 notes 的自由文本里
+        row["source_ids"] = getattr(shot, "source_ids", "") or ""
         rows.append(row)
     return retime_rows(rows, durations, pad=pad, min_seconds=min_seconds, fps=storyboard.fps)
 

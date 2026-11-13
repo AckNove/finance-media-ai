@@ -1,0 +1,335 @@
+{
+  "started_at": "2026-11-13T05:06:41.380941+00:00",
+  "topics": [
+    {
+      "key": "company",
+      "kind": "上市公司研究",
+      "title": "隆基绿能2024年财报里的亏损来自哪里",
+      "ok": true,
+      "task_id": 1,
+      "task_status": "completed",
+      "sources": 26,
+      "evidence": 344,
+      "report_id": 1,
+      "report_summary": "隆基绿能2024年营收825.82亿元、同比下降36.23%，归母净亏损86.18亿元，为2013年以来首次年度亏损（S11,S25）。亏损来自三重因素：行业供需失衡导致PERC/TOPCon产品价格与毛利率下滑、开工率受限；技术迭代下计提资产减值；参股硅料企业出现投资亏损（S01,S24）。分业务看，硅片及硅棒收入降幅最大（-66.53%），组件及电池为收入主体（S11）。2024上半年毛利率降至7.66%、每股经营现金流为-0.85元（S18）。现金流、资产负债率与同业比较等证据不足，因此无法就这些方面给出结论。",
+      "findings": 6,
+      "limitations": "本稿的摘要与结论由模型（deepseek/deepseek-flash）基于下方列出的证据生成，每条结论都挂了来源编号；但**模型结论不等于事实核查结论**，引用前必须回原文核对口径与时点；另有 80 条说法只有单一来源，引用前应另找佐证；其中 2 个数字被至少两个来源同时说到（仅表示一致，不等于数据正确）",
+      "planning": {
+        "planner": "model",
+        "model_used": true,
+        "query_count": 36,
+        "subtask_count": 6,
+        "degraded_reason": ""
+      },
+      "checks_summary": {
+        "research_report_id": 1,
+        "total": 6,
+        "by_verdict": {
+          "supported": 1,
+          "insufficient_evidence": 3,
+          "partially_supported": 2
+        },
+        "by_human_review": {
+          "pending": 6
+        },
+        "model_cost_cny": "0.041340",
+        "model_calls": 6,
+        "note": "模型判定与人工复核是两条独立状态线；这里只有计数，判断依据看明细接口"
+      },
+      "checks_sample": [
+        {
+          "id": 1,
+          "verdict": "supported",
+          "claim": "2024年营收825.82亿元同比降36.23%，归母净亏损86.18亿元，与预告的82亿至88亿元区间一致",
+          "supporting": [
+            "全年营收825.82亿元，同比下滑36.23%，净利润亏损86.18亿元",
+            "预计2024年度实现归属于上市公司股东的净亏损为82亿元到88亿元"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 2,
+          "verdict": "insufficient_evidence",
+          "claim": "收入主体是组件及电池663.34亿元（-33.13%），硅片及硅棒82.07亿元（-66.53%）是降幅最大的板块",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 3,
+          "verdict": "partially_supported",
+          "claim": "2024上半年毛利率7.66%、净利率-13.65%，盈利能力因产品价格下跌而大幅恶化",
+          "supporting": [
+            "毛利率7.66%，同比减61.6%，净利率-13.65%，同比减196.43%"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 4,
+          "verdict": "partially_supported",
+          "claim": "亏损主要由光伏产品端造成：光伏产品毛利率仅0.48%，电站分部毛利率36.91%，后者难以对冲前者的亏损（期次未标注）",
+          "supporting": [
+            "光伏产品-分部 2570426.88 （95.04%） 2558023.18 （95.87%） 34.21% 0.48%",
+            "光伏电站-分部 81456.29 （3.01%） 51393.66 （1.93%） 82.91% 36.91%"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 5,
+          "verdict": "insufficient_evidence",
+          "claim": "管理层将亏损的成因归于外部的供需失衡与价格下跌、技术迭代导致的资产减值，以及内部的HPBC1.0研产销脱节",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 6,
+          "verdict": "insufficient_evidence",
+          "claim": "2024上半年每股经营性现金流-0.85元、同比降223.46%，经营现金流与当期亏损方向一致",
+          "supporting": [],
+          "human": "pending"
+        }
+      ],
+      "subtasks": [
+        {
+          "sequence": 1,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 2,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 3,
+          "task_type": "research.plan",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 4,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 5,
+          "task_type": "research.extract",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 6,
+          "task_type": "research.analyze",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 7,
+          "task_type": "research.synthesize",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 8,
+          "task_type": "verify.claims",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 9,
+          "task_type": "content.script",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 10,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 11,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        }
+      ],
+      "rounds": 5,
+      "gates_cleared": 2
+    }
+  ],
+  "content": {
+    "ok": true,
+    "job_id": "v6_accept_company",
+    "check_id": 1,
+    "readiness": {
+      "report_id": 1,
+      "total_checks": 6,
+      "confirmed": 1,
+      "by_human_review": {
+        "confirmed": 1,
+        "pending": 5
+      },
+      "by_verdict": {
+        "supported": 1,
+        "insufficient_evidence": 3,
+        "partially_supported": 2
+      },
+      "allowed": true,
+      "reason": "",
+      "note": "有 1 条结论已人工确认，可以进入成稿；未确认的结论不会进稿。",
+      "rule": "只有 human_review_status=confirmed 的结论可以进入成稿"
+    },
+    "job": {
+      "job_id": "v6_accept_company",
+      "path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company",
+      "stage": "storyboard_ready",
+      "next_stage": "render",
+      "blocked": false,
+      "blocked_reason": "",
+      "next_step": "分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。先人工看一遍分镜，然后跑 python -m backend.scripts.render_job --job v6_accept_company --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。",
+      "report_id": 1,
+      "evidence_count": 344,
+      "source_count": 21,
+      "files": [
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company\\research\\report.md",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company\\research\\evidence.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company\\research\\sources.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company\\job.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company\\HANDOFF.md"
+      ],
+      "outline": {
+        "job_id": "v6_accept_company",
+        "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company\\storyboard\\storyboard.csv",
+        "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_company\\storyboard\\OUTLINE.md",
+        "shots": [
+          {
+            "shot_id": "sh01",
+            "seconds": 4.0,
+            "narration": "这一条讲的是：结论整合：请基于公开财报与公告研究隆基绿能 2024 年的经营情况：主营业务与商业模式、收入与利润结构变化、盈利能力与现金流、资产负债与存货减值、与同行的差异、以及主要风险。请标注数据口径与时点。。下面每一句话都能追到原文。",
+            "subtitle": "结论整合：请基于公开财报与公告研究隆",
+            "source_id": "",
+            "number": ""
+          },
+          {
+            "shot_id": "sh02",
+            "seconds": 4.5,
+            "narration": "光伏巨头隆基绿能发布年报预告，2024年度净亏损82亿到88亿元",
+            "subtitle": "光伏巨头隆基绿能发布年报预告，",
+            "source_id": "S01",
+            "number": "82亿"
+          },
+          {
+            "shot_id": "sh03",
+            "seconds": 4.5,
+            "narration": "净利润亏损86.18亿元，隆基绿能如何走出至暗时刻？",
+            "subtitle": "净利润亏损86.18亿元，",
+            "source_id": "S20",
+            "number": "86.18亿元"
+          },
+          {
+            "shot_id": "sh04",
+            "seconds": 5.0,
+            "narration": "以上 2 个数字来自 21 份资料（S01、S20）。这只是资料汇编，不是投资建议。",
+            "subtitle": "资料汇编 · 不是投资建议",
+            "source_id": "",
+            "number": ""
+          }
+        ],
+        "shot_count": 4,
+        "total_seconds": 18.0,
+        "frames": 540,
+        "source_ids": [
+          "S01",
+          "S20"
+        ],
+        "warnings": [
+          "只引用了 21 份资料里的 2 份"
+        ],
+        "generated_by": "rules",
+        "ok": true
+      }
+    }
+  },
+  "costs": {
+    "model_calls": 4,
+    "model_tokens": 48400,
+    "model_cost_cny": "0.157708",
+    "tool_calls": 0,
+    "tool_cost_cny": "0",
+    "task_cost_cny": "0.157708",
+    "by_model": [
+      {
+        "key": "deepseek/deepseek-flash",
+        "calls": 4,
+        "tokens": 48400,
+        "cost_cny": "0.157708"
+      }
+    ],
+    "by_tool": [],
+    "by_day": [
+      {
+        "key": "2026-11-13",
+        "calls": 4,
+        "tokens": 48400,
+        "cost_cny": "0.157708"
+      }
+    ],
+    "pricing_unknown_calls": 0,
+    "note": "成本按已配置价目与实际 token 用量计算。"
+  },
+  "database": {
+    "tables": {
+      "sources": 26,
+      "evidence": 344,
+      "research_reports": 1,
+      "finding_checks": 6,
+      "model_calls": 4,
+      "research_tasks": 1,
+      "research_subtasks": 11,
+      "task_events": 54
+    },
+    "model_calls": [
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.plan",
+        497,
+        2125,
+        0.019164
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.analyze",
+        15089,
+        2079,
+        0.049853
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.synthesize",
+        15089,
+        1785,
+        0.047348
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.verify",
+        9178,
+        2558,
+        0.041343
+      ]
+    ],
+    "model_cost_total_cny": "0.15770800000000001",
+    "task_cost_spent_cny": "0.157708",
+    "api_task_cost_cny": "0.157708",
+    "accounting_ok": true,
+    "secret_leaks": 0
+  },
+  "finished_at": "2026-11-13T05:12:36.433954+00:00"
+}

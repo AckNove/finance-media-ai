@@ -1,0 +1,156 @@
+{
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 1135,
+    "bg": "#1d2a44"
+  },
+  "clips": {
+    "solid_1d2a44": {
+      "frames_dir": "plates/aba0357b7b14",
+      "n": 120,
+      "fps": 30.0,
+      "w": 1080,
+      "h": 1920,
+      "pattern": "%05d.png"
+    },
+    "CARD_sh02": {
+      "frames_dir": ".openkatana/compositions/78cebafd24944972938ea745a0c5dd35/frames",
+      "pattern": "%05d.png",
+      "n": 144,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    }
+  },
+  "shots": [
+    {
+      "f0": 0,
+      "f1": 787,
+      "bg": "#1d2a44",
+      "clip": "solid_1d2a44",
+      "src": 0,
+      "speed": 1,
+      "loop": "loop",
+      "cam": {
+        "push": {
+          "v": 0.03
+        }
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 787,
+      "f1": 931,
+      "clip": "CARD_sh02",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "pan": {
+          "dx": -0.05
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 931,
+      "f1": 1135,
+      "bg": "#1d2a44",
+      "clip": "solid_1d2a44",
+      "src": 0,
+      "speed": 1,
+      "loop": "loop",
+      "cam": {
+        "push": {
+          "v": 0.03
+        }
+      },
+      "transition": {
+        "type": "slide",
+        "d": 0.4,
+        "dir": "up"
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    }
+  ],
+  "fonts": [
+    {
+      "family": "AKSC",
+      "url": "fonts/NotoSansSC-VF.ttf"
+    }
+  ],
+  "text": [
+    {
+      "type": "caption",
+      "family": "AKSC",
+      "text": "结论整合：2025 年储能装机仍在增",
+      "f0": 0,
+      "f1": 787,
+      "pos": [
+        0.5,
+        0.84
+      ],
+      "size": 46,
+      "fill": "#f6f8fa",
+      "stroke": "#0b1220",
+      "lw": 3,
+      "shadow": "dark"
+    },
+    {
+      "type": "caption",
+      "family": "AKSC",
+      "text": "资料汇编 · 不是投资建议",
+      "f0": 931,
+      "f1": 1135,
+      "pos": [
+        0.5,
+        0.84
+      ],
+      "size": 46,
+      "fill": "#f6f8fa",
+      "stroke": "#0b1220",
+      "lw": 3,
+      "shadow": "dark"
+    }
+  ],
+  "audio": {
+    "mode": "mix",
+    "gain": 1.0,
+    "tracks": [
+      {
+        "src": "audio/narration/sh01.mp3",
+        "at": 0.0,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh02.mp3",
+        "at": 26.233,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh03.mp3",
+        "at": 31.033,
+        "volume": 1.0
+      }
+    ]
+  }
+}

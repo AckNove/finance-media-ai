@@ -133,10 +133,24 @@ class Worker:
                     "subtask %s blocked: %s", claim.subtask_id, outcome.reason
                 )
             elif outcome.status == "retry":
-                self.runtime.fail(claim, reason=outcome.reason or "retry", retryable=True)
+                self.runtime.fail(
+                    claim,
+                    reason=outcome.reason or "retry",
+                    retryable=True,
+                    calls=outcome.calls,
+                    tokens=outcome.tokens,
+                    cost_cny=outcome.cost_cny,
+                )
                 report.retried.append(claim.subtask_id)
             else:
-                self.runtime.fail(claim, reason=outcome.reason or "failed", retryable=False)
+                self.runtime.fail(
+                    claim,
+                    reason=outcome.reason or "failed",
+                    retryable=False,
+                    calls=outcome.calls,
+                    tokens=outcome.tokens,
+                    cost_cny=outcome.cost_cny,
+                )
                 report.failed.append(claim.subtask_id)
         except TaskRuntimeError as error:
             # 令牌失效（别的 worker 接手了）：这一轮结果作废，不覆盖别人的写入

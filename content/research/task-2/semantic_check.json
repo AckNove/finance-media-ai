@@ -1,0 +1,265 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 8,
+  "prompt_tokens": 9538,
+  "completion_tokens": 2649,
+  "cost_cny": 0.042885,
+  "checked_at": "2026-11-13T04:52:22+00:00",
+  "counts": {
+    "supported": 1,
+    "partially_supported": 2,
+    "contradicted": 0,
+    "insufficient_evidence": 3,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "多晶硅现金成本4.2-4.3万元/吨，现货均价跌至4.53万元/吨及以下，上游已无超额利润",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "证据只支持“多晶硅现金成本42000-43000元/吨”这一半，现货均价跌至4.53万元/吨及以下、以及“上游已无超额利润”的结论在给定证据中没有对应原文。",
+      "evidence_ids": [
+        425
+      ],
+      "source_ids": [
+        "S01",
+        "S12"
+      ],
+      "supporting": [
+        "多晶硅现金成本依旧在42000-43000"
+      ],
+      "contradicting": [],
+      "missing": [
+        "现货均价4.53万元/吨及以下的原文出处",
+        "“上游已无超额利润”的判断依据（成本与售价的对比数据）"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "仅现金成本区间有证据，价格与利润结论缺证据"
+        },
+        {
+          "code": "stale_evidence",
+          "note": "唯一有内容的来源S01是2024-12-26的论坛发帖，非报价口径数据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 8,
+      "prompt_tokens": 1589,
+      "completion_tokens": 441,
+      "cost_cny": 0.007148,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:52:22+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "硅片加工环节附加值被价格战抹平：TCL中环上半年营收162.13亿元，同比下降53.54%，归母净利润亏损30.64亿元",
+      "claim_kind": "fact",
+      "verdict": "supported",
+      "reason": "证据原文完整给出TCL中环上半年营收162.13亿元、同比下降53.54%、归母净利润亏损30.64亿元，与结论数字一致。",
+      "evidence_ids": [
+        451
+      ],
+      "source_ids": [
+        "S13"
+      ],
+      "supporting": [
+        "其上半年实现营业总收入162.13亿元，同比下降53.54%；归母净利润亏损30.64亿元，上年同期为盈利45.36亿元。"
+      ],
+      "contradicting": [],
+      "missing": [],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 8,
+      "prompt_tokens": 1589,
+      "completion_tokens": 441,
+      "cost_cny": 0.007148,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:52:22+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "利润分配格局：电池片单瓦净利0.168元/W最高，纯组件-0.061元/W为负，一体化组件0.212元/W",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S22原文仅给出硅料/硅片/电池/组件价格与“单瓦盈利持续改善”的定性表述，未出现0.168、-0.061、0.212等单瓦净利数字。",
+      "evidence_ids": [
+        470
+      ],
+      "source_ids": [
+        "S22"
+      ],
+      "supporting": [
+        "光伏行业周报：电池组件单瓦盈利持续改善"
+      ],
+      "contradicting": [],
+      "missing": [
+        "电池片0.168元/W、纯组件-0.061元/W、一体化组件0.212元/W的具体出处"
+      ],
+      "issues": [
+        {
+          "code": "stale_evidence",
+          "note": "S22为2023-06-19研报，与结论所述利润分配格局的时点可能不匹配"
+        },
+        {
+          "code": "partial_support",
+          "note": "证据只支持“单瓦盈利改善”的方向，不支持具体分环节数值"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 8,
+      "prompt_tokens": 1589,
+      "completion_tokens": 441,
+      "cost_cny": 0.007148,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:52:22+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "硅料、硅片的成本下降速度不及售价下跌，因此单瓦成本领先也不足以扭亏",
+      "claim_kind": "inference",
+      "verdict": "insufficient_evidence",
+      "reason": "S13只证明TCL中环出现大额亏损，S10摘录内容为网页导航样板文字，没有任何关于成本下降速度、售价下跌速度或0.21元/W的原文。",
+      "evidence_ids": [
+        451
+      ],
+      "source_ids": [
+        "S13",
+        "S10"
+      ],
+      "supporting": [
+        "硅片毛利率降至负数，TCL中环三个季度亏掉近60亿"
+      ],
+      "contradicting": [],
+      "missing": [
+        "硅料、硅片成本降幅与售价降幅的对比数据",
+        "“单瓦成本领先也不足以扭亏”的论证依据",
+        "0.21元/w的出处"
+      ],
+      "issues": [
+        {
+          "code": "causal_leap",
+          "note": "由单家企业亏损直接推出成本降速不及售价下跌的因果机制，证据未建立该因果链"
+        },
+        {
+          "code": "partial_support",
+          "note": "仅TCL中环亏损一项有证据支持"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 8,
+      "prompt_tokens": 1589,
+      "completion_tokens": 441,
+      "cost_cny": 0.007148,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:52:22+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 4,
+      "claim": "瓶颈不在产能；硅料开工率仅33.8%，库存51万吨，约等于近半年产量，组件产能利用率60.92%",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "证据支持“库存51万吨”及与上半年产量54.1万吨量级相当，但33.8%开工率、60.92%产能利用率均未在给定证据中出现。",
+      "evidence_ids": [
+        435
+      ],
+      "source_ids": [
+        "S09",
+        "S21"
+      ],
+      "supporting": [
+        "上半年多晶硅产量54.1万吨，库存51万吨！"
+      ],
+      "contradicting": [],
+      "missing": [
+        "硅料开工率33.8%的出处",
+        "组件产能利用率60.92%的出处",
+        "“瓶颈不在产能”的论证依据"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "库存项有支持，开工率与产能利用率两项数字缺证据"
+        },
+        {
+          "code": "time_range_mismatch",
+          "note": "证据标注为2026年07月22日的会议报道，时点与结论口径需核对"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 8,
+      "prompt_tokens": 1589,
+      "completion_tokens": 441,
+      "cost_cny": 0.007148,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:52:22+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 5,
+      "claim": "需求增量主要来自海外：美国4月新增装机1.86GW、同比增长20%，1-4月累计增长34%",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S22原文只有“美国装机数据向好”的定性表述，未出现1.86GW、20%、34%等装机数字。",
+      "evidence_ids": [
+        470
+      ],
+      "source_ids": [
+        "S22"
+      ],
+      "supporting": [
+        "美国装机数据向好"
+      ],
+      "contradicting": [],
+      "missing": [
+        "美国4月新增装机1.86GW、同比+20%的原文",
+        "1-4月累计增长34%的原文"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "仅支持方向性表述，不支持任何具体装机数值"
+        },
+        {
+          "code": "stale_evidence",
+          "note": "S22日期为2023-06-19，与所述装机数据时点需核对"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 8,
+      "prompt_tokens": 1589,
+      "completion_tokens": 441,
+      "cost_cny": 0.007148,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:52:22+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    }
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

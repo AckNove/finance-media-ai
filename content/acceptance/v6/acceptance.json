@@ -1,0 +1,706 @@
+{
+  "started_at": "2026-11-13T04:42:06.935488+00:00",
+  "topics": [
+    {
+      "key": "industry",
+      "kind": "行业研究",
+      "title": "储能行业2025年为什么从爆发转向价格战",
+      "ok": true,
+      "task_id": 1,
+      "task_status": "completed",
+      "sources": 23,
+      "evidence": 424,
+      "report_id": 1,
+      "report_summary": "新型储能仍处规模化成长期：2026年6月底累计投运1.53亿千瓦/3.96亿千瓦时，同比增长61%，2030年目标为3亿千瓦。但装机上升没有带动盈利：储能系统中标均价2024年同比下降43%至628.07元/kWh，部分集采报价低至0.466元/Wh，电芯建成产能预计1.2-1.5TWh，远超需求，鹏辉等企业毛利率仅11.40%、净利润转负。行业已进入产能出清与价格战阶段，竞争核心从拿指标转向压低成本与现金周转。",
+      "findings": 7,
+      "limitations": "本稿的摘要与结论由模型（deepseek/deepseek-flash）基于下方列出的证据生成，每条结论都挂了来源编号；但**模型结论不等于事实核查结论**，引用前必须回原文核对口径与时点；另有 101 条说法只有单一来源，引用前应另找佐证；其中 4 个数字被至少两个来源同时说到（仅表示一致，不等于数据正确）",
+      "planning": {
+        "planner": "model",
+        "model_used": true,
+        "query_count": 36,
+        "subtask_count": 6,
+        "degraded_reason": ""
+      },
+      "checks_summary": {
+        "research_report_id": 1,
+        "total": 7,
+        "by_verdict": {
+          "supported": 1,
+          "insufficient_evidence": 3,
+          "partially_supported": 2,
+          "unverifiable": 1
+        },
+        "by_human_review": {
+          "pending": 7
+        },
+        "model_cost_cny": "0.045787",
+        "model_calls": 7,
+        "note": "模型判定与人工复核是两条独立状态线；这里只有计数，判断依据看明细接口"
+      },
+      "checks_sample": [
+        {
+          "id": 1,
+          "verdict": "supported",
+          "claim": "累计投运装机达1.53亿千瓦/3.96亿千瓦时，同比增长61%，规模仍在扩张",
+          "supporting": [
+            "截至6月底，全国已建成投运新型储能装机规模达1.53亿千瓦/3.96亿千瓦时，同比增长61%。"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 2,
+          "verdict": "insufficient_evidence",
+          "claim": "电芯规划产能超2TWh、年底建成1.2-1.5TWh，远超全球需求，供给严重过剩",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 3,
+          "verdict": "partially_supported",
+          "claim": "竞争以价格战为主：2024年2小时储能系统中标均价628.07元/kWh，同比下降43%",
+          "supporting": [
+            "2024年储能系统中标均价下降43%"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 4,
+          "verdict": "insufficient_evidence",
+          "claim": "头部集中度上升，前15家系统集成商中标规模占总量的57%，二线企业受压",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 5,
+          "verdict": "partially_supported",
+          "claim": "行业处于成长期后段：装机翻倍但价格腰斩，企业毛利率降至11.40%且净利润转负",
+          "supporting": [
+            "鹏辉能源2024：锂离子电池营收73.63亿元，毛利率11.40%，产能约25GWh，产能利用率68.39%"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 6,
+          "verdict": "insufficient_evidence",
+          "claim": "驱动从强制配储转向市场化收益：等效利用小时数由611小时升至1195小时",
+          "supporting": [],
+          "human": "pending"
+        }
+      ],
+      "subtasks": [
+        {
+          "sequence": 1,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 2,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 3,
+          "task_type": "research.plan",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 4,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 5,
+          "task_type": "research.extract",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 6,
+          "task_type": "research.analyze",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 7,
+          "task_type": "research.synthesize",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 8,
+          "task_type": "verify.claims",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 9,
+          "task_type": "content.script",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 10,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 11,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        }
+      ],
+      "rounds": 5,
+      "gates_cleared": 2
+    },
+    {
+      "key": "chain",
+      "kind": "产业链研究",
+      "title": "光伏产业链利润为什么会从中游流向上下游两端",
+      "ok": true,
+      "task_id": 2,
+      "task_status": "completed",
+      "sources": 49,
+      "evidence": 256,
+      "report_id": 2,
+      "report_summary": "硅料环节现金成本约4.2-4.3万元/吨，而现货价已跌至4.0-4.5万元/吨附近，上游因此处于亏损或盈亏平衡状态；中游硅片毛利率转为负值（TCL中环上半年亏损30.64亿元）；2023年单瓦净利对比显示，利润主要留在电池片与一体化组件，而纯组件环节为负。全链条真正受需求限制的环节是需求；各环节产能利用率普遍偏低（硅料33.8%、组件60.92%），多晶硅库存51万吨，约等于半年产量。",
+      "findings": 6,
+      "limitations": "本稿的摘要与结论由模型（deepseek/deepseek-flash）基于下方列出的证据生成，每条结论都挂了来源编号；但**模型结论不等于事实核查结论**，引用前必须回原文核对口径与时点；另有 64 条说法只有单一来源，引用前应另找佐证",
+      "planning": {
+        "planner": "model",
+        "model_used": true,
+        "query_count": 36,
+        "subtask_count": 6,
+        "degraded_reason": ""
+      },
+      "checks_summary": {
+        "research_report_id": 2,
+        "total": 6,
+        "by_verdict": {
+          "partially_supported": 2,
+          "supported": 1,
+          "insufficient_evidence": 3
+        },
+        "by_human_review": {
+          "pending": 6
+        },
+        "model_cost_cny": "0.042888",
+        "model_calls": 6,
+        "note": "模型判定与人工复核是两条独立状态线；这里只有计数，判断依据看明细接口"
+      },
+      "checks_sample": [
+        {
+          "id": 8,
+          "verdict": "partially_supported",
+          "claim": "多晶硅现金成本4.2-4.3万元/吨，现货均价跌至4.53万元/吨及以下，上游已无超额利润",
+          "supporting": [
+            "多晶硅现金成本依旧在42000-43000"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 9,
+          "verdict": "supported",
+          "claim": "硅片加工环节附加值被价格战抹平：TCL中环上半年营收162.13亿元，同比下降53.54%，归母净利润亏损30.64亿元",
+          "supporting": [
+            "其上半年实现营业总收入162.13亿元，同比下降53.54%；归母净利润亏损30.64亿元，上年同期为盈利45.36亿元。"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 10,
+          "verdict": "insufficient_evidence",
+          "claim": "利润分配格局：电池片单瓦净利0.168元/W最高，纯组件-0.061元/W为负，一体化组件0.212元/W",
+          "supporting": [
+            "光伏行业周报：电池组件单瓦盈利持续改善"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 11,
+          "verdict": "insufficient_evidence",
+          "claim": "硅料、硅片的成本下降速度不及售价下跌，因此单瓦成本领先也不足以扭亏",
+          "supporting": [
+            "硅片毛利率降至负数，TCL中环三个季度亏掉近60亿"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 12,
+          "verdict": "partially_supported",
+          "claim": "瓶颈不在产能；硅料开工率仅33.8%，库存51万吨，约等于近半年产量，组件产能利用率60.92%",
+          "supporting": [
+            "上半年多晶硅产量54.1万吨，库存51万吨！"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 13,
+          "verdict": "insufficient_evidence",
+          "claim": "需求增量主要来自海外：美国4月新增装机1.86GW、同比增长20%，1-4月累计增长34%",
+          "supporting": [
+            "美国装机数据向好"
+          ],
+          "human": "pending"
+        }
+      ],
+      "subtasks": [
+        {
+          "sequence": 1,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 2,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 3,
+          "task_type": "research.plan",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 4,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 5,
+          "task_type": "research.extract",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 6,
+          "task_type": "research.analyze",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 7,
+          "task_type": "research.synthesize",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 8,
+          "task_type": "verify.claims",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 9,
+          "task_type": "content.script",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 10,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 11,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        }
+      ],
+      "rounds": 5,
+      "gates_cleared": 2
+    },
+    {
+      "key": "company",
+      "kind": "上市公司研究",
+      "title": "隆基绿能2024年财报里的亏损来自哪里",
+      "ok": true,
+      "task_id": 3,
+      "task_status": "completed",
+      "sources": 73,
+      "evidence": 380,
+      "report_id": 3,
+      "report_summary": "2024年隆基绿能营收825.82亿元、同比降36.23%，归母净利由2023年盈利107.51亿元转为亏损86.18亿元，属量价齐跌叠加技术迭代的阶段性亏损：硅片及硅棒收入降66.53%，降幅大于组件电池的33.13%；毛利率降至个位数、加权ROE -13.10%，经营现金流由+81.17亿元转为-47.25亿元。BC技术方向明确，但2024年BC二代产量占比很低，未能对冲PERC/TOPCon的盈利下滑。",
+      "findings": 6,
+      "limitations": "本稿的摘要与结论由模型（deepseek/deepseek-flash）基于下方列出的证据生成，每条结论都挂了来源编号；但**模型结论不等于事实核查结论**，引用前必须回原文核对口径与时点；跨来源比对发现 13 处同一件事数字不一致，未判断谁对，引用前必须回原文核对口径与时点；另有 62 条说法只有单一来源，引用前应另找佐证；其中 15 个数字被至少两个来源同时说到（仅表示一致，不等于数据正确）",
+      "planning": {
+        "planner": "model",
+        "model_used": true,
+        "query_count": 30,
+        "subtask_count": 6,
+        "degraded_reason": ""
+      },
+      "checks_summary": {
+        "research_report_id": 3,
+        "total": 4,
+        "by_verdict": {
+          "supported": 1,
+          "insufficient_evidence": 2,
+          "partially_supported": 1
+        },
+        "by_human_review": {
+          "pending": 4
+        },
+        "model_cost_cny": "0.021956",
+        "model_calls": 4,
+        "note": "模型判定与人工复核是两条独立状态线；这里只有计数，判断依据看明细接口"
+      },
+      "checks_sample": [
+        {
+          "id": 14,
+          "verdict": "supported",
+          "claim": "2024年营收825.82亿元同比降36.23%，归母净利-86.18亿元，由盈转亏",
+          "supporting": [
+            "去年该公司营业收入为825.82亿元，同比下降36.23%；归母净利润为-86.18亿元，上年同期为107.51亿元，同比由盈转亏。",
+            "隆基绿能：2024年实现营业总收入825.82亿元"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 15,
+          "verdict": "insufficient_evidence",
+          "claim": "组件及电池仍是收入主体663.34亿元，硅片及硅棒降幅66.53%远大于前者33.13%",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 16,
+          "verdict": "partially_supported",
+          "claim": "亏损主因是产品价格大跌叠加BC二代产量占比低、开工率受限与资产减值",
+          "supporting": [
+            "行业各环节产品价格和毛利率大幅下降",
+            "报告期内全产业链开工率维持在较低水平"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 17,
+          "verdict": "insufficient_evidence",
+          "claim": "毛利率7.4%、净利率-10.5%、加权ROE -13.10%，盈利能力指标全面转负",
+          "supporting": [],
+          "human": "pending"
+        }
+      ],
+      "subtasks": [
+        {
+          "sequence": 1,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 2,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 3,
+          "task_type": "research.plan",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 4,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 5,
+          "task_type": "research.extract",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 6,
+          "task_type": "research.analyze",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 7,
+          "task_type": "research.synthesize",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 8,
+          "task_type": "verify.claims",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 9,
+          "task_type": "content.script",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 10,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 11,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        }
+      ],
+      "rounds": 5,
+      "gates_cleared": 2
+    }
+  ],
+  "content": {
+    "ok": true,
+    "job_id": "v6_accept_industry",
+    "check_id": 1,
+    "readiness": {
+      "report_id": 1,
+      "total_checks": 7,
+      "confirmed": 1,
+      "by_human_review": {
+        "confirmed": 1,
+        "pending": 6
+      },
+      "by_verdict": {
+        "supported": 1,
+        "insufficient_evidence": 3,
+        "partially_supported": 2,
+        "unverifiable": 1
+      },
+      "allowed": true,
+      "reason": "",
+      "note": "有 1 条结论已人工确认，可以进入成稿；未确认的结论不会进稿。",
+      "rule": "只有 human_review_status=confirmed 的结论可以进入成稿"
+    },
+    "job": {
+      "job_id": "v6_accept_industry",
+      "path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry",
+      "stage": "storyboard_ready",
+      "next_stage": "render",
+      "blocked": false,
+      "blocked_reason": "",
+      "next_step": "分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。先人工看一遍分镜，然后跑 python -m backend.scripts.render_job --job v6_accept_industry --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。",
+      "report_id": 1,
+      "evidence_count": 424,
+      "source_count": 22,
+      "files": [
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\research\\report.md",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\research\\evidence.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\research\\sources.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\job.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\HANDOFF.md"
+      ],
+      "outline": {
+        "job_id": "v6_accept_industry",
+        "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\storyboard\\storyboard.csv",
+        "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_industry\\storyboard\\OUTLINE.md",
+        "shots": [
+          {
+            "shot_id": "sh01",
+            "seconds": 4.0,
+            "narration": "这一条讲的是：结论整合：2025 年储能装机仍在增长，但电芯与系统价格持续下行、部分企业毛利转负。请研究：这个行业当前处在什么阶段，市场规模与增速、供需结构、竞争格局、驱动因素与政策变化分别是什么，主要风险在哪里？请给可核对的公开数据。。下面每一句话都能追到原文。",
+            "subtitle": "结论整合：2025 年储能装机仍在增",
+            "source_id": "",
+            "number": ""
+          },
+          {
+            "shot_id": "sh02",
+            "seconds": 4.5,
+            "narration": "到2030年 全国新型储能规模将达3亿千瓦",
+            "subtitle": "到2030年 全国新型储能规模将达…",
+            "source_id": "S01",
+            "number": "3亿"
+          },
+          {
+            "shot_id": "sh03",
+            "seconds": 5.0,
+            "narration": "以上 1 个数字来自 22 份资料（S01）。这只是资料汇编，不是投资建议。",
+            "subtitle": "资料汇编 · 不是投资建议",
+            "source_id": "",
+            "number": ""
+          }
+        ],
+        "shot_count": 3,
+        "total_seconds": 13.5,
+        "frames": 405,
+        "source_ids": [
+          "S01"
+        ],
+        "warnings": [
+          "只引用了 22 份资料里的 1 份"
+        ],
+        "generated_by": "rules",
+        "ok": true
+      }
+    },
+    "render": {
+      "status": "done",
+      "stage": "rendered",
+      "output": null,
+      "qc_failed": []
+    },
+    "render_rc": 0
+  },
+  "costs": {
+    "model_calls": 13,
+    "model_tokens": 147395,
+    "model_cost_cny": "0.494162",
+    "tool_calls": 0,
+    "tool_cost_cny": "0",
+    "task_cost_cny": "0.447351",
+    "by_model": [
+      {
+        "key": "deepseek/deepseek-flash",
+        "calls": 13,
+        "tokens": 147395,
+        "cost_cny": "0.494162"
+      }
+    ],
+    "by_tool": [],
+    "by_day": [
+      {
+        "key": "2026-11-13",
+        "calls": 13,
+        "tokens": 147395,
+        "cost_cny": "0.494162"
+      }
+    ],
+    "pricing_unknown_calls": 0,
+    "note": "成本按已配置价目与实际 token 用量计算。"
+  },
+  "database": {
+    "tables": {
+      "sources": 73,
+      "evidence": 1060,
+      "research_reports": 3,
+      "finding_checks": 17,
+      "model_calls": 13,
+      "research_tasks": 3,
+      "research_subtasks": 33,
+      "task_events": 162
+    },
+    "model_calls": [
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.plan",
+        507,
+        2219,
+        0.019986
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.analyze",
+        13592,
+        2407,
+        0.049459
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.synthesize",
+        13592,
+        1459,
+        0.041382
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.verify",
+        9420,
+        3019,
+        0.045786
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.plan",
+        500,
+        1740,
+        0.01589
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.analyze",
+        15310,
+        1606,
+        0.046293
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.synthesize",
+        15310,
+        1904,
+        0.048832
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.verify",
+        9538,
+        2649,
+        0.042885
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.plan",
+        497,
+        2813,
+        0.025025
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.analyze",
+        13353,
+        1811,
+        0.043872
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.synthesize",
+        13353,
+        2059,
+        0.045985
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.verify",
+        9177,
+        3200,
+        0.046811
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.verify",
+        5044,
+        1316,
+        0.021956
+      ]
+    ],
+    "model_cost_total_cny": "0.494162",
+    "secret_leaks": 0
+  },
+  "finished_at": "2026-11-13T05:01:06.374218+00:00"
+}

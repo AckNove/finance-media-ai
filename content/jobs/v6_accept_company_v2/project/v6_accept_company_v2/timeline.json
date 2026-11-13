@@ -1,0 +1,193 @@
+{
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 878,
+    "bg": "#1d2a44"
+  },
+  "clips": {
+    "solid_1d2a44": {
+      "frames_dir": "plates/92c0b68c43f9",
+      "n": 120,
+      "fps": 30.0,
+      "w": 1080,
+      "h": 1920,
+      "pattern": "%05d.png"
+    },
+    "CARD_sh02": {
+      "frames_dir": ".openkatana/compositions/b36bc92387324e93a94bb3fdb606010f/frames",
+      "pattern": "%05d.png",
+      "n": 214,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "CARD_sh03": {
+      "frames_dir": ".openkatana/compositions/6d84d1d244024127988f64b29bba5acf/frames",
+      "pattern": "%05d.png",
+      "n": 160,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    }
+  },
+  "shots": [
+    {
+      "f0": 0,
+      "f1": 262,
+      "bg": "#1d2a44",
+      "clip": "solid_1d2a44",
+      "src": 0,
+      "speed": 1,
+      "loop": "loop",
+      "cam": {
+        "push": {
+          "v": 0.03
+        }
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 262,
+      "f1": 476,
+      "clip": "CARD_sh02",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "pan": {
+          "dx": -0.05
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 476,
+      "f1": 636,
+      "clip": "CARD_sh03",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "punch": {
+          "v": 0.06,
+          "d": 0.25
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "slide",
+        "d": 0.4,
+        "dir": "up"
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 636,
+      "f1": 878,
+      "bg": "#1d2a44",
+      "clip": "solid_1d2a44",
+      "src": 0,
+      "speed": 1,
+      "loop": "loop",
+      "cam": {
+        "push": {
+          "v": 0.03
+        }
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    }
+  ],
+  "fonts": [
+    {
+      "family": "AKSC",
+      "url": "fonts/NotoSansSC-VF.ttf"
+    }
+  ],
+  "text": [
+    {
+      "type": "caption",
+      "family": "AKSC",
+      "text": "请基于公开财报与公告研究隆基绿能…",
+      "f0": 0,
+      "f1": 262,
+      "pos": [
+        0.5,
+        0.84
+      ],
+      "size": 46,
+      "fill": "#f6f8fa",
+      "stroke": "#0b1220",
+      "lw": 3,
+      "shadow": "dark"
+    },
+    {
+      "type": "caption",
+      "family": "AKSC",
+      "text": "资料汇编 · 不是投资建议",
+      "f0": 636,
+      "f1": 878,
+      "pos": [
+        0.5,
+        0.84
+      ],
+      "size": 46,
+      "fill": "#f6f8fa",
+      "stroke": "#0b1220",
+      "lw": 3,
+      "shadow": "dark"
+    }
+  ],
+  "audio": {
+    "mode": "mix",
+    "gain": 1.0,
+    "tracks": [
+      {
+        "src": "audio/narration/sh01.mp3",
+        "at": 0.0,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh02.mp3",
+        "at": 8.733,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh03.mp3",
+        "at": 15.867,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh04.mp3",
+        "at": 21.2,
+        "volume": 1.0
+      }
+    ]
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 13,
+  "prompt_tokens": 5044,
+  "completion_tokens": 1316,
+  "cost_cny": 0.021956,
+  "checked_at": "2026-11-13T04:56:47+00:00",
+  "counts": {
+    "supported": 1,
+    "partially_supported": 1,
+    "contradicted": 0,
+    "insufficient_evidence": 2,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "2024年营收825.82亿元同比降36.23%，归母净利-86.18亿元，由盈转亏",
+      "claim_kind": "fact",
+      "verdict": "supported",
+      "reason": "S12 与 S02 的原文直接给出营收825.82亿元、同比下降36.23%、归母净利润-86.18亿元、上年107.51亿元且由盈转亏，这些内容与结论完全对应。",
+      "evidence_ids": [
+        721,
+        687
+      ],
+      "source_ids": [
+        "S01",
+        "S02",
+        "S12"
+      ],
+      "supporting": [
+        "去年该公司营业收入为825.82亿元，同比下降36.23%；归母净利润为-86.18亿元，上年同期为107.51亿元，同比由盈转亏。",
+        "隆基绿能：2024年实现营业总收入825.82亿元"
+      ],
+      "contradicting": [],
+      "missing": [],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 13,
+      "prompt_tokens": 1261,
+      "completion_tokens": 329,
+      "cost_cny": 0.005489,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:56:47+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "组件及电池仍是收入主体663.34亿元，硅片及硅棒降幅66.53%远大于前者33.13%",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "唯一来源 S01 的摘录在“隆基绿能2024年实现营业收”处截断，没有出现组件及电池663.34亿元、降幅33.13%、硅片及硅棒降幅66.53%等任何分产品数据。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S01"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "S01 中组件及电池收入663.34亿元及其同比降幅33.13%的原文",
+        "硅片及硅棒收入82.07亿元、降幅66.53%的原文",
+        "“组件及电池仍是收入主体”的占比依据"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 13,
+      "prompt_tokens": 1261,
+      "completion_tokens": 329,
+      "cost_cny": 0.005489,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:56:47+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "亏损主因是产品价格大跌叠加BC二代产量占比低、开工率受限与资产减值",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "证据支持产品价格大跌、开工率低、资产减值三项原因，但“BC二代产量占比低”在给定证据中完全没有出现。",
+      "evidence_ids": [
+        721
+      ],
+      "source_ids": [
+        "S10",
+        "S12",
+        "S14"
+      ],
+      "supporting": [
+        "行业各环节产品价格和毛利率大幅下降",
+        "报告期内全产业链开工率维持在较低水平",
+        "计提的资产减值损失和信用减值损失同步增加"
+      ],
+      "contradicting": [],
+      "missing": [
+        "BC二代产量占比低导致亏损的原文依据",
+        "S14 来源的摘录（给定证据中无 S14 内容）",
+        "39/50/30 等数字的出处"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "结论中的“BC二代产量占比低”未被任何给定证据覆盖，其余三项原因有原文支持"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 13,
+      "prompt_tokens": 1261,
+      "completion_tokens": 329,
+      "cost_cny": 0.005489,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:56:47+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "毛利率7.4%、净利率-10.5%、加权ROE -13.10%，盈利能力指标全面转负",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S21 未提供任何摘录，S02 摘录只有营业总收入825.82亿元，均未出现毛利率7.4%、净利率-10.5%、加权ROE -13.10%的数据。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S21",
+        "S02"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "S21 中毛利率7.4%、净利率-10.5%、加权ROE -13.10%的原文",
+        "“盈利能力指标全面转负”的依据（毛利率7.4%本身为正，需原口径说明）"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 13,
+      "prompt_tokens": 1261,
+      "completion_tokens": 329,
+      "cost_cny": 0.005489,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T04:56:47+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    }
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

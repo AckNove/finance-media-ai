@@ -1,0 +1,2 @@
+asset_id,asset_class,kind,file,source_id,publisher,source_url,retrieved_at,sha256,license,commercial_use,credit,verification_status,used_in_shots,purpose
+CARD_sh02,B,composition,assets/compositions/card_sh02.json,CARD_sh02,本仓库,,,c6fab957efe648a8a99f5b50a4466cd16334fbb452130da8343e7666d50fabf6,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,CARD_sh02,数据卡 CARD_sh02
