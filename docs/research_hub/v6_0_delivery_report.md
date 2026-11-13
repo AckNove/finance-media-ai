@@ -289,15 +289,42 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 
 ## 12. Git 与运行证据
 
-- 本轮三个提交，全部已推送（`origin/main` 与 `HEAD` 一致、工作区干净）：
+- 提交序列（全部已推送，`origin/main` 与 `HEAD` 一致、工作区干净）：
   - `3b1e40c` 运维底座与研究骨架，并把开关做成真闸门
   - `93cdc2c` 内容日历与平台数据回填，发布必须有痕迹
   - `4822525` 三主题真实验收、失败尝试记账、内容质检真片闭环（本报告同批）
+  - `ddb0777` 交付报告补哈希 / `d833b44` 模型降级链与来源可信度时效 / `feae437` Skill 注入提示词
+  - `2d5b6a6` 平台数据 CSV 批量导入 / `5cab7ff` API 参考与操作手册
+  - `a57440a` 选题建议 / `5527246` 一稿三版 / `43acbd8` 运行历史折线 / `f233fba` Word 解析工具
+  - `3ac84ca` 背景音乐曲库与授权校验（**最后一项 PARTIAL 清零**）
 - 验收原始数据：`content/acceptance/v6/acceptance.json`（三主题）、`content/acceptance/v6/acceptance_company_recheck.json`（记账复核）。
-- 成片与质检：`content/jobs/v6_accept_industry/output/final.mp4`、`qc/report.json`、`qc/content_qc.{json,md}`。
+- 成片与质检：`content/jobs/v6_accept_industry/output/final.mp4`、`qc/report.json`、`qc/content_qc.{json,md}`；`content/jobs/v6_accept_company_v2/output/final.mp4`（内容质检 `ok: true`）。
 - 复跑三个主题（会花钱，默认每题预算 ¥0.4）：
 
   ```powershell
   python -m backend.scripts.v6_acceptance --only industry
   python -m backend.scripts.v6_acceptance --only chain --no-render
   ```
+
+## 13. 收尾补的四项能力（都有测试与文档）
+
+| 能力 | 实现 | 怎么验证 |
+| --- | --- | --- |
+| 运行历史折线 | `GET /api/system/history`（缺的天补 0，不插值）+ 成本页纯 SVG 折线 | `pytest tests/test_monitoring_history.py`（5 例） |
+| Word 解析工具 | `parse_docx`（MarkItDown，只抽文字，不保留排版/批注/修订） | `pytest tests/test_markitdown_adapter.py`（含手写最小 docx 真解析） |
+| 选题建议 | `GET /api/topics/suggestions`（窗口内来源按五维打分，纯规则） | `pytest tests/test_topic_suggestions.py`（16 例） |
+| 一稿三版 | `POST /api/scripts/{id}/adapt`（抖音/小红书/公众号；只调长度排版，不改事实不编标签，不切断数字） | `pytest tests/test_platform_adapt.py`（18 例） |
+| 背景音乐授权 | `backend/app/video/bgm.py` + `bgm_check` / `mix_bgm`（先验授权再混音） | `pytest tests/test_bgm.py`（15 例，含真调 ffmpeg 混音） |
+
+## 14. 最终验证（本轮最后一次实跑）
+
+```text
+pytest -o addopts="" -q           → 1044 passed, 2 skipped, 1 warning
+真实开发库（只读打开）              → 540,672 B / sha256 2df764e5…8203 / 19 表 /
+                                    revision de8148733a9b / journal_mode delete /
+                                    无 -wal/-shm / integrity ok / 无 model_calls 表
+FFmpeg                            → 8.1.2-full_build-www.gyan.dev（未改动）
+backend/app/main.py 第 27 行       → DESCRIPTION = """（品牌行未改动）
+git ls-files .env                 → 空（密钥从未入库）
+```
+
