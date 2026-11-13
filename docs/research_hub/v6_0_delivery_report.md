@@ -28,10 +28,10 @@
 | 目录结构 | `backend/app/{api,core,capabilities,execution,research,video,media,analysis,services,models,schemas,skills}`、`web/`、`scripts/`、`content/jobs/`、`tools/` |
 | 接口 | `create_app().openapi()`：接管时 45 路径 / 58 操作 → 现在 **46 路径 / 66 操作** |
 | 数据 | 接管时 29 表 → 现在 **31 表**（`alembic check` 无漂移） |
-| 测试 | 接管时 850 passed / 2 skipped → 现在 **964 passed / 2 skipped** |
+| 测试 | 接管时 850 passed / 2 skipped → 现在 **974 passed / 2 skipped** |
 | 前端 | 19 页 → **20 页**（新增「内容日历」），全部接真接口，无静态假数据 |
 | 工具 | 10 个全部 `implemented=True` |
-| 已实现但没接业务流程的 | `skills/registry.yaml` 的 5 个 Skill 只登记未注入提示词（仍 PARTIAL）；`preflight.py` 被 `doctor.py` 超过但仍可用 |
+| 已实现但没接业务流程的 | `preflight.py` 被 `doctor.py` 超过但仍可用 |
 
 审计产物：`docs/research_hub/v6_0_requirements_matrix.md`（A–K 逐条：需求 / 实现位置 / 状态 / 差距）。
 
@@ -77,6 +77,7 @@
 | 来源可信度分级 | `backend/app/research/source_quality.py` 的 `tier_of()` | 官方/监管 → 一手披露 → 财经媒体 → 聚合/自媒体 → 未知，五档按**域名后缀 + 显式白名单**判定 |
 | 来源时效判断 | `source_quality.freshness_of()` | 30 天内 fresh、180 天内 recent、更早 stale、**没有发布时间就是 unknown（不猜）**；可用 `as_of` 按底稿日期判，避免拿今天去判八月的稿 |
 | 底稿自带这两样 | `digest.to_markdown()` 新增「来源可信度与时效」一节 + `as_dict()` 的 `source_quality` | `tests/test_source_quality.py` 21 例（含"发布时间比参照时间还晚 → 报负数天数，不裁成 0"） |
+| Skill 注入提示词（C 段收口） | `executor._skill_notes()` → `analysis.build_messages(skill_notes=)` | 只有 Agent 身份能加载（人身份 `SkillRegistryError`）；`research.analyze` 会带上 `accessible-explainer` 正文；`skills/` 目录坏掉只记 warning、研究照跑，`output.skills_used` 如实记空；`tests/test_skill_injection.py` 10 例 |
 
 三个真实主题的骨架判定全部正确：储能 → industry、光伏产业链 → chain、隆基绿能 → company。
 来源分级**只回答"要不要回原文核对"**，不代表这条内容已被核实——分级按域名，不按内容。

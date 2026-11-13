@@ -9,7 +9,7 @@
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、66 个 API 操作、
-> 20 个前端页面、`pytest` 964 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、`pytest` 974 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -58,7 +58,8 @@
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
 | Agent Registry | `config/agent_routing.yaml` + `execution/routing.py` + 9 份 `agents/*/PROMPT.md` | DONE | — |
-| Skill Registry | `backend/app/skills/registry.py` + `skills/registry.yaml`（5 个 Skill，含 sha256） | PARTIAL | Skill 内容还没注入到提示词 |
+| Skill Registry | `backend/app/skills/registry.py` + `skills/registry.yaml`（5 个 Skill，含 sha256） | DONE | — |
+| Skill 注入提示词 | `executor._skill_notes()` → `analysis.build_messages(skill_notes=…)`；只有 Agent 身份能加载，加载失败只记 warning、链路继续，`output.skills_used` 如实记录用了哪些 | DONE | 每个 Skill 正文最多带 1800 字进提示词（超出截断并标注） |
 | Tool Registry | `capabilities/tools.py`（10 个工具全部 `implemented=True`） | DONE | — |
 | Agent 权限 | `core/caller.py` + `capabilities/guard.py`（agent_only / db_scopes / 白名单） | DONE | — |
 | Agent 执行状态 | `agent_runs` 表（`agent`、`task_id`、`subtask_id`、`status`、`cost_estimate`） | DONE | — |

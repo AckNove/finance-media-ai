@@ -729,7 +729,27 @@ class AgentExecutor:
             budget=self._budget_for(claim),
             purpose=purpose,
             framework=framework,
+            skill_notes=self._skill_notes(caller, claim),
         )
+
+    def _skill_notes(self, caller: CallerContext, claim: Claim) -> tuple[tuple[str, str], ...]:
+        """取这次任务该带的 Skill 正文（表达与研究方法要求）。
+
+        只对 Agent 身份加载：``SkillRegistry.load_for`` 会校验"这个角色能不能跑这个
+        task_type"，并把加载事件写进审计日志。取不到就返回空——**绝不让 Skill 加载
+        失败把整条研究链打断**，但也绝不假装加载成功（output 里的 `skills_used` 会是空）。
+        """
+
+        from backend.app.core.config import PROJECT_ROOT
+        from backend.app.skills.registry import SkillRegistry, SkillRegistryError
+
+        try:
+            registry = SkillRegistry(PROJECT_ROOT / "skills")
+            loaded = registry.load_for(caller, claim.task_type)
+        except (SkillRegistryError, OSError) as error:  # 缺文件、校验不过、角色不对
+            logger.warning("任务 %s 的 Skill 没有加载（%s），本轮不带 Skill 提示词", claim.task_id, error)
+            return ()
+        return tuple((item.name, item.instructions) for item in loaded)
 
     def _write_analysis(
         self, paths: dict[str, Path], analysis: Any, *, objective: str
@@ -881,6 +901,7 @@ class AgentExecutor:
                 "analysis_files": files,
                 "framework": getattr(analysis, "framework_kind", ""),
                 "framework_checklist": getattr(analysis, "checklist", {}) or {},
+                "skills_used": list(getattr(analysis, "skills_used", ()) or ()),
                 "note": (
                     "结论段由模型基于已抓取证据写成，每条结论都挂了来源编号；"
                     "data_gaps 里列出还缺什么证据。"

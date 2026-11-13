@@ -38,7 +38,7 @@ _PROMPT_TEMPLATE = """研究目标：{objective}
 
 【候选数据点】（来自上述来源原文，可直接引用）
 {points}
-{skeleton}
+{skeleton}{skills}
 请输出 JSON，结构如下：
 {{
   "summary": "不超过200字的核心结论，结论必须是证据能支撑的",
@@ -115,6 +115,7 @@ class AnalysisResult:
     dropped: tuple[str, ...] = field(default=())
     framework_kind: str = ""
     checklist: dict[str, Any] = field(default_factory=dict)
+    skills_used: tuple[str, ...] = field(default=())
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -131,6 +132,7 @@ class AnalysisResult:
             "generated_by": "model",
             "framework": self.framework_kind,
             "checklist": self.checklist,
+            "skills_used": list(self.skills_used),
         }
 
     def to_markdown(self, *, objective: str = "") -> str:
@@ -264,26 +266,58 @@ def build_messages(
     *,
     max_points: int | None = None,
     framework: Any = None,
+    skill_notes: Sequence[tuple[str, str]] = (),
 ) -> list[dict[str, str]]:
     """把底稿变成一次模型请求的 messages（纯函数，便于测试）。
 
     ``framework`` 给了就要求模型把每条结论挂到骨架的某一节；不给则是自由格式——
     那种格式容易写成"通用行业介绍"，所以生产路径一律带上框架。
+
+    ``skill_notes`` 是已登记 Skill 的（名字, 正文）列表：写进提示词的是**表达与
+    研究方法的要求**（怎么解释、怎么组织故事），不是"可以调用什么工具"——
+    能力始终只来自 ToolRegistry，文字不能变成权限。
     """
     objective = str(getattr(digest, "objective", "") or getattr(digest, "title", "") or "")
     skeleton = ""
     if framework is not None:
         skeleton = "\n" + str(framework.prompt_block()) + "\n"
+    skills = _skill_block(skill_notes)
     user = _PROMPT_TEMPLATE.format(
         objective=objective or "（未指定）",
         sources=_source_block(digest),
         points=_point_block(digest, max_points),
         skeleton=skeleton,
+        skills=skills,
     )
     return [
         {"role": "system", "content": _PROMPT_SYSTEM},
         {"role": "user", "content": user},
     ]
+
+
+#: 每个 Skill 的正文最多带这么多字进提示词（Skill 是几百到几千字，全塞会挤掉证据）
+MAX_SKILL_CHARS = 1800
+
+
+def _skill_block(skill_notes: Sequence[tuple[str, str]] = ()) -> str:
+    """把 Skill 的组织成提示词里的一节；没有就返回空串（不留空标题）。"""
+
+    if not skill_notes:
+        return ""
+    lines = [
+        "",
+        "【写作与研究方法要求】（来自本任务启用的 Skill；只约束怎么写，不改变只能引用证据这条硬规则）",
+    ]
+    for name, body in skill_notes:
+        text = (body or "").strip()
+        if len(text) > MAX_SKILL_CHARS:
+            text = text[:MAX_SKILL_CHARS] + "\n…（Skill 正文过长，已截断）"
+        if not text:
+            continue
+        lines.append(f"### {name}")
+        lines.append(text)
+    lines.append("")
+    return "\n".join(lines)
 
 
 def _known_source_ids(digest: Any) -> set[str]:
@@ -378,6 +412,7 @@ def analyze(
     max_tokens: int = 5000,
     purpose: str = "research.analyze",
     framework: Any = None,
+    skill_notes: Sequence[tuple[str, str]] = (),
 ) -> AnalysisResult:
     """调用真实模型做一次分析。没有可用模型时抛 ``AnalysisError('no_model')``。"""
     from backend.app.capabilities.model import ModelRequest, get_model_gateway
@@ -432,7 +467,9 @@ def analyze(
         request = ModelRequest(
             provider=target_provider,
             model=target_model,
-            messages=build_messages(digest, max_points=points_cap, framework=framework),
+            messages=build_messages(
+                digest, max_points=points_cap, framework=framework, skill_notes=skill_notes
+            ),
             purpose=purpose,
             temperature=0.2,
             max_tokens=tokens_cap,
@@ -499,6 +536,7 @@ def analyze(
         dropped=dropped,
         framework_kind=str(getattr(framework, "kind", "") or ""),
         checklist=framework.checklist([item.as_dict() for item in findings]) if framework else {},
+        skills_used=tuple(name for name, _ in skill_notes),
     )
 
 
