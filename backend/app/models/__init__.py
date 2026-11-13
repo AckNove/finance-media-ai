@@ -26,6 +26,7 @@ from backend.app.models.knowledge import KnowledgeItem, KnowledgeRelation
 from backend.app.models.media import MediaAsset
 from backend.app.models.metering import ModelCall, ToolCall
 from backend.app.models.publication import Publication
+from backend.app.models.operations import ContentCalendar, PlatformMetric
 from backend.app.models.research import FindingCheck, ResearchReport
 from backend.app.models.review import ReviewRecord
 from backend.app.models.script import Script
@@ -41,6 +42,7 @@ from backend.app.models.topic import Topic, TopicColumn
 __all__ = [
     "Base",
     "AgentRun",
+    "ContentCalendar",
     "Evidence",
     "FindingCheck",
     "FinancialCase",
@@ -53,6 +55,7 @@ __all__ = [
     "KnowledgeRelation",
     "MediaAsset",
     "ModelCall",
+    "PlatformMetric",
     "Publication",
     "ResearchReport",
     "ResearchSubtask",

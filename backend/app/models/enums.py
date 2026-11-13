@@ -364,3 +364,34 @@ class ToolCallStatus(str, Enum):
     DENIED = "denied"
     ERROR = "error"
     TIMEOUT = "timeout"
+
+
+class CalendarStatus(str, Enum):
+    """内容日历里一条排期走到哪一步（运营层）。"""
+
+    PLANNED = "planned"
+    SCRIPTED = "scripted"
+    RENDERED = "rendered"
+    EXPORTED = "exported"
+    ARCHIVED = "archived"
+    CANCELLED = "cancelled"
+
+
+class PublishState(str, Enum):
+    """发布状态。系统不自动发布，这里只记录人做过什么。"""
+
+    NOT_PUBLISHED = "not_published"
+    PUBLISHED = "published"
+    REMOVED = "removed"
+
+
+class Platform(str, Enum):
+    """排期与数据回填用的平台标识（比 PublicationPlatform 更宽松）。"""
+
+    DOUYIN = "douyin"
+    XIAOHONGSHU = "xiaohongshu"
+    WECHAT = "wechat"
+    BILIBILI = "bilibili"
+    VIDEO_ACCOUNT = "video_account"
+    YOUTUBE = "youtube"
+    OTHER = "other"

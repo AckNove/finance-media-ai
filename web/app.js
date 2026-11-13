@@ -110,6 +110,7 @@ const ROUTES = [
   { path: '/assets', title: '素材', group: '生产', hint: '授权、哈希与用途', render: pageAssets },
   { path: '/video', title: '视频预览', group: '生产', hint: '成片与质检结果', render: pageVideo },
   { path: '/review', title: '人工审核', group: '生产', hint: '被闸门挡住的阶段与证据复核', render: pageReview },
+  { path: '/operations', title: '内容日历', group: '运营', hint: '排期、发布留痕、平台数据回填', render: pageOperations },
   { path: '/models', title: '模型设置', group: '系统', hint: '价目未知即拒绝调用', render: pageModels },
   { path: '/providers', title: '服务商设置', group: '系统', hint: '密钥是否存在（不显示明文）', render: pageProviders },
   { path: '/costs', title: '成本统计', group: '系统', hint: '来自真实调用记录', render: pageCosts },
@@ -1302,6 +1303,142 @@ async function pageCosts(view) {
       ], data.by_day, '没有按天数据')}
       <div class="note">${esc(data.note)}</div>
     </div>`;
+}
+
+const CALENDAR_STATUS_LABEL = {
+  planned: '已排期',
+  scripted: '已有脚本',
+  rendered: '已渲染',
+  exported: '已导出',
+  archived: '已归档',
+  cancelled: '已取消',
+};
+
+const PUBLISH_LABEL = {
+  not_published: '未发布',
+  published: '已发布',
+  removed: '已撤下',
+};
+
+async function pageOperations(view) {
+  const [list, analytics] = await Promise.all([
+    api('/calendar?limit=100'),
+    api('/calendar/analytics'),
+  ]);
+  if (!list.ok) { view.innerHTML = failure(list); return; }
+  const rows = list.data.items || [];
+  const stats = analytics.ok ? analytics.data : [];
+  const today = new Date();
+  const defaultWhen = new Date(today.getTime() + 86400000).toISOString().slice(0, 16);
+
+  view.innerHTML = `
+    <div class="grid">
+      ${stats.length
+        ? stats.map((row) => `
+          <div class="card kpi"><span class="k">${esc(row.platform)}</span><span class="v">${row.entries}</span>
+            <span class="muted">已发布 ${row.published}｜快照 ${row.snapshots}</span>
+            <span class="muted">最新播放 ${row.latest_views}｜赞 ${row.latest_likes}</span>
+            <span class="muted">${esc(row.note)}</span></div>`).join('')
+        : '<div class="empty">还没有任何平台数据</div>'}
+    </div>
+    <div class="card"><h2>新建排期</h2>
+      <div class="row">
+        <input id="cal-title" placeholder="标题（至少两个字）" style="flex:1;min-width:240px">
+        <select id="cal-platform">
+          <option value="douyin">抖音</option>
+          <option value="bilibili">B 站</option>
+          <option value="xiaohongshu">小红书</option>
+          <option value="wechat">公众号</option>
+          <option value="video_account">视频号</option>
+          <option value="youtube">YouTube</option>
+          <option value="other">其他</option>
+        </select>
+        <input id="cal-when" type="datetime-local" value="${defaultWhen}">
+        <button id="cal-create">加进日历</button>
+      </div>
+      <div class="note">系统不会自己发布：标「已发布」必须填链接，没发就是没发。</div>
+      <div id="cal-feedback"></div>
+    </div>
+    <div class="card"><h2>排期（${rows.length} 条）</h2>
+      ${table([
+        { title: '#', key: 'id', num: true },
+        { title: '标题', key: 'title' },
+        { title: '平台', key: 'platform' },
+        { title: '排期时间', value: (row) => row.scheduled_for ? when(row.scheduled_for) : '—' },
+        { title: '进度', value: (row) => `<span class="tag">${esc(CALENDAR_STATUS_LABEL[row.status] || row.status)}</span>` , raw: true },
+        { title: '发布', value: (row) => `<span class="tag ${row.publish_state === 'published' ? 'ok' : ''}">${esc(PUBLISH_LABEL[row.publish_state] || row.publish_state)}</span>`, raw: true },
+        { title: '链接', value: (row) => row.published_url
+            ? `<a href="${esc(row.published_url)}" target="_blank" rel="noreferrer">打开</a>` : '—', raw: true },
+        { title: '操作', value: (row) => `
+            <button data-advance="${row.id}" data-status="rendered">标已渲染</button>
+            <button data-publish="${row.id}">标已发布</button>
+            <button data-metric="${row.id}">回填数据</button>`, raw: true },
+      ], rows, '还没有排期：先在上面加一条')}
+      <div id="cal-row-feedback"></div>
+    </div>`;
+
+  const feedback = view.querySelector('#cal-row-feedback');
+  const say = (target, ok, text) => {
+    target.innerHTML = `<div class="note ${ok ? 'ok' : 'bad'}">${esc(text)}</div>`;
+  };
+
+  view.querySelector('#cal-create').addEventListener('click', async () => {
+    const title = view.querySelector('#cal-title').value.trim();
+    const payload = {
+      title,
+      platform: view.querySelector('#cal-platform').value,
+      scheduled_for: view.querySelector('#cal-when').value || null,
+    };
+    const result = await api('/calendar', { method: 'POST', body: JSON.stringify(payload) });
+    if (!result.ok) { say(view.querySelector('#cal-feedback'), false, `${result.status} ${result.error.message}`); return; }
+    route();
+  });
+
+  view.querySelectorAll('[data-advance]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-advance');
+      const result = await api(`/calendar/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: button.getAttribute('data-status') }),
+      });
+      if (!result.ok) { say(feedback, false, `${result.status} ${result.error.message}`); return; }
+      route();
+    });
+  });
+
+  view.querySelectorAll('[data-publish]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-publish');
+      const url = window.prompt('发布链接（没发就别填，取消即可）');
+      if (!url) return;
+      const result = await api(`/calendar/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ publish_state: 'published', published_url: url }),
+      });
+      if (!result.ok) { say(feedback, false, `${result.status} ${result.error.message}`); return; }
+      route();
+    });
+  });
+
+  view.querySelectorAll('[data-metric]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-metric');
+      const views = window.prompt('播放量（数字，取消则不填）');
+      if (views === null) return;
+      const likes = window.prompt('点赞数', '0') || '0';
+      const payload = {
+        captured_at: new Date().toISOString(),
+        views: Number(views) || 0,
+        likes: Number(likes) || 0,
+      };
+      const result = await api(`/calendar/${id}/metrics`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      if (!result.ok) { say(feedback, false, `${result.status} ${result.error.message}`); return; }
+      say(feedback, true, '数据已回填（每次回填都是一个快照，不覆盖历史）');
+    });
+  });
 }
 
 async function pageSettings(view) {

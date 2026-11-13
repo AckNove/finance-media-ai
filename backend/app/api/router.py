@@ -17,6 +17,7 @@ from backend.app.api.routes import (
     health,
     knowledge,
     monitoring,
+    operations,
     research_reports,
     research_tasks,
     reviews,
@@ -99,6 +100,14 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("GET", "/api/workspace/jobs/{job_id}/file"): HUMAN_ONLY,
     ("POST", "/api/workspace/jobs/{job_id}/content-qc"): HUMAN_ONLY,
     ("GET", "/api/workspace/config"): HUMAN_ONLY,
+    # V6.0 K 段：内容日历与平台数据（系统不自动发布，只记录人做的事）
+    ("POST", "/api/calendar"): HUMAN_ONLY,
+    ("GET", "/api/calendar"): HUMAN_ONLY,
+    ("GET", "/api/calendar/analytics"): HUMAN_ONLY,
+    ("GET", "/api/calendar/{entry_id}"): HUMAN_ONLY,
+    ("PATCH", "/api/calendar/{entry_id}"): HUMAN_ONLY,
+    ("POST", "/api/calendar/{entry_id}/metrics"): HUMAN_ONLY,
+    ("GET", "/api/calendar/{entry_id}/metrics"): HUMAN_ONLY,
 }
 
 
@@ -123,6 +132,7 @@ def build_api_router(prefix: str) -> APIRouter:
     router.include_router(scripts.router)
     router.include_router(monitoring.router)
     router.include_router(workspace.router)
+    router.include_router(operations.router)
     return router
 
 
