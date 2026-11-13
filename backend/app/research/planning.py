@@ -462,9 +462,10 @@ def plan_research(
             provider=request.provider,
             model=request.model,
             model_call_id=last_usage["model_call_id"],
-            prompt_tokens=last_usage["prompt_tokens"],
-            completion_tokens=completion_tokens,
-            cost_cny=last_usage["cost_cny"],
+            # 降级重试的每一次都是真花了钱：按累加值记账，别只记最后一次
+            prompt_tokens=int(spent["prompt_tokens"]),
+            completion_tokens=int(spent["completion_tokens"]),
+            cost_cny=round(float(spent["cost_cny"]), 6),
             notes=tuple(notes),
         )
 

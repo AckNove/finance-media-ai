@@ -1,0 +1,74 @@
+{
+  "ok": true,
+  "provider": "edge",
+  "voice": "zh-CN-YunxiNeural",
+  "clip_count": 3,
+  "total_seconds": 26.832,
+  "overrun_count": 0,
+  "clips": [
+    {
+      "shot_id": "sh01",
+      "file": "audio/narration/sh01.mp3",
+      "duration_seconds": 9.36,
+      "shot_seconds": 9.7,
+      "overrun_seconds": 0.0,
+      "sha256": "77fc4b15e98645bbd4f26e1d86b2f7db3566f0cf8df4889d4db8b8964e024264",
+      "byte_size": 56397,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 25,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "这一条讲的是：请沿光伏产业链拆解上游硅料、中游硅片电池组件、下…。下面每一句话都能追到原文。"
+    },
+    {
+      "shot_id": "sh02",
+      "file": "audio/narration/sh02.mp3",
+      "duration_seconds": 10.92,
+      "shot_seconds": 11.267,
+      "overrun_seconds": 0.0,
+      "sha256": "7ca639f32af9bec35df8a9527ff3878481cdaea788d92eab3896a3cf8815a6a6",
+      "byte_size": 65757,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 18,
+      "cue_count": 3,
+      "estimated_timing": false,
+      "text": "2022年，财务数据很好，实现收入1424亿，同比增长119%，扣非净利润265.5亿，同比增长217%。"
+    },
+    {
+      "shot_id": "sh03",
+      "file": "audio/narration/sh03.mp3",
+      "duration_seconds": 6.552,
+      "shot_seconds": 6.9,
+      "overrun_seconds": 0.0,
+      "sha256": "1a3efc140b86ce34d083cef2285a935c1bd5c07c742ad41a72fe312d77011e32",
+      "byte_size": 39549,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 15,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "以上 1 个数字来自 23 份资料（S11）。这只是资料汇编，不是投资建议。"
+    }
+  ],
+  "tracks": [
+    {
+      "src": "audio/narration/sh01.mp3",
+      "at": 0.0,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh02.mp3",
+      "at": 9.7,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh03.mp3",
+      "at": 20.967,
+      "volume": 1.0
+    }
+  ],
+  "srt": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\audio\\narration\\narration.srt",
+  "problems": []
+}

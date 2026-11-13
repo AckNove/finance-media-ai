@@ -1312,8 +1312,25 @@ class AgentExecutor:
             ).first()
 
     def _stage_dir(self, claim: Claim) -> Path:
+        """内容三阶段（脚本/分镜/制作计划）的落盘目录。
+
+        和底稿一样要防覆盖：``task-<id>`` 只在一个库里唯一，换库跑同一个 id
+        会把上一份研究的脚本草稿盖掉。这里按任务目标算指纹，落到
+        ``task-<id>-<指纹>/content``，与 ``digest.json`` 同一层。
+        """
         base = self.artifacts_root or DEFAULT_ARTIFACTS_ROOT
-        return Path(base) / f"task-{claim.task_id}" / "content"
+        root = Path(base) / f"task-{claim.task_id}"
+        objective = self._task_objective(claim.task_id)
+        if objective:
+            fingerprint = hashlib.sha256(objective.encode("utf-8")).hexdigest()[:8]
+            candidate = root / "digest.json"
+            try:
+                existing = json.loads(candidate.read_text(encoding="utf-8")).get("objective", "")
+            except (OSError, ValueError):
+                existing = ""
+            if existing and existing != objective:
+                root = root.with_name(f"{root.name}-{fingerprint}")
+        return root / "content"
 
     def _blocked_stage(self, reason: str, note: str, *, next_step: str) -> ExecutionOutcome:
         return ExecutionOutcome(
@@ -1368,22 +1385,32 @@ class AgentExecutor:
                 next_step="检查结论内容后再恢复任务",
             )
 
-        # 有模型就让模型改写（更像口播），没有/失败就退回规则版并如实标注
+        # 有模型就让模型改写（更像口播），没有/失败就退回规则版并如实标注。
+        # 注意：这里必须像 _plan/_analyze 一样允许缺省网关——worker 里构造的是
+        # `AgentExecutor()`（没注入网关），若只看 self._model_gateway 就永远走规则版，
+        # 等于模型改写这条能力在生产链路上根本没接上。
         usage: dict[str, Any] = {}
         model_error = ""
-        if self._model_gateway is not None:
+        script_gateway = self._model_gateway
+        if script_gateway is None:
+            from backend.app.capabilities.model import get_model_gateway
+
+            script_gateway = get_model_gateway()
+        probe = getattr(script_gateway, "ready_providers", None)
+        script_ready = True if not callable(probe) else bool(list(probe()))
+        if script_gateway is not None and script_ready:
+            from backend.app.capabilities.model import ModelRequest
             from backend.app.content.stages import (
                 build_script_messages,
                 parse_script_draft,
             )
-            from backend.app.capabilities.model import ModelRequest
 
             messages = build_script_messages(
                 draft=draft,
                 confirmed=confirmed,
                 skill_notes=self._skill_notes(caller, claim),
             )
-            reply = self._model_gateway.complete(
+            reply = script_gateway.complete(
                 caller,
                 ModelRequest(
                     provider="deepseek",

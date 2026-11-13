@@ -1,0 +1,213 @@
+{
+  "summary": "光伏链条的利润不在加工本身，而在\"上游资源+扩产卖方\"两端。硅料成本里工业硅占39%，为最大单项[S01]；2022年硅料售价24万元/吨而成本仅5.9万元/吨，价差直接变成通威的265.5亿扣非净利[S12]。行业13环节毛利率呈\"多晶硅>金刚线约50%>设备逆变器约30%>电池组件银浆支架10%-15%\"的梯度[S09]。当产能突破1100GW、约为全球需求570-630GW的两倍[S14]，硅料与硅片单公斤/单片净利转负[S18][S22]，利润被挤到设备辅材这一\"卖铲子\"环节[S15]。",
+  "findings": [
+    {
+      "claim": "硅料成本中工业硅等原材料占41%（工业硅单项39%），是降本的第一抓手",
+      "kind": "fact",
+      "source_ids": [
+        "S01"
+      ],
+      "numbers": [
+        "41%",
+        "39%"
+      ],
+      "section": "raw_materials"
+    },
+    {
+      "claim": "2022年多晶硅售价24万元/吨对成本5.9万元/吨，超额利润来自硅料紧缺而非加工效率",
+      "kind": "fact",
+      "source_ids": [
+        "S12"
+      ],
+      "numbers": [
+        "24万元/吨",
+        "5.9万元/吨",
+        "265.5亿"
+      ],
+      "section": "upstream"
+    },
+    {
+      "claim": "13环节毛利率呈梯度：多晶硅最好、金刚线约50%、设备逆变器约30%、电池组件银浆支架仅10%-15%",
+      "kind": "fact",
+      "source_ids": [
+        "S09"
+      ],
+      "numbers": [
+        "50%",
+        "30%",
+        "10%~15%"
+      ],
+      "section": "value_split"
+    },
+    {
+      "claim": "产能约1100GW对应全球需求570-630GW，过剩约两倍，直接导致2025年组件电池企业全面亏损",
+      "kind": "inference",
+      "source_ids": [
+        "S14"
+      ],
+      "numbers": [
+        "1100GW",
+        "570GW-630GW"
+      ],
+      "section": "bottlenecks"
+    },
+    {
+      "claim": "过剩压价已使硅料单公斤净利-2.3元、硅片单片净利约-0.27元，硅片产能利用率仅约51%-55%",
+      "kind": "fact",
+      "source_ids": [
+        "S18",
+        "S22",
+        "S20"
+      ],
+      "numbers": [
+        "-2.3元",
+        "-0.269元",
+        "54.7%",
+        "51.02%"
+      ],
+      "section": "bottlenecks"
+    },
+    {
+      "claim": "设备与辅材企业2024年逆势增收增利，因其客户是扩产方，收入滞后于产能投资",
+      "kind": "inference",
+      "source_ids": [
+        "S15"
+      ],
+      "numbers": [
+        "116.26%",
+        "69.18%",
+        "83.03%"
+      ],
+      "section": "equipment"
+    }
+  ],
+  "data_gaps": [
+    "缺下游电站装机/招标/收益率的分年度序列，无法验证需求端变化的节奏与来源",
+    "缺辅材（胶膜、光伏玻璃、银浆、焊带）各自的成本占比与价格序列，价值分配只能覆盖主链",
+    "缺关键设备国产化率、交期与在手订单数据，设备环节卡点无法量化",
+    "缺技术路线（TOPCon/HJT/BC）转换效率与良率的可比指标，无法判断技术溢价归属",
+    "缺硅料-硅片-电池-组件各环节长单、合资与认证壁垒信息，供应链绑定深度无法评估",
+    "缺2022年硅料高价到2026年亏损之间的完整价格时间序列，利润迁移的时点只能靠零星快照拼接"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 3,
+  "prompt_tokens": 14524,
+  "completion_tokens": 1638,
+  "cost_cny": 0.044892,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "chain",
+  "checklist": {
+    "framework": "chain",
+    "title": "产业链研究",
+    "sections": {
+      "upstream": {
+        "title": "上游",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S12"
+        ]
+      },
+      "midstream": {
+        "title": "中游",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "downstream": {
+        "title": "下游",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "raw_materials": {
+        "title": "核心原材料",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S01"
+        ]
+      },
+      "equipment": {
+        "title": "关键设备",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S15"
+        ]
+      },
+      "tech_routes": {
+        "title": "技术路线",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "cost_structure": {
+        "title": "成本结构",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "supply_relations": {
+        "title": "供应链关系",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "value_split": {
+        "title": "价值分配",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S09"
+        ]
+      },
+      "bottlenecks": {
+        "title": "关键瓶颈",
+        "claims": 2,
+        "facts": 1,
+        "inferences": 1,
+        "sources": [
+          "S14",
+          "S18",
+          "S22",
+          "S20"
+        ]
+      },
+      "opportunities": {
+        "title": "潜在机会",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      }
+    },
+    "empty_sections": [
+      "midstream",
+      "downstream",
+      "tech_routes",
+      "cost_structure",
+      "supply_relations",
+      "opportunities"
+    ],
+    "inference_only_sections": [
+      "equipment"
+    ],
+    "unsectioned": [],
+    "coverage": 0.455
+  },
+  "skills_used": [
+    "investigative-storytelling"
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 4,
+  "prompt_tokens": 9640,
+  "completion_tokens": 2219,
+  "cost_cny": 0.039439,
+  "checked_at": "2026-11-13T17:18:46+00:00",
+  "counts": {
+    "supported": 0,
+    "partially_supported": 3,
+    "contradicted": 0,
+    "insufficient_evidence": 3,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "硅料成本中工业硅等原材料占41%（工业硅单项39%），是降本的第一抓手",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S01的全部摘录都是新浪财经的页面导航和栏目文字，只提到多晶硅是光伏核心原材料及生产工艺，没有出现任何成本构成比例，因此无法核对41%和39%。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S01"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "S01原文中关于硅料成本构成的具体比例（原材料合计41%、工业硅39%）",
+        "成本构成的统计口径与年份"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1606,
+      "completion_tokens": 369,
+      "cost_cny": 0.006573,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:18:46+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "2022年多晶硅售价24万元/吨对成本5.9万元/吨，超额利润来自硅料紧缺而非加工效率",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "证据只印证了2022年通威扣非净利润265.5亿这一财务数字，但24万元/吨售价、5.9万元/吨成本以及‘超额利润来自硅料紧缺而非加工效率’的归因都没有原文依据。",
+      "evidence_ids": [
+        40
+      ],
+      "source_ids": [
+        "S12"
+      ],
+      "supporting": [
+        "扣非净利润265.5亿，同比增长217%"
+      ],
+      "contradicting": [],
+      "missing": [
+        "原文对24万元/吨售价与5.9万元/吨成本的表述",
+        "将超额利润归因于硅料紧缺而非加工效率的论证"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "仅265.5亿净利润得到印证，价格/成本对比与因果归因均无证据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1606,
+      "completion_tokens": 369,
+      "cost_cny": 0.006573,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:18:46+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "13环节毛利率呈梯度：多晶硅最好、金刚线约50%、设备逆变器约30%、电池组件银浆支架仅10%-15%",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S09的摘录全部是网易首页导航和频道列表，没有13环节毛利率梯度或50%/30%/10%~15%的任何数据。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S09"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "各环节毛利率的具体数值及统计口径",
+        "‘13环节’的划分清单"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1606,
+      "completion_tokens": 369,
+      "cost_cny": 0.006573,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:18:46+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "产能约1100GW对应全球需求570-630GW，过剩约两倍，直接导致2025年组件电池企业全面亏损",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "证据只支持2025年光伏电池组件企业普遍亏损，‘产能1100GW、需求570-630GW、过剩约两倍’的数据以及‘直接导致’的因果判断在原文中都没有出现。",
+      "evidence_ids": [
+        52
+      ],
+      "source_ids": [
+        "S14"
+      ],
+      "supporting": [
+        "2025年光伏电池组件企业业绩全军覆没，最高亏损约100亿！",
+        "光伏电池组件 行业全军覆没，没有一家能够实现盈利的。"
+      ],
+      "contradicting": [],
+      "missing": [
+        "1100GW产能与570-630GW需求的数据来源",
+        "产能过剩与全行业亏损之间因果关系的论证"
+      ],
+      "issues": [
+        {
+          "code": "causal_leap",
+          "note": "把行业亏损直接归因于产能过剩，证据只给出亏损事实，没有因果关系论证"
+        },
+        {
+          "code": "partial_support",
+          "note": "仅‘2025年全面亏损’被印证，产能/需求数字缺失"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1606,
+      "completion_tokens": 369,
+      "cost_cny": 0.006573,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:18:46+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 4,
+      "claim": "过剩压价已使硅料单公斤净利-2.3元、硅片单片净利约-0.27元，硅片产能利用率仅约51%-55%",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S18、S22的摘录都是铜铝铅锌等金属报价表，S20是硅片价格与产量指数，均未出现-2.3元、-0.269元、54.7%、51.02%等数据。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S18",
+        "S22",
+        "S20"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "硅料单公斤净利、硅片单片净利的具体测算",
+        "硅片产能利用率51%-55%的数据来源与统计期"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1606,
+      "completion_tokens": 369,
+      "cost_cny": 0.006573,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:18:46+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 5,
+      "claim": "设备与辅材企业2024年逆势增收增利，因其客户是扩产方，收入滞后于产能投资",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "证据印证了捷佳伟创2024年营收增116.26%、净利增69.18%，且有一批设备与辅材企业盈利逆势增长；但‘客户是扩产方、收入滞后于产能投资’的机制解释和83.03%这个数字都没有原文支撑。",
+      "evidence_ids": [
+        58
+      ],
+      "source_ids": [
+        "S15"
+      ],
+      "supporting": [
+        "2024年实现营业收入188.87亿元，同比增长116.26%；实现归母净利润27.64亿元，同比增长69.18%。",
+        "一批光伏设备、辅材企业实现了50%以上的盈利逆势增长。"
+      ],
+      "contradicting": [],
+      "missing": [
+        "83.03%对应的指标与出处",
+        "设备/辅材收入滞后于客户产能投资的机制说明"
+      ],
+      "issues": [
+        {
+          "code": "causal_leap",
+          "note": "‘逆势增长源于客户是扩产方、收入滞后于产能投资’属推断，证据未给出该因果链条"
+        },
+        {
+          "code": "partial_support",
+          "note": "增收增利有据，归因逻辑与83.03%数字无据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 4,
+      "prompt_tokens": 1606,
+      "completion_tokens": 369,
+      "cost_cny": 0.006573,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:18:46+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    }
+  ],
+  "notes": [],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

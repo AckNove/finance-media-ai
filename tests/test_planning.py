@@ -309,3 +309,41 @@ def test_keyword_plan_without_queries_has_no_subtask() -> None:
     plan = keyword_plan("商业银行是如何赚钱的？", [])
     assert plan.subtasks == ()
     assert plan.planner == "keywords"
+
+
+def test_a_retried_plan_charges_every_attempt_not_just_the_last_one() -> None:
+    """撞上限重试的第一次也是真花了钱：规划账单必须累加。"""
+    calls: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode("utf-8"))
+        calls.append(int(body["max_tokens"]))
+        if len(calls) == 1:
+            return httpx.Response(
+                200,
+                json={
+                    "id": "chatcmpl-cut",
+                    "model": "deepseek-flash",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {"role": "assistant", "content": "{\"subtasks\": [{"},
+                            "finish_reason": "length",
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 800,
+                        "completion_tokens": body["max_tokens"],
+                        "total_tokens": 800 + body["max_tokens"],
+                    },
+                },
+            )
+        return ok_response(GOOD_PLAN, prompt=600, completion=300)
+
+    plan = plan_research("商业银行是如何赚钱的？", gateway=build_gateway(handler), max_tokens=3000)
+    assert len(calls) == 2  # 第一次撞上限，第二次才成功
+    assert plan.prompt_tokens == 800 + 600
+    assert plan.completion_tokens == 3000 + 300
+    # 0.8*0.00213 + 3.0*0.00852 + 0.6*0.00213 + 0.3*0.00852
+    assert plan.cost_cny == pytest.approx(0.031098, abs=1e-6)
+    assert any("retried_with_fewer_subtasks" in note for note in plan.notes)

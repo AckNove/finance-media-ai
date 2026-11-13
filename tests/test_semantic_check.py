@@ -356,3 +356,42 @@ def test_evidence_of_the_claim_itself_is_kept_when_the_pool_is_capped() -> None:
     assert [item.evidence_id for item in picked[:2]] == [55, 56]
 
 
+def test_a_retried_check_charges_every_attempt_not_just_the_last_one() -> None:
+    """撞上限重试的第一次也是真花了钱：核查账单必须累加。"""
+    calls: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode("utf-8"))
+        calls.append(int(body["max_tokens"]))
+        if len(calls) == 1:
+            return httpx.Response(
+                200,
+                json={
+                    "id": "chatcmpl-cut",
+                    "model": "deepseek-flash",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {"role": "assistant", "content": "{\"checks\": [{\"ind"},
+                            "finish_reason": "length",
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 1200,
+                        "completion_tokens": body["max_tokens"],
+                        "total_tokens": 1200 + body["max_tokens"],
+                    },
+                },
+            )
+        return ok_response(payload({"index": 0, "verdict": "unverifiable"}), prompt=900, completion=100)
+
+    report = check_findings(list(FINDINGS[:1]), list(EVIDENCE), gateway=build_gateway(handler), max_tokens=300)
+    assert len(calls) == 2  # 第一次撞上限，第二次才成功
+    # 两次的 Token 与费用都要记进来，只记最后一次会让任务账少于模型账单
+    assert report.prompt_tokens == 1200 + 900
+    assert report.completion_tokens == 300 + 100
+    assert report.cost_cny == pytest.approx(0.007881, abs=1e-9)
+    assert any("retried:2" in note for note in report.notes)
+    assert report.as_dict()["notes"]
+
+

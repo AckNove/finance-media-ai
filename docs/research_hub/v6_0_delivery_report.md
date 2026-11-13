@@ -530,3 +530,82 @@ python -m backend.scripts.chain_diagram --job <job> --seconds 4
 ```
 pytest -o addopts="" -q   → 1101 passed, 2 skipped, 1 warning
 ```
+
+## §21 又两个真缺陷：重试的钱没记账、worker 里脚本改写没接上
+
+### 21.1 撞上限重试的第一次没进任务账
+
+跑「产业链」这一题的真实链路时，验收脚本自己报出对不上：
+
+```
+花费合计 0.180756 元（任务账 0.133214 / 接口 0.133214，对得上=False）
+```
+
+差额 **0.047542** 正好是第一条 `research.verify`（`9520 / 3200 / 0.047542`，
+`completion_tokens` 撞满 3200 = 被截断的那一次）。根因在三条"撞上限就减少输入重试"的阶梯路径上：
+`analyze()`、`plan_research()`、`check_findings()` 成功返回时**只用最后一次 `record`** 记
+tokens 与费用，前面撞上限那几次真花了的钱没进任务账，于是任务账小于模型账单。
+
+改法（都改实现）：三条路径内部就有 `spent` 累加器（每次尝试都累加 prompt/completion/cost/calls），
+成功分支改用 `spent` 而不是最后一次 `record`；`SemanticReport` 新增 `notes`，重试时写
+`retried:N 次（撞上限后减少条数重试，费用按实际累加）`；`model_call_id` 仍指最后成功那条审计行。
+
+新增三条回归（`tests/test_research_analysis.py`、`tests/test_semantic_check.py`、
+`tests/test_planning.py` 各一条）：第一次撞上限、第二次成功，断言 `prompt_tokens`/`completion_tokens`/
+`cost_cny` 都是两次之和，而不是最后一次。**注意**：把第二次的 `completion_tokens` 设成等于
+`max_tokens` 也会被判成截断（代码里 `completion_tokens >= max_tokens` 同样算撞上限），
+所以样本里第二次的用量必须明显小于上限。
+
+### 21.2 `content.script` 在生产链路里从没调过模型
+
+`AgentExecutor` 的 `_plan` / `_analyze` / `_verify_claims` 在 `model_gateway=None` 时会让
+`plan_research` / `analyze` / `check_findings` 内部回落到全局 `get_model_gateway()`，
+但 `_script` 写的是 `if self._model_gateway is not None:`——而 `backend/scripts/run_worker.py`
+构造的正是 `AgentExecutor()`（不注入网关）。结果：**worker 跑出来的脚本永远是规则版**，
+模型改写这条能力只在测试和手工探针里生效。
+
+改法：`_script` 先 `self._model_gateway or get_model_gateway()`，再看
+`ready_providers()`（对只实现 `complete()` 的测试替身按"就是可用"处理）。
+新增回归 `test_a_worker_style_executor_still_reaches_the_global_gateway`
+（`AgentExecutor(session_factory=...)` 不传网关 + monkeypatch 全局 gateway）。
+
+### 21.2b 内容阶段的产物目录也会串味
+
+`_stage_dir` 原来固定是 `content/research/task-<id>/content`，而 `task-<id>` 只在一个库里唯一。
+实测：临时库里的 `task-1`（研究目标完全不同的另一份研究）跑完之后，剧本草稿被写进了仓库里
+真实研究 `task-1`（商业银行那一份）的目录下——和之前 `digest.json` 被覆盖是同一类问题。
+改法：`_stage_dir` 也按任务目标算 8 位指纹，发现同目录 `digest.json` 的目标不一致就落到
+`task-<id>-<指纹>/content`，与底稿同层；目标一致时仍用原目录（不会因为指纹到处建新文件夹）。
+新增回归 `test_stage_dir_does_not_overwrite_another_run_with_the_same_task_id`
+（顺带把这次已经串味的四份脚本产物挪回 `content/research/task-1-a6a01af5/content/`）。
+
+### 21.3 验收脚本：不再对着"等人确认"空转
+
+上一轮 `content.script` 因为"没有人工确认过的结论"一直 `blocked`，而验收脚本只会
+`POST /resume`，于是同一状态 `resume` 了 **22 次**（每次计数都是 `{'succeeded':10,'blocked':1}`）。
+改法：`drive_task` 发现 paused 且阻塞原因是 `no_confirmed_findings` 时，先
+`confirm_one_check(task_id)`（找这条任务最新报告里一条待确认核查，优先 `supported` /
+`partially_supported`，`POST .../review` 确认），再放行；确认不了就停止空转并记录原因。
+返回里多了 `confirmations` 字段。同时把视频任务 id 加上时间戳后缀（同名目录会 409
+`job_exists`，历史任务不许覆盖）。
+
+### 21.4 修完后的真实链路（2026-11-14 01:13 +08:00）
+
+`FM_ACCEPT_OUT=acceptance_chain_final.json python -m backend.scripts.v6_acceptance --only chain --budget 0.5`
+（临时库 + 真 uvicorn + 真搜索 + 真 DeepSeek）：
+
+| 项目 | 结果 |
+| --- | --- |
+| 子任务 | 11 个，**11/11 succeeded**（含 `content.script`） |
+| 驱动轮次 | 6 轮、放行 3 次闸门、**人工确认 1 次**（脚本扮演人） |
+| 规划 | `planner=model`、36 个检索词、6 个规划子任务 |
+| 数据 | sources **25**、evidence **440**、report 1、checks 6（`partially_supported 3 / insufficient_evidence 3`） |
+| 模型调用 | **5 次**（plan 500/2170 ¥0.019553、analyze 14492/1838 ¥0.046528、synthesize 14524/1638 ¥0.044892、verify 9640/2219 ¥0.039439、**content.script 2550/1446 ¥0.017751**） |
+| 记账 | 任务账 **0.168163** == 模型账单 **0.168163**（`对得上=True`） |
+| 内容链路 | 确认核查 → `draft-readiness allowed=True confirmed=2` → `video-job 201`（`v6_accept_chain_11131719`）→ `render rc=0` 出片 |
+| 密钥 | `prompt_preview` 命中 `sk-` 的行数 **0** |
+
+```
+pytest -o addopts="" -q   → 1106 passed, 2 skipped, 1 warning
+```
+

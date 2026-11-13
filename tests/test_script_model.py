@@ -313,3 +313,23 @@ def test_executor_falls_back_to_rules_and_says_so(factory, tmp_path) -> None:
         notes=tuple(outcome.output.get("notes") or ()),
     )
     assert draft.title  # 规则版仍然是可用的草稿
+
+
+def test_a_worker_style_executor_still_reaches_the_global_gateway(factory, tmp_path, monkeypatch) -> None:
+    """worker 里构造的是 `AgentExecutor()`（没注入网关），脚本阶段也得能用模型。
+
+    这是一个真缺陷的回归：只看 `self._model_gateway` 的话，生产链路上的
+    `content.script` 永远走规则版，模型改写等于没接上。
+    """
+    task_id = _seed(factory)
+    runtime = TaskRuntime(factory)
+    gateway = _RecordingGateway(_reply(GOOD_REPLY))
+    monkeypatch.setattr("backend.app.capabilities.model.get_model_gateway", lambda: gateway)
+    executor = AgentExecutor(session_factory=factory, artifacts_root=tmp_path)
+
+    outcome = executor.execute(_claim(runtime, task_id, "content.script"))
+
+    assert outcome.status == "completed"
+    assert outcome.output["generated_by"] == "model"
+    assert outcome.calls == 1
+    assert gateway.requests and gateway.requests[0].purpose == "content.script"

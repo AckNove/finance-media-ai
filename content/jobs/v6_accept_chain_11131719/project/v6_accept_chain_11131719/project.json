@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "name": "v6_accept_chain_11131719",
+  "created_at": "2026-11-13T17:19:18.669709+00:00",
+  "assets": [
+    {
+      "id": "64cdccf2b641",
+      "name": "solid_1d2a44.mp4",
+      "path": "media/03319bb44f2e.mp4",
+      "sha256": "3c9484151451b1e8a5794588f62dc211191002dbe2827f7f659f32e064e06321",
+      "rights": "self-generated",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/64cdccf2b641",
+        "n": 120,
+        "fps": 30.0,
+        "w": 1080,
+        "h": 1920,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "c538ff2045b0",
+      "name": "solid_1d2a44.mp4",
+      "path": "media/b3afd1e8300e.mp4",
+      "sha256": "3c9484151451b1e8a5794588f62dc211191002dbe2827f7f659f32e064e06321",
+      "rights": "self-generated",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/c538ff2045b0",
+        "n": 120,
+        "fps": 30.0,
+        "w": 1080,
+        "h": 1920,
+        "pattern": "%05d.png"
+      }
+    }
+  ],
+  "reviews": [],
+  "release": "project review pending"
+}

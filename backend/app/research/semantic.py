@@ -182,6 +182,7 @@ class SemanticReport:
     model_used: bool = True
     skipped_reason: str = ""
     counts: Mapping[str, int] | None = None
+    notes: tuple[str, ...] = ()
 
     def verdict_counts(self) -> dict[str, int]:
         counter = {item.value: 0 for item in Verdict}
@@ -202,6 +203,7 @@ class SemanticReport:
             "checked_at": self.checked_at,
             "counts": dict(self.verdict_counts()),
             "checks": [item.as_dict() for item in self.checks],
+            "notes": list(self.notes),
             "note": (
                 "以上是模型对证据支持度的判断，不等于事实核查结论。"
                 "人工复核状态单独记录，模型结果不会自动变成 verified。"
@@ -684,11 +686,14 @@ def check_findings(
     completion_tokens = int(getattr(record, "completion_tokens", 0) or 0)
 
     checks = parse_checks(reply.text, findings=items, evidence=units)
-    # 一次调用核查多条结论：把这次调用的 Token 与费用按条均摊到每行，
+    # 一次调用核查多条结论：把这次核查的 Token 与费用按条均摊到每行，
     # 这样 SUM(finding_checks.cost_cny) 等于真实花费，不会因为"一行记全款"而重复计数。
+    # 注意用 spent 而不是最后一次 record：撞上限重试的第一次也是真花了钱，
+    # 只记最后一次会让任务账少于模型账单（实测差过 0.0475 元）。
     shares = max(len(checks), 1)
-    prompt_total = int(getattr(record, "prompt_tokens", 0) or 0)
-    cost_total = float(getattr(record, "cost_cny", 0.0) or 0.0)
+    prompt_total = int(spent["prompt_tokens"])
+    cost_total = float(spent["cost_cny"])
+    retried = int(spent["calls"]) > 1
     stamped = tuple(
         FindingCheck(
             index=check.index,
@@ -706,7 +711,7 @@ def check_findings(
             model=request.model,
             model_call_id=getattr(record, "id", None),
             prompt_tokens=prompt_total // shares,
-            completion_tokens=completion_tokens // shares,
+            completion_tokens=int(spent["completion_tokens"]) // shares,
             cost_cny=round(cost_total / shares, 6),
             checked_at=checked_at,
             notes=tuple(check.notes) + (f"usage_share:1/{shares}",),
@@ -718,10 +723,11 @@ def check_findings(
         provider=request.provider,
         model=request.model,
         model_call_id=getattr(record, "id", None),
-        prompt_tokens=int(getattr(record, "prompt_tokens", 0) or 0),
-        completion_tokens=completion_tokens,
-        cost_cny=float(getattr(record, "cost_cny", 0.0) or 0.0),
+        prompt_tokens=prompt_total,
+        completion_tokens=int(spent["completion_tokens"]),
+        cost_cny=round(cost_total, 6),
         checked_at=checked_at,
+        notes=(f"retried:{spent['calls']} 次（撞上限后减少条数重试，费用按实际累加）",) if retried else (),
     )
 
 

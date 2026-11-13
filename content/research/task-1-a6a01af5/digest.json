@@ -1,0 +1,2464 @@
+{
+  "schema": 1,
+  "title": "事实核查（强制闸门）：请沿光伏产业链拆解上游硅料、中游硅片电池组件、下游电站与辅材设备的成本结构与价值分配：各环节的钱是怎么赚的、当前瓶颈在哪、利润为什么会在不同环节之间迁移？请给出可核对的公开数据与来源。",
+  "objective": "请沿光伏产业链拆解上游硅料、中游硅片电池组件、下游电站与辅材设备的成本结构与价值分配：各环节的钱是怎么赚的、当前瓶颈在哪、利润为什么会在不同环节之间迁移？请给出可核对的公开数据与来源。",
+  "generated_at": "2026-11-13T17:18:46+00:00",
+  "generated_by": "rules",
+  "queries": [
+    "多晶硅成本构成",
+    "硅片非硅成本",
+    "组件成本结构",
+    "电池片生产成本",
+    "光伏产业链成本拆分",
+    "光伏各环节单位成本",
+    "光伏企业毛利率",
+    "硅料龙头年报",
+    "组件企业业绩",
+    "光伏板块盈利能力",
+    "光伏上市公司财务数据",
+    "光伏各环节利润率",
+    "多晶硅价格走势",
+    "硅片价格指数",
+    "光伏组件报价",
+    "光伏产业链供需",
+    "光伏产品成交价",
+    "硅料价格行情",
+    "光伏产能扩张",
+    "硅料开工率",
+    "N型电池渗透率",
+    "颗粒硅技术路线",
+    "光伏产能周期",
+    "光伏技术迭代",
+    "光伏新增装机统计",
+    "光伏电站收益率",
+    "新能源上网电价政策",
+    "新能源消纳利用率",
+    "光伏发电利用小时",
+    "光伏需求端政策",
+    "光伏胶膜毛利率",
+    "光伏玻璃价格",
+    "光伏银浆用量",
+    "光伏设备订单",
+    "光伏辅材竞争格局",
+    "光伏设备厂商业绩"
+  ],
+  "source_count": 25,
+  "independent_source_count": 24,
+  "data_point_count": 110,
+  "sources": [
+    {
+      "source_id": "S01",
+      "title": "多晶硅的分类及成本构成",
+      "url": "https://finance.sina.com.cn/money/future/wemedia/2023-02-13/doc-imyfpwqu9355894.shtml",
+      "site_name": "",
+      "author": "",
+      "published_at": "2023-02-13T16:41",
+      "sha256": "e29c564760744b30c394a2c5e87d15b1e6509a3e2f8caa0da2d52b949a3842a1",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\finance.sina.com.cn\\e29c564760744b30c394a2c5e87d15b1e6509a3e2f8caa0da2d52b949a3842a1.html",
+      "char_count": 4411,
+      "query": "多晶硅成本构成",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S02",
+      "title": "【多晶硅期货专题】多晶硅生产成本构成",
+      "url": "https://finance.sina.com.cn/money/future/wemedia/2025-01-06/doc-inecyvzz1931620.shtml",
+      "site_name": "",
+      "author": "五矿期货微服务",
+      "published_at": "2025-01-06T08:21",
+      "sha256": "245583ec0559cc5b0abe6d50a2cc664038f35add18b0021b25ffe79ceb7a7acd",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\finance.sina.com.cn\\245583ec0559cc5b0abe6d50a2cc664038f35add18b0021b25ffe79ceb7a7acd.html",
+      "char_count": 2200,
+      "query": "多晶硅成本构成",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S03",
+      "title": "光伏硅片非硅成本分析 - 雪球",
+      "url": "https://www.xueqiu.com/6246839773/231288865",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "ddb29ce6ff956ce0d619e7e2bc4f32895b663a47570719e0ced52a931e3d9850",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\ddb29ce6ff956ce0d619e7e2bc4f32895b663a47570719e0ced52a931e3d9850.html",
+      "char_count": 232,
+      "query": "硅片非硅成本",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S04",
+      "title": "得到的数据有的也有些困惑，例如硅片的非硅成本，根据给出的1-9月2.48亿片的产量和成本金额数据计算，京运通硅片的非硅成... - 雪球",
+      "url": "https://www.xueqiu.com/1200680539/147959325",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "2bfa02500ad93654d05bd2e2db8da92e7683d9f488f5e78a82ee7b30e7edef37",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\2bfa02500ad93654d05bd2e2db8da92e7683d9f488f5e78a82ee7b30e7edef37.html",
+      "char_count": 414,
+      "query": "硅片非硅成本",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S05",
+      "title": "没错，硅片的非硅成本是指除了硅料外的成本。电池的非硅成本是指除了硅片外的成本。组件的非硅成本是指除了电池片外的成本。 - 雪球",
+      "url": "https://www.xueqiu.com/3249643818/135607759",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "92c57418bf4a77a99af1205d47f2f71d4746e0bea988380c1c790c8c35dcd3a8",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\92c57418bf4a77a99af1205d47f2f71d4746e0bea988380c1c790c8c35dcd3a8.html",
+      "char_count": 301,
+      "query": "硅片非硅成本",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S06",
+      "title": "光伏组件成本结构解析：当前价格与材料构成_新能源车_什么值得买",
+      "url": "https://post.smzdm.com/p/anvpdx93/",
+      "site_name": "什么值得买",
+      "author": "",
+      "published_at": "2026-05-11T13:08",
+      "sha256": "4494d3aaf7813dfee6a84b85979d1944c1ba095d862a0e3db73df88ce6f516cd",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\post.smzdm.com\\4494d3aaf7813dfee6a84b85979d1944c1ba095d862a0e3db73df88ce6f516cd.html",
+      "char_count": 1175,
+      "query": "组件成本结构",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S07",
+      "title": "组件成本构成_行行查_行业研究数据库",
+      "url": "https://www.hanghangcha.com/cms/detail/186691.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "3355d7f5c47828408b56145654e050e31f79088786ed91a7eba2b74dabc79ec7",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.hanghangcha.com\\3355d7f5c47828408b56145654e050e31f79088786ed91a7eba2b74dabc79ec7.html",
+      "char_count": 1451,
+      "query": "组件成本结构",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S08",
+      "title": "2025第三季度光伏相关企业毛利率排行榜 - 南方财富网",
+      "url": "http://www.southmoney.com/guangfu/202603/2647839.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "6bae5906a99c0896c81851424067d0c2a0239480ecf46bf78d3896fd9aa6fb25",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.southmoney.com\\6bae5906a99c0896c81851424067d0c2a0239480ecf46bf78d3896fd9aa6fb25.html",
+      "char_count": 2079,
+      "query": "光伏企业毛利率",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S09",
+      "title": "光伏各产业链毛利润一览表",
+      "url": "https://www.163.com/dy/article/IINLKAU80514DRR7.html",
+      "site_name": "",
+      "author": "网易",
+      "published_at": "2023-11-04T19:24",
+      "sha256": "cb30d5c43ad9cd864ced929d9736dfb7e3a85ac2534d534d87d5f180a20a15c2",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.163.com\\cb30d5c43ad9cd864ced929d9736dfb7e3a85ac2534d534d87d5f180a20a15c2.html",
+      "char_count": 5109,
+      "query": "光伏企业毛利率",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S10",
+      "title": "光伏企业毛利率排行榜 统计数据显示， 2018年-2020年100多家光伏上市公司整体毛利率分别为22.55%、23.96%、23.24%，2... - 雪球",
+      "url": "https://www.xueqiu.com/8150711211/179910366",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "de47b424e5e7883dc1e1150647275cff9f2aa11500fb904d92cfcbc1fda53b8a",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.xueqiu.com\\de47b424e5e7883dc1e1150647275cff9f2aa11500fb904d92cfcbc1fda53b8a.html",
+      "char_count": 394,
+      "query": "光伏企业毛利率",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S11",
+      "title": "本周年报抢先看：硅料龙头通威股份净赚82亿，这10家公司净利增长超10倍|界面新闻 · 证券",
+      "url": "https://www.jiemian.com/article/7383119.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "334dc4656933e6bacb638159b2e159da6bcb6dd5b0ad173dd90d6db99bde510c",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.jiemian.com\\334dc4656933e6bacb638159b2e159da6bcb6dd5b0ad173dd90d6db99bde510c.html",
+      "char_count": 8066,
+      "query": "硅料龙头年报",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S12",
+      "title": "硅料龙头通威年报解读_财富号_东方财富网",
+      "url": "https://caifuhao.eastmoney.com/news/20230706165424274726940",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "dae66f2a929f13d1ad4828100234782871c9b5fe25e3d3012d5ea1f015401ac3",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\caifuhao.eastmoney.com\\dae66f2a929f13d1ad4828100234782871c9b5fe25e3d3012d5ea1f015401ac3.html",
+      "char_count": 2754,
+      "query": "硅料龙头年报",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S13",
+      "title": "硅料龙头年报“豪赚”超80亿！股价高位回调已超三成，业绩成色几何？",
+      "url": "https://www.163.com/dy/article/GT2EVG7V0550B1DU.html",
+      "site_name": "",
+      "author": "网易",
+      "published_at": "2022-01-06T21:52",
+      "sha256": "7cf1d5d2e79dcfec8525078809293c3152d1717094cba31fb18ba523a0d8b9a1",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.163.com\\7cf1d5d2e79dcfec8525078809293c3152d1717094cba31fb18ba523a0d8b9a1.html",
+      "char_count": 6182,
+      "query": "硅料龙头年报",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S14",
+      "title": "2025年光伏电池组件企业业绩全军覆没，最高亏损约100亿！_手机网易网",
+      "url": "https://m.163.com/dy/article/KJLITE5405119596.html",
+      "site_name": "",
+      "author": "胡华成",
+      "published_at": "2026-01-19T18:59",
+      "sha256": "ba16dec3b2e3afd96bbe0ea102fd1f9e3ffa7ee945ce52e4184af357d697f840",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\m.163.com\\ba16dec3b2e3afd96bbe0ea102fd1f9e3ffa7ee945ce52e4184af357d697f840.html",
+      "char_count": 2198,
+      "query": "组件企业业绩",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S15",
+      "title": "组件龙头都亏得惨不忍睹，为何这些公司风景独好、业绩亮眼？_腾讯新闻",
+      "url": "https://news.qq.com/rain/a/20250428A02PV500",
+      "site_name": "",
+      "author": "腾讯网",
+      "published_at": "2025-04-28T10:02",
+      "sha256": "2b03bb66d6ad05ca2e33053a90fbd408097ced49e706dd1982d6ff33ad77733a",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\news.qq.com\\2b03bb66d6ad05ca2e33053a90fbd408097ced49e706dd1982d6ff33ad77733a.html",
+      "char_count": 2627,
+      "query": "组件企业业绩",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S16",
+      "title": "组件企业业绩简析_财富号评论(cfhpl)股吧_东方财富网股吧",
+      "url": "https://guba.eastmoney.com/news,cfhpl,1032926969.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "8615ede823ac42036ba8befece5997e3d4676a4d33579c471f4623afdd00d1e4",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\guba.eastmoney.com\\8615ede823ac42036ba8befece5997e3d4676a4d33579c471f4623afdd00d1e4.html",
+      "char_count": 5018,
+      "query": "组件企业业绩",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S17",
+      "title": "多晶硅期货最新行情-今日多晶硅期货价格实时行情走势图-曲合网",
+      "url": "https://www.quheqihuo.com/quote/gfex-psm.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "9ddaa32980b5278f6503585ca8a3a392ebcca312e52bf76a78d25fe1fee312d1",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.quheqihuo.com\\9ddaa32980b5278f6503585ca8a3a392ebcca312e52bf76a78d25fe1fee312d1.html",
+      "char_count": 7978,
+      "query": "多晶硅价格走势",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S18",
+      "title": "多晶硅行情_多晶硅行情今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1486321.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "49621df98bbaa582c8adb3e070c0f02d3980a0b13a8035f639ec406eb0725f16",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\49621df98bbaa582c8adb3e070c0f02d3980a0b13a8035f639ec406eb0725f16.html",
+      "char_count": 7073,
+      "query": "多晶硅价格走势",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S19",
+      "title": "多晶硅期货实时行情走势图_今日多晶硅期货价格-行情中心-金投网",
+      "url": "https://quote.cngold.org/qh/gfex_ps.html",
+      "site_name": "",
+      "author": "",
+      "published_at": "",
+      "sha256": "9871c978c041be222ffb134c0dc665cf058dd261ca83488cb99cabcabfce7f29",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\quote.cngold.org\\9871c978c041be222ffb134c0dc665cf058dd261ca83488cb99cabcabfce7f29.html",
+      "char_count": 4765,
+      "query": "多晶硅价格走势",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S20",
+      "title": "硅片价格指数_硅片最新行情_现货报价 - 我的钢铁网 (Mysteel)",
+      "url": "https://list1.mysteel.com/zhishi/gpjgzs35037.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "2026-07-06T07:35",
+      "sha256": "dc835c035f48b0679cf738dafcce890840dcbcae7abd13e64efefa18b5cfd395",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\list1.mysteel.com\\dc835c035f48b0679cf738dafcce890840dcbcae7abd13e64efefa18b5cfd395.html",
+      "char_count": 3949,
+      "query": "硅片价格指数",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S21",
+      "title": "半导体硅片价格走势_硅片现货价格_供需库存数据 - 我的钢铁网 (Mysteel)",
+      "url": "https://list1.mysteel.com/zhishi/bdtgpjgzs54961.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "697f50a6b7f7263b91dc10e43533287f480d98aa948a3b62b6901658b285db77",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\list1.mysteel.com\\697f50a6b7f7263b91dc10e43533287f480d98aa948a3b62b6901658b285db77.html",
+      "char_count": 5223,
+      "query": "硅片价格指数",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S22",
+      "title": "硅片行情_硅片行情今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1486328.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "039a91885c926e19cb0a992b40b65f28b902aa21a95e262745b2b132f2e6e890",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\039a91885c926e19cb0a992b40b65f28b902aa21a95e262745b2b132f2e6e890.html",
+      "char_count": 7378,
+      "query": "硅片价格指数",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S23",
+      "title": "光伏组件价格查询_光伏组件价格查询今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1486620.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "c0b8f080f3d4dd340c5db4bf55c80b1e01f1510f5fd8f8de486e489439532532",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\c0b8f080f3d4dd340c5db4bf55c80b1e01f1510f5fd8f8de486e489439532532.html",
+      "char_count": 7101,
+      "query": "光伏组件报价",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S24",
+      "title": "光伏组件价格_光伏组件价格今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1232794.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "fd20cb05cb216c74be11e117cb8ba94dd46f5d41ac507d58ddb4210b64e1b625",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\fd20cb05cb216c74be11e117cb8ba94dd46f5d41ac507d58ddb4210b64e1b625.html",
+      "char_count": 7735,
+      "query": "光伏组件报价",
+      "republished_from": "",
+      "verification_status": "unverified"
+    },
+    {
+      "source_id": "S25",
+      "title": "光伏组件_光伏组件今日价格、行情走势、最新报价",
+      "url": "https://www.mysteel.com/hot/1232677.html",
+      "site_name": "",
+      "author": "mysteel",
+      "published_at": "",
+      "sha256": "80c2c635af417e9a1f2008d4d8139a192a688c21ed88b30eb5bb7676988f141d",
+      "snapshot_path": "C:\\Users\\25803\\finance-media-ai\\data\\snapshots\\www.mysteel.com\\80c2c635af417e9a1f2008d4d8139a192a688c21ed88b30eb5bb7676988f141d.html",
+      "char_count": 7094,
+      "query": "光伏组件报价",
+      "republished_from": "S24",
+      "verification_status": "unverified"
+    }
+  ],
+  "data_points": [
+    {
+      "source_id": "S01",
+      "text": "在电热炉内冶炼成的产品，硅含量一般在99%以上（2N），其余杂质为铁、铝、钙等，是多晶硅的上游原材料。",
+      "numbers": [
+        "99",
+        "2"
+      ]
+    },
+    {
+      "source_id": "S01",
+      "text": "目前多晶硅的制备技术主要包括化学法和物理法，化学法为当前主流工艺，约占全球产量的80%；",
+      "numbers": [
+        "80"
+      ]
+    },
+    {
+      "source_id": "S01",
+      "text": "1）冶金级多晶硅（MG-Si），一般含硅量为99.999%～99.9999%（5N-6N），主要应用包括航空、尖端技术、军事技术部门的特种材料以及建筑、纺织、汽车、机械等领域；",
+      "numbers": [
+        "1",
+        "99.999",
+        "99.9999",
+        "5",
+        "6"
+      ]
+    },
+    {
+      "source_id": "S01",
+      "text": "2）太阳能级多晶硅（SoG-Si），纯度介于冶金级硅与电子级硅之间，一般在99.9999%～99.9999999%（6N-9N）之间，主要应用为光伏晶硅电池；",
+      "numbers": [
+        "2",
+        "99.9999",
+        "99.9999999",
+        "6",
+        "9"
+      ]
+    },
+    {
+      "source_id": "S01",
+      "text": "3）电子级多晶硅（SEG-Si），一般要求含硅量达到99.9999999%以上（9N以上），主要应用于半导体硅片的生产。",
+      "numbers": [
+        "3",
+        "99.9999999",
+        "9"
+      ]
+    },
+    {
+      "source_id": "S01",
+      "text": "根据百川盈孚数据，2022年6月上旬国内改良西门子法生产多晶硅的成本结构中原材料占比最大，达到41%，其中工业硅占总成本的39%，为光伏硅料的最大成本项，因此降低硅耗（生产单位多晶硅耗费的硅量）可以有效降低光伏硅料的生产成本；",
+      "numbers": [
+        "2022",
+        "6",
+        "41",
+        "39"
+      ]
+    },
+    {
+      "source_id": "S02",
+      "text": "尹锡悦方面将检举公调处及警方150余人 韩法院驳回逮捕令异议申请",
+      "numbers": [
+        "150"
+      ]
+    },
+    {
+      "source_id": "S02",
+      "text": "73家上市公司发布2024年全年业绩预告，44家预喜，预喜比例约为60.27%",
+      "numbers": [
+        "73",
+        "2024",
+        "44",
+        "60.27"
+      ]
+    },
+    {
+      "source_id": "S02",
+      "text": "2万字全文: 段永平2025.1.5浙大师生见面会问答实录",
+      "numbers": [
+        "2",
+        "2025.1",
+        "5"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "得到的数据有的也有些困惑，例如硅片的非硅成本，根据给出的1-9月2.48亿片的产量和成本金额数据计算，京运通硅片的非硅成本仅只有0.71元/片，这个数据比行业大佬隆基股份的数据都亮眼。",
+      "numbers": [
+        "1",
+        "9",
+        "2.48",
+        "0.71"
+      ]
+    },
+    {
+      "source_id": "S04",
+      "text": "由于数据中将生产成本分为直接材料，直接人工和制造费用三项， 因为0.71元/片只算了直接人工和制造费用，想来直接材料里不仅仅是硅成本，还有辅料成本在内，这样算的话非硅成本应该比0.71元/片更高一些。",
+      "numbers": [
+        "0.71"
+      ]
+    },
+    {
+      "source_id": "S05",
+      "text": "昨天李总说再将30%？",
+      "numbers": [
+        "30"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "691家酒店被标记的“床虱地图”，出差旅游订房时到底该怎么用",
+      "numbers": [
+        "691"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "避坑，买京东plus，不要超过49元",
+      "numbers": [
+        "49"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡",
+      "numbers": [
+        "10",
+        "100"
+      ]
+    },
+    {
+      "source_id": "S06",
+      "text": "千元极空间NAS Z4Air 适合谁？",
+      "numbers": [
+        "4"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "每辆摩托车对应的人数（2014年）",
+      "numbers": [
+        "2014"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "全球两轮和三轮摩托车保有量前20的国家和地区",
+      "numbers": [
+        "20"
+      ]
+    },
+    {
+      "source_id": "S07",
+      "text": "2019年全球光伏发电渗透率仅2-68%",
+      "numbers": [
+        "2019",
+        "2",
+        "68"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "毛利率99.85%。",
+      "numbers": [
+        "99.85"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "3月13日收盘最新消息，海德股份5日内股价下跌2.33%，截至15时收盘，该股报5.550元跌1.96%。",
+      "numbers": [
+        "3",
+        "13",
+        "5",
+        "2.33",
+        "15",
+        "5.550",
+        "1.96"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "毛利率69.78%。",
+      "numbers": [
+        "69.78"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "3月18日收盘消息，收盘于18.720元，成交额1.19亿元。",
+      "numbers": [
+        "3",
+        "18",
+        "18.720",
+        "1.19"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "毛利率65.64%。",
+      "numbers": [
+        "65.64"
+      ]
+    },
+    {
+      "source_id": "S08",
+      "text": "南方财富网3月18日讯，芯能科技股价涨0.54%，截至收盘报10.430元，市值52.15亿元。",
+      "numbers": [
+        "3",
+        "18",
+        "0.54",
+        "10.430",
+        "52.15"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "1）多晶硅环节盈利最好，其次为金刚线环节，毛利率基本保持50%左右；",
+      "numbers": [
+        "1",
+        "50"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "2）生产设备及逆变器的毛利率，基本可以保持30%左右。",
+      "numbers": [
+        "2",
+        "30"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "3）电池片、组件、银浆、支架，毛利率水平基本在10%~15%之间，是毛利率最差的几个环节。",
+      "numbers": [
+        "3",
+        "10",
+        "15"
+      ]
+    },
+    {
+      "source_id": "S09",
+      "text": "重要时刻佩洛西等11人突然消失 赫格塞思侥幸逃过一劫",
+      "numbers": [
+        "11"
+      ]
+    },
+    {
+      "source_id": "S10",
+      "text": "统计数据显示， 2018年-2020年100多家光伏上市公司整体毛利率分别为22.55%、23.96%、23.24%，2020年盈利水平略有下降。",
+      "numbers": [
+        "2018",
+        "2020",
+        "100",
+        "22.55",
+        "23.96",
+        "23.24"
+      ]
+    },
+    {
+      "source_id": "S10",
+      "text": "具体到企业层面，2020年，46家光伏上市公司综合毛利率实现正增长，其中5家毛利率增长在10个百分点以上，光伏玻璃双雄福莱特、信义光能位列其中，前者位列毛利率涨幅榜第一位。",
+      "numbers": [
+        "2020",
+        "46",
+        "5",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S10",
+      "text": "另据统计，有56家光伏上市公司综合毛利率在“23.24%”这一平均水平线之上，19家企业毛利率在40%这一高水平线之上，前三名为协鑫新能源毛利率63.45%、金博股份毛利率62.59%、江山控股毛利率62.32%。",
+      "numbers": [
+        "56",
+        "23.24",
+        "19",
+        "40",
+        "63.45",
+        "62.59",
+        "62.32"
+      ]
+    },
+    {
+      "source_id": "S10",
+      "text": "2020年有59家企业毛利率出现下降，其中7家毛利率降幅在10个百分点以上，7家企业毛利率仅为个位数。",
+      "numbers": [
+        "2020",
+        "59",
+        "7",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "本周年报抢先看：硅料龙头通威股份净赚82亿，这10家公司净利增长超10倍",
+      "numbers": [
+        "82",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "5家千亿市值公司业绩增长翻倍。",
+      "numbers": [
+        "5"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "根据计划，将多达2064家公司披露",
+      "numbers": [
+        "2064"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "这些公司中有1186家公司已提前披露了业绩预告",
+      "numbers": [
+        "1186"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "同比增长101.68%",
+      "numbers": [
+        "101.68"
+      ]
+    },
+    {
+      "source_id": "S11",
+      "text": "同比增长208.88%",
+      "numbers": [
+        "208.88"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "2022年，财务数据很好，实现收入1424亿，同比增长119%，扣非净利润265.5亿，同比增长217%。",
+      "numbers": [
+        "2022",
+        "1424",
+        "119",
+        "265.5",
+        "217"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "通威的业务包括两大块饲料业务和光伏业务，光伏业务收入1098亿，占比已经达到了77%，可以说是名副其实的光伏新能源龙头企业了。",
+      "numbers": [
+        "1098",
+        "77"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "从上图我们可以看到，通威的各项业务都表现很好，饲料销量同比增长30%，",
+      "numbers": [
+        "30"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "电池同比增长37%，尤其是高纯晶硅和组件业务。",
+      "numbers": [
+        "37"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "高纯晶硅销量从2021年的10.7万吨，增长到2022年的25.6万吨，同比增长138%，组件销售量7.9GW，同比增长226%，",
+      "numbers": [
+        "2021",
+        "10.7",
+        "2022",
+        "25.6",
+        "138",
+        "7.9",
+        "226"
+      ]
+    },
+    {
+      "source_id": "S12",
+      "text": "电池实现销售量48GW，同比增长37%。",
+      "numbers": [
+        "48",
+        "37"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "硅料龙头年报“豪赚”超80亿！",
+      "numbers": [
+        "80"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "自去年9月最高点迄今累计最大跌幅接近35%",
+      "numbers": [
+        "9",
+        "35"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "通威股份今日盘后最新公告称，受益于高纯晶硅产品供不应求，2021年全年净利预增122%-136%。",
+      "numbers": [
+        "2021",
+        "122",
+        "136"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "公司Q4净利环比下降14%-31%",
+      "numbers": [
+        "4",
+        "14",
+        "31"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "截至今日，6个月以内共有33家机构对通威股份的2021年全年业绩作出预测，其中归母净利润预估均值为82.17亿元，预估最大值为92.23亿元；",
+      "numbers": [
+        "6",
+        "33",
+        "2021",
+        "82.17",
+        "92.23"
+      ]
+    },
+    {
+      "source_id": "S13",
+      "text": "盘后公告公布的实际预测值为80-85亿元，基本符合预期",
+      "numbers": [
+        "80",
+        "85"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "2025年光伏电池组件企业业绩全军覆没，最高亏损约100亿！",
+      "numbers": [
+        "2025",
+        "100"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "近日，多家光伏电池组件上市公司已经发布了2025年业绩预告，从预告的情况来看，",
+      "numbers": [
+        "2025"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "其中，隆基绿能2025年净利润预计亏损60-65亿元。",
+      "numbers": [
+        "2025",
+        "60",
+        "65"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "晶澳科技预计亏损45-48亿元。",
+      "numbers": [
+        "45",
+        "48"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "爱旭股份预计亏损12-19亿元。",
+      "numbers": [
+        "12",
+        "19"
+      ]
+    },
+    {
+      "source_id": "S14",
+      "text": "钧达股份预计亏损12-15亿元。",
+      "numbers": [
+        "12",
+        "15"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "2024年实现营业收入188.87亿元，同比增长116.26%；",
+      "numbers": [
+        "2024",
+        "188.87",
+        "116.26"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "实现归母净利润27.64亿元，同比增长69.18%。",
+      "numbers": [
+        "27.64",
+        "69.18"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "2025年一季度，捷佳伟创业绩继续稳定增长，实现总营收40.99亿元，同比增长58.95%；",
+      "numbers": [
+        "2025",
+        "40.99",
+        "58.95"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "实现归母净利润7.08亿元，同比增长22.42%。",
+      "numbers": [
+        "7.08",
+        "22.42"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "随着光伏企业2024年报的公布，华夏能源网（公众号hxny3060）统计发现，一批光伏设备、辅材企业实现了50%以上的盈利逆势增长。",
+      "numbers": [
+        "2024",
+        "3060",
+        "50"
+      ]
+    },
+    {
+      "source_id": "S15",
+      "text": "盈利最高增幅达237%",
+      "numbers": [
+        "237"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "本文将对隆基、晶澳、天合三家公司20年业绩和2021年一季度业绩进行简要分析。",
+      "numbers": [
+        "20",
+        "2021"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "根据 CPIA的统计，2020年全球光伏新增装机量130GW，同比增长13.04%。",
+      "numbers": [
+        "2020",
+        "130",
+        "13.04"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "不到20%的行业增速其实并不乐观，但在此背景下，个别头部企业仍能保持50%以上的增长实属不易。",
+      "numbers": [
+        "20",
+        "50"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "上述三家公司，最先公布20年年报的是",
+      "numbers": [
+        "20"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "如上表所示，抛开四季度，三家公司前三季度分别实现77.11%、99.76%和82.52%的利润增长，但第四季度隆基和晶澳环比纷纷下滑，只有天合一家实现正增长。",
+      "numbers": [
+        "77.11",
+        "99.76",
+        "82.52"
+      ]
+    },
+    {
+      "source_id": "S16",
+      "text": "现在我们再来看这个问题，如果我们细看公司的利润表可发现，其实3个多亿的资产减值对隆基影响远没有那么深远，公司通过投资收益很容易就可以将这部分损失弥补过去，真正影响隆基四季度业绩的主要原因还是毛利率的大幅下降以及三费水平的提高，更准确地说是销售费用的大幅提升，包括质保金、职工薪酬等。",
+      "numbers": [
+        "3"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "（N型致密料）市场均价40.5元/千克，生产成本42.8元/千克，单公斤净利为-2.3元。",
+      "numbers": [
+        "40.5",
+        "42.8",
+        "2.3"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "（N型致密料）市场平均现金成本为34.3元/千克，生产成本为42.8元/千克，完全成本为46.1元/千克。",
+      "numbers": [
+        "34.3",
+        "42.8",
+        "46.1"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "期货PS2711合约交易手续费为成交金额的万分之一，日内平今仓手续费为万分之二点五，最小开仓5手、平仓1手，单日开仓上限200手。",
+      "numbers": [
+        "2711",
+        "5",
+        "1",
+        "200"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "碳酸锂期货LC2711合约交易手续费及日内平今仓手续费均为成交金额的万分之零点八，最小开仓2手、平仓1手，单日开仓上限800手。",
+      "numbers": [
+        "2711",
+        "2",
+        "1",
+        "800"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "市场N型致密料38-43元/千克；",
+      "numbers": [
+        "38",
+        "43"
+      ]
+    },
+    {
+      "source_id": "S18",
+      "text": "N型颗粒硅37-41元/千克；",
+      "numbers": [
+        "37",
+        "41"
+      ]
+    },
+    {
+      "source_id": "S19",
+      "text": "加拿大9月批发库存年率%",
+      "numbers": [
+        "9"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "硅片：15家样本企业：产量：中国（月）",
+      "numbers": [
+        "15"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "硅片：15家样本企业：产能利用率：中国（月）",
+      "numbers": [
+        "15"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "（N型210R）市场均价0.97元/片，生产成本为1.165元/片，单片生产净利为-0.195元。",
+      "numbers": [
+        "210",
+        "0.97",
+        "1.165",
+        "0.195"
+      ]
+    },
+    {
+      "source_id": "S20",
+      "text": "7月2日，三项光伏领域强制性国家标准正式批准发布，围绕硅料、",
+      "numbers": [
+        "7",
+        "2"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "2026年11月11日硅片价格显示，183N硅片报0.9-0.95元/片，210RN硅片报0.98-1元/片，210N硅片报1.08-1.13元/片。",
+      "numbers": [
+        "2026",
+        "11",
+        "183",
+        "0.9",
+        "0.95",
+        "210",
+        "0.98",
+        "1",
+        "1.08",
+        "1.13"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "截至11月6日，N型210R硅片市场均价1.015元/片，生产成本升至1.264元/片，单片净利为-0.249元，较10月中下旬成本1.256元/片、净利-0.241元小幅走弱。",
+      "numbers": [
+        "11",
+        "6",
+        "210",
+        "1.015",
+        "1.264",
+        "0.249",
+        "10",
+        "1.256",
+        "0.241"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "10月硅片产量54.09GW，环比降0.31%，同比降10.85%，产能利用率54.7%，环比降0.2%；",
+      "numbers": [
+        "10",
+        "54.09",
+        "0.31",
+        "10.85",
+        "54.7",
+        "0.2"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "预计11月排产54.35GW，环比增0.49%，产能利用率约54.9%。",
+      "numbers": [
+        "11",
+        "54.35",
+        "0.49",
+        "54.9"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "9月硅片出口量107936.51万片，环比增47.22%，出口均价0.17美元/片；",
+      "numbers": [
+        "9",
+        "107936.51",
+        "47.22",
+        "0.17"
+      ]
+    },
+    {
+      "source_id": "S21",
+      "text": "进口量16498.41万片，环比增20.16%，进口均价0.13美元/片。",
+      "numbers": [
+        "16498.41",
+        "20.16",
+        "0.13"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "（N型210R）市场均价0.995元/片，生产成本为1.264元/片，单片生产净利为-0.269元。",
+      "numbers": [
+        "210",
+        "0.995",
+        "1.264",
+        "0.269"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "价格0.9-0.95元/片，210RN",
+      "numbers": [
+        "0.9",
+        "0.95",
+        "210"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "价格0.98-1元/片，210N",
+      "numbers": [
+        "0.98",
+        "1",
+        "210"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "价格1.08-1.13元/片。",
+      "numbers": [
+        "1.08",
+        "1.13"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "产能利用率环比降0.2%】2026年10月",
+      "numbers": [
+        "0.2",
+        "2026",
+        "10"
+      ]
+    },
+    {
+      "source_id": "S22",
+      "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。",
+      "numbers": [
+        "54.7",
+        "9",
+        "0.2"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "】210单/双面TOPcon分布式组件0.71-0.735元/瓦。",
+      "numbers": [
+        "210",
+        "0.71",
+        "0.735"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "210R双面TOPcon分布式组件0.695-0.725元/瓦；",
+      "numbers": [
+        "210",
+        "0.695",
+        "0.725"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "210R双面BC分布式组件0.74-0.77元/瓦。",
+      "numbers": [
+        "210",
+        "0.74",
+        "0.77"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。",
+      "numbers": [
+        "650",
+        "0.710",
+        "0.724",
+        "0.014"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。",
+      "numbers": [
+        "7",
+        "5236",
+        "0.709"
+      ]
+    },
+    {
+      "source_id": "S23",
+      "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。",
+      "numbers": [
+        "33",
+        "2396",
+        "4.3"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。",
+      "numbers": [
+        "650",
+        "0.710",
+        "0.724",
+        "0.014"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。",
+      "numbers": [
+        "7",
+        "5236",
+        "0.709"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。",
+      "numbers": [
+        "33",
+        "2396",
+        "4.3"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "大EPC定标均价2.85元/瓦，环比增1.1%，小EPC定标均价1.27元/瓦，环比降2.3%。",
+      "numbers": [
+        "2.85",
+        "1.1",
+        "1.27",
+        "2.3"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "【光伏项目招标情况】据Mysteel 不完全统计：11月2日-11月8日光伏招标项目33个，项目规模合计4410MW，环比降32.3%。",
+      "numbers": [
+        "11",
+        "2",
+        "8",
+        "33",
+        "4410",
+        "32.3"
+      ]
+    },
+    {
+      "source_id": "S24",
+      "text": "EPC招标项目21个，招标规模4198MW，环比增314%。",
+      "numbers": [
+        "21",
+        "4198",
+        "314"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。",
+      "numbers": [
+        "650",
+        "0.710",
+        "0.724",
+        "0.014"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。",
+      "numbers": [
+        "7",
+        "5236",
+        "0.709"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。",
+      "numbers": [
+        "33",
+        "2396",
+        "4.3"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "大EPC定标均价2.85元/瓦，环比增1.1%，小EPC定标均价1.27元/瓦，环比降2.3%。",
+      "numbers": [
+        "2.85",
+        "1.1",
+        "1.27",
+        "2.3"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "【光伏项目招标情况】据Mysteel 不完全统计：11月2日-11月8日光伏招标项目33个，项目规模合计4410MW，环比降32.3%。",
+      "numbers": [
+        "11",
+        "2",
+        "8",
+        "33",
+        "4410",
+        "32.3"
+      ]
+    },
+    {
+      "source_id": "S25",
+      "text": "EPC招标项目21个，招标规模4198MW，环比增314%。",
+      "numbers": [
+        "21",
+        "4198",
+        "314"
+      ]
+    }
+  ],
+  "notes": [
+    "本文件由规则汇编生成，**没有使用模型**：不含分析、对比、归因与结论。",
+    "候选数据点是从正文里原样摘出的句子，**未做事实核查**，引用前必须回原文确认。",
+    "同一篇资料可能被多个检索词命中，已按 URL 去重。",
+    "“跨来源比对”只做机械比对（上下文相似度 + 数字是否相同），标出“多来源印证”与“两处说法不一致”，**不判断谁对**。",
+    "跨站转载已合并：正文几乎一样的页面只算一个来源，**不能把同一篇文章的多个转载页当成多来源印证**。"
+  ],
+  "meta": {
+    "upstream_stages": 9,
+    "excerpts": {
+      "S01": "新浪首页\n新闻\n体育\n财经\n娱乐\n科技\n博客\n图片\n专栏\n更多\n汽车\n教育\n时尚\n女性\n星座\n健康\n房产\n历史\n视频\n收藏\n育儿\n读书\n佛学\n游戏\n旅游\n邮箱\n导航\n移动客户端\n新浪微博\n新浪新闻\n新浪财经\n新浪体育\n新浪众测\n新浪博客\n新浪视频\n新浪游戏\n天气通\n我的收藏\n注册\n登录\n期货\n>\n正文\n多晶硅的分类及成本构成\n多晶硅的分类及成本构成\n2023年02月13日 16:30\n市场资讯\n新浪财经APP\n缩小字体\n放大字体\n收藏\n微博\n微信\n分享\n腾讯QQ\nQQ空间\n硅料光伏发电产业链的核心原材料，生产工艺为工业硅提纯\n光伏硅料是光伏发电系统的核心原材料。\n光伏硅料，即太阳能级多晶硅（SoG-Si），是光伏产业链中最上游的原材料，为带有金属光泽的灰黑色固体，具有熔点高（1410℃）、硬度大、有脆性、常温下化学性质不活泼等特性，且具有半导体性质，是极为重要的优良半导体材料，被称为光伏产业链中的“黑金”。\n从光伏硅料的必要性来看，光伏发电的原理是光生伏特效应和PN结，光伏电池片的基本构造是由P型与N型半导体接合而成，而半导体最基本的材料便是硅元素，因此硅料是决定了光伏系统发电能力的核心原材料；从光伏硅料的重要性来看，硅在自然界中一般以硅酸盐或二氧化硅的形式存在，自然界中几乎不存在单体硅，多晶硅作为以工业硅为原料提纯后达到一定纯度的硅材料，起到了优秀的中间品作用，有效推动了产业的快速发展。\n多晶硅由工业硅提纯制成，根据纯度可分为冶金级、太阳能级和电子级。\n工业硅又称金属硅，是由石英和\n焦炭\n在电热炉内冶炼成的产品，硅含量一般在99%以上（2N），其余杂质为铁、铝、钙等，是多晶硅的上游原材料。目前多晶硅的制备技术主要包括化学法和物理法，化学法为当前主流工艺，约占全球产量的80%；物理法又称为冶金法，类似于金属冶炼提纯过程。纯度是多晶硅品质的主要评判指标，当前多晶硅按纯度由低到高可以分为：\n1）冶金级多晶硅（MG-Si），一般含硅量为99.999%～99.9999%（5N-6N），主要应用包括航空、尖端技术、军事技术部门的特种材料以及建筑、纺织、汽车、机械等领域；\n2）太阳能级多晶硅（SoG-Si），纯度介于冶金级硅与电子级硅之间，一般在99.9999%～99.9999999%（6N-9N）之间，主要应用为光伏晶硅电池；\n3）电子级多晶硅（SEG-Si），一般要求含硅量达到99.9999999%以上（9N以上），主要应用于半导体硅片的生产。\n多晶硅产业链示意图\n工业硅和电力是光伏硅料的成本核心。\n根据百川盈孚数据，2022年6月上旬国内改良西门子法生产多晶硅的成本结构中原材料占比最大，达到41%，其中工业硅占总成本的39%，为光伏硅料的最大成本项，因此降低硅耗（生产单位多晶硅耗费的硅量）可以有效降低光伏硅料的生产成本；能源占总成本的32%，其中电力占总成本的30",
+      "S02": "新浪首页\n新闻\n体育\n财经\n娱乐\n科技\n博客\n图片\n专栏\n更多\n汽车\n教育\n时尚\n女性\n星座\n健康\n房产\n历史\n视频\n收藏\n育儿\n读书\n佛学\n游戏\n旅游\n邮箱\n导航\n移动客户端\n新浪微博\n新浪新闻\n新浪财经\n新浪体育\n新浪众测\n新浪博客\n新浪视频\n新浪游戏\n天气通\n我的收藏\n注册\n登录\n期货\n>\n正文\n【多晶硅期货专题】多晶硅生产成本构成\n【多晶硅期货专题】多晶硅生产成本构成\n2025年01月06日 08:18\n市场资讯\n新浪财经APP\n缩小字体\n放大字体\n收藏\n微博\n微信\n分享\n腾讯QQ\nQQ空间\n五矿期货微服务\n（转自：五矿期货微服务）\n新浪合作大平台期货开户 安全快捷有保障\n海量资讯、精准解读，尽在新浪财经APP\n文章关键词：\n五矿期货\n期货\n多晶硅\nVIP课程推荐\n加载中...\nAPP专享直播\n上一页\n下一页\n1\n/\n10\n热门推荐\n收起\n新浪财经公众号\n24小时滚动播报最新的财经资讯和视频，更多粉丝福利扫描二维码关注（sinafinance）\n相关新闻\n财经头条作者库\n股市直播\n图文直播间\n视频直播间\n最近访问\n我的自选\n01\n/\n尹锡悦方面将检举公调处及警方150余人 韩法院驳回逮捕令异议申请\n02\n/\n部分基金提前“辗转腾挪”重压之下净值很抗跌\n03\n/\n贵州茅台酒（乙巳蛇年）发布，茅台生肖系列酒迎来“大圆满”  发布前一天上百万人申购\n04\n/\n东方基金王锐：个人养老金制度助力满足多样化养老需求\n05\n/\n西藏拉萨墨竹工卡县发生3.2级地震 震源深度10千米\n01\n/\n周末重磅利好！国务院发文！央行多次发声，证监会发布新规！影响一周市场的十大消息\n02\n/\nA股焦点，来了！73家上市公司发布2024年全年业绩预告，44家预喜，预喜比例约为60.27%\n03\n/\n茅台集团原董事长丁雄军落马的背后\n04\n/\n十大机构看后市：短期继续调整幅度有限，春节前可能是第二次买点\n05\n/\n下周重要事件与数据预告——中国CPI、美国“非农”轮番登场\n06\n/\n连续下跌后，超三成受访者减仓或清仓！“科技”方向仍获看好\n07\n/\n特朗普与马斯克“蜜月期”结束？\n08\n/\n2万字全文: 段永平2025.1.5浙大师生见面会问答实录\n09\n/\n1月5日增减持汇总：河钢股份等2股拟增持\n10\n/\n2025年的世界经济：乐观还是悲观？\n01\n/\n国资不断加码增持！国有控股城商行多了\n7X24小时\n徐小明\n凯恩斯\n占豪\n花荣\n金鼎\nwu2198\n丁大卫\n易宪容\n叶荣添\n沙黾农\n冯矿伟\n趋势之友\n空空道人\n股市风云\n股海光头\n杨伟民\n连平\n：\n提振消费需要挖掘农村潜力\n张瑜\n：\n如何评估货币政策的“择机”\n莫开伟\n：\n银行机构与消费贷竞争\n易纲\n：\n商业银行投贷联动有何作用\n皮海洲\n：\n把严打编造股市谣言落到实处\n交易提示\n操盘必读\n证券报\n最新公告\n限售解禁\n数据中心\n条",
+      "S03": "作者：\n一只熊的碎碎念\n发布于:\n2022-09-22 09:25\n雪球\n转发：0\n回复：0\n喜欢：0\n光伏硅片非硅成本分析\n引用：\n2022-06-28 17:08\n声明：本文章不构成投资建议，仅作为研究讨论之用，免不了有不少个人偏见，盲目据此决策带来的后果自负。股市有风险，决策需独立思考，切忌人云亦云。\n今天看了下广发证券在6月26日发布的风光行业中期策略报告《20220626-广发证券-风光行业2022年中期策略：需求强劲，景气持续，迎接新一轮风光...",
+      "S04": "作者：\n斑纹龙\n发布于:\n2020-04-27 17:27\n雪球\n转发：0\n回复：4\n喜欢：0\n得到的数据有的也有些困惑，例如硅片的非硅成本，根据给出的1-9月2.48亿片的产量和成本金额数据计算，京运通硅片的非硅成本仅只有0.71元/片，这个数据比行业大佬隆基股份的数据都亮眼。由于数据中将生产成本分为直接材料，直接人工和制造费用三项， 因为0.71元/片只算了直接人工和制造费用，想来直接材料里不仅仅是硅成本，还有辅料成本在内，这样算的话非硅成本应该比0.71元/片更高一些。\n引用：\n2020-04-27 16:37\n$京运通(SH601908)$\n最新获得的京运通2019年1-9月部分业务结构数据：\n全部讨论\n马斯洛的第七层\n2020-04-27 20:19\n。。。当然了 直接材料还有热场、坩埚、氩气等等\n斑纹龙\n2020-04-27 17:32\n明晚就公布年报和一季报了，也不动脑筋了，反正明晚所有的数据都会出来。",
+      "S05": "作者：\n204tian\n发布于:\n2019-11-12 13:29\n雪球\n转发：0\n回复：1\n喜欢：0\n没错，硅片的非硅成本是指除了硅料外的成本。电池的非硅成本是指除了硅片外的成本。组件的非硅成本是指除了电池片外的成本。\n引用：\n2019-11-12 13:23\n@204tian[¥9.00]\n204兄，请问硅片，电池片、组件的非硅成本分别是什么?硅片的非硅成本是不是除了硅料外的成本？而电池的非硅成本是不是除了硅片外的成本？组件呢？多谢\n全部讨论\n心中的树林\n2019-11-12 13:35\n推算下来，是不是组件制造成本下降空间很少了？昨天李总说再将30%？转化效率的提升是不是还有比较大的空间？",
+      "S06": "集团官网\n商业合作\n爆料投稿\n好价爆料\n写篇文章\n视频上传\n提报百科\n创作活动\n条新消息\n条新评论\n登录\n注册\n个人中心\n我的关注\n我的文章\n我的爆料\n我的笔记\n我的视频\n我的百科\n我的评论\n我的众测\n我的消息\n我的收藏\n退出登录\n社区\n写篇文章\n张大妈\n光伏组件成本结构解析：当前价格与材料构成\n源自抖音：BIPV老男孩\n05-11 13:08\n精选参考来源\n光伏组件是不是已经降价了？#光伏组件#源头工厂 #光伏发电 #光伏\nBIPV老男孩\n2026-05-07\n来自抖音\n内容由AI生成\n精选参考来源\n光伏组件是不是已经降价了？#光伏组件#源头工厂 #光伏发电 #光伏\n抖音\n2026-05-07 00:00:00\n0\n0\n微信扫一扫\n新浪微博\nQQ空间\nQQ好友\n豆瓣\n扫一下，分享更方便，购买更轻松\n0\n评论\n当前文章无评论，是时候发表评论了\n精彩\n最新\n提示信息\n取消\n确认\n评论举报\n垃圾广告！\n低俗色情！\n人身攻击！\n疑似水军评论！\n其他有害！\n请输入举报内容，最少输入2个字\n最新文章\n热门文章\n查看更多\n我们即是诗歌：中国诗人首次参加阿根廷第四届萨尔塔国际诗歌节\n0\n0\n我们即是诗歌：中国诗人首次参加阿根廷第四届萨尔塔国际诗歌节\n黄仁勋辞职后风波未完：英伟达遭司法部反垄断调查，三条线分别查什么\n0\n0\n黄仁勋辞职后风波未完：英伟达遭司法部反垄断调查，三条线分别查什么\n儿童唇膏就用这个就够了｜曼秀雷敦草莓味和柠檬味，好用扛一秋冬\n0\n0\n儿童唇膏就用这个就够了｜曼秀雷敦草莓味和柠檬味，好用扛一秋冬\n被“床虱地图”误标的酒店，普通住客申诉维权要走哪些流程？\n0\n0\n被“床虱地图”误标的酒店，普通住客申诉维权要走哪些流程？\n691家酒店被标记的“床虱地图”，出差旅游订房时到底该怎么用\n0\n0\n691家酒店被标记的“床虱地图”，出差旅游订房时到底该怎么用\n5年京东PLUS，13积分换回217块，这份兑换顺序收好\n63\n157\n5年京东PLUS，13积分换回217块，这份兑换顺序收好\n避坑，买京东plus，不要超过49元\n47\n97\n避坑，买京东plus，不要超过49元\n实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡\n32\n286\n实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡\n国产芯、有AI、支持SSD、四盘位！千元极空间NAS Z4Air 适合谁？\n250\n16\n国产芯、有AI、支持SSD、四盘位！千元极空间NAS Z4Air 适合谁？\n我做了一个监控全网免费Token的网站，今天向所有人免费开放。\n72\n18\n我做了一个监控全网免费Token的网站，今天向所有人免费开放。\n下一篇：\n长安和奇瑞谁更经得起长年开？老修车师傅大实话：开满7年，高下立判\n已收藏\n去我的收藏夹",
+      "S07": "数据精选\n行业图谱\n数据概览\n收藏\n会员\n登录\n查一下\n行业研究数据库\n行业图谱研究\n行业深度新闻\n创业投资数据库\n知名创投机构\n重点项目动态\n证券研究数据库\n中国宏观数据\n区域上市企业\n组件成本构成\n2021-03-09\n先进制造 | 行业数据\n新材料\n光伏\n登录网站查看更多数据\n行业相关推荐\n每辆摩托车对应的人数（2014年）\n特斯拉季度Non-GAAP净利润和净利率（百万美元）\n普通光伏组件结构\n04\n全球主要国家和地区的摩托车销量情况\n05\n全球两轮和三轮摩托车保有量前20的国家和地区\n06\n2019年全球光伏发电渗透率仅2-68%\n07\n疫情至今食品饮料、农林牧渔、商贸零售分子行业涨跌幅\n08\n截止2019年公司主要在研产品梳理\n09\n疫情至今中信30个子行业涨跌幅\n10\n中国出口自行车单车均价情况\n行业图谱\n信息科技\n大数据\nO2O\n软件\n信息安全\n物联网\n云服务\n人工智能\n5G\nVRAR\n共享经济\n3D技术\n无人驾驶\n区块链\n通信技术\n互联网+\n量子技术\n北斗导航\n无线充电\n传统产业\n电力\n农业\n化工\n服装纺织\n建筑\n家电\n石油燃气\n有色金属\n钢铁\n纸业\n矿业\n交通运输\n检验检测\n大消费\n旅游\n电商\n教育\n母婴\n物流\n快递\n连锁\n家居\n时尚\n零售\n生鲜\n饮料\n宠物\n出行\n食品\n餐饮\n酒类\n养老\n人力资源\n烟草\n玩具\n休闲娱乐\n地产金融\n征信\n物流地产\n支付\n房地产\n银行\n保险\n券商投行\n资产管理\n租赁\n物业管理\n金融科技\n先进制造\n半导体\n无人机\n汽车\n新材料\n机器人\nLED\n智能制造\n航空航天\n手机\n激光\n工业控制\n军工\n轨道交通\n装备机械\n光电技术\n电子元件\n智能硬件\n雷达\n电机电控\n五金机械\n仪器仪表\n摩托车\n节能环保\n光伏\n大气\n风电\n水处理\n储能\n垃圾\n核能\n危废处理\n再生资源\n环保服务\n电池\n新能源车\n氢能\n环境监测\n土壤修复\n传媒娱乐\n直播\n体育\n影视\n游戏\n音乐\n广告\n动漫\n视频\n社交\n音频\n电竞\n博彩\n阅读\n内容产业\n网红经济\n版权\n生命健康\n医药\n医疗器械\n基因技术\n医疗服务\n疫苗\n血制品\n药店\n医疗美容\n医药外包\n无锡行动数据科技有限公司\n网址: www.hanghangcha.com\n地址: 无锡经开区金融三街恒大财富中心\n行业分类\n信息科技\n先进制造\n大消费\n节能环保\n生命健康\n地产金融\n传媒娱乐\n传统产业\n行行查公众号\n行行查小程序\n友情链接：\n乐晴智库\n企查查\n股加加\n阿里云报告中心\n企查查专业版\n产业图谱\n优质公司库\n问答板块\n品牌板块\n&nbsp\n政策板块\n行业新闻\n用户协议\n隐私协议\n关于我们\n©2019\n苏ICP备19015842号-1\n增值电信业务经营许可证：\n苏ICP证B2-20190620\n出版物经营许可证\n©2018-2023 无锡行动数据科技有限公司版权所有\n行行查\n行业研究数据库\n移动端\n组件成",
+      "S08": "App下载\n注册 / 登录\n首页\n概念\n行情\n股票\n资讯\n主题\n2025第三季度光伏相关企业毛利率排行榜\n南方财富网\n2026-03-21 17:06\n《南方财富网概念库》财报工具数据整理，截至2025第三季度，光伏相关企业毛利率排行榜情况如下（数据仅供参考）：\n第1名、海德股份：\n毛利率99.85%。3月13日收盘最新消息，海德股份5日内股价下跌2.33%，截至15时收盘，该股报5.550元跌1.96%。\n第2名、黔源\n电力\n：\n毛利率69.78%。3月18日收盘消息，收盘于18.720元，成交额1.19亿元。\n第3名、芯能科技：\n毛利率65.64%。南方财富网3月18日讯，芯能科技股价涨0.54%，截至收盘报10.430元，市值52.15亿元。盘中股价最高价11.5元，最低达11.13元，成交量1394.73万手。\n第4名、晓程科技：\n毛利率65.38%。3月13日消息，晓程科技7日内股价上涨5.14%，最新报63.270元，成交额16.74亿元。\n第5名、桂冠电力：\n毛利率63.69%。3月19日15点，桂冠电力跌1.07%，报9.540元；5日内股价上涨12.75%，成交额2.79亿元，市值为751.98亿元。\n本文选取数据仅作为参考，并不能全面、准确地反映任何一家企业的未来，并不构成投资建议，据此操作，风险自担。\n南方财富网声明：资讯仅代表作者个人观点。不保证该信息（包括但不限于文字、数据及图表）全部或者部分内容的准确性、真实性、完整性、有效性、及时性、原创性等，若有侵权，请第一时间告知删除。仅供投资者参考，并不构成投资建议。投资者据此操作，风险自担。\n延伸阅读\n迈为股份股票历年分红记录_历年股息率一览（2026年3月21日）\n迈为股份最新一次公布的分红方案：10转6派15元。 本次权益分派股权登记日为2023年5月24日，除权除息日为2023年5月25日，派息日为2023年5月25日。 迈为股份公司2024年实现营收98.3亿元，净\n光储直柔相关企业排名前十名_三季度毛利润10大排行榜\n南方财富网概念库财报工具数据整理，截至三季度，光储直柔相关企业毛利润排名中，中国建筑位列第一位，毛利润达到314.19亿元；特变电工排名第二，毛利润为43.66亿元；国电南瑞排\n电池龙头股名单（2026/3/16）\n电池概念，整体下跌1.14%。领涨股为维科技术（600152），领跌股为金鹰股份（600232）。电池产业链的相关上市公司都有哪些？南方财富网概念库为您整理相关信息。 一、电池产业链涉及\n电池概念上市公司成交量排名前15强-3月16日\n《南方财富网概念库》股票工具数据整理，截至3月16日，电池概念上市公司成交量排名情况如下（数据仅供参考）： NO.1、中国电建：16.84亿手 股票代码：601669，公司所在地：北京，所\n这4只电池龙头股建议收藏（20",
+      "S09": "网易首页\n应用\n网易新闻\n网易公开课\n网易红彩\n网易严选\n邮箱大师\n网易云课堂\n快速导航\n新闻\n国内\n国际\n王三三\n体育\nNBA\nCBA\n综合\n中超\n国际足球\n英超\n西甲\n意甲\n娱乐\n明星\n电影\n电视\n音乐\n封面故事\n财经\n股票\n原创\n智库\n汽车\n购车\n车型库\n科技\n网易智能\n原创\nIT\n互联网\n通信\n时尚\n艺术\n旅游\n手机\n/\n数码\n惊奇科技\n易评机\n家电\n房产\n/\n家居\n北京房产\n上海房产\n广州房产\n楼盘库\n设计师库\n案例库\n教育\n留学\n高考\n查看网易地图\n登录\n注册免费邮箱\n注册VIP邮箱（特权邮箱，付费）\n免费下载网易官方手机邮箱应用\n安全退出\n移动端\n网易公开课\nTED\n中国大学视频公开课\n国际名校公开课\n赏课·纪录片\n付费精品课程\n北京大学公开课\n英语课程学习\n网易严选\n新人特价\n9.9专区\n新品热卖\n人气好物\n居家生活\n服饰鞋包\n母婴亲子\n美食酒水\n支付\n一卡通充值\n一卡通购买\n我的网易支付\n网易跨境支付\n邮箱\n免费邮箱\nVIP邮箱\n企业邮箱\n免费注册\n客户端下载\n网易首页\n>\n网易号\n> 正文\n申请入驻\n光伏各产业链毛利润一览表\n2023-11-04 19:24:41　来源:\n光伏能源圈\n河北\n举报\n0\n分享至\n用微信扫码二维码\n分享至好友和朋友圈\n本文统计了光伏行业13个主要环节最近三年的行业平均盈利情况，汇总如下表所示。数据以上市公司的财报为准。其中，企业数量代表参与统计的上市公司数量；平均盈利代表参与统计企业的平均毛利率水平。\n表：光伏行业13个主要环节盈利情况\n13个环节最近三年的毛利率对比图如下：\n图：光伏行业13个主要环节最近三年毛利率对比\n从上图可以看出，以参与统计的企业数据为例，根据13个主要环节最近三年的毛利率情况：\n1）多晶硅环节盈利最好，其次为金刚线环节，毛利率基本保持50%左右；\n2）生产设备及逆变器的毛利率，基本可以保持30%左右。\n3）电池片、组件、银浆、支架，毛利率水平基本在10%~15%之间，是毛利率最差的几个环节。\n上述图表中的详细统计数据如下：\n2023年上半年的详细统计数据\n特别声明：以上内容(如有图片或视频亦包括在内)为自媒体平台“网易号”用户上传并发布，本平台仅提供信息存储服务。\nNotice: The content above (including the pictures and videos if any) is uploaded and posted by a user of NetEase Hao, which is a social media platform and only provides information storage services.\n/\n阅读下一篇\n/\n返回网易首页\n下载网易新闻客户端\n相关推荐\n热点推荐\n重要时刻佩洛西等11人突然消失 赫格塞思侥幸逃过一劫\n环球",
+      "S10": "光伏企业毛利率排行榜\n作者：\n价值投资日志刘文权\n发布于:\n2021-05-15 09:30\niPhone\n转发：1\n回复：0\n喜欢：1\n统计数据显示， 2018年-2020年100多家光伏上市公司整体毛利率分别为22.55%、23.96%、23.24%，2020年盈利水平略有下降。\n具体到企业层面，2020年，46家光伏上市公司综合毛利率实现正增长，其中5家毛利率增长在10个百分点以上，光伏玻璃双雄福莱特、信义光能位列其中，前者位列毛利率涨幅榜第一位。\n另据统计，有56家光伏上市公司综合毛利率在“23.24%”这一平均水平线之上，19家企业毛利率在40%这一高水平线之上，前三名为协鑫新能源毛利率63.45%、金博股份毛利率62.59%、江山控股毛利率62.32%。\n2020年有59家企业毛利率出现下降，其中7家毛利率降幅在10个百分点以上，7家企业毛利率仅为个位数。\n#股票#",
+      "S11": "登录\n消息\n我的面点\n我的关注\n我的文章\n投稿\n报料\n账号设置\n退出账号\n旧版搜索\n新版搜索\n旧版搜索\n历史搜索\n全部删除\n热门搜索\n正在阅读:\n本周年报抢先看：硅料龙头通威股份净赚82亿，这10家公司净利增长超10倍\n0\n0\n扫一扫下载界面新闻APP\n其他途径关注界面…\n本周年报抢先看：硅料龙头通威股份净赚82亿，这10家公司净利增长超10倍\n5家千亿市值公司业绩增长翻倍。\n原创新闻\n庞宇PY\n·\n来源：界面新闻\n图片来源：图虫\n记者 |\n庞宇\n本周是\nA\n股上市公司发布年报的最后一周\n，\n根据计划，将多达2064家公司披露\n2021\n年年报。\n这些公司中有1186家公司已提前披露了业绩预告\n。\n其中预增\n381\n家，扭亏公司\n152\n家，预减公司\n159\n家，预亏公司\n493\n家，不确定\n1\n家。业绩向好的公司和业绩下滑甚至亏损的公司比例\n分别为\n45%\n和\n55%\n。\n数据来源：Wind 制图：界面新闻\n本周\n将披露年报的千亿市值公司多达\n32\n家\n，\n主要集中在医药生物\n、\n白酒\n、\n光伏设备\n、\n电力等行业\n。\n其中\n，23\n家已提前披露业绩预告或快报\n，\n除\n牧原股份（002714.SZ）、立讯精密（002475.SZ）、浦发银行（600000.SH）\n3\n家业绩下滑\n、百济神州-U（688235.SH）\n1\n家业绩亏损外\n，\n其余均取得增长\n。\n上市公司的龙头效应十分明显\n。19\n家预增公司中\n12\n家增长超\n60%，\n更有\n5\n家公司业绩增长翻倍\n，\n分别为中环股份\n（\n002129.SZ\n）、\n智飞生物\n（\n300122.SZ\n）、\n通威股份\n（\n600438.SH\n）、\n北方华创\n（\n002371.SZ\n）、\n盐湖股份\n（\n000792.SZ\n）。\n多个光伏领域头部上市公司创下历史最佳业绩\n。\n数据来源：Wind 制图：界面新闻\n凭借着代理疫苗，“疫苗一哥”智飞生物赚得盆满钵满。2021\n年公司实现营业收入\n306\n.\n37\n亿元\n，\n同比增长101.68%\n；\n实现归母净利润\n101\n.\n97\n亿元\n，\n同比增长208.88%\n。作为默沙东四价HPV疫苗和九价HPV疫苗的国内独家代理商，智飞生物\n超\n9\n成\n营收都来自代理产品。借助着HPV疫苗需求的攀升，\n公司近年业绩高速攀升\n。2022年一季度，\n公司业绩\n继续大幅增长，预计实现的归属净利润约为17.83亿元至19.7亿元，同比上升90.00%至110.00%。\n不过\n，智飞生物借助HPV疫苗\n“\n躺赚\n”\n的日子也并不安逸\n。在不久前由世界卫生组织召开的免疫战略专家组会议上，\n有专家认为\n，“单剂次HPV疫苗接种方案可以有效预防由HPV持续感染引起的宫颈癌，且与两剂或三剂方案的效果相当。”\n这使得智飞生物前景充满不确定性\n。\n实际上\n，\n由于过度依赖\n代理疫苗\n产品\n，智飞生物\n研",
+      "S12": "财经\n焦点\n股票\n新股\n期指\n期权\n行情\n数据\n全球\n美股\n港股\n期货\n外汇\n银行\n基金\n理财\n债券\n直播\n股吧\n基金吧\n博客\n财富号\n搜索\n行情中心\n指数\n期指\n期权\n个股\n板块\n排行\n新股\n基金\n港股\n美股\n期货\n外汇\n黄金\n自选股\n自选基金\n数据中心\n资金流向\n主力排名\n板块资金\n个股研报\n新股申购\n转债申购\n北交所申购\nAH股比价\n年报大全\n融资融券\n龙虎榜\n限售解禁\nIPO审核\n大宗交易\n估值分析\n首页\n>\n社区\n>\n专栏正文\n硅料龙头通威年报解读\n来自专栏\n潘多拉99\n2023年07月06日 16:54\n山东\n返回\n财富号评论吧>\n点赞\n0\n评论\n0\n收藏\n大\n中\n小\n通威2023年的股价到现在为止，一直表现的不温不火。\n2022年，财务数据很好，实现收入1424亿，同比增长119%，扣非净利润265.5亿，同比增长217%。\n通威的业务包括两大块饲料业务和光伏业务，光伏业务收入1098亿，占比已经达到了77%，可以说是名副其实的光伏新能源龙头企业了。\n从上图我们可以看到，通威的各项业务都表现很好，饲料销量同比增长30%，\n太阳能\n电池同比增长37%，尤其是高纯晶硅和组件业务。\n高纯晶硅销量从2021年的10.7万吨，增长到2022年的25.6万吨，同比增长138%，组件销售量7.9GW，同比增长226%，\n太阳能\n电池实现销售量48GW，同比增长37%。\n高纯晶硅价格在2022年一直维持在高位，通威的高纯晶硅平均售价24万元/吨，而成本只有5.9万元/吨。\n通威股份\n的年报中披露，永源能源科技一期12万吨硅料，预计到2023年3季度投产，到时公司的高纯多晶硅产能将超过38万吨，据此推算，2023年通威高纯晶硅的产量将超过30万吨。\n通威的组件产能现有14GW，预计到2023年底将达到80GW的产能，产能扩张将增长近7倍，当然产能并不等于产量。2022年组件龙头企业\n隆基绿能\n的组件出货量也才46.7GW。\n通威股份\n现在已经是硅料龙头企业，看来接下来是要把组件的龙头宝座给抢过来，不知道\n隆基绿能\n答不答应呢？\n年报中通威也给出了2023年的经营计划：\n光伏业务预计将实现高纯晶硅出货量30万吨，\n太阳能\n电池业务出货70GW（包含自用），组件出货35GW，光伏发电业务新增投资建设1GW。\n农牧产业预计将实现营业收入同比增长10%的目标。\n对比2022年的销量情况，高纯晶硅销量预计增长17%，电池销量预计增长45%，组件销量预计增长343%。\n当前，P型182尺寸的单晶电池片的报价为0.71元/W，P型182单玻组件的价格为1.36元/w。\n假设硅料2023年平均售价在6.8万元/吨，据此推测\n通威股份\n2023年光伏业务收入如下：\n硅料：6.8300000=204亿\n电池业务：（70-35）100.71=248.5亿\n组件业务：35101.36=",
+      "S13": "网易首页\n应用\n网易新闻\n网易公开课\n网易红彩\n网易严选\n邮箱大师\n网易云课堂\n快速导航\n新闻\n国内\n国际\n王三三\n体育\nNBA\nCBA\n综合\n中超\n国际足球\n英超\n西甲\n意甲\n娱乐\n明星\n电影\n电视\n音乐\n封面故事\n财经\n股票\n原创\n智库\n汽车\n购车\n车型库\n科技\n网易智能\n原创\nIT\n互联网\n通信\n时尚\n艺术\n旅游\n手机\n/\n数码\n惊奇科技\n易评机\n家电\n房产\n/\n家居\n北京房产\n上海房产\n广州房产\n楼盘库\n设计师库\n案例库\n教育\n留学\n高考\n查看网易地图\n登录\n注册免费邮箱\n注册VIP邮箱（特权邮箱，付费）\n免费下载网易官方手机邮箱应用\n安全退出\n移动端\n网易公开课\nTED\n中国大学视频公开课\n国际名校公开课\n赏课·纪录片\n付费精品课程\n北京大学公开课\n英语课程学习\n网易严选\n新人特价\n9.9专区\n新品热卖\n人气好物\n居家生活\n服饰鞋包\n母婴亲子\n美食酒水\n支付\n一卡通充值\n一卡通购买\n我的网易支付\n网易跨境支付\n邮箱\n免费邮箱\nVIP邮箱\n企业邮箱\n免费注册\n客户端下载\n网易首页\n>\n网易号\n> 正文\n申请入驻\n硅料龙头年报“豪赚”超80亿！股价高位回调已超三成，业绩成色几何？\n2022-01-06 21:52:28　来源:\n科创板日报\n举报\n0\n分享至\n用微信扫码二维码\n分享至好友和朋友圈\n财联社（上海，编辑 陈丽红）讯，\n2022年光伏等部分去年表现优异的成长股赛道出现连续回调，硅料龙头之一的通威股份股价\n自去年9月最高点迄今累计最大跌幅接近35%\n。\n通威股份今日盘后最新公告称，受益于高纯晶硅产品供不应求，2021年全年净利预增122%-136%。但据测算，\n公司Q4净利环比下降14%-31%\n。\n截至今日，6个月以内共有33家机构对通威股份的2021年全年业绩作出预测，其中归母净利润预估均值为82.17亿元，预估最大值为92.23亿元；\n盘后公告公布的实际预测值为80-85亿元，基本符合预期\n。\n在高毛利诱惑下，去年12月以来，不少场外玩家宣布要进军多晶硅市场。通威股份去年12月在互动平台表示，\n预计2022年底公司高纯晶硅产能将达33万吨\n。\n然而，这一变化却也正值多晶硅价格进入下行通道之际。行业数据显示，去年初，多晶硅均价还处在8.5万元/吨左右，\n随后一路攀升至最高27万元/吨左右，这一价格水平创下了行业十年来新高\n，而且远远高于2020年6万元/吨-9万元/吨的水平。但过去一个月以来，多晶硅价格进入下行通道，\n目前最新报价22万元/吨，较高位回调接近两成\n。\n图注：国内太阳能级多晶硅成交价，来源于安泰科、硅业分会\n分析人士认为，在四季度硅料成交均价相比三季度有所上升的情况下，通威股份净利润表现却不如三季度，原因很有可能在于下游组件企业电池片采购量减少，导致净利润有所下滑。\n四季度，通威股份多个硅料项目陆续投产，将其硅料产能从2020年",
+      "S14": "2025年光伏电池组件企业业绩全军覆没，最高亏损约100亿！\n胡华成\n2026-01-19 18:59\n·江苏\n·智和岛集团创始人\n打开网易新闻 查看精彩图片\n近日，多家光伏电池组件上市公司已经发布了2025年业绩预告，从预告的情况来看，\n光伏电池组件\n行业全军覆没，没有一家能够实现盈利的。\n其中，隆基绿能2025年净利润预计亏损60-65亿元。晶澳科技预计亏损45-48亿元。爱旭股份预计亏损12-19亿元。钧达股份预计亏损12-15亿元。TCL中环预计亏损82-96亿元。预计亏损最多的是通威股份，亏损了90-100亿元。天合光能和晶科能源还未进行业绩预告，但是已经确定是亏损的了。\n这里边最难受的应该是亿晶光电，2025年预计亏损4.5-6亿元。为什么亏损最少的，反而是最难受的呢？\n因为\n亿晶光电\n目前已经资不抵债，净资产为-6800万元到-1.3亿元之间。这是公司近日发布的公告数据，这也成功触发了上市公司“资不抵债”的退市规则，存在着较大的退市风险，目前公司股价已经出现连续两个跌停。\n打开网易新闻 查看精彩图片\n光伏行业怎么了？为什么会这么惨烈？清一色地亏损，越是行业龙头，亏损越多。\n第一、行业供给严重多于需求，造成了比较明显的供需错配，结果就是行业内随处可见的低价竞争。如果大家都保留一点利润也行，现在完全是在亏本清库存。\n为什么会这样呢？因为前几年光伏行业增长很快，多家企业都赚得盆满钵满。在巨额利润的诱惑下，也就导致了产能的大幅扩张。其实从全球光伏行业的装机量上来看，还是在增加的，预计在570GW-630GW之间，但是我国的产能已经突破了1100GW，是全球需求的两倍左右。\n在供大于求的情况下，光伏组件价格从2023年1.8元/W，跌到了现在的0.6元/W，跟2020年高点相比，价格更是下跌了66%-90%。这也导致了\n光伏企业\n装机越多，亏损越多的现象发生。\n第二、原材料成本一直在涨。虽然产品价格在大幅下降，但是原材料价格却在上涨，尤其是银浆的价格，一天一个样。这也加剧了产品的亏损幅度。\n打开网易新闻 查看精彩图片\n既然多装一个多亏一个，这些企业为什么还在坚持呢？原因很简单，这是一个剩者为王的时代，只要把竞争对手给“熬死”，剩下的市场就是自己的，利润还是会回来的。谁先熬不下去，谁就会成为这场淘汰赛的牺牲品。\n这就是商业竞争的残酷性，很多龙头企业通过减产来刻意降低产量，从而使自己少亏一点。与此同时，又不至于完全丧失掉市场份额。\n亿晶光电的资不抵债可能还不是这个行业内卷结束的信号，反而可能还会有更猛烈的暴风雨在等着。原因很简单，原材料的价格还在上涨。最近一段时间以来，黄金涨到了天上，白银的涨幅比黄金还要猛，这必然导致银浆的原材料价格进一步走高，但是产品又很难真正提价。\n所以，光伏行业的凛冬还在继续！\n打开网易新闻 查看精彩图片\n「私享论道」定制你的问题方案",
+      "S15": "组件龙头都亏得惨不忍睹，为何这些公司风景独好、业绩亮眼？\n华夏能源网\n2025-04-28 10:02\n发布于\n北京\n华夏能源网官方账号\n4月23日，光伏电池设备制造龙头\n捷佳伟创\n(SZ:300724)公布2024年和2025年一季度财报。2024年实现营业收入188.87亿元，同比增长116.26%；实现归母净利润27.64亿元，同比增长69.18%。\n2025年一季度，捷佳伟创业绩继续稳定增长，实现总营收40.99亿元，同比增长58.95%；实现归母净利润7.08亿元，同比增长22.42%。\n在光伏企业一片亏损之下，捷佳伟创却能持续实现营收、净利双增长，为行业寒冬增添了一丝暖意。\n值得注意的是，2024年实现业绩大幅增长的不只止捷佳伟创。随着光伏企业2024年报的公布，华夏能源网（公众号hxny3060）统计发现，一批光伏设备、辅材企业实现了50%以上的盈利逆势增长。\n在行业低谷之时，为何辅产业链企业能“独善其身”？他们的盈利可持续性怎么样？\n盈利最高增幅达237%\n2024年业绩涨势最猛的，基本都是光伏辅产业链企业。\n光伏支架龙头\n中信博\n(SH:688408)2024年营业收入为90.26亿元，同比增长41.25%，归母净利润约为6.32亿元，同比增长83.03%。\n另一家光伏电池设备制造商\n拉普拉斯\n(SH:688726) 2024年实现营收57.28亿元，同比增长93.12%；归母净利润7.29亿元，同比增长77.53%。\n微逆龙头\n德业股份\n(SH:605117)2024年营业总收入111.95亿元，同比增加49.67%，实现归母净利润29.52亿元，同比增加64.80%。2025年一季度，德业股份归母净利润也继续保持了50.15%-61.70%的同比增速，预计将实现归母净利润6.5-7亿元。\n此外，\n通润装备\n(SZ:002150)、\n露笑科技\n(SZ:002617)、\n北京科锐\n(SZ:002350)、\n鹿山新材\n(SH:603051)等设备、辅材企业的预计归母净利润虽不多（较高者如露笑科技预计盈利2.5-2.9亿元，较低者如鹿山新材仅1200-1800万元），但增幅却基本都超过100%，通润装备的归母净利润增幅更是达到237%。\n与辅材企业大放异彩形成鲜明对比的是，2024年光伏主产业链龙头几乎全面亏损。\nTOP5组件企业中，四家巨亏，合计亏损额229-253亿元。只有龙头老大\n晶科能源\n(SH:688223)以预计盈利0.8-1.2亿元勉强维护了体面，但与2023年相比，盈利仍减少98.39%-98.92%。\nTOP5之外，\n阿特斯\n(SH:688472)因储能业务增长而实现归母净利润22.91亿元，是一体化组件龙头中盈利最好的，但也同比下降21.09%。\n两相比较，辅产业链的设备、辅材等企业以盈利额和同比增速的双向优势，成为当之无愧",
+      "S16": "股吧首页 >\n财富号评论吧 >\n帖子正文\n返回财富号评论吧 >\n组件企业业绩简析\n格菲研究院\n2021-05-11 20:18:00\n11\n3\n♥  收藏\nA\n大\n中\n小\n分享到：\n本文将对隆基、晶澳、天合三家公司20年业绩和2021年一季度业绩进行简要分析。\n对于这三家组件龙头企业，按理说应该花很长的篇幅去阐述、去细致的分析其业绩，并给出相关的论据、论点。但在我们将年报、季报看完，以及听过业绩会之后，又发现好像并没有需要过多强调的东西。行业的格局没有发生变化，无非是行业内部供需关系发生了调整，但这都是一个行业快速发展的必经之路，除此之外，还有什么需要过度强调的呢？而透过这次业绩会各管理层的表现所反映出的一些我们之前没有注意的问题，可能包含着更高的价值，但可惜的是，这些有价值的东西太少，我们仍旧处在一个由量变转为质变的阵痛期。\n根据 CPIA的统计，2020年全球光伏新增装机量130GW，同比增长13.04%。\n不到20%的行业增速其实并不乐观，但在此背景下，个别头部企业仍能保持50%以上的增长实属不易。\n上述三家公司，最先公布20年年报的是\n天合光能\n，当其他两家公司接连披露年报后，大家纷纷怀疑天合年报造假，之所以引发质疑，其实是因为天合四季度业绩的表现明显偏离当时的行业状况和其他公司的业绩情况。如上表所示，抛开四季度，三家公司前三季度分别实现77.11%、99.76%和82.52%的利润增长，但第四季度隆基和晶澳环比纷纷下滑，只有天合一家实现正增长。在隆基将要正式发布四季度业绩之前，有机构发布预告称由于隆基资产处置及资产减值等原因影响了公司四季度业绩，甚至还有人质疑天合的业绩造假就是因为没有大额资产减值。现在我们再来看这个问题，如果我们细看公司的利润表可发现，其实3个多亿的资产减值对隆基影响远没有那么深远，公司通过投资收益很容易就可以将这部分损失弥补过去，真正影响隆基四季度业绩的主要原因还是毛利率的大幅下降以及三费水平的提高，更准确地说是销售费用的大幅提升，包括质保金、职工薪酬等。其中隆基和天合的业绩显得特别亮眼，晶澳的业绩反倒不太符合行业头部企业的身份。从利润表来看，天合不到30%的营收增速能够实现75%的利润增长主要源于公司毛利率降幅相对较小且严格管控费用支出。晶澳看似营收与净利润增速相符，实际上，由于公司毛利率下降了将近5个百分点，使公司20年毛利润比19年还要低，之所以能取得净利润的同比增长，主要是公司通过出售电站获取的投资收益、政府补助及递延税收等非经常性损益及会计手段来实现的。\n晶澳四季度受损程度在三家公司中最为严重，毛利率从三季度的20.9%骤降到四季度的5.26%，毛利润环比下降60%，再加上计提的1.4亿的资产减值损失，晶澳的利润缺口不断变大。毛利率的下降与将销售费用中的运输费记作成本的会计变更也有关系，但刨除这部分大概4%的影响，晶澳",
+      "S17": "设为首页\n加入收藏\n曲合网\n期货开户\n数据中心\n期货导读\n期货资讯\n期货研报\n交易所\n问答\n日历\n快讯\n公司\n入门\n金属期货\n螺纹钢期货\n铜期货\n铝期货\n热卷期货\n镍期货\n沪银期货\n能源期货\n动力煤期货\n原油期货\n铁矿石期货\n焦煤期货\n焦炭期货\n燃料油期货\n化工期货\n橡胶期货\n玻璃期货\n甲醇期货\n纸浆期货\n纯碱期货\nPVC期货\n农产品期货\n玉米期货\n棕榈油期货\n棉花期货\n鸡蛋期货\n豆油期货\n豆粕期货\n期货行情\n主力行情\n铝行情\n沪银行情\n螺纹钢行情\n原油行情\n铁矿石行情\n动力煤行情\n橡胶行情\n纯碱行情\n甲醇行情\n玉米行情\n铜行情\n内盘行情\n沪铜主力\n--\n--\n沪铝主力\n--\n--\n沪锌主力\n--\n--\n沪铅主力\n--\n--\n沪锡主力\n--\n--\n沪镍主力\n--\n--\n国际铜\n--\n--\n原油主力\n--\n--\n燃料油主力\n--\n--\n沪金主力\n--\n--\n沪银主力\n--\n--\n豆粕主力\n--\n--\n豆油主力\n--\n--\n玉米主力\n--\n--\nPTA主力\n--\n--\n尿素主力\n--\n--\n纯碱主力\n--\n--\n外盘行情\nLME电铜\n--\n--\nLME电铝\n--\n--\nLME电锌\n--\n--\nLME电铅\n--\n--\nLME电锡\n--\n--\nLME电镍\n--\n--\n美期铜\n--\n--\n美原油\n--\n--\n美燃油\n--\n--\n美期金\n--\n--\n美期银\n--\n--\n美豆粕\n--\n--\n美豆油\n--\n--\n美玉米\n--\n--\n美黄豆\n--\n--\n美小麦\n--\n--\n美燕麦\n--\n--\n您的当前位置：\n首页\n>\n期货行情\n>\n多晶硅主力\n国内期货\n主力行情\n广期所\n多晶硅\n铂\n工业硅\n钯\n碳酸锂\n上期能源\nLU\n集运欧线\n国际铜\n20号胶\n原油\n郑商所\n瓶片\n晚籼稻\n对二甲苯\n甲醇\n尿素\n动力煤\n苹果\n早籼稻\n菜籽粕\n油菜籽\n玻璃\n粳稻\n纯碱\n强麦\n硅铁\n烧碱\n锰硅\n菜籽油\n葵花籽油\n白糖\n棉花\n红枣\nPTA\n短纤\n棉纱\n花生\n丙烯\n普麦\n中金所\n中证500\n沪深300\n上证50\n中证1000\n10年国债\n5年国债\n30年国债\n2年国债\n上期所\n铝合金\n沪银\n沪铝\n氧化铝\n螺纹钢\n沪锌\n沪金\n沪镍\n橡胶\n燃料油\n合成橡胶\n沥青\n线材\n沪锡\n纸浆\n不锈钢\n双胶纸\n沪铅\n沪铜\n热卷\n大商所\n聚丙烯\n苯乙烯\n乙二醇\n鲜鸡蛋\n纤维板\n粳米\n胶合板\n焦煤\n纯苯\n黄豆一号\n黄豆二号\n玉米\n铁矿石\n焦炭\n塑料\n豆粕\n棕榈油\n玉米淀粉\nPVC\n液化石油气\n豆油\n原木\n生猪\n夜盘行情\n国外期货\n伦敦金属交易所\n纽约商品交易所\n芝加哥商品交易所\n国际贵金属\n现货黄金\n现货白银\n现货铂金\n现货钯金\n数据中心\n资金流向\n持仓分析\n仓单日报\n更多数据\n搜索\n多晶硅主力\n--\n--\n--\n今开：\n--\n昨结：\n--\n最高：\n--\n最低：\n--\n均价：\n--\n今结：\n--\n涨停：\n--\n跌停：\n--",
+      "S18": "铜\n108805.71\n578.19\n0.53%\n电解铜\n108780\n600.00\n0.55%\n铜精矿\n21255\n-17.00\n-0.08%\n铜杆\n74784\n-475.00\n-0.63%\n铜管\n86100\n600.00\n0.70%\n废铜\n92100\n-180.00\n-0.20%\n铝\n23270.5\n-7.50\n-0.03%\n电解铝\n23201\n-18.00\n-0.08%\n氧化铝\n2653\n0.00\n0.00%\n铝土矿\n513\n0.00\n0.00%\n废铝\n19900\n0.00\n0.00%\n铝棒\n23550\n0.00\n0.00%\n铅锭\n15985.21\n90.51\n0.57%\n铅精矿\n16017\n100.00\n0.63%\n锌\n25334.64\n-48.29\n-0.19%\n锌精矿\n25513\n-40.00\n-0.16%\n锌锭\n25385\n-48.00\n-0.19%\n锡\n356300\n-3500.00\n-0.97%\n稀土\n5550\n0.00\n0.00%\n白银\n12107\n-242.00\n-1.96%\n多晶硅行情\n当前位置：\n我的钢铁网\n>\n有色金属\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n硅价格\n>\n多晶硅行情\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n多晶硅行情\n快讯\n2026-11-13\n11:43\n【本周\n多晶硅\n生产成本环比持稳】截至11月13日，本周\n多晶硅\n（N型致密料）市场均价40.5元/千克，生产成本42.8元/千克，单公斤净利为-2.3元。价格方面，本周\n多晶硅\nN型致密料均价环比持稳。成本方面，\n多晶硅\n生产成本环比持稳。本周\n多晶硅\n（N型致密料）市场平均现金成本为34.3元/千克，生产成本为42.8元/千克，完全成本为46.1元/千克。\n2026-11-11\n16:56\n2026年11月11日，广州期货交易所发布公告，明确\n多晶硅\n期货PS2711合约交易手续费为成交金额的万分之一，日内平今仓手续费为万分之二点五，最小开仓5手、平仓1手，单日开仓上限200手。碳酸锂期货LC2711合约交易手续费及日内平今仓手续费均为成交金额的万分之零点八，最小开仓2手、平仓1手，单日开仓上限800手。\n2026-11-11\n10:42\n【2026年11月11日\n多晶硅\n价格】\n多晶硅\n市场N型致密料38-43元/千克；N型颗粒硅37-41元/千克；N型混包料37-43元/千克。\n2026-11-10\n15:43\n【Mysteel工业硅收盘评述】11月10日工业硅主力2612合约收盘价格8485元，跌幅0.18%，单日减仓2004手。今日工业硅市场现货价格维稳，日内期货盘面震荡运行。期货方面，近期无宏观利好消息驱动，叠加近期下游\n多晶硅\n企业召开会议，督促减产执行力度，需求收窄预期影响，工业硅盘面弱",
+      "S19": "设为首页\n加入收藏\n手机金投网\n金投网\nPC版\niPhone版\nAndroid版\n注册\n登录\n还没有帐号？免费注册一个吧！\n快速注册\n使用QQ帐号登录\n若您已有金投网帐号，可直接登录\n，\n我的金投\n登出\n金投网\n行情中心\n数据中心\n财经日历\n金投快讯\n投资学院\n行情首页\n贵金属行情\n行情分析\n期货行情\n股票行情\n原油行情\n外汇行情\n大宗行情\n您的当前位置：\n行情中心\n>\n广州期货交易所\n>\n多晶硅主力\n多晶硅相关合约\n更多>>\n名称\n最新价\n涨跌\n多晶硅主力\n----\n----\n多晶硅2706\n----\n----\n多晶硅2707\n----\n----\n多晶硅2708\n----\n----\n多晶硅2709\n----\n----\n多晶硅2710\n----\n----\n国际相关期货\n更多>>\n名称\n最新价\n涨跌\n美豆粕\n--\n--\n美豆油\n--\n--\n美黄豆\n--\n--\n美小麦\n--\n--\n美燕麦\n--\n--\n美玉米\n--\n--\n期货品种一览\n铜\n铝\n锌\n铅\n天胶\n燃料油\n黄金\n钢材\n钢材\n石油沥青\n上期所\n大豆\n棕榈油\nLLDPE\n玉米\nPVC\n豆油\n豆粕\n焦炭\n焦煤\n铁矿石\n鸡蛋\n胶合板\n纤维板\n大商所\n小麦\n棉花\n白糖\nPTA\n菜籽油\n早籼稻\n甲醇\n玻璃\n菜籽粕\n油菜籽\n动力煤\n粳稻\n晚籼稻\n硅铁\n锰硅\n郑商所\n沪深\n上证\n中证\nIM\n二债\n五债\n十债\n三十债\n中金所\n期货换算工具\n豆类换算\n白糖换算\n棉花换算\n小麦换算\n天胶换算\n玉米换算\n棕榈油换算\n原油换算\nPTA换算\n长度换算\n面积换算\n温度换算\n查找其他期货品种:\n上海期货交易所\n上海国际能源交易中心\n广州期货交易所\n大连商品交易所\n郑州商品交易所\n期货主力\n期货夜盘\n芝加哥商品期货交易所\n纽约商品交易所\n伦敦金属交易所\n工业硅\n碳酸锂\n多晶硅\n铂\n钯\n多晶硅主力\n多晶硅2706\n多晶硅2707\n多晶硅2708\n多晶硅2709\n多晶硅2710\n多晶硅2711\n多晶硅2612\n多晶硅2701\n多晶硅2702\n多晶硅2703\n多晶硅2704\n多晶硅2705\n多晶硅加权\n刷新行情\n- - --:--:--\n多晶硅主力\npsm\n--(-.--%)\n----\n今开：\n--\n昨结：\n--\n最高：\n--\n最低：\n--\n成交量：\n--\n昨收：\n--\n涨停：\n--\n跌停：\n--\n持仓：\n--\n日增量：\n--\n品种\n数据\n多头持仓：\n--\n空头持仓：\n--\n资金流向：\n--\n基差数据：\n--\n更多\n>>\n品种\n数据\n多头持仓：\n--\n空头持仓：\n--\n资金流向：\n--\n基差数据：\n--\n产量：\n--\n库存：\n--\n需求：\n--\n现货价：\n--\n更多\n打开金投网APP\n请选择策略\n无\n集金策略\n海龟策略\n独孤九剑\n弹幕\n发送\n走势对比：\n对比商品\n比较\n期货开户\n财经日历\n13\n加拿大9月批发库存年率%\n21:30\n加拿大\n前值",
+      "S20": "硅片价格指数\n搜索\n今日价格\n实时快讯\n热点资讯\n登录\n注册\n当前位置：\n我的钢铁网\n>\n硅片\n>\n硅片价格指数\n品名\n型号\n厚度\n最低价\n最高价\n中间价\n走势\n硅片\nN型M10-182\n130um\n0.86\n0.88\n0.87\n硅片\nN型G12-210\n130um\n1.16\n1.17\n1.165\n硅片\nN型G10L-183.75\n130um\n0.86\n0.88\n0.87\n硅片\nN型G12R-210R\n130um\n0.96\n0.98\n0.97\n查看更多价格\n2026-07-06\n硅片\n价格指数\nMysteel：硅片：M10-182N型：130μm：中间价：中国（日）\n0.87\n(0.00)\n硅片：15家样本企业：产量：中国（月）\n50.47\n(3.40)\n硅片：单晶型：Φ＞15.24：出口数量同比：中国（月）\n-0.71\n(-24.47)\n硅片：单晶型：Φ＞15.24：出口数量环比：中国（月）\n-30.29\n(12.64)\n硅片：15家样本企业：产能利用率：中国（月）\n51.02\n(3.44)\n硅片价格指数\n相关价格\n-\n重置\n确认\n按综合排序\n按综合排序\n按最新排序\n国内\n硅片\n价格行情（2026-07-03 10:43）\n硅片\n2026-07-03 10:43\n国内\n硅片\n价格行情（2026-07-02 10:34）\n硅片\n2026-07-02 10:34\n国内\n硅片\n价格行情（2026-07-01 10:39）\n硅片\n2026-07-01 10:39\n国内\n硅片\n价格行情（2026-06-30 10:38）\n硅片\n2026-06-30 10:38\n国内\n硅片\n价格行情（2026-06-29 10:31）\n硅片\n2026-06-29 10:31\n国内\n硅片\n价格行情（2026-06-26 10:15）\n硅片\n2026-06-26 10:15\n国内\n硅片\n价格行情（2026-06-25 10:41）\n硅片\n2026-06-25 10:41\n国内\n硅片\n价格行情（2026-06-24 10:24）\n硅片\n2026-06-24 10:24\n国内\n硅片\n价格行情（2026-06-23 10:53）\n硅片\n2026-06-23 10:53\n国内\n硅片\n价格行情（2026-06-22 10:37）\n硅片\n2026-06-22 10:37\n点击加载更多\n快讯播报\n硅片价格指数\n快讯\n2026-07-03\n16:33\n【本周\n硅片\n成本环比下降】截至7月3日，本周光伏\n硅片\n（N型210R）市场均价0.97元/片，生产成本为1.165元/片，单片生产净利为-0.195元。\n2026-07-02\n10:27\n7月2日，三项光伏领域强制性国家标准正式批准发布，围绕硅料、\n硅片\n、光伏组件、逆变器全链条划定能耗能效刚性约束，以标准化手段完善光伏产业链绿色管控体系，为新能源产业",
+      "S21": "半导体硅片价格走势\n搜索\n今日价格\n实时快讯\n热点资讯\n登录\n注册\n当前位置：\n我的钢铁网\n>\n硅片\n>\n半导体硅片价格走势\n智能摘要\n2026年11月11日硅片价格显示，183N硅片报0.9-0.95元/片，210RN硅片报0.98-1元/片，210N硅片报1.08-1.13元/片。截至11月6日，N型210R硅片市场均价1.015元/片，生产成本升至1.264元/片，单片净利为-0.249元，较10月中下旬成本1.256元/片、净利-0.241元小幅走弱。10月硅片产量54.09GW，环比降0.31%，同比降10.85%，产能利用率54.7%，环比降0.2%；预计11月排产54.35GW，环比增0.49%，产能利用率约54.9%。9月硅片出口量107936.51万片，环比增47.22%，出口均价0.17美元/片；进口量16498.41万片，环比增20.16%，进口均价0.13美元/片。\n展开\n内容由AI生成\n品名\n型号\n厚度\n最低价\n最高价\n中间价\n走势\n硅片\nN型M10-182\n130um\n0.9\n0.95\n0.925\n硅片\nN型G12-210\n130um\n1.08\n1.13\n1.105\n硅片\nN型G10L-183.75\n130um\n0.9\n0.95\n0.925\n硅片\nN型G12R-210R\n130um\n0.98\n1.0\n0.99\n查看更多价格\n2026-11-13\n硅片\n价格指数\n硅片：15家样本企业：产能利用率：中国（月）\n54.68\n(-0.18)\n硅片：单晶型：Φ＞15.24：出口数量同比：中国（月）\n84.11\n(56.96)\n硅片：单晶型：Φ＞15.24：出口数量环比：中国（月）\n45.4\n(44.33)\nMysteel：硅片：M10-182N型：130μm：中间价：中国（日）\n0.925\n(0.00)\n硅片：15家样本企业：产量：中国（月）\n54.1\n(-0.18)\n半导体硅片价格走势\n相关价格\n-\n重置\n确认\n按综合排序\n按综合排序\n按最新排序\n国内\n硅片\n价格行情（2026-11-13 10:32）\n硅片\n2026-11-13 10:32\n国内\n硅片\n价格行情（2026-11-12 10:23）\n硅片\n2026-11-12 10:23\n国内\n硅片\n价格行情（2026-11-11 10:29）\n硅片\n2026-11-11 10:29\n国内\n硅片\n价格行情（2026-11-10 10:35）\n硅片\n2026-11-10 10:35\n国内\n硅片\n价格行情（2026-11-09 10:24）\n硅片\n2026-11-09 10:24\n国内\n硅片\n价格行情（2026-11-06 10:21）\n硅片\n2026-11-06 10:21\n国内\n硅片\n价格行情（2026-11-05 10:31）\n硅片\n2026-11-05 10:31\n国内\n硅片\n价格行",
+      "S22": "铜\n108805.71\n578.19\n0.53%\n电解铜\n108780\n600.00\n0.55%\n铜精矿\n21255\n-17.00\n-0.08%\n铜杆\n74784\n-475.00\n-0.63%\n铜管\n86100\n600.00\n0.70%\n废铜\n92100\n-180.00\n-0.20%\n铝\n23270.5\n-7.50\n-0.03%\n电解铝\n23201\n-18.00\n-0.08%\n氧化铝\n2653\n0.00\n0.00%\n铝土矿\n513\n0.00\n0.00%\n废铝\n19900\n0.00\n0.00%\n铝棒\n23550\n0.00\n0.00%\n铅锭\n15985.21\n90.51\n0.57%\n铅精矿\n16017\n100.00\n0.63%\n锌\n25334.64\n-48.29\n-0.19%\n锌精矿\n25513\n-40.00\n-0.16%\n锌锭\n25385\n-48.00\n-0.19%\n锡\n356300\n-3500.00\n-0.97%\n稀土\n5550\n0.00\n0.00%\n白银\n12107\n-242.00\n-1.96%\n硅片行情\n当前位置：\n我的钢铁网\n>\n有色金属\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n硅价格\n>\n硅片行情\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n硅片行情\n快讯\n2026-11-13\n11:43\n【本周\n硅片\n生产成本环比持平】截至11月13日，本周光伏\n硅片\n（N型210R）市场均价0.995元/片，生产成本为1.264元/片，单片生产净利为-0.269元。\n2026-11-11\n10:42\n【2026年11月11日\n硅片\n价格】183N\n硅片\n价格0.9-0.95元/片，210RN\n硅片\n价格0.98-1元/片，210N\n硅片\n价格1.08-1.13元/片。\n2026-11-09\n16:00\n【10月中国\n硅片\n产能利用率环比降0.2%】2026年10月\n硅片\n国内企业产能利用率在54.7%，与9月相比降0.2%。据Mysteel预计，2026年11月份\n硅片\n企业产能利用率在549%左右，环比增0.3%。\n2026-11-09\n14:40\n【10月中国\n硅片\n产量环比上涨5.97%】2026年10月中国\n硅片\n企业产量54.09GW，环比下降0.31%，同比下降10.85%。 据Mysteel预计，2026年11月\n硅片\n排产54.35GW，环比上涨0.49%。\n2026-11-06\n17:17\n【Mysteel晶硅光伏周评20261106】本周多晶硅现货延续 “报价稳、成交冷” 的僵持格局，现货签单缓慢。N型致密报价43元/千克，颗粒硅41元/千克。头部企业挺价意愿仍存，但下游持续消耗存量库存，短期补库也都从贸易商、期现商零散补库，暂无规模化直采。供应端，10月已有企业陆续减产，西南部分产能停产",
+      "S23": "碳酸锂\n91750\n2550.00\n2.86%\n磷酸铁锂\n41800\n200.00\n0.48%\n金属锂\n600000\n0.00\n0.00%\n硫酸镍\n24400\n50.00\n0.21%\n三元材料\n120000\n2000.00\n1.69%\n三元前驱体\n92000\n0.00\n0.00%\n多晶硅\n42\n0.00\n0.00%\n电池片\n0.62\n0.00\n0%\n锂电池废料\n16340\n0.00\n0.00%\n锂电池负极片\n26841\n0.00\n0.00%\n电池硫酸锰\n7540\n0.00\n0.00%\n工业硅\n8850\n0.00\n0.00%\n硫酸钴\n51500\n3500.00\n7.29%\n磷酸铁\n16200\n0.00\n0.00%\n锂辉石精矿\n940\n0.00\n0.00%\n电解锰\n18100\n0.00\n0.00%\n硅片\n1.41\n0.00\n0.00%\n光伏组件\n0.66\n0.00\n0%\n人造石墨\n26200\n0.00\n0.00%\n天然石墨\n32000\n0.00\n0.00%\n三元电芯\n0.56\n0.00\n0%\n锂电池回收\n41802\n-5550.00\n-11.72%\n镍生铁\n1050\n0.00\n0.00%\n碳酸钴\n135\n0.00\n0.00%\n镍矿\n689\n0.00\n0.00%\n光伏组件价格查询\n当前位置：\n我的钢铁网\n>\n新能源\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n光伏材料\n>\n光伏组件价格查询\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n光伏组件价格查询\n快讯\n2026-11-11\n10:42\n【2026年11月11日\n光伏组件\n价格\n】210单/双面TOPcon分布式组件0.71-0.735元/瓦。210R双面TOPcon分布式组件0.695-0.725元/瓦；210R双面BC分布式组件0.74-0.77元/瓦。\n2026-11-13\n11:44\n【本周\n光伏组件\n生产成本环比下降】截至11月13日，本周\n光伏组件\n（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。\n2026-11-13\n10:59\n【光伏项目中标情况】据Mysteel 不完全统计：11月2日-11月8日\n光伏组件\n中标项目7个，中标规模5236MW，中标均价0.709元/瓦。EPC中标项目33个，中标规模合计2396MW，环比增4.3%。大EPC定标均价2.85元/瓦，环比增1.1%，小EPC定标均价1.27元/瓦，环比降2.3%。\n2026-11-13\n10:59\n【光伏项目招标情况】据Mysteel 不完全统计：11月2日-11月8日光伏招标项目33个，项目规模合计4410MW，环比降32.3%。EPC招标项目21个，招标规模4198MW，环比增314%。\n光伏组件\n招标项目12个，项目规模2",
+      "S24": "碳酸锂\n91750\n2550.00\n2.86%\n磷酸铁锂\n41800\n200.00\n0.48%\n金属锂\n600000\n0.00\n0.00%\n硫酸镍\n24400\n50.00\n0.21%\n三元材料\n120000\n2000.00\n1.69%\n三元前驱体\n92000\n0.00\n0.00%\n多晶硅\n42\n0.00\n0.00%\n电池片\n0.62\n0.00\n0%\n锂电池废料\n16340\n0.00\n0.00%\n锂电池负极片\n26841\n0.00\n0.00%\n电池硫酸锰\n7540\n0.00\n0.00%\n工业硅\n8850\n0.00\n0.00%\n硫酸钴\n51500\n3500.00\n7.29%\n磷酸铁\n16200\n0.00\n0.00%\n锂辉石精矿\n940\n0.00\n0.00%\n电解锰\n18100\n0.00\n0.00%\n硅片\n1.41\n0.00\n0.00%\n光伏组件\n0.66\n0.00\n0%\n人造石墨\n26200\n0.00\n0.00%\n天然石墨\n32000\n0.00\n0.00%\n三元电芯\n0.56\n0.00\n0%\n锂电池回收\n41802\n-5550.00\n-11.72%\n镍生铁\n1050\n0.00\n0.00%\n碳酸钴\n135\n0.00\n0.00%\n镍矿\n689\n0.00\n0.00%\n光伏组件价格\n当前位置：\n我的钢铁网\n>\n新能源\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n光伏材料\n>\n光伏组件价格\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n光伏组件价格\n快讯\n2026-11-13\n11:44\n【本周\n光伏组件\n生产成本环比下降】截至11月13日，本周\n光伏组件\n（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。\n2026-11-13\n10:59\n【光伏项目中标情况】据Mysteel 不完全统计：11月2日-11月8日\n光伏组件\n中标项目7个，中标规模5236MW，中标均价0.709元/瓦。EPC中标项目33个，中标规模合计2396MW，环比增4.3%。大EPC定标均价2.85元/瓦，环比增1.1%，小EPC定标均价1.27元/瓦，环比降2.3%。\n2026-11-13\n10:59\n【光伏项目招标情况】据Mysteel 不完全统计：11月2日-11月8日光伏招标项目33个，项目规模合计4410MW，环比降32.3%。EPC招标项目21个，招标规模4198MW，环比增314%。\n光伏组件\n招标项目12个，项目规模212MW，环比降96.2%。\n2026-11-13\n10:43\n近日，新疆第七师胡杨河市兵地融合新疆兴起航新能源有限公司1GW光伏项目\n光伏组件\n设备采购项目成交公告发布，中标企业为协鑫集成。\n2026-11-11\n10:42\n【2026年11月11日\n光伏组件\n价格\n】",
+      "S25": "碳酸锂\n91750\n2550.00\n2.86%\n磷酸铁锂\n41800\n200.00\n0.48%\n金属锂\n600000\n0.00\n0.00%\n硫酸镍\n24400\n50.00\n0.21%\n三元材料\n120000\n2000.00\n1.69%\n三元前驱体\n92000\n0.00\n0.00%\n多晶硅\n42\n0.00\n0.00%\n电池片\n0.62\n0.00\n0%\n锂电池废料\n16340\n0.00\n0.00%\n锂电池负极片\n26841\n0.00\n0.00%\n电池硫酸锰\n7540\n0.00\n0.00%\n工业硅\n8850\n0.00\n0.00%\n硫酸钴\n51500\n3500.00\n7.29%\n磷酸铁\n16200\n0.00\n0.00%\n锂辉石精矿\n940\n0.00\n0.00%\n电解锰\n18100\n0.00\n0.00%\n硅片\n1.41\n0.00\n0.00%\n光伏组件\n0.66\n0.00\n0%\n人造石墨\n26200\n0.00\n0.00%\n天然石墨\n32000\n0.00\n0.00%\n三元电芯\n0.56\n0.00\n0%\n锂电池回收\n41802\n-5550.00\n-11.72%\n镍生铁\n1050\n0.00\n0.00%\n碳酸钴\n135\n0.00\n0.00%\n镍矿\n689\n0.00\n0.00%\n光伏组件\n当前位置：\n我的钢铁网\n>\n新能源\n黑色金属\n有色金属\n能源化工\n建筑材料\n农产品\n新能源\n其他\n>\n光伏材料\n>\n光伏组件\n更新时间：2026-11-13\n15日\n30日\n90日\n1年\n快讯播报\n光伏组件\n快讯\n2026-11-13\n11:44\n【本周\n光伏组件\n生产成本环比下降】截至11月13日，本周\n光伏组件\n（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。\n2026-11-13\n10:59\n【光伏项目中标情况】据Mysteel 不完全统计：11月2日-11月8日\n光伏组件\n中标项目7个，中标规模5236MW，中标均价0.709元/瓦。EPC中标项目33个，中标规模合计2396MW，环比增4.3%。大EPC定标均价2.85元/瓦，环比增1.1%，小EPC定标均价1.27元/瓦，环比降2.3%。\n2026-11-13\n10:59\n【光伏项目招标情况】据Mysteel 不完全统计：11月2日-11月8日光伏招标项目33个，项目规模合计4410MW，环比降32.3%。EPC招标项目21个，招标规模4198MW，环比增314%。\n光伏组件\n招标项目12个，项目规模212MW，环比降96.2%。\n2026-11-13\n10:43\n近日，新疆第七师胡杨河市兵地融合新疆兴起航新能源有限公司1GW光伏项目\n光伏组件\n设备采购项目成交公告发布，中标企业为协鑫集成。\n2026-11-11\n10:42\n【2026年11月11日\n光伏组件\n价格】210单/双面"
+    },
+    "republished": {
+      "S25": "S24"
+    },
+    "independent_source_count": 24
+  },
+  "source_quality": {
+    "summary": {
+      "total": 25,
+      "by_tier": {
+        "official": 0,
+        "primary": 0,
+        "media": 3,
+        "aggregator": 0,
+        "unknown": 22
+      },
+      "by_freshness": {
+        "fresh": 0,
+        "recent": 1,
+        "stale": 7,
+        "unknown": 17
+      },
+      "tier_labels": {
+        "official": "官方/监管",
+        "primary": "一手披露",
+        "media": "财经媒体",
+        "aggregator": "聚合/自媒体",
+        "unknown": "未知来源"
+      },
+      "freshness_labels": {
+        "fresh": "近 30 天内",
+        "recent": "半年内",
+        "stale": "超过半年",
+        "unknown": "无发布时间"
+      },
+      "needs_original_check": 25,
+      "missing_published_at": 17,
+      "note": "站点分级按域名规则判定，只提示「要不要回原文核对」，不代表这条内容已被核实；时效阈值：30 天内为 fresh、180 天内为 recent、更早为 stale。"
+    },
+    "items": [
+      {
+        "source_id": "S01",
+        "url": "https://finance.sina.com.cn/money/future/wemedia/2023-02-13/doc-imyfpwqu9355894.shtml",
+        "host": "finance.sina.com.cn",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2023-02-13T16:41",
+        "freshness": "stale",
+        "freshness_label": "超过半年",
+        "age_days": 1369,
+        "needs_original_check": true,
+        "notes": [
+          "距今 1369 天：口径可能已变，不能拿来描述当期情况"
+        ]
+      },
+      {
+        "source_id": "S02",
+        "url": "https://finance.sina.com.cn/money/future/wemedia/2025-01-06/doc-inecyvzz1931620.shtml",
+        "host": "finance.sina.com.cn",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2025-01-06T08:21",
+        "freshness": "stale",
+        "freshness_label": "超过半年",
+        "age_days": 676,
+        "needs_original_check": true,
+        "notes": [
+          "距今 676 天：口径可能已变，不能拿来描述当期情况"
+        ]
+      },
+      {
+        "source_id": "S03",
+        "url": "https://www.xueqiu.com/6246839773/231288865",
+        "host": "www.xueqiu.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S04",
+        "url": "https://www.xueqiu.com/1200680539/147959325",
+        "host": "www.xueqiu.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S05",
+        "url": "https://www.xueqiu.com/3249643818/135607759",
+        "host": "www.xueqiu.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S06",
+        "url": "https://post.smzdm.com/p/anvpdx93/",
+        "host": "post.smzdm.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2026-05-11T13:08",
+        "freshness": "stale",
+        "freshness_label": "超过半年",
+        "age_days": 186,
+        "needs_original_check": true,
+        "notes": [
+          "距今 186 天：口径可能已变，不能拿来描述当期情况"
+        ]
+      },
+      {
+        "source_id": "S07",
+        "url": "https://www.hanghangcha.com/cms/detail/186691.html",
+        "host": "www.hanghangcha.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S08",
+        "url": "http://www.southmoney.com/guangfu/202603/2647839.html",
+        "host": "www.southmoney.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S09",
+        "url": "https://www.163.com/dy/article/IINLKAU80514DRR7.html",
+        "host": "www.163.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2023-11-04T19:24",
+        "freshness": "stale",
+        "freshness_label": "超过半年",
+        "age_days": 1105,
+        "needs_original_check": true,
+        "notes": [
+          "距今 1105 天：口径可能已变，不能拿来描述当期情况"
+        ]
+      },
+      {
+        "source_id": "S10",
+        "url": "https://www.xueqiu.com/8150711211/179910366",
+        "host": "www.xueqiu.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S11",
+        "url": "https://www.jiemian.com/article/7383119.html",
+        "host": "www.jiemian.com",
+        "tier": "media",
+        "tier_label": "财经媒体",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S12",
+        "url": "https://caifuhao.eastmoney.com/news/20230706165424274726940",
+        "host": "caifuhao.eastmoney.com",
+        "tier": "media",
+        "tier_label": "财经媒体",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S13",
+        "url": "https://www.163.com/dy/article/GT2EVG7V0550B1DU.html",
+        "host": "www.163.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2022-01-06T21:52",
+        "freshness": "stale",
+        "freshness_label": "超过半年",
+        "age_days": 1772,
+        "needs_original_check": true,
+        "notes": [
+          "距今 1772 天：口径可能已变，不能拿来描述当期情况"
+        ]
+      },
+      {
+        "source_id": "S14",
+        "url": "https://m.163.com/dy/article/KJLITE5405119596.html",
+        "host": "m.163.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2026-01-19T18:59",
+        "freshness": "stale",
+        "freshness_label": "超过半年",
+        "age_days": 298,
+        "needs_original_check": true,
+        "notes": [
+          "距今 298 天：口径可能已变，不能拿来描述当期情况"
+        ]
+      },
+      {
+        "source_id": "S15",
+        "url": "https://news.qq.com/rain/a/20250428A02PV500",
+        "host": "news.qq.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2025-04-28T10:02",
+        "freshness": "stale",
+        "freshness_label": "超过半年",
+        "age_days": 564,
+        "needs_original_check": true,
+        "notes": [
+          "距今 564 天：口径可能已变，不能拿来描述当期情况"
+        ]
+      },
+      {
+        "source_id": "S16",
+        "url": "https://guba.eastmoney.com/news,cfhpl,1032926969.html",
+        "host": "guba.eastmoney.com",
+        "tier": "media",
+        "tier_label": "财经媒体",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S17",
+        "url": "https://www.quheqihuo.com/quote/gfex-psm.html",
+        "host": "www.quheqihuo.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S18",
+        "url": "https://www.mysteel.com/hot/1486321.html",
+        "host": "www.mysteel.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S19",
+        "url": "https://quote.cngold.org/qh/gfex_ps.html",
+        "host": "quote.cngold.org",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S20",
+        "url": "https://list1.mysteel.com/zhishi/gpjgzs35037.html",
+        "host": "list1.mysteel.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "2026-07-06T07:35",
+        "freshness": "recent",
+        "freshness_label": "半年内",
+        "age_days": 130,
+        "needs_original_check": true,
+        "notes": []
+      },
+      {
+        "source_id": "S21",
+        "url": "https://list1.mysteel.com/zhishi/bdtgpjgzs54961.html",
+        "host": "list1.mysteel.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S22",
+        "url": "https://www.mysteel.com/hot/1486328.html",
+        "host": "www.mysteel.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S23",
+        "url": "https://www.mysteel.com/hot/1486620.html",
+        "host": "www.mysteel.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S24",
+        "url": "https://www.mysteel.com/hot/1232794.html",
+        "host": "www.mysteel.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      },
+      {
+        "source_id": "S25",
+        "url": "https://www.mysteel.com/hot/1232677.html",
+        "host": "www.mysteel.com",
+        "tier": "unknown",
+        "tier_label": "未知来源",
+        "published_at": "",
+        "freshness": "unknown",
+        "freshness_label": "无发布时间",
+        "age_days": null,
+        "needs_original_check": true,
+        "notes": [
+          "页面没有给出发布时间：无法判断是否过期，引用前请到原文确认时点"
+        ]
+      }
+    ]
+  },
+  "corroboration": {
+    "checked_points": 110,
+    "corroborated_count": 11,
+    "conflict_count": 0,
+    "single_source_count": 99,
+    "min_overlap": 0.5,
+    "min_sources": 2,
+    "rules": [
+      "上下文 4-gram 相似度 ≥ 0.50 的不同来源数据点 → 视为在说同一件事",
+      "同一簇内某数字（不含年份）被不少于 2 个来源说到 → 记为印证",
+      "同一簇内两条数据点的关键数字集合完全不相交 → 记为冲突（不判断谁对）",
+      "不做同义词归并、不做单位换算、不给可信度打分"
+    ],
+    "corroborated": [
+      {
+        "numbers": [
+          "0.014"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          },
+          {
+            "source_id": "S24",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "0.709"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。"
+          },
+          {
+            "source_id": "S24",
+            "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "0.710"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          },
+          {
+            "source_id": "S24",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "0.724"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          },
+          {
+            "source_id": "S24",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "210"
+        ],
+        "source_ids": [
+          "S20",
+          "S22"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S20",
+            "text": "（N型210R）市场均价0.97元/片，生产成本为1.165元/片，单片生产净利为-0.195元。"
+          },
+          {
+            "source_id": "S22",
+            "text": "（N型210R）市场均价0.995元/片，生产成本为1.264元/片，单片生产净利为-0.269元。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "2396"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。"
+          },
+          {
+            "source_id": "S24",
+            "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "33"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。"
+          },
+          {
+            "source_id": "S24",
+            "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "4.3"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。"
+          },
+          {
+            "source_id": "S24",
+            "text": "EPC中标项目33个，中标规模合计2396MW，环比增4.3%。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "5236"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。"
+          },
+          {
+            "source_id": "S24",
+            "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "650"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          },
+          {
+            "source_id": "S24",
+            "text": "（N型650W）市场均价为0.710元/瓦，生产成本为0.724元/瓦，单瓦生产净利为-0.014元。"
+          }
+        ]
+      },
+      {
+        "numbers": [
+          "7"
+        ],
+        "source_ids": [
+          "S23",
+          "S24"
+        ],
+        "source_count": 2,
+        "quotes": [
+          {
+            "source_id": "S23",
+            "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。"
+          },
+          {
+            "source_id": "S24",
+            "text": "中标项目7个，中标规模5236MW，中标均价0.709元/瓦。"
+          }
+        ]
+      }
+    ],
+    "conflicts": [],
+    "single_source": [
+      {
+        "source_id": "S01",
+        "text": "在电热炉内冶炼成的产品，硅含量一般在99%以上（2N），其余杂质为铁、铝、钙等，是多晶硅的上游原材料。"
+      },
+      {
+        "source_id": "S01",
+        "text": "目前多晶硅的制备技术主要包括化学法和物理法，化学法为当前主流工艺，约占全球产量的80%；"
+      },
+      {
+        "source_id": "S01",
+        "text": "1）冶金级多晶硅（MG-Si），一般含硅量为99.999%～99.9999%（5N-6N），主要应用包括航空、尖端技术、军事技术部门的特种材料以及建筑、纺织、汽车、机械等领域；"
+      },
+      {
+        "source_id": "S01",
+        "text": "2）太阳能级多晶硅（SoG-Si），纯度介于冶金级硅与电子级硅之间，一般在99.9999%～99.9999999%（6N-9N）之间，主要应用为光伏晶硅电池；"
+      },
+      {
+        "source_id": "S01",
+        "text": "3）电子级多晶硅（SEG-Si），一般要求含硅量达到99.9999999%以上（9N以上），主要应用于半导体硅片的生产。"
+      },
+      {
+        "source_id": "S01",
+        "text": "根据百川盈孚数据，2022年6月上旬国内改良西门子法生产多晶硅的成本结构中原材料占比最大，达到41%，其中工业硅占总成本的39%，为光伏硅料的最大成本项，因此降低硅耗（生产单位多晶硅耗费的硅量）可以有效降低光伏硅料的生产成本；"
+      },
+      {
+        "source_id": "S02",
+        "text": "尹锡悦方面将检举公调处及警方150余人 韩法院驳回逮捕令异议申请"
+      },
+      {
+        "source_id": "S02",
+        "text": "73家上市公司发布2024年全年业绩预告，44家预喜，预喜比例约为60.27%"
+      },
+      {
+        "source_id": "S02",
+        "text": "2万字全文: 段永平2025.1.5浙大师生见面会问答实录"
+      },
+      {
+        "source_id": "S04",
+        "text": "得到的数据有的也有些困惑，例如硅片的非硅成本，根据给出的1-9月2.48亿片的产量和成本金额数据计算，京运通硅片的非硅成本仅只有0.71元/片，这个数据比行业大佬隆基股份的数据都亮眼。"
+      },
+      {
+        "source_id": "S04",
+        "text": "由于数据中将生产成本分为直接材料，直接人工和制造费用三项， 因为0.71元/片只算了直接人工和制造费用，想来直接材料里不仅仅是硅成本，还有辅料成本在内，这样算的话非硅成本应该比0.71元/片更高一些。"
+      },
+      {
+        "source_id": "S05",
+        "text": "昨天李总说再将30%？"
+      },
+      {
+        "source_id": "S06",
+        "text": "691家酒店被标记的“床虱地图”，出差旅游订房时到底该怎么用"
+      },
+      {
+        "source_id": "S06",
+        "text": "避坑，买京东plus，不要超过49元"
+      },
+      {
+        "source_id": "S06",
+        "text": "实测有效，移动10元100G全国流量攻略，高速流量不限速，实测不卡"
+      },
+      {
+        "source_id": "S06",
+        "text": "千元极空间NAS Z4Air 适合谁？"
+      },
+      {
+        "source_id": "S07",
+        "text": "每辆摩托车对应的人数（2014年）"
+      },
+      {
+        "source_id": "S07",
+        "text": "全球两轮和三轮摩托车保有量前20的国家和地区"
+      },
+      {
+        "source_id": "S07",
+        "text": "2019年全球光伏发电渗透率仅2-68%"
+      },
+      {
+        "source_id": "S08",
+        "text": "毛利率99.85%。"
+      },
+      {
+        "source_id": "S08",
+        "text": "3月13日收盘最新消息，海德股份5日内股价下跌2.33%，截至15时收盘，该股报5.550元跌1.96%。"
+      },
+      {
+        "source_id": "S08",
+        "text": "毛利率69.78%。"
+      },
+      {
+        "source_id": "S08",
+        "text": "3月18日收盘消息，收盘于18.720元，成交额1.19亿元。"
+      },
+      {
+        "source_id": "S08",
+        "text": "毛利率65.64%。"
+      },
+      {
+        "source_id": "S08",
+        "text": "南方财富网3月18日讯，芯能科技股价涨0.54%，截至收盘报10.430元，市值52.15亿元。"
+      },
+      {
+        "source_id": "S09",
+        "text": "1）多晶硅环节盈利最好，其次为金刚线环节，毛利率基本保持50%左右；"
+      },
+      {
+        "source_id": "S09",
+        "text": "2）生产设备及逆变器的毛利率，基本可以保持30%左右。"
+      },
+      {
+        "source_id": "S09",
+        "text": "3）电池片、组件、银浆、支架，毛利率水平基本在10%~15%之间，是毛利率最差的几个环节。"
+      },
+      {
+        "source_id": "S09",
+        "text": "重要时刻佩洛西等11人突然消失 赫格塞思侥幸逃过一劫"
+      },
+      {
+        "source_id": "S10",
+        "text": "统计数据显示， 2018年-2020年100多家光伏上市公司整体毛利率分别为22.55%、23.96%、23.24%，2020年盈利水平略有下降。"
+      },
+      {
+        "source_id": "S10",
+        "text": "具体到企业层面，2020年，46家光伏上市公司综合毛利率实现正增长，其中5家毛利率增长在10个百分点以上，光伏玻璃双雄福莱特、信义光能位列其中，前者位列毛利率涨幅榜第一位。"
+      },
+      {
+        "source_id": "S10",
+        "text": "另据统计，有56家光伏上市公司综合毛利率在“23.24%”这一平均水平线之上，19家企业毛利率在40%这一高水平线之上，前三名为协鑫新能源毛利率63.45%、金博股份毛利率62.59%、江山控股毛利率62.32%。"
+      },
+      {
+        "source_id": "S10",
+        "text": "2020年有59家企业毛利率出现下降，其中7家毛利率降幅在10个百分点以上，7家企业毛利率仅为个位数。"
+      },
+      {
+        "source_id": "S11",
+        "text": "本周年报抢先看：硅料龙头通威股份净赚82亿，这10家公司净利增长超10倍"
+      },
+      {
+        "source_id": "S11",
+        "text": "5家千亿市值公司业绩增长翻倍。"
+      },
+      {
+        "source_id": "S11",
+        "text": "根据计划，将多达2064家公司披露"
+      },
+      {
+        "source_id": "S11",
+        "text": "这些公司中有1186家公司已提前披露了业绩预告"
+      },
+      {
+        "source_id": "S11",
+        "text": "同比增长101.68%"
+      },
+      {
+        "source_id": "S11",
+        "text": "同比增长208.88%"
+      },
+      {
+        "source_id": "S12",
+        "text": "2022年，财务数据很好，实现收入1424亿，同比增长119%，扣非净利润265.5亿，同比增长217%。"
+      },
+      {
+        "source_id": "S12",
+        "text": "通威的业务包括两大块饲料业务和光伏业务，光伏业务收入1098亿，占比已经达到了77%，可以说是名副其实的光伏新能源龙头企业了。"
+      },
+      {
+        "source_id": "S12",
+        "text": "从上图我们可以看到，通威的各项业务都表现很好，饲料销量同比增长30%，"
+      },
+      {
+        "source_id": "S12",
+        "text": "电池同比增长37%，尤其是高纯晶硅和组件业务。"
+      },
+      {
+        "source_id": "S12",
+        "text": "高纯晶硅销量从2021年的10.7万吨，增长到2022年的25.6万吨，同比增长138%，组件销售量7.9GW，同比增长226%，"
+      },
+      {
+        "source_id": "S12",
+        "text": "电池实现销售量48GW，同比增长37%。"
+      },
+      {
+        "source_id": "S13",
+        "text": "硅料龙头年报“豪赚”超80亿！"
+      },
+      {
+        "source_id": "S13",
+        "text": "自去年9月最高点迄今累计最大跌幅接近35%"
+      },
+      {
+        "source_id": "S13",
+        "text": "通威股份今日盘后最新公告称，受益于高纯晶硅产品供不应求，2021年全年净利预增122%-136%。"
+      },
+      {
+        "source_id": "S13",
+        "text": "公司Q4净利环比下降14%-31%"
+      },
+      {
+        "source_id": "S13",
+        "text": "截至今日，6个月以内共有33家机构对通威股份的2021年全年业绩作出预测，其中归母净利润预估均值为82.17亿元，预估最大值为92.23亿元；"
+      },
+      {
+        "source_id": "S13",
+        "text": "盘后公告公布的实际预测值为80-85亿元，基本符合预期"
+      },
+      {
+        "source_id": "S14",
+        "text": "2025年光伏电池组件企业业绩全军覆没，最高亏损约100亿！"
+      },
+      {
+        "source_id": "S14",
+        "text": "近日，多家光伏电池组件上市公司已经发布了2025年业绩预告，从预告的情况来看，"
+      },
+      {
+        "source_id": "S14",
+        "text": "其中，隆基绿能2025年净利润预计亏损60-65亿元。"
+      },
+      {
+        "source_id": "S14",
+        "text": "晶澳科技预计亏损45-48亿元。"
+      },
+      {
+        "source_id": "S14",
+        "text": "爱旭股份预计亏损12-19亿元。"
+      },
+      {
+        "source_id": "S14",
+        "text": "钧达股份预计亏损12-15亿元。"
+      },
+      {
+        "source_id": "S15",
+        "text": "2024年实现营业收入188.87亿元，同比增长116.26%；"
+      },
+      {
+        "source_id": "S15",
+        "text": "实现归母净利润27.64亿元，同比增长69.18%。"
+      },
+      {
+        "source_id": "S15",
+        "text": "2025年一季度，捷佳伟创业绩继续稳定增长，实现总营收40.99亿元，同比增长58.95%；"
+      },
+      {
+        "source_id": "S15",
+        "text": "实现归母净利润7.08亿元，同比增长22.42%。"
+      },
+      {
+        "source_id": "S15",
+        "text": "随着光伏企业2024年报的公布，华夏能源网（公众号hxny3060）统计发现，一批光伏设备、辅材企业实现了50%以上的盈利逆势增长。"
+      },
+      {
+        "source_id": "S15",
+        "text": "盈利最高增幅达237%"
+      },
+      {
+        "source_id": "S16",
+        "text": "本文将对隆基、晶澳、天合三家公司20年业绩和2021年一季度业绩进行简要分析。"
+      },
+      {
+        "source_id": "S16",
+        "text": "根据 CPIA的统计，2020年全球光伏新增装机量130GW，同比增长13.04%。"
+      },
+      {
+        "source_id": "S16",
+        "text": "不到20%的行业增速其实并不乐观，但在此背景下，个别头部企业仍能保持50%以上的增长实属不易。"
+      },
+      {
+        "source_id": "S16",
+        "text": "上述三家公司，最先公布20年年报的是"
+      },
+      {
+        "source_id": "S16",
+        "text": "如上表所示，抛开四季度，三家公司前三季度分别实现77.11%、99.76%和82.52%的利润增长，但第四季度隆基和晶澳环比纷纷下滑，只有天合一家实现正增长。"
+      },
+      {
+        "source_id": "S16",
+        "text": "现在我们再来看这个问题，如果我们细看公司的利润表可发现，其实3个多亿的资产减值对隆基影响远没有那么深远，公司通过投资收益很容易就可以将这部分损失弥补过去，真正影响隆基四季度业绩的主要原因还是毛利率的大幅下降以及三费水平的提高，更准确地说是销售费用的大幅提升，包括质保金、职工薪酬等。"
+      },
+      {
+        "source_id": "S18",
+        "text": "（N型致密料）市场均价40.5元/千克，生产成本42.8元/千克，单公斤净利为-2.3元。"
+      },
+      {
+        "source_id": "S18",
+        "text": "（N型致密料）市场平均现金成本为34.3元/千克，生产成本为42.8元/千克，完全成本为46.1元/千克。"
+      },
+      {
+        "source_id": "S18",
+        "text": "期货PS2711合约交易手续费为成交金额的万分之一，日内平今仓手续费为万分之二点五，最小开仓5手、平仓1手，单日开仓上限200手。"
+      },
+      {
+        "source_id": "S18",
+        "text": "碳酸锂期货LC2711合约交易手续费及日内平今仓手续费均为成交金额的万分之零点八，最小开仓2手、平仓1手，单日开仓上限800手。"
+      },
+      {
+        "source_id": "S18",
+        "text": "市场N型致密料38-43元/千克；"
+      },
+      {
+        "source_id": "S18",
+        "text": "N型颗粒硅37-41元/千克；"
+      },
+      {
+        "source_id": "S19",
+        "text": "加拿大9月批发库存年率%"
+      },
+      {
+        "source_id": "S20",
+        "text": "硅片：15家样本企业：产量：中国（月）"
+      },
+      {
+        "source_id": "S20",
+        "text": "硅片：15家样本企业：产能利用率：中国（月）"
+      },
+      {
+        "source_id": "S20",
+        "text": "7月2日，三项光伏领域强制性国家标准正式批准发布，围绕硅料、"
+      },
+      {
+        "source_id": "S21",
+        "text": "2026年11月11日硅片价格显示，183N硅片报0.9-0.95元/片，210RN硅片报0.98-1元/片，210N硅片报1.08-1.13元/片。"
+      },
+      {
+        "source_id": "S21",
+        "text": "截至11月6日，N型210R硅片市场均价1.015元/片，生产成本升至1.264元/片，单片净利为-0.249元，较10月中下旬成本1.256元/片、净利-0.241元小幅走弱。"
+      },
+      {
+        "source_id": "S21",
+        "text": "10月硅片产量54.09GW，环比降0.31%，同比降10.85%，产能利用率54.7%，环比降0.2%；"
+      },
+      {
+        "source_id": "S21",
+        "text": "预计11月排产54.35GW，环比增0.49%，产能利用率约54.9%。"
+      },
+      {
+        "source_id": "S21",
+        "text": "9月硅片出口量107936.51万片，环比增47.22%，出口均价0.17美元/片；"
+      },
+      {
+        "source_id": "S21",
+        "text": "进口量16498.41万片，环比增20.16%，进口均价0.13美元/片。"
+      },
+      {
+        "source_id": "S22",
+        "text": "价格0.9-0.95元/片，210RN"
+      },
+      {
+        "source_id": "S22",
+        "text": "价格0.98-1元/片，210N"
+      },
+      {
+        "source_id": "S22",
+        "text": "价格1.08-1.13元/片。"
+      },
+      {
+        "source_id": "S22",
+        "text": "产能利用率环比降0.2%】2026年10月"
+      },
+      {
+        "source_id": "S22",
+        "text": "国内企业产能利用率在54.7%，与9月相比降0.2%。"
+      },
+      {
+        "source_id": "S23",
+        "text": "】210单/双面TOPcon分布式组件0.71-0.735元/瓦。"
+      },
+      {
+        "source_id": "S23",
+        "text": "210R双面TOPcon分布式组件0.695-0.725元/瓦；"
+      },
+      {
+        "source_id": "S23",
+        "text": "210R双面BC分布式组件0.74-0.77元/瓦。"
+      },
+      {
+        "source_id": "S24",
+        "text": "大EPC定标均价2.85元/瓦，环比增1.1%，小EPC定标均价1.27元/瓦，环比降2.3%。"
+      },
+      {
+        "source_id": "S25",
+        "text": "大EPC定标均价2.85元/瓦，环比增1.1%，小EPC定标均价1.27元/瓦，环比降2.3%。"
+      },
+      {
+        "source_id": "S24",
+        "text": "【光伏项目招标情况】据Mysteel 不完全统计：11月2日-11月8日光伏招标项目33个，项目规模合计4410MW，环比降32.3%。"
+      },
+      {
+        "source_id": "S25",
+        "text": "【光伏项目招标情况】据Mysteel 不完全统计：11月2日-11月8日光伏招标项目33个，项目规模合计4410MW，环比降32.3%。"
+      },
+      {
+        "source_id": "S24",
+        "text": "EPC招标项目21个，招标规模4198MW，环比增314%。"
+      },
+      {
+        "source_id": "S25",
+        "text": "EPC招标项目21个，招标规模4198MW，环比增314%。"
+      }
+    ]
+  }
+}

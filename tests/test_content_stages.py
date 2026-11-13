@@ -317,3 +317,32 @@ def test_visual_and_produce_only_plan(runtime: TaskRuntime, factory, tmp_path) -
     assert produce.output["job_id"] == f"task-{task_id}"
     assert "渲染" in produce.output["not_done"]
     assert "render_job" in produce.output["next_step"]
+
+
+def test_stage_dir_does_not_overwrite_another_run_with_the_same_task_id(
+    runtime: TaskRuntime, factory, tmp_path
+) -> None:
+    """`task-<id>` 只在一个库里唯一：换库跑同一个 id 不能盖掉上一份脚本草稿。"""
+    import json
+
+    task_id, _ = _seed_task(factory, with_report=True, confirmed=True, topic=True)
+    executor = AgentExecutor(session_factory=factory, artifacts_root=tmp_path)
+    claim = _claim(runtime, task_id, "content.script")
+
+    # 先放一份"别人的"底稿：目标与当前任务不同
+    digest_dir = tmp_path / f"task-{task_id}"
+    digest_dir.mkdir(parents=True, exist_ok=True)
+    (digest_dir / "digest.json").write_text(
+        json.dumps({"objective": "另一次研究的题目"}, ensure_ascii=False), encoding="utf-8"
+    )
+
+    stage = executor._stage_dir(claim)
+    assert stage.parent.name.startswith(f"task-{task_id}-")
+    assert stage.name == "content"
+
+    # 目标一致时仍落在原目录，不因为指纹到处建新文件夹
+    (digest_dir / "digest.json").write_text(
+        json.dumps({"objective": executor._task_objective(task_id)}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    assert executor._stage_dir(claim).parent.name == f"task-{task_id}"

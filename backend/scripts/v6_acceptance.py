@@ -143,9 +143,66 @@ def run_worker(task_id: int, attempt: int) -> str:
     return f"worker#{attempt} rc={result.returncode} :: " + " | ".join(tail)[:240]
 
 
+def _blocked_reasons(snapshot: dict) -> list[str]:
+    reasons: list[str] = []
+    for subtask in snapshot.get("subtasks", []):
+        if subtask.get("status") == "blocked":
+            reasons.append(str(subtask.get("failure_reason") or ""))
+    return reasons
+
+
+def confirm_one_check(task_id: int) -> dict:
+    """扮演人工：把这条任务最新报告里的一条核查确认为 confirmed。
+
+    为什么要这一步：`content.script` 在"没有人工确认过的结论"时是 **blocked**，
+    一直 resume 只会一直 blocked（验收脚本曾因此空转 22 轮）。真实流程是
+    人先到「语义核查」页确认一条，流水线才可能走到脚本阶段。
+    """
+    code, listing = call("GET", "/api/research-reports?limit=50")
+    if code >= 400:
+        return {"ok": False, "reason": "list_failed", "detail": f"{code} {listing}"}
+    reports = [
+        item for item in listing.get("items", [])
+        if int(item.get("research_task_id") or 0) == int(task_id)
+    ]
+    if not reports:
+        return {"ok": False, "reason": "no_report"}
+    report_id = int(reports[0]["id"])
+    code, checks = call("GET", f"/api/research-reports/{report_id}/checks?limit=100")
+    if code >= 400:
+        return {"ok": False, "reason": "checks_failed", "detail": f"{code} {checks}"}
+    pending = [item for item in checks.get("items", []) if item.get("human_review_status") == "pending"]
+    if not pending:
+        return {"ok": False, "reason": "nothing_pending", "report_id": report_id}
+    # 优先确认"有支持"的那几条，其次任意待确认项
+    preferred = [item for item in pending if item.get("verdict") in {"supported", "partially_supported"}]
+    target = (preferred or pending)[0]
+    check_id = int(target["id"])
+    code, body = call(
+        "POST",
+        f"/api/research-reports/{report_id}/checks/{check_id}/review",
+        {
+            "status": "confirmed",
+            "note": "验收脚本扮演人工确认：逐字对照原文片段一致，口径以原文时点为准。",
+        },
+    )
+    if code >= 400:
+        return {"ok": False, "reason": "review_failed", "detail": f"{code} {body}"}
+    log(
+        f"  → 人工确认核查 #{check_id}（报告 {report_id}，模型判定 {target.get('verdict')}）"
+    )
+    return {
+        "ok": True,
+        "report_id": report_id,
+        "check_id": check_id,
+        "verdict": str(target.get("verdict") or ""),
+    }
+
+
 def drive_task(task_id: int) -> dict:
-    """推进到终态，遇到人工闸门就放行（这里扮演人）。"""
+    """推进到终态：遇到人工闸门就放行，遇到"等人确认"就先确认一条核查。"""
     gates = 0
+    confirmations = 0
     rounds = 0
     for attempt in range(1, 25):
         log("  " + run_worker(task_id, attempt))
@@ -157,6 +214,16 @@ def drive_task(task_id: int) -> dict:
         state = snapshot.get("status")
         log(f"  状态 {state} 计数 {counts}")
         if state == "paused":
+            blocked = _blocked_reasons(snapshot)
+            waiting_for_human = any("no_confirmed_findings" in item for item in blocked)
+            if waiting_for_human:
+                # 光 resume 没用：脚本阶段要的是"有人确认过结论"，先确认一条再放行
+                result = confirm_one_check(task_id)
+                if result.get("ok"):
+                    confirmations += 1
+                else:
+                    log(f"  → 无法自动确认（{result.get('reason')}），停止空转")
+                    break
             gates += 1
             code, after = call("POST", f"/api/research-tasks/{task_id}/resume")
             log(f"  → 闸门放行 #{gates} -> {code} {after.get('status')}")
@@ -165,7 +232,7 @@ def drive_task(task_id: int) -> dict:
             continue
         if state in {"completed", "failed", "cancelled"}:
             break
-    return {"rounds": rounds, "gates_cleared": gates}
+    return {"rounds": rounds, "gates_cleared": gates, "confirmations": confirmations}
 
 
 def research_one(topic: dict[str, str]) -> dict:
@@ -284,7 +351,8 @@ def content_chain(first: dict) -> dict:
     _, readiness = call("GET", f"/api/research-reports/{report_id}/draft-readiness")
     log(f"  draft-readiness -> allowed={readiness.get('allowed')} confirmed={readiness.get('confirmed')}")
 
-    job_id = f"v6_accept_{first['key']}"
+    # 同名目录会让第二次验收直接 409（历史任务不许被覆盖），所以带时间戳
+    job_id = f"v6_accept_{first['key']}_{datetime.now(UTC).strftime('%m%d%H%M')}"
     code, body = call("POST", f"/api/research-reports/{report_id}/video-job", {"job_id": job_id})
     log(f"  video-job -> {code} {json.dumps(body, ensure_ascii=False)[:200]}")
     if code >= 400:

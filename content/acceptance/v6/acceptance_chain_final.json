@@ -1,0 +1,346 @@
+{
+  "started_at": "2026-11-13T17:14:11.457012+00:00",
+  "topics": [
+    {
+      "key": "chain",
+      "kind": "产业链研究",
+      "title": "光伏产业链利润为什么会从中游流向上下游两端",
+      "ok": true,
+      "task_id": 1,
+      "task_status": "completed",
+      "sources": 25,
+      "evidence": 440,
+      "report_id": 1,
+      "report_summary": "光伏链条的利润不在加工本身，而在\"上游资源+扩产卖方\"两端。硅料成本里工业硅占39%，为最大单项[S01]；2022年硅料售价24万元/吨而成本仅5.9万元/吨，价差直接变成通威的265.5亿扣非净利[S12]。行业13环节毛利率呈\"多晶硅>金刚线约50%>设备逆变器约30%>电池组件银浆支架10%-15%\"的梯度[S09]。当产能突破1100GW、约为全球需求570-630GW的两倍[S14]，硅料与硅片单公斤/单片净利转负[S18][S22]，利润被挤到设备辅材这一\"卖铲子\"环节[S15]。",
+      "findings": 6,
+      "limitations": "本稿的摘要与结论由模型（deepseek/deepseek-flash）基于下方列出的证据生成，每条结论都挂了来源编号；但**模型结论不等于事实核查结论**，引用前必须回原文核对口径与时点；另有 99 条说法只有单一来源，引用前应另找佐证；其中 11 个数字被至少两个来源同时说到（仅表示一致，不等于数据正确）",
+      "planning": {
+        "planner": "model",
+        "model_used": true,
+        "query_count": 36,
+        "subtask_count": 6,
+        "degraded_reason": ""
+      },
+      "checks_summary": {
+        "research_report_id": 1,
+        "total": 6,
+        "by_verdict": {
+          "insufficient_evidence": 3,
+          "partially_supported": 3
+        },
+        "by_human_review": {
+          "pending": 5,
+          "confirmed": 1
+        },
+        "model_cost_cny": "0.039438",
+        "model_calls": 6,
+        "note": "模型判定与人工复核是两条独立状态线；这里只有计数，判断依据看明细接口"
+      },
+      "checks_sample": [
+        {
+          "id": 1,
+          "verdict": "insufficient_evidence",
+          "claim": "硅料成本中工业硅等原材料占41%（工业硅单项39%），是降本的第一抓手",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 2,
+          "verdict": "partially_supported",
+          "claim": "2022年多晶硅售价24万元/吨对成本5.9万元/吨，超额利润来自硅料紧缺而非加工效率",
+          "supporting": [
+            "扣非净利润265.5亿，同比增长217%"
+          ],
+          "human": "confirmed"
+        },
+        {
+          "id": 3,
+          "verdict": "insufficient_evidence",
+          "claim": "13环节毛利率呈梯度：多晶硅最好、金刚线约50%、设备逆变器约30%、电池组件银浆支架仅10%-15%",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 4,
+          "verdict": "partially_supported",
+          "claim": "产能约1100GW对应全球需求570-630GW，过剩约两倍，直接导致2025年组件电池企业全面亏损",
+          "supporting": [
+            "2025年光伏电池组件企业业绩全军覆没，最高亏损约100亿！",
+            "光伏电池组件 行业全军覆没，没有一家能够实现盈利的。"
+          ],
+          "human": "pending"
+        },
+        {
+          "id": 5,
+          "verdict": "insufficient_evidence",
+          "claim": "过剩压价已使硅料单公斤净利-2.3元、硅片单片净利约-0.27元，硅片产能利用率仅约51%-55%",
+          "supporting": [],
+          "human": "pending"
+        },
+        {
+          "id": 6,
+          "verdict": "partially_supported",
+          "claim": "设备与辅材企业2024年逆势增收增利，因其客户是扩产方，收入滞后于产能投资",
+          "supporting": [
+            "2024年实现营业收入188.87亿元，同比增长116.26%；实现归母净利润27.64亿元，同比增长69.18%。",
+            "一批光伏设备、辅材企业实现了50%以上的盈利逆势增长。"
+          ],
+          "human": "pending"
+        }
+      ],
+      "subtasks": [
+        {
+          "sequence": 1,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": "rules"
+        },
+        {
+          "sequence": 2,
+          "task_type": "topic.discover",
+          "status": "succeeded",
+          "generated_by": "rules"
+        },
+        {
+          "sequence": 3,
+          "task_type": "research.plan",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 4,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 5,
+          "task_type": "research.extract",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 6,
+          "task_type": "research.analyze",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 7,
+          "task_type": "research.synthesize",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 8,
+          "task_type": "verify.claims",
+          "status": "succeeded",
+          "generated_by": "model+rules"
+        },
+        {
+          "sequence": 9,
+          "task_type": "content.script",
+          "status": "succeeded",
+          "generated_by": "model"
+        },
+        {
+          "sequence": 10,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        },
+        {
+          "sequence": 11,
+          "task_type": "research.collect",
+          "status": "succeeded",
+          "generated_by": null
+        }
+      ],
+      "rounds": 6,
+      "gates_cleared": 3,
+      "confirmations": 1
+    }
+  ],
+  "content": {
+    "ok": true,
+    "job_id": "v6_accept_chain_11131719",
+    "check_id": 1,
+    "readiness": {
+      "report_id": 1,
+      "total_checks": 6,
+      "confirmed": 2,
+      "by_human_review": {
+        "confirmed": 2,
+        "pending": 4
+      },
+      "by_verdict": {
+        "insufficient_evidence": 3,
+        "partially_supported": 3
+      },
+      "allowed": true,
+      "reason": "",
+      "note": "有 2 条结论已人工确认，可以进入成稿；未确认的结论不会进稿。",
+      "rule": "只有 human_review_status=confirmed 的结论可以进入成稿"
+    },
+    "job": {
+      "job_id": "v6_accept_chain_11131719",
+      "path": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719",
+      "stage": "storyboard_ready",
+      "next_stage": "render",
+      "blocked": false,
+      "blocked_reason": "",
+      "next_step": "分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。先人工看一遍分镜，然后跑 python -m backend.scripts.render_job --job v6_accept_chain_11131719 --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。",
+      "report_id": 1,
+      "evidence_count": 440,
+      "source_count": 23,
+      "files": [
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\research\\report.md",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\research\\evidence.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\research\\sources.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\job.json",
+        "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\HANDOFF.md"
+      ],
+      "outline": {
+        "job_id": "v6_accept_chain_11131719",
+        "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\storyboard\\storyboard.csv",
+        "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\storyboard\\OUTLINE.md",
+        "shots": [
+          {
+            "shot_id": "sh01",
+            "seconds": 4.0,
+            "narration": "这一条讲的是：请沿光伏产业链拆解上游硅料、中游硅片电池组件、下…。下面每一句话都能追到原文。",
+            "subtitle": "请沿光伏产业链拆解上游硅料、中游硅片…",
+            "source_id": "",
+            "number": ""
+          },
+          {
+            "shot_id": "sh02",
+            "seconds": 4.5,
+            "narration": "2022年，财务数据很好，实现收入1424亿，同比增长119%，扣非净利润265.5亿，同比增长217%。",
+            "subtitle": "2022年，财务数据很好，",
+            "source_id": "S11",
+            "number": "1424亿"
+          },
+          {
+            "shot_id": "sh03",
+            "seconds": 5.0,
+            "narration": "以上 1 个数字来自 23 份资料（S11）。这只是资料汇编，不是投资建议。",
+            "subtitle": "资料汇编 · 不是投资建议",
+            "source_id": "",
+            "number": ""
+          }
+        ],
+        "shot_count": 3,
+        "total_seconds": 13.5,
+        "frames": 405,
+        "source_ids": [
+          "S11"
+        ],
+        "warnings": [
+          "只引用了 23 份资料里的 1 份"
+        ],
+        "generated_by": "rules",
+        "ok": true,
+        "chain": {
+          "ok": false,
+          "reason": "not_a_chain_story",
+          "message": "结论覆盖的产业链环节只有 0 段（至少 2 段才画示意图）"
+        }
+      }
+    },
+    "render": {
+      "status": "done",
+      "stage": "rendered",
+      "output": null,
+      "qc_failed": []
+    },
+    "render_rc": 0
+  },
+  "costs": {
+    "model_calls": 5,
+    "model_tokens": 51017,
+    "model_cost_cny": "0.168163",
+    "tool_calls": 0,
+    "tool_cost_cny": "0",
+    "task_cost_cny": "0.168163",
+    "by_model": [
+      {
+        "key": "deepseek/deepseek-flash",
+        "calls": 5,
+        "tokens": 51017,
+        "cost_cny": "0.168163"
+      }
+    ],
+    "by_tool": [],
+    "by_day": [
+      {
+        "key": "2026-11-13",
+        "calls": 5,
+        "tokens": 51017,
+        "cost_cny": "0.168163"
+      }
+    ],
+    "pricing_unknown_calls": 0,
+    "note": "成本按已配置价目与实际 token 用量计算。"
+  },
+  "database": {
+    "tables": {
+      "sources": 25,
+      "evidence": 440,
+      "research_reports": 1,
+      "finding_checks": 6,
+      "model_calls": 5,
+      "research_tasks": 1,
+      "research_subtasks": 11,
+      "task_events": 58
+    },
+    "model_calls": [
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.plan",
+        500,
+        2170,
+        0.019553
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.analyze",
+        14492,
+        1838,
+        0.046528
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.synthesize",
+        14524,
+        1638,
+        0.044892
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "research.verify",
+        9640,
+        2219,
+        0.039439
+      ],
+      [
+        "deepseek",
+        "deepseek-flash",
+        "content.script",
+        2550,
+        1446,
+        0.017751
+      ]
+    ],
+    "model_cost_total_cny": "0.168163",
+    "task_cost_spent_cny": "0.168163",
+    "api_task_cost_cny": "0.168163",
+    "accounting_ok": true,
+    "secret_leaks": 0
+  },
+  "finished_at": "2026-11-13T17:21:51.686584+00:00"
+}

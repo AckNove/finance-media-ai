@@ -1,0 +1,86 @@
+{
+ "job_id": "v6_accept_chain_11131719",
+ "created_at": "2026-11-13T17:19:16.651273+00:00",
+ "stage": "storyboard_ready",
+ "next_stage": "render",
+ "blocked": false,
+ "blocked_reason": "",
+ "model_provider": "deepseek",
+ "outline": {
+  "job_id": "v6_accept_chain_11131719",
+  "storyboard": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\storyboard\\storyboard.csv",
+  "notes": "C:\\Users\\25803\\finance-media-ai\\content\\jobs\\v6_accept_chain_11131719\\storyboard\\OUTLINE.md",
+  "shots": [
+   {
+    "shot_id": "sh01",
+    "seconds": 4.0,
+    "narration": "这一条讲的是：请沿光伏产业链拆解上游硅料、中游硅片电池组件、下…。下面每一句话都能追到原文。",
+    "subtitle": "请沿光伏产业链拆解上游硅料、中游硅片…",
+    "source_id": "",
+    "number": ""
+   },
+   {
+    "shot_id": "sh02",
+    "seconds": 4.5,
+    "narration": "2022年，财务数据很好，实现收入1424亿，同比增长119%，扣非净利润265.5亿，同比增长217%。",
+    "subtitle": "2022年，财务数据很好，",
+    "source_id": "S11",
+    "number": "1424亿"
+   },
+   {
+    "shot_id": "sh03",
+    "seconds": 5.0,
+    "narration": "以上 1 个数字来自 23 份资料（S11）。这只是资料汇编，不是投资建议。",
+    "subtitle": "资料汇编 · 不是投资建议",
+    "source_id": "",
+    "number": ""
+   }
+  ],
+  "shot_count": 3,
+  "total_seconds": 13.5,
+  "frames": 405,
+  "source_ids": [
+   "S11"
+  ],
+  "warnings": [
+   "只引用了 23 份资料里的 1 份"
+  ],
+  "generated_by": "rules",
+  "ok": true,
+  "chain": {
+   "ok": false,
+   "reason": "not_a_chain_story",
+   "message": "结论覆盖的产业链环节只有 0 段（至少 2 段才画示意图）"
+  }
+ },
+ "report": {
+  "report_id": 1,
+  "research_task_id": 1,
+  "title": "结论整合：请沿光伏产业链拆解上游硅料、中游硅片电池组件、下游电站与辅材设备的成本结构与价值分配：各环节的钱是怎么赚的、当前瓶颈在哪、利润为什么会在不同环节之间迁移？请给出可核对的公开数据与来源。",
+  "verification_status": "unverified",
+  "sha256": "5316d30f92fc315da3620aa0437b86bd400085dee71045485eb856e6fe07d023"
+ },
+ "counts": {
+  "evidence": 440,
+  "sources": 23,
+  "confirmed_findings": 2,
+  "draft_evidence": 1
+ },
+ "draft_gate": {
+  "rule": "只有 human_review_status=confirmed 的结论可以进入成稿",
+  "confirmed_findings": [
+   0,
+   1
+  ],
+  "check_ids": [
+   1,
+   2
+  ]
+ },
+ "narrative_style": "AK（accessible-explainer + investigative-storytelling + ak-signature）",
+ "not_done": [
+  "script/script.md（分镜已就位，但正式脚本仍需模型或人工）",
+  "assets_manifest.csv（素材必须先登记授权；纯色底镜头不需要）",
+  "audio/ 与 output/（跑 render_job 才会生成）"
+ ]
+}

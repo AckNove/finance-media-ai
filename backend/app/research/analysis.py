@@ -535,9 +535,11 @@ def analyze(
         provider=request.provider,
         model=request.model,
         model_call_id=getattr(record, "id", None),
-        prompt_tokens=int(getattr(record, "prompt_tokens", 0) or 0),
-        completion_tokens=completion_tokens,
-        cost_cny=float(getattr(record, "cost_cny", 0.0) or 0.0),
+        # 撞上限重试的每一次都是真花了钱，按累加值记账（只记最后一次会让任务账
+        # 少于模型账单）。最后一次成功的那次才是 model_call_id 指的那条审计行。
+        prompt_tokens=int(spent["prompt_tokens"]),
+        completion_tokens=int(spent["completion_tokens"]),
+        cost_cny=round(float(spent["cost_cny"]), 6),
         dropped=dropped,
         framework_kind=str(getattr(framework, "kind", "") or ""),
         checklist=framework.checklist([item.as_dict() for item in findings]) if framework else {},

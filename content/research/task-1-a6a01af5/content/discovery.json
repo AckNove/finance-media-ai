@@ -1,0 +1,61 @@
+{
+  "objective": "请沿光伏产业链拆解上游硅料、中游硅片电池组件、下游电站与辅材设备的成本结构与价值分配：各环节的钱是怎么赚的、当前瓶颈在哪、利润为什么会在不同环节之间迁移？请给出可核对的公开数据与来源。",
+  "framework": "chain",
+  "framework_title": "产业链研究",
+  "questions": [
+    {
+      "key": "upstream",
+      "title": "上游",
+      "question": "上游提供什么、议价能力如何",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "midstream",
+      "title": "中游",
+      "question": "中游做什么加工、附加值在哪",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "downstream",
+      "title": "下游",
+      "question": "下游是谁、需求变化的来源是什么",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "raw_materials",
+      "title": "核心原材料",
+      "question": "关键原材料是什么、占成本多少、供给是否刚性",
+      "allowed_kinds": [
+        "fact"
+      ]
+    },
+    {
+      "key": "equipment",
+      "title": "关键设备",
+      "question": "卡点在哪些设备/工艺上，谁能供",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "tech_routes",
+      "title": "技术路线",
+      "question": "有哪几条路线在竞争，谁在押注哪条",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    }
+  ],
+  "note": "这一阶段只出研究框架，没有检索、没有调用模型"
+}
