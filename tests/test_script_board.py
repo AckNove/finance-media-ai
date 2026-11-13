@@ -162,6 +162,34 @@ def test_plan_shots_and_storyboard_agree_on_shot_count(tmp_path: Path) -> None:
     assert len(plan_shots(draft)) == len(board.shots)
 
 
+def test_capacity_units_also_become_data_cards(tmp_path: Path) -> None:
+    """光伏/储能类研究满篇 GW、千瓦时——漏掉这些单位，一份报告一张卡都做不出来。"""
+    draft = ScriptDraft(
+        title="光伏",
+        hook="先看装机。",
+        lines=(
+            ScriptLine(
+                text="2024年全球光伏组件产能约920GW。",
+                role="evidence",
+                source_ids=("S01",),
+                numbers=("920GW",),
+            ),
+            ScriptLine(
+                text="新增装机对应的用电量约1200千瓦时。",
+                role="evidence",
+                source_ids=("S02",),
+                numbers=("1200千瓦时",),
+            ),
+        ),
+    )
+    result = storyboard_from_draft(draft, job_root=tmp_path)
+
+    assert result["card_count"] == 2
+    board = (tmp_path / "storyboard" / "storyboard.csv").read_text(encoding="utf-8")
+    assert "920GW" in board
+    assert "1200千瓦时" in board
+
+
 def test_script_storyboard_accepts_a_script_row(tmp_path: Path) -> None:
     result = script_storyboard(_script_row(), job_root=tmp_path)
 

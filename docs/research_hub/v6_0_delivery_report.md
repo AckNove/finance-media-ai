@@ -796,7 +796,7 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
 
 `tests/test_report_pipeline.py` 6 例：卡在未确认时不许继续、确认一条后允许继续、
 运行中的任务不需要人推、失败任务把原因带出来而不是假装能恢复、没有关联任务的报告如实说明、
-未知报告 404。全量 `pytest -o addopts="" -q` → **1143 passed, 2 skipped, 1 warning**。
+未知报告 404。全量 `pytest -o addopts="" -q` → **1144 passed, 2 skipped, 1 warning**。
 接口数 71 → **73 个操作**（`/api/system/daily` 与 `/api/research-reports/{{id}}/pipeline`），
 启动自检双向核对仍然 8/8 通过。
 
@@ -830,7 +830,10 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
 
 1. **句子一个字都不改**：脚本是模型逐句核对过来源与数字的产物，排分镜只负责"怎么上屏"。
 2. **只认带单位的量上卡面**：`1.52%`、`4.28 万亿元` 这类能做数据卡；"2024 年第四季度"里的
-   `2024` 不做卡（日历数字当主数字会误导，这是前几轮踩过的坑）。
+   `2024` 不做卡（日历数字当主数字会误导，这是前几轮踩过的坑）。单位表与规则分镜
+   **共用一套**（`video/outline.py` 的 `_UNITS`），这一轮补上了 `GW/MW/GWh/MWh/kWh/
+   千瓦时/千瓦/兆瓦/吨`——实测拿一份真实光伏报告跑，补之前 4 个镜头**零数据卡**，
+   补之后同一份稿子出 1 张卡（`920GW`）。
 3. **来源跟着句子走**：每镜的 `source_ids` 落到分镜表的可追溯列，内容质检靠它判"这一镜能不能回溯"。
 4. **时间轴按整帧累加**：`plan_shots` 给的是 `字数/4.2` 这类浮点秒（如 11.43 秒），直接写进分镜表
    会被 `load_storyboard` 判成 `bad_time`（时间必须落在整数帧上）。所以先换算成帧数累加，
@@ -860,8 +863,20 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
 `tests/test_video_handoff.py` 新增 3 例：脚本在手时按脚本排（并断言规则分镜的 `OUTLINE.md`
 不出现）、脚本坏掉时如实报 `empty_script` 而不是悄悄换规则分镜、接口层真的取了库里最新的脚本。
 
-全量 `pytest -o addopts="" -q` → **1143 passed, 2 skipped, 1 warning**（唯一 warning 仍是
+全量 `pytest -o addopts="" -q` → **1144 passed, 2 skipped, 1 warning**（唯一 warning 仍是
 `agent_runs↔research_subtasks` 双向外键环，已记录为设计内风险）。
+
+### §26.4b 拿真实研究产物实测一次
+
+演示库（真实跑过的那份光伏主题的副本，报告 1 + 6 条核查）上：
+
+1. 库里只有 1 条确认结论 → 规则版草稿 1 句 → 分镜**如实拒绝**（`too_few_lines`），
+   `storyboard/` 保持为空，没有被偷偷换成规则分镜；
+2. 在副本上再确认一条（模拟人在核查页点第二下）→ 草稿 2 句 → 分镜排出来：
+   **4 个镜头 / 31.5 秒 / 1 张数据卡**，第一句脚本原样出现在 `storyboard.csv` 里，
+   `FROM_SCRIPT.md` 已写出，`job.json.outline.source == "script"`、`blocked == false`。
+
+整个验证过程只读演示库副本、不渲染、不调模型、不联网。
 
 ### §26.5 这一步之后仍然没做的
 
