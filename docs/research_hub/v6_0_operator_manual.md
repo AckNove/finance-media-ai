@@ -215,6 +215,18 @@ curl -s -X POST http://127.0.0.1:8000/api/calendar/1/metrics/import ^
 2. **失败与阻塞**（「研究任务」页的状态列）：`paused` 是等闸门，`failed` 是真出错（`failure_reason` 里写原因）。
 3. **核查覆盖**（`/checks/summary`）：`pending` 越堆越多说明该做人工确认了。
 
+这三处不用一个个点开——一条命令替你看完：
+
+```powershell
+.venv\Scripts\python.exe -m backend.scripts.daily_check          # 人看的版本
+.venv\Scripts\python.exe -m backend.scripts.daily_check --json   # 机器读的版本
+```
+
+它会汇总：任务各状态与暂停/失败、窗口内失败的子任务、待人工确认的核查（`content.script` 就是等这个）、
+被撤回确认而失效的视频任务、今天与近 N 天的真实花费（来自 `model_calls`，不是估算）、最近备份有多旧、磁盘余量。
+**只读**，不改任何东西；退出码 `0` 干净 / `1` 有需要处理的事项 / `3` 连不上库。
+对着还没迁移到当前版本的老库它会如实说"这几块查不了"，而不是抛异常。
+
 ---
 
 ## 7. 出问题怎么办

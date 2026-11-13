@@ -202,7 +202,7 @@ backend/scripts/                  seed_collections / enable_wal / install_ffmpeg
                                   / media_selftest / research_task / run_worker / render_job
                                   / produce_video / preflight / recover_tasks
                                   / model_smoke（真实模型冒烟）/ model_e2e_check（12 步真实闭环）/ v51_evidence（核查与成本取证）/ import_digest（底稿导入复现）
-                                  / flow_check（前端全链路验收）
+                                  / flow_check（前端全链路验收）/ daily_check（每日体检：任务、核查、花费、备份、磁盘）
 scripts/start.ps1                 一键启动（建库、预检、端口占用检查、起服务、健康探测、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
 agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
