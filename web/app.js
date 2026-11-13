@@ -1406,7 +1406,77 @@ async function pageCosts(view) {
         { title: '成本', value: (row) => money(row.cost_cny), num: true },
       ], data.by_day, '没有按天数据')}
       <div class="note">${esc(data.note)}</div>
+    </div>
+    <div class="card"><h2>运行历史（每天花了多少 / 跑几条 / 失败几次）</h2>
+      <div class="row"><label>最近<select id="history-days">
+        <option value="7">7 天</option>
+        <option value="14" selected>14 天</option>
+        <option value="30">30 天</option>
+        <option value="90">90 天</option>
+      </select></label></div>
+      <div id="history-box"><div class="note">加载中…</div></div>
     </div>`;
+
+  const historyBox = document.getElementById('history-box');
+  const loadHistory = async (days) => {
+    historyBox.innerHTML = '<div class="note">加载中…</div>';
+    const history = await api(`/system/history?days=${days}`);
+    if (!history.ok) { historyBox.innerHTML = failure(history); return; }
+    historyBox.innerHTML = renderHistory(history.data);
+  };
+  document.getElementById('history-days').onchange = (event) => loadHistory(event.target.value);
+  loadHistory(14);
+}
+
+/** 纯 SVG 折线：只画真实记录，0 就是 0，不插值、不补假数据。 */
+function renderHistory(data) {
+  const items = data.items || [];
+  if (!items.length) return '<div class="note">这段时间没有记录。</div>';
+  const width = 720;
+  const height = 180;
+  const pad = 28;
+  const maxCost = Math.max(...items.map((row) => Number(row.cost_cny) || 0), 0.000001);
+  const maxCalls = Math.max(...items.map((row) => Number(row.model_calls) || 0), 1);
+  const x = (index) => pad + (items.length === 1 ? 0 : (index * (width - pad * 2)) / (items.length - 1));
+  const y = (value, max) => height - pad - (Number(value) / max) * (height - pad * 2);
+  const line = (pick, max) => items.map((row, index) => `${index ? 'L' : 'M'}${x(index).toFixed(1)},${y(pick(row), max).toFixed(1)}`).join(' ');
+  const failBar = items.map((row, index) => {
+    const count = Number(row.tasks_failed) || 0;
+    if (!count) return '';
+    const barHeight = Math.min(24, 6 + count * 6);
+    return `<rect x="${(x(index) - 6).toFixed(1)}" y="${(height - pad - barHeight).toFixed(1)}" width="12" height="${barHeight}" fill="#ff2bd6" opacity="0.75"><title>${esc(row.day)} 失败 ${count}</title></rect>`;
+  }).join('');
+  const dots = items.map((row, index) => {
+    const count = Number(row.model_calls) || 0;
+    if (!count) return '';
+    return `<circle cx="${x(index).toFixed(1)}" cy="${y(count, maxCalls).toFixed(1)}" r="2.5" fill="#35e0ff"><title>${esc(row.day)} 调用 ${count} 次 / ${row.tokens} tokens</title></circle>`;
+  }).join('');
+  return `
+    <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" role="img" aria-label="运行历史折线">
+      <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#2a3550" />
+      <path d="${line((row) => row.cost_cny, maxCost)}" fill="none" stroke="#b6ff1f" stroke-width="2" />
+      <path d="${line((row) => row.model_calls, maxCalls)}" fill="none" stroke="#35e0ff" stroke-width="1.5" stroke-dasharray="4 3" />
+      ${failBar}${dots}
+      <text x="${pad}" y="14" fill="#8f9bb0" font-size="11">绿线＝每天成本（上限 ${money(maxCost)}） 青虚线＝调用次数（上限 ${maxCalls}） 粉柱＝失败任务</text>
+    </svg>
+    <div class="row" style="gap:16px;flex-wrap:wrap">
+      <span class="note">合计成本 ${money(data.total_cost_cny)}</span>
+      <span class="note">调用 ${data.total_model_calls} 次</span>
+      <span class="note">完成 ${data.total_tasks_completed} 条</span>
+      <span class="note">失败 ${data.total_tasks_failed} 条</span>
+    </div>
+    <div class="note">${esc(data.note || '')}</div>
+    ${table([
+      { title: '日期', key: 'day' },
+      { title: '调用', key: 'model_calls', num: true },
+      { title: 'tokens', key: 'tokens', num: true },
+      { title: '成本', value: (row) => money(row.cost_cny), num: true },
+      { title: '新建任务', key: 'tasks_created', num: true },
+      { title: '完成', key: 'tasks_completed', num: true },
+      { title: '失败', key: 'tasks_failed', num: true },
+      { title: '子任务失败', key: 'subtasks_failed', num: true },
+      { title: '闸门', key: 'gates', num: true },
+    ], items, '这段时间没有记录')}`;
 }
 
 const CALENDAR_STATUS_LABEL = {

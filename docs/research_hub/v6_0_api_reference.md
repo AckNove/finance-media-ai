@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：53
+- 路径数：54
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -67,6 +67,7 @@
 | POST | `/api/sources` | 登记资料来源 | 人 | — | application/json → `SourceCreate` | 201 `SourceOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/agents` | Agent 名册（agents/roster.yaml + 路由表） | 人 | — | — | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/costs` | 成本统计（真实调用记录） | 人 | — | — | 200 `CostSummaryOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/system/history` | 按天的运行历史（调用/任务/失败） | 人 | `days`（query，可选，integer） | — | 200 `HistoryOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/providers` | 模型服务商状态 | 人 | — | — | 200 `ProviderStatusOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/status` | 系统运行状态 | 人 | — | — | 200 `SystemStatus` |
 | GET | `/api/topics` | 选题列表 | 人 | `knowledge_domain`（query，可选，string | null）、`research_status`（query，可选，string | null）、`content_status`（query，可选，string | null）、`tag_id`（query，可选，integer | null）、`tag`（query，可选，string | null）、`tag_namespace`（query，可选，TagNamespace | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_TopicOut_`；404 `object`；409 `object`；422 `object`；503 `object` |

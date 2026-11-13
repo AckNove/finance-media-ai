@@ -7,17 +7,21 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, require_caller
 from backend.app.capabilities.model.providers import provider_status
 from backend.app.core.caller import CallerKind
 from backend.app.core.config import get_agent_routing
-from backend.app.models.execution import ResearchTask
+from backend.app.models.enums import ResearchTaskStatus, TaskEventType
+from backend.app.models.execution import ResearchTask, TaskEvent
 from backend.app.models.metering import ModelCall, ToolCall
+from backend.app.schemas.monitoring import HistoryDayOut, HistoryOut
 from backend.app.schemas.research_task import CostBucket, CostSummaryOut, ProviderStatusOut
 from backend.app.services.agent_registry import load_roster
 
@@ -27,6 +31,9 @@ router = APIRouter(
     responses=COMMON_RESPONSES,
     dependencies=[Depends(require_caller(CallerKind.HUMAN))],
 )
+
+#: 历史曲线最多看 90 天（再多也没什么信息量，只会把页面拉得很长）
+MAX_HISTORY_DAYS = 90
 
 
 def _cost_note(model_calls: int, pricing_unknown: int) -> str:
@@ -161,3 +168,124 @@ def get_agents() -> dict[str, object]:
             }
         )
     return {"count": len(roster), "agents": roster}
+
+
+def _days_window(days: int, *, now: datetime | None = None) -> list[str]:
+    """最近 N 天的日期串，从最早排到今天（画曲线要按时间正序）。"""
+    today = (now or datetime.now(UTC)).astimezone(UTC).date()
+    return [(today - timedelta(days=offset)).isoformat() for offset in range(days - 1, -1, -1)]
+
+
+def _history_note(items: list[HistoryDayOut]) -> str:
+    if not any(item.model_calls or item.tasks_created for item in items):
+        return (
+            "这段时间没有任何记录：不是统计坏了，而是确实还没跑过任务或调用过模型。"
+            "空白的一天补 0，不画示例曲线。"
+        )
+    failed = sum(item.tasks_failed for item in items)
+    if failed:
+        return f"这段时间有 {failed} 个任务失败，先看失败原因再决定要不要重跑。"
+    return "这段时间没有失败任务；曲线只反映真实记录，不代表内容质量。"
+
+
+@router.get("/history", response_model=HistoryOut, summary="按天的运行历史（调用/任务/失败）")
+def get_history(
+    db: DbSession,
+    days: int = Query(default=14, ge=1, le=MAX_HISTORY_DAYS, description="看最近多少天"),
+) -> HistoryOut:
+    """按天回答「花了多少、跑了几条、失败几次、卡了几次闸门」。
+
+    模型调用含被预算或限流拦下的（它们也真的发生过，同样计入）；任务按完成时间
+    落到那一天；闸门次数取 `paused` 事件。**缺的那天补 0**，不让前端自己猜。
+    """
+    window = _days_window(days)
+    rows: dict[str, dict[str, int | Decimal]] = {
+        day: {
+            "model_calls": 0,
+            "tokens": 0,
+            "cost_cny": Decimal("0"),
+            "tasks_created": 0,
+            "tasks_completed": 0,
+            "tasks_failed": 0,
+            "subtasks_failed": 0,
+            "gates": 0,
+        }
+        for day in window
+    }
+
+    call_day = func.strftime("%Y-%m-%d", ModelCall.created_at)
+    for day, calls, tokens, cost in db.execute(
+        select(
+            call_day,
+            func.count(ModelCall.id),
+            func.coalesce(func.sum(ModelCall.total_tokens), 0),
+            func.coalesce(func.sum(ModelCall.cost_estimate), 0),
+        ).group_by(call_day)
+    ).all():
+        cell = rows.get(str(day or ""))
+        if cell is None:
+            continue
+        cell["model_calls"] = int(calls or 0)
+        cell["tokens"] = int(tokens or 0)
+        cell["cost_cny"] = Decimal(str(cost or 0))
+
+    created_day = func.strftime("%Y-%m-%d", ResearchTask.created_at)
+    for day, count in db.execute(
+        select(created_day, func.count(ResearchTask.id)).group_by(created_day)
+    ).all():
+        cell = rows.get(str(day or ""))
+        if cell is not None:
+            cell["tasks_created"] = int(count or 0)
+
+    updated_day = func.strftime("%Y-%m-%d", ResearchTask.updated_at)
+    for status, key in (
+        (ResearchTaskStatus.COMPLETED, "tasks_completed"),
+        (ResearchTaskStatus.FAILED, "tasks_failed"),
+    ):
+        for day, count in db.execute(
+            select(updated_day, func.count(ResearchTask.id))
+            .where(ResearchTask.status == status.value)
+            .group_by(updated_day)
+        ).all():
+            cell = rows.get(str(day or ""))
+            if cell is not None:
+                cell[key] = int(count or 0)
+
+    event_day = func.strftime("%Y-%m-%d", TaskEvent.created_at)
+    for event_type, key in (
+        (TaskEventType.SUBTASK_FAILED, "subtasks_failed"),
+        (TaskEventType.PAUSED, "gates"),
+    ):
+        for day, count in db.execute(
+            select(event_day, func.count(TaskEvent.id))
+            .where(TaskEvent.event_type == event_type)
+            .group_by(event_day)
+        ).all():
+            cell = rows.get(str(day or ""))
+            if cell is not None:
+                cell[key] = int(count or 0)
+
+    items = [
+        HistoryDayOut(
+            day=day,
+            model_calls=int(cell["model_calls"]),
+            tokens=int(cell["tokens"]),
+            cost_cny=Decimal(str(cell["cost_cny"])),
+            tasks_created=int(cell["tasks_created"]),
+            tasks_completed=int(cell["tasks_completed"]),
+            tasks_failed=int(cell["tasks_failed"]),
+            subtasks_failed=int(cell["subtasks_failed"]),
+            gates=int(cell["gates"]),
+        )
+        for day in window
+        for cell in (rows[day],)
+    ]
+    return HistoryOut(
+        days=days,
+        items=items,
+        total_cost_cny=sum((item.cost_cny for item in items), Decimal("0")),
+        total_model_calls=sum(item.model_calls for item in items),
+        total_tasks_completed=sum(item.tasks_completed for item in items),
+        total_tasks_failed=sum(item.tasks_failed for item in items),
+        note=_history_note(items),
+    )

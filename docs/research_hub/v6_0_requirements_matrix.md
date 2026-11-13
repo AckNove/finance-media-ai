@@ -8,8 +8,8 @@
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
-> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、69 个 API 操作、
-> 20 个前端页面、`pytest` 1021 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、70 个 API 操作、
+> 20 个前端页面、`pytest` 1026 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -38,7 +38,7 @@
 | 环境诊断 | `backend/scripts/doctor.py`（22 项：依赖/FFmpeg/字体/浏览器/端口/磁盘/库版本/配置/Provider） | DONE | 仍保留更轻的 `preflight.py` |
 | 服务健康检查 | `GET /health`、`GET /api/system/status` | DONE | — |
 | 服务自动恢复 | `scripts/watchdog.ps1`（健康探测 + 退避 3→6→12→24 封顶 60 秒 + 日志） | DONE | 8031 端口实测起服务并通过健康检查 |
-| 系统运行监控 | `GET /api/system/{costs,providers,agents}` | PARTIAL | 只有当前快照，无历史曲线 |
+| 系统运行监控 | `GET /api/system/{costs,providers,agents}` + `GET /api/system/history` + 工作台「运行历史」折线 | DONE | 历史按天给出调用/tokens/成本/新建任务/完成/失败/子任务失败/闸门次数，**缺的天补 0**；只有"当前库里的记录"，没有跨库归档（换库就看不到旧曲线） |
 
 ## B. 模型系统
 

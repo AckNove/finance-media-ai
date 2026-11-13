@@ -17,7 +17,7 @@
 | 数据可信吗 | 结论必须**人工确认**才进成稿；模型判定（`supported`…）与人工状态（`confirmed`…）是两条独立状态线 |
 | 有没有假的东西 | 没有。所有 Mock 只出现在单元测试里，验收报告把"单测通过"与"真实跑通"分开列 |
 | 真实开发库动了吗 | 没动。`sha256=2df764e5…8203` 与基线一致，19 表 / `revision=de8148733a9b` / `journal_mode=delete` |
-| 还缺什么 | 模型降级链、来源可信度与时效判定、多平台内容适配、真实素材获取、监控历史（见 §9） |
+| 还缺什么 | docx 对外工具、背景音乐曲库、真实素材获取与云渲染（见 §9） |
 
 ## 1. 接管检查（任务书第二部分 2.1）
 
@@ -28,7 +28,7 @@
 | 目录结构 | `backend/app/{api,core,capabilities,execution,research,video,media,analysis,services,models,schemas,skills}`、`web/`、`scripts/`、`content/jobs/`、`tools/` |
 | 接口 | `create_app().openapi()`：接管时 45 路径 / 58 操作 → 现在 **46 路径 / 67 操作** |
 | 数据 | 接管时 29 表 → 现在 **31 表**（`alembic check` 无漂移） |
-| 测试 | 接管时 850 passed / 2 skipped → 现在 **1021 passed / 2 skipped** |
+| 测试 | 接管时 850 passed / 2 skipped → 现在 **1026 passed / 2 skipped** |
 | 前端 | 19 页 → **20 页**（新增「内容日历」），全部接真接口，无静态假数据 |
 | 工具 | 10 个全部 `implemented=True` |
 | 已实现但没接业务流程的 | `preflight.py` 被 `doctor.py` 超过但仍可用 |
@@ -258,7 +258,7 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 | 状态 | 数量 | 主要条目 |
 | --- | --- | --- |
 | **DONE** | 主干全部 | 配置/迁移/队列/网关计费/预算/限流/脱敏/降级链/TaskRuntime/编排/失败传播；搜索抓取解析；来源与证据；来源可信度与时效；三套研究骨架；Skill 注入提示词；语义核查五档 + 成稿闸门 + 撤回失效；内容质检；内容日历与平台回填 + CSV 批量导入；选题建议（规则推荐）；一稿三版（抖音/小红书/公众号，不改事实不编标签）；备份恢复/诊断/停止/自愈；20 页前端 |
-| **PARTIAL** | 3 | 监控历史曲线；docx 对外工具；背景音乐曲库与授权 |
+| **PARTIAL** | 2 | docx 对外工具；背景音乐曲库与授权 |
 | **TEST_ONLY** | 1 | `contradicted` 判定（代码 + 单测通过，真实语料里还没出现过） |
 | **CODE_ONLY** | 0 | — |
 | **BLOCKED** | 2 | 真实素材获取（需授权素材源）；云渲染/发布（未授权） |
