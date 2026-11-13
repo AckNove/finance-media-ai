@@ -6,11 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 71 个 API 操作 / 20 个页面 / 11 个工具 / **1119 passed**。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 73 个 API 操作 / 20 个页面 / 11 个工具 / **1131 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
-> **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、71 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1119 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、73 个 API 操作、
+> 20 个前端页面、11 个已实现工具、`pytest` 1131 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -41,6 +41,7 @@
 | 服务健康检查 | `GET /health`、`GET /api/system/status` | DONE | — |
 | 服务自动恢复 | `scripts/watchdog.ps1`（健康探测 + 退避 3→6→12→24 封顶 60 秒 + 日志） | DONE | 8031 端口实测起服务并通过健康检查 |
 | 系统运行监控 | `GET /api/system/{costs,providers,agents}` + `GET /api/system/history` + 工作台「运行历史」折线 | DONE | 历史按天给出调用/tokens/成本/新建任务/完成/失败/子任务失败/闸门次数，**缺的天补 0**；只有"当前库里的记录"，没有跨库归档（换库就看不到旧曲线） |
+| 确认后「下一步」 | `GET /api/research-reports/{id}/pipeline`（任务状态、卡住的阶段与原因码、已确认/待确认条数、`can_resume`）+ 「语义核查」页的「下一步」卡与「继续跑」按钮 | DONE | **确认不会自动触发花钱**，跑不跑由人按键；页面与接口同一份判定；顺带修掉核查明细表 `class="grid"` 被 `.grid` 卡片样式拆成两半的问题；`tests/test_report_pipeline.py` 6 例 |
 | 每日体检（命令行 + 接口 + 首页卡片） | 判断逻辑在 `backend/app/services/daily_service.py`（任务状态/暂停/失败 + 窗口内失败子任务 + 待确认核查 + 失效视频任务 + 今日与近 N 天真实花费 + 备份新鲜度 + 磁盘）；入口 `backend/scripts/daily_check.py`（薄 CLI）与 `GET /api/system/daily`（`HUMAN_ONLY`）；页面 `web/app.js` 的 `dailyCard()` | DONE | **两个入口共用同一份判断**，不会出现命令行与页面数字打架；只读、不联网、不调模型；退出码 0 干净 / 1 有事项 / 3 连不上库；老库缺表时如实说"这几块查不了"而不是抛异常；`tests/test_daily_check.py` 11 例 + `tests/test_daily_api.py` 5 例（含空库不崩、无头浏览器实拍首页卡片） |
 
 ## B. 模型系统

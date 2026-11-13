@@ -734,3 +734,68 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
    现在统一去掉反引号，命令行和页面读着都正常。
 2. `sections_unavailable` 的键是给人看的中文标签（任务 / 子任务 / 花费 / 语义核查），值是数据库给的原因
    （`no such table: research_tasks`）——一开始测试按英文键断言，按真实形状改了测试而不是改实现。
+
+## §25 确认完就能继续跑：把"下一步"答出来
+
+前面几轮把闸门做严了（结论必须人工确认才进成稿），但留了一个体验缺口：
+人在「语义核查」页逐条确认完，页面上没有告诉他"然后呢"。他得自己跳到「研究任务」页、
+翻出是哪一条任务、看清卡在哪个阶段、再点恢复 + 推进。三步都在不同页面，实际上没人会这么干。
+
+### §25.1 新增 `GET /api/research-reports/{id}/pipeline`
+
+一份报告现在能直接回答四个问题：它属于哪条研究任务、任务现在什么状态、卡在哪个阶段（含稳定原因码）、
+现在能不能点「继续跑」。
+
+```json
+{
+  "report_id": 1, "research_task_id": 1,
+  "task_status": "paused", "paused": true,
+  "blocked": {"subtask_id": 12, "sequence": 12, "task_type": "content.script",
+              "attempts": 1, "failure_reason": ""},
+  "pending_checks": 5, "confirmed_checks": 1,
+  "can_resume": true,
+  "next_step": "任务停在人工闸门上，点「继续跑」放行"
+}
+```
+
+判定口径（写在实现里，不靠前端猜）：
+
+| 情况 | `can_resume` | `next_step` |
+| --- | --- | --- |
+| 卡在 `no_confirmed_findings` 且一条都没确认 | `false` | 先确认至少一条结论 |
+| 卡在 `no_confirmed_findings` 但已确认 ≥1 条 | `true` | 可以点「继续跑」接着生成脚本 |
+| 卡在 `no_script_draft` | `true` | 继续跑把 `content.script` 跑完 |
+| 停在其它人工闸门 | `true` | 点「继续跑」放行 |
+| 任务在跑 / 已完成 / 失败 / 已取消 | `false` | 如实说明该干什么，`note` 带失败原因 |
+| 报告没有关联任务 | `false` | 说明可直接走脚本/视频链路 |
+
+**确认本身不会触发花钱**：这里只回答"能不能继续"，要不要跑由人按键决定。
+真正执行还是原来的两条接口（`POST /api/research-tasks/{id}/resume` 与 `/run`），没有新增自动执行路径。
+
+### §25.2 页面：确认按钮旁边就是"下一步"
+
+「语义核查」页在核查汇总卡下面加了一张「下一步」卡：任务号与状态、「卡在 `content.script`（等人放行）」、
+已确认/待确认条数、一句话建议、以及（条件满足时才出现的）「继续跑（先恢复，再推进 3 格）」按钮，
+底部一行小字写清"确认本身不会让系统自己花钱"。
+
+无头浏览器实测（演示库副本，`can_resume=true` 的那份）：卡片渲染正确、
+按钮存在、`console_errors=[]`、`page_errors=[]`；
+`can_resume=false` 的那份（任务已完成）按钮不出现、文案变成「任务已经跑完，剩下的都是人工确认与出片」。
+
+### §25.3 顺手修掉的表格错位
+
+核查明细表原来写的是 `<table class="grid">`——而 `styles.css` 里 `.grid` 是给卡片用的
+`display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))`，
+挂在 table 上会把表头和数据行拆成互不对齐的两块：表头挤在左边，数据从中间开始，
+结论那一列被挤到一行一个字。
+
+修法两句：去掉 `class="grid"`、把表包进已有的 `.scroll`（`overflow-x: auto`）并给长文本列加 `min-width`。
+现在 8 列横向滚动，结论、理由、支持/反对片段都读得开。
+
+### §25.4 测试
+
+`tests/test_report_pipeline.py` 6 例：卡在未确认时不许继续、确认一条后允许继续、
+运行中的任务不需要人推、失败任务把原因带出来而不是假装能恢复、没有关联任务的报告如实说明、
+未知报告 404。全量 `pytest -o addopts="" -q` → **1131 passed, 2 skipped, 1 warning**。
+接口数 71 → **73 个操作**（`/api/system/daily` 与 `/api/research-reports/{{id}}/pipeline`），
+启动自检双向核对仍然 8/8 通过。

@@ -712,6 +712,56 @@ function gateBanner(gate) {
   </div>`;
 }
 
+function pipelineCard(pipeline) {
+  if (!pipeline || !pipeline.ok) return '';
+  const data = pipeline.data;
+  const status = data.task_status ? `<span class="tag info">任务 #${data.research_task_id} · ${esc(data.task_status)}</span>` : '';
+  const blocked = data.blocked
+    ? `<span class="tag warn">卡在 ${esc(data.blocked.task_type)}（${esc(data.blocked.failure_reason || '等人放行')}）</span>`
+    : '';
+  const counts = `<span class="tag">已确认 ${data.confirmed_checks} 条 · 待确认 ${data.pending_checks} 条</span>`;
+  const action = data.can_resume
+    ? `<button class="btn" data-continue="1">继续跑（先恢复，再推进 3 格）</button>`
+    : '';
+  return `<div class="card">
+      <h2>下一步 <span class="tag ${data.can_resume ? 'ok' : ''}">${data.can_resume ? '可以继续' : '还差一步'}</span></h2>
+      <div class="row">${status}${blocked}${counts}</div>
+      <p>${esc(data.next_step || '')}</p>
+      ${data.note ? `<div class="note">${esc(data.note)}</div>` : ''}
+      <div class="row">${action}<a class="btn ghost" href="#/tasks/${data.research_task_id || ''}">去任务详情</a></div>
+      <p class="muted">确认本身不会让系统自己花钱：要不要继续跑，由你按上面这个按钮决定。</p>
+    </div>`;
+}
+
+function bindPipeline(box, reportId, pipeline) {
+  const button = box.querySelector('button[data-continue]');
+  if (!button || !pipeline || !pipeline.ok) return;
+  button.onclick = async () => {
+    const taskId = pipeline.data.research_task_id;
+    button.disabled = true;
+    button.textContent = '恢复中…';
+    const resumed = await api(`/research-tasks/${taskId}/resume`, { method: 'POST', body: '{}' });
+    if (!resumed.ok) {
+      window.alert(`恢复失败：${(resumed.error || '').toString()}`);
+      button.disabled = false;
+      button.textContent = '继续跑（先恢复，再推进 3 格）';
+      return;
+    }
+    button.textContent = '推进中（真实搜索/抓取/模型）…';
+    const ran = await api(`/research-tasks/${taskId}/run`, {
+      method: 'POST',
+      body: JSON.stringify({ max_iterations: 3 }),
+    });
+    if (!ran.ok) {
+      window.alert(`推进失败：${(ran.error || '').toString()}`);
+    } else {
+      const report = ran.data;
+      window.alert(`推进完成：完成 ${(report.completed || []).length} 格，卡住 ${(report.blocked || []).length} 格`);
+    }
+    route();
+  };
+}
+
 async function pageChecks(view) {
   const reports = await api('/research-reports?limit=50');
   const items = reports.ok ? reports.data.items : [];
@@ -736,10 +786,11 @@ async function pageChecks(view) {
     const box = document.getElementById('checks-box');
     if (!reportId) { box.innerHTML = '<div class="empty">先选一份报告</div>'; return; }
     box.innerHTML = '<div class="note">读取核查结果…</div>';
-    const [summary, checks, gate] = await Promise.all([
+    const [summary, checks, gate, pipeline] = await Promise.all([
       api(`/research-reports/${reportId}/checks/summary`),
       api(`/research-reports/${reportId}/checks?limit=100`),
       api(`/research-reports/${reportId}/draft-readiness`),
+      api(`/research-reports/${reportId}/pipeline`),
     ]);
     if (!summary.ok) { box.innerHTML = failure(summary); return; }
     if (!checks.ok) { box.innerHTML = failure(checks); return; }
@@ -749,10 +800,13 @@ async function pageChecks(view) {
         ? `<span class="tag ok">可成稿 · 已确认 ${gate.data.confirmed} 条</span>`
         : `<span class="tag warn">还不能成稿：${esc(gate.data.note || '')}</span>`)
       : '<span class="tag">闸门状态未知</span>';
+    const nextCard = pipelineCard(pipeline);
     if (!data.total) {
       box.innerHTML = `<div class="card"><h2>还没有核查记录</h2>
         <div class="row">${gateText}</div>
-        <p class="muted">这份报告还没跑到 <code>verify.claims</code>，或者当时没有可用模型（核查不会假装做过）。</p></div>`;
+        <p class="muted">这份报告还没跑到 <code>verify.claims</code>，或者当时没有可用模型（核查不会假装做过）。</p></div>`
+        + nextCard;
+      bindPipeline(box, reportId, pipeline);
       return;
     }
     const verdictCells = Object.entries(data.by_verdict || {})
@@ -767,18 +821,19 @@ async function pageChecks(view) {
         <p class="muted">口径：<strong>只有人工确认（confirmed）的结论可以进入成稿</strong>；
           模型判定只是意见，驳回与待复核的结论不会进稿。</p>
       </div>
+      ${nextCard}
       <div class="card"><h2>逐条核查</h2>
-        <table class="grid">
+        <div class="scroll"><table style="min-width:1240px">
           <thead><tr><th>#</th><th>结论</th><th>模型判定</th><th>理由</th><th>支持片段</th><th>反对片段</th><th>人工</th><th>操作</th></tr></thead>
           <tbody>
             ${checks.data.items.map((row) => `
               <tr data-check="${row.id}">
                 <td class="num">${row.finding_index}</td>
-                <td>${esc(row.claim)}<div class="muted">证据 ${esc((row.evidence_ids || []).join(', ') || '—')} · 来源 ${esc((row.source_ids || []).join(', ') || '—')}</div></td>
-                <td>${verdictTag(row.verdict)}<div class="muted">${esc(row.reason || '')}</div></td>
+                <td style="min-width:260px">${esc(row.claim)}<div class="muted">证据 ${esc((row.evidence_ids || []).join(', ') || '—')} · 来源 ${esc((row.source_ids || []).join(', ') || '—')}</div></td>
+                <td style="min-width:220px">${verdictTag(row.verdict)}<div class="muted">${esc(row.reason || '')}</div></td>
                 <td class="muted">${esc((row.issues || []).map((item) => item.code).join(', ') || '—')}</td>
-                <td>${quoteList(row.supporting)}</td>
-                <td>${quoteList(row.contradicting)}</td>
+                <td style="min-width:180px">${quoteList(row.supporting)}</td>
+                <td style="min-width:180px">${quoteList(row.contradicting)}</td>
                 <td>${humanTag(row.human_review_status)}${row.human_note ? `<div class="muted">${esc(row.human_note)}</div>` : ''}</td>
                 <td class="actions">
                   <button class="btn ghost" data-review="confirmed" data-id="${row.id}">确认</button>
@@ -787,7 +842,7 @@ async function pageChecks(view) {
                 </td>
               </tr>`).join('')}
           </tbody>
-        </table>
+        </table></div>
       </div>`;
 
     const send = async (checkId, status) => {
@@ -802,13 +857,15 @@ async function pageChecks(view) {
     box.querySelectorAll('button[data-review]').forEach((button) => {
       button.onclick = () => send(button.dataset.id, button.dataset.review);
     });
+    bindPipeline(box, reportId, pipeline);
   };
 
   document.getElementById('checks-load').onclick = load;
   if (preset) load();
 }
 
-async function pageReports(view) {  const result = await api('/research-reports?limit=50');
+async function pageReports(view) {
+  const result = await api('/research-reports?limit=50');
   const items = result.ok ? result.data.items : [];
   // 成稿闸门：只有人工确认过的结论才允许建视频任务。这里把每份报告的状态先取回来，
   // 免得用户点了按钮才知道被拦（本地工具，一次几十个小请求可以接受）。

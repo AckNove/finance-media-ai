@@ -12,6 +12,8 @@ from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, requir
 from backend.app.core.caller import CallerKind
 from backend.app.core.errors import ConflictError, DomainValidationError, NotFoundError
 from backend.app.models.evidence import Evidence
+from backend.app.models.enums import ResearchTaskStatus, SubtaskStatus
+from backend.app.models.execution import ResearchSubtask, ResearchTask
 from backend.app.models.research import FindingCheck
 from backend.app.models.source import Source
 from backend.app.research.draft_gate import (
@@ -28,6 +30,7 @@ from backend.app.schemas.finding_check import (
     FindingCheckReviewIn,
     FindingCheckSummaryOut,
 )
+from backend.app.schemas.pipeline import PipelineSubtaskOut, ReportPipelineOut
 from backend.app.schemas.research import ResearchReportCreate, ResearchReportOut
 from backend.app.schemas.video import VideoJobIn, VideoJobOut
 from backend.app.services.research_service import ResearchReportService
@@ -276,3 +279,109 @@ def review_report_check(
                 "、".join(item["job_id"] for item in invalidated),
             )
     return FindingCheckOut.model_validate(updated)
+
+
+@router.get(
+    "/{report_id}/pipeline",
+    response_model=ReportPipelineOut,
+    summary="这份报告的研究任务卡在哪、下一步该做什么",
+)
+def report_pipeline(db: DbSession, report_id: int = Path(ge=1)) -> ReportPipelineOut:
+    """把"确认完结论之后怎么办"直接答出来。
+
+    设计口径：**确认不会自动触发花钱**。人确认完，这里告诉他能不能点「继续跑」，
+    要不要真的跑由人自己按键（`POST /api/research-tasks/{id}/resume` + `/run`）。
+    """
+
+    report = ResearchReportService(db).get(report_id)
+    gate = readiness_of(db, report)
+    confirmed = int(gate.confirmed)
+    pending = max(0, int(gate.total_checks) - confirmed)
+
+    task_id = report.research_task_id
+    if task_id is None:
+        return ReportPipelineOut(
+            report_id=report_id,
+            research_task_id=None,
+            confirmed_checks=confirmed,
+            pending_checks=pending,
+            next_step=(
+                "这份报告没有关联研究任务（可能是手工建的）。确认完结论后可以直接生成脚本或建视频任务。"
+            ),
+        )
+
+    task = db.get(ResearchTask, task_id)
+    if task is None:
+        return ReportPipelineOut(
+            report_id=report_id,
+            research_task_id=task_id,
+            confirmed_checks=confirmed,
+            pending_checks=pending,
+            next_step="报告记着的研究任务已经不在了（可能被删过），直接走脚本/视频链路即可。",
+        )
+
+    blocked_row = db.scalars(
+        select(ResearchSubtask)
+        .where(
+            ResearchSubtask.research_task_id == task_id,
+            ResearchSubtask.status == SubtaskStatus.BLOCKED,
+        )
+        .order_by(ResearchSubtask.sequence)
+        .limit(1)
+    ).first()
+    blocked = (
+        PipelineSubtaskOut(
+            subtask_id=blocked_row.id,
+            sequence=int(blocked_row.sequence or 0),
+            task_type=str(blocked_row.task_type or ""),
+            attempts=int(blocked_row.attempts or 0),
+            failure_reason=str(blocked_row.failure_reason or ""),
+        )
+        if blocked_row is not None
+        else None
+    )
+
+    status_value = str(getattr(task.status, "value", task.status) or "")
+    paused = status_value == ResearchTaskStatus.PAUSED.value
+    reason = (blocked.failure_reason if blocked else "") or ""
+
+    can_resume = False
+    note = ""
+    if paused:
+        if reason.startswith("no_confirmed_findings"):
+            if confirmed > 0:
+                can_resume = True
+                next_step = f"已经确认了 {confirmed} 条结论，可以点「继续跑」让它接着生成脚本"
+            else:
+                next_step = "先在上面确认至少一条结论，确认后这里会出现「继续跑」"
+                note = "这个阶段卡在「结论必须人工确认」这条闸门上，模型判定不算确认。"
+        elif reason.startswith("no_script_draft"):
+            can_resume = True
+            next_step = "脚本草稿还没生成：点「继续跑」把 content.script 跑完，再做分镜与制作计划"
+        else:
+            can_resume = True
+            next_step = "任务停在人工闸门上，点「继续跑」放行"
+    elif status_value == ResearchTaskStatus.RUNNING.value:
+        next_step = "任务正在跑，等它跑完或到下一道闸门；不需要你做什么"
+    elif status_value == ResearchTaskStatus.COMPLETED.value:
+        next_step = "任务已经跑完，剩下的都是人工确认与出片"
+    elif status_value == ResearchTaskStatus.FAILED.value:
+        next_step = "任务失败了：先看失败原因，改完再新建一次（失败不会自动重试到最后一次）"
+        note = str(task.failure_reason or "")
+    elif status_value == ResearchTaskStatus.CANCELLED.value:
+        next_step = "任务已被取消，需要的话重新建一条"
+    else:
+        next_step = "任务还没开始跑：去「研究任务」页点「推进执行」"
+
+    return ReportPipelineOut(
+        report_id=report_id,
+        research_task_id=task_id,
+        task_status=status_value,
+        paused=paused,
+        blocked=blocked,
+        pending_checks=pending,
+        confirmed_checks=confirmed,
+        can_resume=can_resume,
+        next_step=next_step,
+        note=note,
+    )

@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：55
+- 路径数：57
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -47,6 +47,7 @@
 | GET | `/api/research-reports/{report_id}/checks/summary` | 核查覆盖情况（按判定与人工状态分组） | 人 | `report_id`（path，必填，integer） | — | 200 `FindingCheckSummaryOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-reports/{report_id}/checks/{check_id}/review` | 人工复核一条核查（只能人写） | 人 | `report_id`（path，必填，integer）、`check_id`（path，必填，integer） | application/json → `FindingCheckReviewIn` | 200 `FindingCheckOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}/draft-readiness` | 这份报告能不能成稿（只有人工确认过的结论才允许） | 人 | `report_id`（path，必填，integer） | — | 200 `DraftReadinessOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/research-reports/{report_id}/pipeline` | 这份报告的研究任务卡在哪、下一步该做什么 | 人 | `report_id`（path，必填，integer） | — | 200 `ReportPipelineOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-reports/{report_id}/video-job` | 从报告开一个视频任务目录 | 人 | `report_id`（path，必填，integer） | application/json → `VideoJobIn | null` | 201 `VideoJobOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-tasks` | 研究任务列表 | 人 | `status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchTaskOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks` | 建研究任务（按流水线拆解） | 人 | — | application/json → `ResearchTaskCreate` | 201 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
@@ -68,6 +69,7 @@
 | POST | `/api/sources` | 登记资料来源 | 人 | — | application/json → `SourceCreate` | 201 `SourceOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/agents` | Agent 名册（agents/roster.yaml + 路由表） | 人 | — | — | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/costs` | 成本统计（真实调用记录） | 人 | — | — | 200 `CostSummaryOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/system/daily` | 每日体检：有没有卡住等人、花了多少钱、备份新不新 | 人 | `days`（query，可选，integer） | — | 200 `DailySummaryOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/history` | 按天的运行历史（调用/任务/失败） | 人 | `days`（query，可选，integer） | — | 200 `HistoryOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/providers` | 模型服务商状态 | 人 | — | — | 200 `ProviderStatusOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/system/status` | 系统运行状态 | 人 | — | — | 200 `SystemStatus` |
