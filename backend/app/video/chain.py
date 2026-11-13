@@ -59,6 +59,25 @@ CHAIN_STAGES: tuple[tuple[str, str], ...] = (
 
 #: 每行最多几个节点（再多字就糊了，宁可少画）
 MAX_NODES_PER_STAGE = 3
+
+#: 超长节点名可以在这些字后面断开（不当成半个词切掉）
+_SOFT_BREAKS = frozenset("等的中年月元吨倍%％与和或")
+
+#: 产业链骨架的 section → 上中下游三行的归属。
+#: 只映射语义上真的属于某个环节的节：``bottlenecks``（瓶颈可能出在任何一环）、
+#: ``policy``、``risks`` 这类不归行，宁可在图上留"（本环缺证据）"。
+SECTION_STAGE: dict[str, str] = {
+    "upstream": "upstream",
+    "raw_materials": "upstream",
+    "equipment": "upstream",
+    "midstream": "midstream",
+    "tech_routes": "midstream",
+    "cost_structure": "midstream",
+    "value_split": "midstream",
+    "supply_relations": "midstream",
+    "downstream": "downstream",
+    "opportunities": "downstream",
+}
 #: 单个节点最多几个字（超出截断并加省略号）
 MAX_NODE_CHARS = 12
 #: 示意镜头默认时长（秒）：三行依次出现需要时间，太短看不清结构
@@ -272,10 +291,24 @@ def chain_document(
 
 
 def _clip(text: str) -> str:
+    """一行节点的短标签：超长时在语义停顿处断开，不留半截词。
+
+    真实数据里结论常是「硅料成本中工业硅等原材料占41%」这种长句，硬切 11 个字
+    会留下「…等原材」这种半截词。所以先看截断位置附近有没有「等/的/中/年/元」
+    这类可以断开的字，有就在它后面断；没有才硬切。
+    """
     clean = " ".join(str(text).split())
     if len(clean) <= MAX_NODE_CHARS:
         return clean
-    return clean[: MAX_NODE_CHARS - 1] + "…"
+    head = clean[: MAX_NODE_CHARS - 1]
+    # 数字不能被切成半截："售价24万" 切成 "售价2…" 会读成另一个数
+    while head and (head[-1].isdigit() or (len(head) >= 2 and head[-1] in ".%" and head[-2].isdigit())):
+        head = head[:-1]
+    for index in range(len(head) - 1, max(len(head) // 2 - 1, 0), -1):
+        if head[index] in _SOFT_BREAKS:
+            head = head[: index + 1]
+            break
+    return head.rstrip() + "…"
 
 
 def chain_path(job_root: Path | str, asset_id: str) -> Path:
@@ -326,27 +359,31 @@ def nodes_from_findings(
 ) -> dict[str, list[str]]:
     """从结论里挑出三行节点：只认挂到产业链骨架节点上的句子。
 
-    - 每条结论的 ``section`` 必须是 ``upstream / midstream / downstream``；
+    - 结论的 ``section`` 先按 ``SECTION_STAGE`` 归到上/中/下游三行
+      （``raw_materials``/``equipment`` 属上游，``tech_routes``/``cost_structure``/
+      ``value_split``/``supply_relations`` 属中游，``opportunities`` 属下游）；
     - 句子取第一个短句（逗号前），最多 ``MAX_NODE_CHARS`` 字；
     - 同一行按出现顺序去重，最多 ``per_stage`` 条。
 
-    挂不上骨架的结论**不上图**：图上不写没有依据的东西，缺就写"（本环缺证据）"。
+    挂不上环节的结论（例如 ``bottlenecks``、``policy``）**不上图**：图上不写没有
+    依据的东西，缺就写"（本环缺证据）"。
     """
     stages: dict[str, list[str]] = {key: [] for key, _ in CHAIN_STAGES}
     for item in findings:
         section = str(item.get("section") or "").strip().lower()
-        if section not in stages:
+        stage = SECTION_STAGE.get(section, "")
+        if stage not in stages:
             continue
         text = str(item.get("text") or item.get("claim") or item.get("statement") or "").strip()
         if not text:
             continue
         head = text.split("，")[0].split(",")[0].strip()
         label = _clip(head)
-        if not label or label in stages[section]:
+        if not label or label in stages[stage]:
             continue
-        if len(stages[section]) >= per_stage:
+        if len(stages[stage]) >= per_stage:
             continue
-        stages[section].append(label)
+        stages[stage].append(label)
     return stages
 
 

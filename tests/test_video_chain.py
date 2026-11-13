@@ -51,6 +51,36 @@ def test_findings_without_a_section_never_reach_the_diagram() -> None:
     assert stages == {"upstream": [], "midstream": [], "downstream": []}
 
 
+def test_chain_specific_sections_are_mapped_to_their_stage() -> None:
+    """骨架里 raw_materials / value_split 这类节要归到对应环节，否则图上永远是空的。
+
+    真实场景：「光伏产业链利润流向」那次，模型给的 section 是 raw_materials /
+    upstream / value_split / bottlenecks / equipment —— 只认 upstream 三个词时
+    图上只有一段，示意图根本画不出来（`not_a_chain_story`）。
+    """
+    stages = nodes_from_findings(
+        [
+            {"section": "raw_materials", "text": "工业硅占硅料成本41%，是第一抓手"},
+            {"section": "upstream", "text": "多晶硅售价24万元每吨，超额利润来自紧缺"},
+            {"section": "value_split", "text": "多晶硅毛利率最好，电池组件只有10%-15%"},
+            {"section": "equipment", "text": "设备与辅材逆势增收，客户是扩产方"},
+            {"section": "bottlenecks", "text": "产能过剩约两倍，全行业亏损"},
+        ]
+    )
+    assert stages["upstream"] == ["工业硅占硅料成本41%", "多晶硅售价24万元每吨", "设备与辅材逆势增收"]
+    assert stages["midstream"] == ["多晶硅毛利率最好"]
+    # 瓶颈可能出在任何一环，不硬塞进某一行
+    assert stages["downstream"] == []
+    assert all("产能过剩" not in item for items in stages.values() for item in items)
+
+
+def test_超长节点名既不留半截词也不把数字切断() -> None:
+    """图上出现「售价2…」会被读成另一个数，出现「等原材」是半个词。"""
+    assert chain._clip("2022年多晶硅售价24万元每吨") == "2022年多晶硅售价…"
+    assert chain._clip("硅料成本中工业硅等原材料占41%") == "硅料成本中工业硅等…"
+    assert chain._clip("短句不动") == "短句不动"
+
+
 def test_每行最多三个节点且最长十二个字() -> None:
     many = [
         {"section": "upstream", "text": f"上游第{index}个很长的节点名称需要被截断掉"}

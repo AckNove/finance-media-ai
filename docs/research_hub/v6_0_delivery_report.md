@@ -606,6 +606,22 @@ tokens 与费用，前面撞上限那几次真花了的钱没进任务账，于�
 | 密钥 | `prompt_preview` 命中 `sk-` 的行数 **0** |
 
 ```
-pytest -o addopts="" -q   → 1106 passed, 2 skipped, 1 warning
+pytest -o addopts="" -q   → 1108 passed, 2 skipped, 1 warning
 ```
 
+## §22 产业链图为啥没画出来：骨架节点在落库时被丢了
+
+真实链路复跑时 `job.json` 写着 `outline.chain = {"ok": false, "reason": "not_a_chain_story",
+"message": "结论覆盖的产业链环节只有 0 段（至少 2 段才画示意图）"}`。一路查下来是两个问题叠在一起：
+
+| # | 真因 | 修法 |
+| --- | --- | --- |
+| 1 | `executor._persist_report` 组 `findings_override` 时只带 `text/kind/source_ids/numbers`，**把模型给的 `section` 丢了**——库里 6 条结论的 `section` 全是 `null`，任何按节点归行的下游都拿不到东西 | 补上 `"section": item.section or ""`，并加断言"报告行里的结论必须带骨架节点" |
+| 2 | `chain.nodes_from_findings` 只认 `upstream/midstream/downstream` 三个词，而产业链骨架有 11 节（`raw_materials`/`equipment`/`value_split`/`cost_structure`/`tech_routes`/`supply_relations`/`opportunities`），真实结论落在这些节上时等于全被丢掉 | 新增 `SECTION_STAGE` 归行表：`raw_materials`/`equipment` → 上游，`tech_routes`/`cost_structure`/`value_split`/`supply_relations` → 中游，`opportunities` → 下游；`bottlenecks`/`policy`/`risks` **不归行**（瓶颈可能出在任何一环，硬塞就是编） |
+
+顺带修掉节点标签的两个读感问题：长标签按「等/的/中/年/元/吨/倍/%」这类停顿字断开，不再留下
+「…等原材」这种半个词；数字不切断（`2022年多晶硅售价24万元每吨` → `2022年多晶硅售价…`，
+而不是 `售价2…`）。
+
+用真实那次的分析产物验证：修前 1 段、修后 **2 段**（上游 3 条、中游 1 条、下游写「（本环缺证据）」），
+所以同样的数据现在会插进示意图。

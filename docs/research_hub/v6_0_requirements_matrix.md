@@ -6,10 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 71 个 API 操作 / 20 个页面 / 11 个工具 / **1108 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、71 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1106 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、11 个已实现工具、`pytest` 1108 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -82,7 +83,7 @@
 | 数据时效性判断 | `source_quality.freshness_of`（30 天 fresh / 180 天 recent / 更早 stale / 无发布时间 unknown，可用 `as_of` 按底稿日期判） | DONE | 阈值是口径不是真理，写死在代码里可复核；发布时间解析不了就判 unknown，不猜 |
 | 重复内容识别 | `backend/app/research/dedupe.py`（跨站转载合并）＋ `topics.dedupe_key`（选题域）＋ `corroborate.py`（数字冲突） | DONE | 只合并**正文几乎一样**的页面（归一化后指纹相同，或 4-gram 相似度 ≥ 0.90）；正文短于 120 字不参与判定，宁可漏判不误合并；转载页不算独立来源，底稿与提示词里都标出来 |
 | 来源冲突识别 | `research/corroborate.py` | DONE | — |
-| Evidence / Finding 管理 | `evidence` 表 + `finding_checks` + `research_reports.findings` | DONE | — |
+| Evidence / Finding 管理 | `evidence` 表 + `finding_checks` + `research_reports.findings` | DONE | 结论的骨架节点（`section`）一路带到库里，下游才能按节点归行 |
 
 ## E. 行业 / 产业链 / 公司研究
 
@@ -126,7 +127,7 @@
 | 图表生成 | `analysis/charts.py` + `chart_from_table.py` | DONE | — |
 | 中文 TTS / 字幕 | `capabilities/tts/`（edge-tts WordBoundary + sapi 兜底） | DONE | — |
 | 素材搜索与获取（真实素材） | — | **NOT_IMPLEMENTED** | 只用自绘图与纯视觉底板（诚实记录） |
-| 动态产业链图 / 动画 | `backend/app/video/chain.py`（三段示图 + `insert_chain_shot` / `resize_chains`）+ `backend/scripts/chain_diagram.py` | DONE | 上游/中游/下游三行按研究结论的 `section` 取节点，逐行进入 + 箭头下沉 + 整块缓推；挂不上骨架的结论不上图；空环节写「（本环缺证据）」；**报告→视频任务时自动插入**（覆盖 ≥2 段才插，插在开场之后并重排时间轴）；配音重排后按新时长重写画板帧数；真机渲染已抽帧目视核验 |
+| 动态产业链图 / 动画 | `backend/app/video/chain.py`（三段示图 + `insert_chain_shot` / `resize_chains` + `SECTION_STAGE` 节点归行表）+ `backend/scripts/chain_diagram.py` | DONE | 上游/中游/下游三行按研究结论的 `section` 取节点（`raw_materials`/`equipment` 归上游，`tech_routes`/`cost_structure`/`value_split`/`supply_relations` 归中游，`opportunities` 归下游，`bottlenecks`/`policy`/`risks` 不归行）；逐行进入 + 箭头下沉 + 整块缓推；总结论不上图，空环节写「（本环缺证据）」；长标签在「等/的/年/元」处断开且不切断数字；**报告→视频任务时自动插入**（覆盖 ≥2 段才插，插在开场之后并重排时间轴）；配音重排后按新时长重写画板帧数；真机渲染已抽帧目视核验 |
 | 背景音乐管理 | `backend/app/video/bgm.py`（曲库登记 + 授权白名单）+ `backend/scripts/mix_bgm.py`（先验授权再混音） | DONE | 曲库自带是空的（诚实状态）：默认走 `synthesize_score` 合成配乐；要加曲目必须登记授权，白名单外一律拒绝，cc-by 类强制写署名 |
 
 ## I. 视频质量控制

@@ -958,6 +958,9 @@ class AgentExecutor:
                     "kind": item.kind,
                     "source_ids": list(item.source_ids),
                     "numbers": list(item.numbers),
+                    # 骨架节点必须一路带到库里：产业链示意图等下游只按 section 归行，
+                    # 这里丢掉就等于让它们永远画不出来（真实事故：not_a_chain_story 0 段）
+                    "section": item.section or "",
                     "verified": False,
                 }
                 for item in analysis.findings

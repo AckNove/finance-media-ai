@@ -792,6 +792,7 @@ ANALYSIS_JSON = json.dumps(
                 "kind": "fact",
                 "source_ids": ["S01"],
                 "numbers": ["1.53%"],
+                "section": "structure",
             }
         ],
         "data_gaps": ["缺少手续费净收入的同业分位数"],
@@ -959,6 +960,8 @@ def test_synthesize_writes_the_model_conclusions_into_the_report(factory, runtim
         assert "净息差收窄" in row.summary
         assert row.findings[0]["source_ids"] == ["S01"]
         assert row.findings[0]["kind"] == "fact"
+        # 骨架节点要落库：产业链示意图等下游只按 section 归行，丢了就画不出来
+        assert row.findings[0]["section"] == "structure"
         # 局限说明必须如实写"这版是模型写的"，不能留着底稿那句"未使用模型"
         assert "未使用模型" not in row.limitations
         assert "deepseek/deepseek-flash" in row.limitations
