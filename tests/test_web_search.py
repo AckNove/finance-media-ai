@@ -370,3 +370,51 @@ def test_search_skips_results_pointing_at_the_engine_itself(tmp_path: Path):
         audit_path=tmp_path / "s.jsonl",
     )
     assert [hit.url for hit in report.hits] == ["https://www.toutiao.com/article/1"]
+
+# --- features.search 总闸 ---------------------------------------------------
+
+
+def test_search_tools_refuse_when_the_search_flag_is_off(monkeypatch):
+    """关掉 features.search 之后，工具层必须直接拒绝，且**一个请求都不发**。"""
+
+    from backend.app.core import config as config_module
+    from backend.app.core.config_schema import FeaturesSettings
+
+    calls = {"count": 0}
+
+    def handler(request):  # pragma: no cover - 被调用就说明闸门没生效
+        calls["count"] += 1
+        return httpx.Response(200, text=SOGOU_HTML)
+
+    monkeypatch.setattr(
+        config_module,
+        "get_features_settings",
+        lambda: FeaturesSettings(model=True, search=False, execution=True),
+    )
+
+    search_tool = make_web_search(transport=httpx.MockTransport(handler))
+    fetch_tool = make_fetch_url(transport=httpx.MockTransport(handler))
+
+    for result in (
+        search_tool(caller=agent_caller(), keywords="净息差"),
+        fetch_tool(caller=agent_caller(), url="https://www.pbc.gov.cn/zhengcehuobisi/1.html"),
+    ):
+        assert result.status == "error"
+        assert result.error_code == "feature_disabled"
+        assert result.data["enabled"] is False
+
+    assert calls["count"] == 0, "闸门关着还发请求，说明这个开关是假的"
+
+
+def test_search_tools_work_when_the_flag_is_on(monkeypatch):
+    from backend.app.core import config as config_module
+    from backend.app.core.config_schema import FeaturesSettings
+
+    monkeypatch.setattr(
+        config_module,
+        "get_features_settings",
+        lambda: FeaturesSettings(model=True, search=True, execution=True),
+    )
+    tool = make_web_search(transport=make_transport({"www.sogou.com": (200, SOGOU_HTML)}))
+    result = tool(caller=agent_caller(), keywords="净息差", limit=3)
+    assert result.ok is True

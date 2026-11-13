@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Path, status
@@ -31,6 +32,8 @@ from backend.app.schemas.research import ResearchReportCreate, ResearchReportOut
 from backend.app.schemas.video import VideoJobIn, VideoJobOut
 from backend.app.services.research_service import ResearchReportService
 from backend.app.video.handoff import VideoHandoffError, create_video_job
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/research-reports",
@@ -255,4 +258,21 @@ def review_report_check(
             str(error), details={"reason": "bad_status", "allowed": sorted(HUMAN_REVIEW_STATUSES)}
         ) from error
     db.commit()
+
+    # 撤回确认（confirmed → 其他）会让已经用这条结论建起来的视频任务失效：
+    # 片子和产物都不删，但必须在任务目录里留下"不能再当成稿用"的标记。
+    if payload.status != "confirmed":
+        from backend.app.video.handoff import invalidate_jobs
+
+        invalidated = invalidate_jobs(
+            [check_id],
+            reason=f"人工把核查记录 {check_id} 的确认撤回到 {payload.status}",
+        )
+        if invalidated:
+            logger.warning(
+                "核查记录 %s 的确认被撤回，%d 个视频任务已标记失效：%s",
+                check_id,
+                len(invalidated),
+                "、".join(item["job_id"] for item in invalidated),
+            )
     return FindingCheckOut.model_validate(updated)

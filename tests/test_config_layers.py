@@ -72,7 +72,9 @@ def test_cost_settings_forbids_unknown_keys():
 
 def test_execution_settings_loaded_and_bounded():
     execution = get_execution_settings()
-    assert execution.enabled is False, "M2.0 不得默认开启执行引擎"
+    # V6.0：执行引擎已经是日常生产路径的一部分，出厂值改为开启；这里校验形状与上界，
+    # 而不是钉死某个布尔值（钉死了每换一次默认值就要改测试）。
+    assert isinstance(execution.enabled, bool)
     assert execution.max_concurrency == 1
     assert execution.lease_seconds == 300
     assert execution.heartbeat_seconds * 2 <= execution.lease_seconds

@@ -97,6 +97,7 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("POST", "/api/workspace/jobs/{job_id}/render"): HUMAN_ONLY,
     ("GET", "/api/workspace/jobs/{job_id}/render"): HUMAN_ONLY,
     ("GET", "/api/workspace/jobs/{job_id}/file"): HUMAN_ONLY,
+    ("POST", "/api/workspace/jobs/{job_id}/content-qc"): HUMAN_ONLY,
     ("GET", "/api/workspace/config"): HUMAN_ONLY,
 }
 

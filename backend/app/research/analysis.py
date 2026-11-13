@@ -38,12 +38,12 @@ _PROMPT_TEMPLATE = """研究目标：{objective}
 
 【候选数据点】（来自上述来源原文，可直接引用）
 {points}
-
+{skeleton}
 请输出 JSON，结构如下：
 {{
   "summary": "不超过200字的核心结论，结论必须是证据能支撑的",
   "findings": [
-    {{"claim": "一句话结论", "kind": "fact|inference|hypothesis",
+    {{"claim": "一句话结论", "kind": "fact|inference|hypothesis", "section": "骨架里的某一节 key",
       "source_ids": ["S01"], "numbers": ["1.52%"]}}
   ],
   "data_gaps": ["还缺什么证据才能回答研究目标"]
@@ -53,6 +53,7 @@ _PROMPT_TEMPLATE = """研究目标：{objective}
 - findings 3~6 条，每条 claim 不超过 60 字；summary 不超过 200 字；
 - 每条 source_ids 至少一个且在证据里存在；
 - numbers 只写证据里出现过的数字；
+- section 必须取上面骨架里列出的 key；某一节证据不足就不要硬写，放进 data_gaps；
 - 不要复述原文、不要把原文整句搬进 claim，要给出因果或结构上的判断；
 - **整个 JSON 控制在 1200 字以内**（写太长会被截断，反而丢掉全部结论）。
 """
@@ -87,6 +88,7 @@ class AnalysisFinding:
     kind: str
     source_ids: tuple[str, ...]
     numbers: tuple[str, ...] = ()
+    section: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -94,6 +96,7 @@ class AnalysisFinding:
             "kind": self.kind,
             "source_ids": list(self.source_ids),
             "numbers": list(self.numbers),
+            "section": self.section,
         }
 
 
@@ -110,6 +113,8 @@ class AnalysisResult:
     completion_tokens: int = 0
     cost_cny: float = 0.0
     dropped: tuple[str, ...] = field(default=())
+    framework_kind: str = ""
+    checklist: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -124,25 +129,60 @@ class AnalysisResult:
             "cost_cny": self.cost_cny,
             "dropped": list(self.dropped),
             "generated_by": "model",
+            "framework": self.framework_kind,
+            "checklist": self.checklist,
         }
 
     def to_markdown(self, *, objective: str = "") -> str:
         lines = ["# 分析小结（模型生成，仅依据下列证据）", ""]
         if objective:
             lines += [f"研究目标：{objective}", ""]
-        lines += [self.summary or "（模型没有给出小结）", "", "## 结论与推断", ""]
+        lines += [self.summary or "（模型没有给出小结）", ""]
         label = {"fact": "事实", "inference": "推断", "hypothesis": "假设"}
-        for item in self.findings:
+
+        def _render(item: AnalysisFinding) -> str:
             cites = "、".join(item.source_ids) or "无来源"
             numbers = "、".join(item.numbers)
             tail = f"（数字：{numbers}）" if numbers else ""
-            lines.append(f"- [{label.get(item.kind, item.kind)}] {item.claim} —— {cites}{tail}")
+            return f"- [{label.get(item.kind, item.kind)}] {item.claim} —— {cites}{tail}"
+
+        framework_sections = self._framework_sections()
+        if framework_sections:
+            lines += [f"## 按{self.checklist.get('title', '研究')}骨架组织结论", ""]
+            for section, items in framework_sections:
+                lines.append(f"### {section.title}")
+                lines.append("")
+                lines.append(f"> 要回答：{section.question}")
+                lines.append("")
+                if not items:
+                    lines.append("- （本节缺证据：抓到的材料还支撑不了这一节，不补写）")
+                else:
+                    lines += [_render(item) for item in items]
+                lines.append("")
+            unsectioned = [item for item in self.findings if not item.section]
+            if unsectioned:
+                lines += ["### 未归节的结论", ""]
+                lines += [_render(item) for item in unsectioned]
+                lines.append("")
+        else:
+            lines += ["## 结论与推断", ""]
+            lines += [_render(item) for item in self.findings]
+
         if self.data_gaps:
             lines += ["", "## 证据缺口", ""]
             lines += [f"- {gap}" for gap in self.data_gaps]
         if self.dropped:
             lines += ["", "## 被丢弃的结论（挂不上来源）", ""]
             lines += [f"- {item}" for item in self.dropped]
+        if self.checklist:
+            empty = self.checklist.get("empty_sections") or []
+            only_inference = self.checklist.get("inference_only_sections") or []
+            lines += ["", "## 骨架覆盖情况", ""]
+            lines.append(f"- 覆盖率：{self.checklist.get('coverage')}")
+            lines.append(f"- 完全没有结论的节：{'、'.join(empty) if empty else '无'}")
+            lines.append(
+                f"- 只有推断没有事实的节：{'、'.join(only_inference) if only_inference else '无'}"
+            )
         lines += [
             "",
             "---",
@@ -154,6 +194,20 @@ class AnalysisResult:
             "引用前仍需回原文核对口径与时点。",
         ]
         return "\n".join(lines) + "\n"
+
+    def _framework_sections(self) -> list[tuple[Any, list[AnalysisFinding]]]:
+        """按框架骨架给结论分组；没有框架或结果为空时返回空列表。"""
+
+        if not self.framework_kind:
+            return []
+        from backend.app.research.frameworks import framework_for
+
+        framework = framework_for(self.framework_kind)
+        grouped: list[tuple[Any, list[AnalysisFinding]]] = []
+        for section in framework.sections:
+            items = [item for item in self.findings if item.section == section.key]
+            grouped.append((section, items))
+        return grouped
 
 
 def _excerpt_for(ref: Any, excerpts: dict[str, str]) -> str:
@@ -205,13 +259,26 @@ def _point_block(digest: Any, max_points: int | None = None) -> str:
     return "\n".join(lines) if lines else "（没有候选数据点）"
 
 
-def build_messages(digest: Any, *, max_points: int | None = None) -> list[dict[str, str]]:
-    """把底稿变成一次模型请求的 messages（纯函数，便于测试）。"""
+def build_messages(
+    digest: Any,
+    *,
+    max_points: int | None = None,
+    framework: Any = None,
+) -> list[dict[str, str]]:
+    """把底稿变成一次模型请求的 messages（纯函数，便于测试）。
+
+    ``framework`` 给了就要求模型把每条结论挂到骨架的某一节；不给则是自由格式——
+    那种格式容易写成"通用行业介绍"，所以生产路径一律带上框架。
+    """
     objective = str(getattr(digest, "objective", "") or getattr(digest, "title", "") or "")
+    skeleton = ""
+    if framework is not None:
+        skeleton = "\n" + str(framework.prompt_block()) + "\n"
     user = _PROMPT_TEMPLATE.format(
         objective=objective or "（未指定）",
         sources=_source_block(digest),
         points=_point_block(digest, max_points),
+        skeleton=skeleton,
     )
     return [
         {"role": "system", "content": _PROMPT_SYSTEM},
@@ -226,12 +293,27 @@ def _known_source_ids(digest: Any) -> set[str]:
     }
 
 
-def parse_analysis(text: str, *, known_sources: Sequence[str] = ()) -> tuple[
-    str, tuple[AnalysisFinding, ...], tuple[str, ...], tuple[str, ...]
-]:
+def _normalize_section(raw: Any, framework: Any) -> str:
+    """只接受骨架里的 key；没有骨架时一律留空（不假装有结构）。"""
+
+    if framework is None:
+        return ""
+    from backend.app.research.frameworks import normalize_section
+
+    return normalize_section(str(raw or ""), framework)
+
+
+def parse_analysis(
+    text: str,
+    *,
+    known_sources: Sequence[str] = (),
+    framework: Any = None,
+) -> tuple[str, tuple[AnalysisFinding, ...], tuple[str, ...], tuple[str, ...]]:
     """解析模型输出，返回 (summary, findings, data_gaps, dropped)。
 
     挂不上已知来源的结论会被丢进 ``dropped``——**宁可少写一条，也不写没出处的判断**。
+    给了 ``framework`` 时，section 只认骨架里出现过的 key，其余归一成空串
+    （不猜、不硬塞到某一节里）。
     """
     cleaned = _CODE_FENCE.sub("", str(text or "")).strip()
     match = _JSON_BLOCK.search(cleaned)
@@ -267,8 +349,15 @@ def parse_analysis(text: str, *, known_sources: Sequence[str] = ()) -> tuple[
         numbers = tuple(
             dict.fromkeys(str(item) for item in (raw.get("numbers") or []) if str(item))
         )
+        section = _normalize_section(raw.get("section"), framework)
         findings.append(
-            AnalysisFinding(claim=claim, kind=kind, source_ids=source_ids, numbers=numbers)
+            AnalysisFinding(
+                claim=claim,
+                kind=kind,
+                source_ids=source_ids,
+                numbers=numbers,
+                section=section,
+            )
         )
     gaps = tuple(
         str(item).strip() for item in (payload.get("data_gaps") or []) if str(item).strip()
@@ -288,6 +377,7 @@ def analyze(
     model: str | None = None,
     max_tokens: int = 5000,
     purpose: str = "research.analyze",
+    framework: Any = None,
 ) -> AnalysisResult:
     """调用真实模型做一次分析。没有可用模型时抛 ``AnalysisError('no_model')``。"""
     from backend.app.capabilities.model import ModelRequest, get_model_gateway
@@ -342,7 +432,7 @@ def analyze(
         request = ModelRequest(
             provider=target_provider,
             model=target_model,
-            messages=build_messages(digest, max_points=points_cap),
+            messages=build_messages(digest, max_points=points_cap, framework=framework),
             purpose=purpose,
             temperature=0.2,
             max_tokens=tokens_cap,
@@ -392,7 +482,9 @@ def analyze(
 
     record = getattr(reply, "record", None)
     known = sorted(_known_source_ids(digest))
-    summary, findings, gaps, dropped = parse_analysis(reply.text, known_sources=known)
+    summary, findings, gaps, dropped = parse_analysis(
+        reply.text, known_sources=known, framework=framework
+    )
     return AnalysisResult(
         summary=summary,
         findings=findings,
@@ -405,6 +497,8 @@ def analyze(
         completion_tokens=completion_tokens,
         cost_cny=float(getattr(record, "cost_cny", 0.0) or 0.0),
         dropped=dropped,
+        framework_kind=str(getattr(framework, "kind", "") or ""),
+        checklist=framework.checklist([item.as_dict() for item in findings]) if framework else {},
     )
 
 

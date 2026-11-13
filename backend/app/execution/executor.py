@@ -712,15 +712,23 @@ class AgentExecutor:
     def _analyse_with_model(
         self, claim: Claim, digest: Any, caller: CallerContext, *, purpose: str
     ) -> Any:
-        """调真实模型做一次分析（失败抛 ``AnalysisError``，绝不用模板假装成功）。"""
-        from backend.app.research.analysis import analyze
+        """调真实模型做一次分析（失败抛 ``AnalysisError``，绝不用模板假装成功）。
 
+        按研究目标自动挑骨架（行业 / 产业链 / 公司）——骨架只决定"该回答哪些问题"，
+        不改变模型只能引用给定证据这条硬规则。
+        """
+        from backend.app.research.analysis import analyze
+        from backend.app.research.frameworks import framework_for
+
+        objective = self._task_objective(claim.task_id) or digest.objective
+        framework = framework_for(objective)
         return analyze(
             digest,
             gateway=self._model_gateway,
             caller=caller,
             budget=self._budget_for(claim),
             purpose=purpose,
+            framework=framework,
         )
 
     def _write_analysis(
@@ -805,6 +813,8 @@ class AgentExecutor:
                 "analysis_done": True,
                 "analysis": analysis.as_dict(),
                 "analysis_files": files,
+                "framework": getattr(analysis, "framework_kind", ""),
+                "framework_checklist": getattr(analysis, "checklist", {}) or {},
                 "note": (
                     "小结与结论由模型基于上述证据生成，每条都挂了来源编号；"
                     "证据不足的部分写在 data_gaps 里，未填。"
@@ -869,6 +879,8 @@ class AgentExecutor:
                 "report_ready": True,
                 "analysis": analysis.as_dict(),
                 "analysis_files": files,
+                "framework": getattr(analysis, "framework_kind", ""),
+                "framework_checklist": getattr(analysis, "checklist", {}) or {},
                 "note": (
                     "结论段由模型基于已抓取证据写成，每条结论都挂了来源编号；"
                     "data_gaps 里列出还缺什么证据。"

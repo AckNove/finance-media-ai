@@ -152,4 +152,14 @@ video { width: 100%; max-height: 620px; border-radius: 10px; background: #000; }
 .split { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 @media (max-width: 1100px) { .split { grid-template-columns: 1fr; } }
 .muted { color: var(--dim); }
+.alert {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0 14px;
+  background: var(--panel-2);
+  line-height: 1.6;
+}
+.alert.ok { border-color: #46621a; }
+.alert.danger { border-color: #6b2a2a; }
 .empty { color: var(--dim); padding: 18px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }

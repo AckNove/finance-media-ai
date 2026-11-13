@@ -25,12 +25,14 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from backend.app.core.config import PROJECT_ROOT
 
 JOBS_ROOT = PROJECT_ROOT / "content" / "jobs"
+INVALIDATION_FILE = "INVALIDATED.md"
 JOB_DIRS: tuple[str, ...] = (
     "research",
     "script",
@@ -502,10 +504,114 @@ def create_video_job(
     )
 
 
+def _load_job_manifest(job_json: Path) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(job_json.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def jobs_using_checks(
+    check_ids: Iterable[int], *, root: Path | None = None
+) -> list[Path]:
+    """找出 `job.json` 里 `draft_gate.check_ids` 命中给定核查记录的任务目录。"""
+
+    wanted = {int(item) for item in check_ids if item is not None}
+    if not wanted:
+        return []
+    base = root or JOBS_ROOT
+    if not base.is_dir():
+        return []
+    hits: list[Path] = []
+    for job_json in sorted(base.glob("*/job.json")):
+        payload = _load_job_manifest(job_json)
+        if payload is None:
+            continue
+        gate = payload.get("draft_gate")
+        if not isinstance(gate, dict):
+            continue
+        ids = {
+            int(item)
+            for item in (gate.get("check_ids") or [])
+            if isinstance(item, (int, str)) and str(item).isdigit()
+        }
+        if ids & wanted:
+            hits.append(job_json.parent)
+    return hits
+
+
+def invalidate_jobs(
+    check_ids: Iterable[int],
+    *,
+    reason: str,
+    root: Path | None = None,
+    now: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """人工撤回确认后，把用到这些核查结果的视频任务标记为失效。
+
+    只在任务目录里写标记（`job.json` 的 `draft_gate.invalidated_*` + `INVALIDATED.md`），
+    **不删除任何产物**：片子还在，但它已经不能当作"经人工确认的成稿"使用。
+    """
+
+    stamp = (now or datetime.now(UTC)).isoformat(timespec="seconds")
+    affected: list[dict[str, Any]] = []
+    for directory in jobs_using_checks(check_ids, root=root):
+        job_json = directory / "job.json"
+        payload = _load_job_manifest(job_json)
+        if payload is None:  # pragma: no cover - 上面刚读过
+            continue
+        gate = payload.setdefault("draft_gate", {})
+        hit_ids = sorted(
+            {
+                int(item)
+                for item in (gate.get("check_ids") or [])
+                if str(item).isdigit() and int(item) in {int(x) for x in check_ids}
+            }
+        )
+        gate["invalidated_at"] = stamp
+        gate["invalidated_reason"] = reason
+        gate["invalidated_check_ids"] = hit_ids
+        gate["usable"] = False
+        job_json.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8"
+        )
+        (directory / INVALIDATION_FILE).write_text(
+            "\n".join(
+                [
+                    "# 这个视频任务已经失效",
+                    "",
+                    f"- 时间：{stamp}",
+                    f"- 原因：{reason}",
+                    f"- 涉及的核查记录：{'、'.join(str(item) for item in hit_ids) or '无'}",
+                    "",
+                    "人工把对应结论的确认状态改回去了（rejected / needs_more_evidence / pending），",
+                    "所以这条片子不能再当作「经人工确认的成稿」使用。",
+                    "产物文件没有被删除：要恢复使用，先回到「语义核查」页重新确认结论，",
+                    "再从报告重新开一个视频任务。",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        affected.append(
+            {
+                "job_id": directory.name,
+                "path": str(directory),
+                "check_ids": hit_ids,
+                "invalidated_at": stamp,
+            }
+        )
+    return affected
+
+
 __all__ = [
+    "INVALIDATION_FILE",
     "JOB_DIRS",
     "JOBS_ROOT",
     "VideoHandoffError",
     "VideoJobScaffold",
     "create_video_job",
+    "invalidate_jobs",
+    "jobs_using_checks",
 ]

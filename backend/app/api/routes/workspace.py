@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -61,6 +62,27 @@ def _read_csv(path: Path, limit: int = MAX_PREVIEW_ROWS) -> dict[str, Any]:
     }
 
 
+def _draft_gate_of(job_dir: Path) -> dict[str, Any]:
+    """读 `job.json` 里的成稿闸门与失效标记（没有就返回空，不猜）。"""
+
+    job_json = job_dir / "job.json"
+    try:
+        payload = json.loads(job_json.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    gate = payload.get("draft_gate") if isinstance(payload, dict) else None
+    if not isinstance(gate, dict):
+        return {}
+    return {
+        "rule": gate.get("rule", ""),
+        "check_ids": gate.get("check_ids") or [],
+        "confirmed_findings": gate.get("confirmed_findings") or [],
+        "usable": bool(gate.get("usable", True)),
+        "invalidated_at": gate.get("invalidated_at") or "",
+        "invalidated_reason": gate.get("invalidated_reason") or "",
+    }
+
+
 def _job_summary(job_dir: Path) -> dict[str, Any]:
     output_dir = job_dir / "output"
     videos = (
@@ -75,6 +97,7 @@ def _job_summary(job_dir: Path) -> dict[str, Any]:
     return {
         "job_id": job_dir.name,
         "has_output": bool(videos),
+        "draft_gate": _draft_gate_of(job_dir),
         "outputs": [
             {"name": item.name, "byte_size": item.stat().st_size} for item in videos
         ],
@@ -287,6 +310,30 @@ def get_job_file(
             "该类型文件不提供预览", details={"reason": "unsupported_preview"}
         )
     return FileResponse(target)
+
+
+@router.post(
+    "/jobs/{job_id}/content-qc",
+    summary="内容质检（数字出处 / 来源覆盖 / 字幕来源 / 素材授权）",
+)
+def run_content_qc(job_id: str = PathParam(min_length=1, max_length=80)) -> dict[str, Any]:
+    """对一份任务的**已有产物**做内容核对，结果写进 `qc/content_qc.{json,md}`。
+
+    只做可判定的检查（数字能不能在报告/证据里找到、每镜有没有来源、字幕是否来自旁白、
+    素材授权是否允许商用），**不判断好不好看**——那必须人看片。
+    """
+    from backend.app.video.content_qc import ContentQcError, review_and_write
+
+    job_dir = _resolve_inside(JOBS_ROOT / job_id, JOBS_ROOT)
+    if not job_dir.is_dir():
+        raise NotFoundError(f"任务目录不存在：{job_id}", details={"reason": "unknown_job"})
+    try:
+        report, files = review_and_write(job_id, root=JOBS_ROOT)
+    except ContentQcError as error:
+        return {"ok": False, "blocked": True, "reason": error.reason, "message": str(error)}
+    payload = report.as_dict()
+    payload["files"] = files
+    return payload
 
 
 @router.get("/search", summary="真实网络搜索（搜狗/360/bing 降级）")

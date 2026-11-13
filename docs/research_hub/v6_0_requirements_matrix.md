@@ -1,0 +1,160 @@
+# V6.0 需求追踪矩阵（自主接管审计）
+
+> 本文件是 V6.0 总任务书第一部分~第三部分要求的**需求追踪矩阵**，按"原始需求 → 实现位置 →
+> 验收标准 → 当前状态"逐条登记。状态取值只用任务书 4.5 定义的六种：
+> `DONE` / `PARTIAL` / `TEST_ONLY` / `CODE_ONLY` / `BLOCKED` / `NOT_IMPLEMENTED`。
+>
+> 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
+> 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
+> 本文件随开发推进**就地更新**，不另开副本。
+
+## 0. 审计方法
+
+| 手段 | 说明 |
+| --- | --- |
+| 代码 | 直接读 `backend/app/**`、`web/**`、`scripts/**`、`config/*.yaml` |
+| 接口 | `create_app().openapi()` 打印全部路径，逐个核对是否接真数据 |
+| 数据 | 29 张表的 ORM 定义与迁移文件逐条比对（`alembic check` 无漂移） |
+| 运行 | 临时库 + 真 uvicorn + 真搜索 + 真模型跑端到端，读库核对行数 |
+| 反向 | 未授权身份、非法输入、预算不足、模型超时、抓取失败、审核撤销等场景 |
+
+## A. 基础设施与运行环境
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 目录与模块边界 | `backend/app/{api,core,capabilities,execution,research,video,services,models,schemas}` | DONE | — |
+| 配置管理 | `config/*.yaml` + `core/config.py` + `core/config_schema.py`（全 `extra="forbid"`） | DONE | — |
+| 数据库访问层 | `database/session.py`（连接级 3 条 PRAGMA）+ `models/` | DONE | — |
+| 迁移框架 | `backend/migrations/versions/` 6 个版本 | DONE | — |
+| 日志与异常 | `core/logging.py` + `core/errors.py` + `api/middleware.py`（request_id） | DONE | — |
+| 任务队列 / 状态持久化 / 并发 | `execution/{runtime,worker,orchestrator}.py`（租约 + attempt_token + 事件序号） | DONE | — |
+| Windows 启动脚本 | `scripts/start.ps1`（BOM、端口检查、健康探测） | DONE | — |
+| Windows 停止脚本 | — | **NOT_IMPLEMENTED** | 本轮补 |
+| 数据备份与恢复 | — | **NOT_IMPLEMENTED** | 本轮补 |
+| 环境诊断 | `backend/scripts/preflight.py` | PARTIAL | 只查依赖/配置，不查 FFmpeg/浏览器/端口/库版本 |
+| 服务健康检查 | `GET /health`、`GET /api/system/status` | DONE | — |
+| 服务自动恢复 | — | **NOT_IMPLEMENTED** | 本轮补（watchdog + 崩溃日志） |
+| 系统运行监控 | `GET /api/system/{costs,providers,agents}` | PARTIAL | 只有当前快照，无历史曲线 |
+
+## B. 模型系统
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| Model Gateway / Provider Registry / 配置 | `capabilities/model/{gateway,providers,tokens,tool}.py` + `config/models.yaml` | DONE | — |
+| 输入输出分开计费 / 成本估算与实记 | `tokens.py` + `gateway.py`（复算后写 `model_calls`） | DONE | — |
+| 预算管理（单次/任务/当日） | `capabilities/budget.py` + `execution` 预算列 | DONE | — |
+| 限流 / 超时 / 重试 | `gateway.py`（`_LocalLimiter`、`timeout`、`retries`） | DONE | — |
+| 未知价目阻止请求 | `gateway.py` → `budget_blocked/pricing_missing` | DONE | — |
+| 审计与密钥脱敏 | `model_calls` 表 + `_redact` + `mask_secret` | DONE | — |
+| 模型可用性检查 | `provider_status()` + `/api/system/providers` + `preflight` | DONE | — |
+| 模型降级（主模型失败切备用） | — | **NOT_IMPLEMENTED** | 本轮补 `models.yaml` 的 fallback 链 |
+
+## C. Agent / Skill / Tool / 编排
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| Agent Registry | `config/agent_routing.yaml` + `execution/routing.py` + 9 份 `agents/*/PROMPT.md` | DONE | — |
+| Skill Registry | `backend/app/skills/registry.py` + `skills/registry.yaml`（5 个 Skill，含 sha256） | PARTIAL | Skill 内容还没注入到提示词 |
+| Tool Registry | `capabilities/tools.py`（10 个工具全部 `implemented=True`） | DONE | — |
+| Agent 权限 | `core/caller.py` + `capabilities/guard.py`（agent_only / db_scopes / 白名单） | DONE | — |
+| Agent 执行状态 | `agent_runs` 表（`agent`、`task_id`、`subtask_id`、`status`、`cost_estimate`） | DONE | — |
+| Agent 间协作 | `handoff` 工具（五型，`need_human` 会改状态） | DONE | — |
+| TaskRuntime / Orchestrator / 依赖 / 动态任务 / 失败传播 / 重试 | `execution/{runtime,orchestrator,executor}.py` | DONE | — |
+| 执行日志 / 运行成本 | `task_events` + `task.plan` + 预算列 | DONE | — |
+| "不同 Prompt ≠ 多个 Agent" 这条反例检查 | 9 个角色里真正被 `_handlers` 调用的只有 5 条链路 | PARTIAL | 需在文档写清哪些角色只是名册 |
+
+## D. 信息获取与研究资料
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 网络搜索 | `capabilities/search/{engine,safety}.py`（bing/sogou/so360） | DONE | — |
+| 网页抓取 / 正文提取 / 快照 | `capabilities/search/fetcher.py` + `data/snapshots/` | DONE | — |
+| PDF / Excel / CSV 解析与表格提取 | `capabilities/adapters/markitdown_adapter.py` + `structured.py` | DONE | — |
+| Word(docx) 解析 | `markitdown_adapter.py` 已映射 `.docx`，但无对外工具 | PARTIAL | 本轮补工具或明确不支持 |
+| 来源记录 / 发布时间 | `sources` 表（`published_at`、`site_name`、`sha256`、`snapshot_path`） | DONE | — |
+| 来源可信度管理 | — | **NOT_IMPLEMENTED** | 本轮补 `source_quality`（域名分级） |
+| 数据时效性判断 | — | **NOT_IMPLEMENTED** | 本轮补 `freshness` 判定 |
+| 重复内容识别 | `topics.dedupe_key`（选题域） | PARTIAL | 来源/证据层没有 |
+| 来源冲突识别 | `research/corroborate.py` | DONE | — |
+| Evidence / Finding 管理 | `evidence` 表 + `finding_checks` + `research_reports.findings` | DONE | — |
+
+## E. 行业 / 产业链 / 公司研究
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 通用研究闭环 | `research/{digest,analysis,verify,corroborate,persistence}.py` | DONE | — |
+| 行业研究十维度（定义/阶段/规模/结构/供需/格局/驱动/周期/政策/风险） | — | **NOT_IMPLEMENTED** | 本轮补结构化框架 |
+| 产业链研究十二维度（上中下游/原材料/设备/技术/环节/成本/供应链/价值分配/瓶颈/机会） | — | **NOT_IMPLEMENTED** | 同上 |
+| 公司研究十四维度（基本信息…最新动态） | — | **NOT_IMPLEMENTED** | 同上 |
+| 事实 / 推断 / 观点区分 | `analysis.py` 的 `kind` + 语义核查 | DONE | — |
+| 数据缺口 / 冲突 / 时效 / 局限 | 报告 `limitations` + `data_gaps` | PARTIAL | 缺口没有独立结构化输出 |
+
+## F. 语义核查与人工审核
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 逐条核查 + 五档判定 | `research/semantic.py` | DONE | `contradicted` 无真实样本（TEST_ONLY 那一档） |
+| 八类错误码 | `ISSUE_CODES` | DONE | — |
+| 12 项留痕 | `finding_checks` 表 | DONE | — |
+| 模型状态与人工状态分离 | `verdict` vs `human_review_status` | DONE | — |
+| 只有人工确认才能成稿 | `research/draft_gate.py`（视频任务 + 脚本两个出口） | DONE | — |
+| 视频任务锁定 Finding/Evidence/Source | `video/handoff.py`（`job.json.draft_gate`） | DONE | — |
+| 审核撤销后已有任务失效处理 | — | **NOT_IMPLEMENTED** | 本轮补 |
+
+## G. 内容策划与脚本
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 选题管理 / 优先级 / 合集 | `topics` 表 + `/api/topics/*` | DONE | 优先级只有 `score_total` 手工值 |
+| 热点发现 / 选题推荐 | — | **NOT_IMPLEMENTED** | 本轮补（基于已抓取来源的规则推荐） |
+| 报告 → 内容策划（定位/受众/标题/钩子/故事线/结构/观点） | `web/app.js#pagePlanning` 只做展示 | PARTIAL | 后端无策划产物 |
+| 脚本生成（AK 风格） | `script` 状态机 + `agents/scriptwriter/PROMPT.md` | PARTIAL | 生成仍是规则 + 人工写 |
+| 多平台内容适配 | — | **NOT_IMPLEMENTED** | 本轮补（公众号/抖音/小红书三版） |
+| 内容审核 | `/api/reviews` + `review_service` | DONE | — |
+
+## H. 视频生产
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 分镜 / 时间轴 / 转场 / 渲染 | `video/{outline,render,narration,cards}.py` + OpenKatana | DONE | — |
+| 图表生成 | `analysis/charts.py` + `chart_from_table.py` | DONE | — |
+| 中文 TTS / 字幕 | `capabilities/tts/`（edge-tts WordBoundary + sapi 兜底） | DONE | — |
+| 素材搜索与获取（真实素材） | — | **NOT_IMPLEMENTED** | 只用自绘图与纯视觉底板（诚实记录） |
+| 动态产业链图 / 动画 | 组合 + 轨道（`cards.py`） | PARTIAL | 无产业链专用图形 |
+| 背景音乐管理 | `synthesize_score`（OpenKatana 合成） | PARTIAL | 无曲库与授权记录 |
+
+## I. 视频质量控制
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 技术 QC 十项 | `video/qc.py`（黑帧/静帧/静音/时长/音画等长…） | DONE | — |
+| 内容 QC（数字/单位/日期/图表与旁白一致/来源可追溯） | 卡片数字规则 + `corroborate` 部分覆盖 | PARTIAL | 缺程序化内容 QC 报告 |
+| 字幕错字 / 节奏 / 开头吸引力 | — | BLOCKED | 需人看片，不做假装 |
+
+## J. 前端工作台
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 19 个页面接真接口 | `web/app.js`（68 KB，无静态假数据） | DONE | — |
+| 研究规划 / 子任务 / 成本 / 阻塞原因 | `pageTaskDetail` 的规划卡 | DONE | — |
+| 语义核查 + 人工复核 | `pageChecks` | DONE | 真机点击已验证（`backend/scripts/ui_acceptance.py`） |
+| 历史任务 / 错误信息页 | — | PARTIAL | 任务页只列最近 50 条 |
+
+## K. 自媒体运营管理
+
+| 需求 | 实现位置 | 状态 | 差距 |
+| --- | --- | --- | --- |
+| 内容日历 / 排期 / 状态 | — | **NOT_IMPLEMENTED** | 本轮补 |
+| 导出记录 / 发布记录 / 多平台适配 | — | **NOT_IMPLEMENTED** | 本轮补（发布只记录，不自动发） |
+| 账号数据导入 / 播放量 / 互动分析 | — | **NOT_IMPLEMENTED** | 本轮补（CSV 导入 + 汇总） |
+
+## 优先级与执行顺序（自主决定，不等确认）
+
+1. **A 基础设施缺口**：停止脚本、备份/恢复、诊断、watchdog（无外部依赖，立刻可做）。
+2. **K 运营模块**：内容日历与效果数据（需要 1 张新表 + API + 页面）。
+3. **E + I**：行业/产业链/公司研究框架、内容 QC 程序化检查。
+4. **B + D + F 的零散缺口**：模型降级、来源可信度与时效、审核撤销失效。
+5. **三个真实研究主题验收 + 一条完整视频链路**。
+6. 自审、反向测试、文档与最终验收报告。
+
+> 每完成一项就在这里把状态改成 `DONE` 并补一节"证据"（命令 + 输出 + 文件路径）。

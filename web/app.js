@@ -539,7 +539,7 @@ const HUMAN_LABEL = {
 };
 
 function verdictTag(verdict) {
-  const map = { supported: 'ok', partially_supported: 'info', contradicted: 'danger', insufficient_evidence: 'warn', unverifiable: '' };
+  const map = { supported: 'ok', partially_supported: 'info', contradicted: 'bad', insufficient_evidence: 'warn', unverifiable: '' };
   const tone = map[verdict] || '';
   return `<span class="tag ${tone}">${esc(VERDICT_LABEL[verdict] || verdict)}</span>`;
 }
@@ -553,6 +553,23 @@ function quoteList(items) {
   const list = Array.isArray(items) ? items : [];
   if (!list.length) return '<span class="muted">—</span>';
   return list.map((item) => `<div class="quote">${esc(item)}</div>`).join('');
+}
+
+// 视频任务卡上的成稿闸门提示：任务是不是还在用"人工已确认"的结论
+function gateBanner(gate) {
+  if (!gate || (!gate.rule && !gate.check_ids)) return '';
+  const ids = Array.isArray(gate.check_ids) ? gate.check_ids : [];
+  if (gate.usable === false) {
+    return `<div class="alert danger">
+      <strong>这个任务已失效</strong>：${esc(gate.invalidated_reason || '人工撤回了结论确认')}
+      <div class="muted">${esc(gate.invalidated_at || '')} · 关联核查记录 ${ids.map((id) => '#' + id).join('、') || '—'}</div>
+      <div class="muted">产物没被删除，但它已经不能当作"经人工确认的成稿"使用。回到「语义核查」重新确认结论后，从报告重新开一个视频任务。</div>
+    </div>`;
+  }
+  return `<div class="alert ok">
+    成稿闸门：本任务只用了 <strong>${ids.length}</strong> 条人工已确认的结论
+    <span class="muted">（核查记录 ${ids.map((id) => '#' + id).join('、') || '—'}）</span>
+  </div>`;
 }
 
 async function pageChecks(view) {
@@ -1014,6 +1031,7 @@ async function pageVideo(view) {
   view.innerHTML = `
     <div class="card">
       <h2>${esc(job.job_id)}</h2>
+      ${gateBanner(job.draft_gate)}
       <div class="row">
         ${withOutput.map((item) => `<a class="btn ${item.job_id === job.job_id ? '' : 'ghost'}" href="#/video?job=${item.job_id}">${esc(item.job_id)}</a>`).join('')}
       </div>
@@ -1029,6 +1047,7 @@ async function pageVideo(view) {
       <div class="row">
         <button class="btn" id="build-timeline">只生成时间轴</button>
         <button class="btn ghost" id="render-film">渲染成片（十几分钟）</button>
+        <button class="btn ghost" id="content-qc">内容质检（数字/来源/字幕）</button>
       </div>
       <div class="row">
         <label class="muted"><input type="checkbox" id="with-narration">
@@ -1069,6 +1088,32 @@ async function pageVideo(view) {
 
   document.getElementById('build-timeline').onclick = () => runPipeline(false);
   document.getElementById('render-film').onclick = () => runPipeline(true);
+
+  const qcButton = document.getElementById('content-qc');
+  if (qcButton) {
+    qcButton.onclick = async () => {
+      const out = document.getElementById('pipeline-out');
+      qcButton.disabled = true;
+      out.innerHTML = '<div class="note">正在核对画面上的数字、来源与字幕…</div>';
+      const result = await api(`/workspace/jobs/${job.job_id}/content-qc`, { method: 'POST' });
+      qcButton.disabled = false;
+      if (!result.ok) { out.innerHTML = failure(result); return; }
+      const data = result.data;
+      if (data.blocked) {
+        out.innerHTML = `<div class="note warn">${esc(data.message || data.reason || '没法核对')}</div>`;
+        return;
+      }
+      const errors = (data.errors || []).map((item) => `✗ ${item.check}${item.shot_id ? '（' + item.shot_id + '）' : ''}: ${item.detail}`);
+      const warnings = (data.warnings || []).map((item) => `! ${item.check}${item.shot_id ? '（' + item.shot_id + '）' : ''}: ${item.detail}`);
+      out.innerHTML = `
+        <div class="note ${data.ok ? 'ok' : 'warn'}">内容质检${data.ok ? '：没发现硬错' : '：有硬错'} ·
+          ${data.stats.shots} 镜 · 画面数字 ${data.stats.distinct_numbers_on_screen} 个</div>
+        ${errors.length ? `<pre>${esc(errors.join('\n'))}</pre>` : ''}
+        ${warnings.length ? `<pre>${esc(warnings.join('\n'))}</pre>` : ''}
+        <p class="muted">${esc(data.note || '')}</p>
+        <p class="muted">结果已写入 ${esc((data.files || {}).markdown || '')}</p>`;
+    };
+  }
 }
 
 async function pageReview(view) {

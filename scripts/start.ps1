@@ -24,6 +24,8 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 $OutputEncoding = [System.Text.Encoding]::UTF8
+# 子进程（uvicorn/预检）输出中文，控制台按 UTF-8 解码，否则满是乱码
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 
 function Write-Step($message) { Write-Host "[start] $message" -ForegroundColor Cyan }
 function Write-Warn($message) { Write-Host "[start] $message" -ForegroundColor Yellow }

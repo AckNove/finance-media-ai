@@ -45,7 +45,7 @@ pagination:
 # --- M2.0 新增：执行层开关 ---
 # 只有 execution 相关能力全部就绪后才会被置为 true；2.0 阶段一律 false。
 execution:
-  enabled: false
+  enabled: true
   worker_poll_seconds: 1.0
   # 本地单机 SQLite 只允许串行消费（M2.0 D12）
   max_concurrency: 1
@@ -74,8 +74,11 @@ features:
   # 真实模型调用开关。2026-11-12 用户提供 DeepSeek API Key 并授权启用。
   # 关掉它就是"一键停服"：网关会在发请求之前返回 feature_disabled，不花钱。
   model: true
-  search: false
-  execution: false
+  # 联网检索总闸（V6.0 起工具层也读它：web_search / fetch_url 都会被挡住）。
+  # 打开只是允许联网抓公开页面，不产生任何付费调用。
+  search: true
+  # 任务执行开关。run_worker.py 会读它；关掉时 worker 拒绝启动（除非 --force）。
+  execution: true
 
 # --- 第二阶段预留：模型与检索接入（第一阶段未实现任何调用） ---
 integrations:

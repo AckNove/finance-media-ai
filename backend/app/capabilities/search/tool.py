@@ -25,6 +25,33 @@ from backend.app.capabilities.tools import ToolResult
 from backend.app.core.caller import CallerContext
 
 
+def _search_enabled() -> bool:
+    """``features.search`` 是**唯一**的联网检索总闸。
+
+    V5.0 之前这个开关只挡工作台的搜索页，流水线里的 ``web_search`` 照跑——
+    于是"关掉"是假的。现在工具层也读同一个开关：关着就明确拒绝，不偷偷联网。
+    """
+
+    try:
+        from backend.app.core.config import get_features_settings
+
+        return bool(get_features_settings().search)
+    except Exception:  # pragma: no cover - 配置坏掉时不阻塞，交给上层报错
+        return True
+
+
+def _disabled(tool: str) -> ToolResult:
+    return ToolResult(
+        status="error",
+        error_code="feature_disabled",
+        error_message=(
+            f"{tool} 需要联网检索，但 config/settings.yaml 里 features.search=false。"
+            "把 features.search 改成 true 再试；关着时系统不会发起任何外部请求。"
+        ),
+        data={"feature": "search", "enabled": False},
+    )
+
+
 def make_web_search(*, transport: Any = None) -> Any:
     """构造 ``web_search`` provider（``transport`` 仅供测试注入 MockTransport）。"""
 
@@ -39,6 +66,8 @@ def make_web_search(*, transport: Any = None) -> Any:
         providers: Sequence[str] | None = None,
         **_: Any,
     ) -> ToolResult:
+        if not _search_enabled():
+            return _disabled("web_search")
         try:
             query = SearchQuery(
                 keywords=keywords,
@@ -82,6 +111,8 @@ def make_fetch_url(*, transport: Any = None) -> Any:
         max_bytes: int = 5_000_000,
         **_: Any,
     ) -> ToolResult:
+        if not _search_enabled():
+            return _disabled("fetch_url")
         try:
             page = fetch_page(
                 url,

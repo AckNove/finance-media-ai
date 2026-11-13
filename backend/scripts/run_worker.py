@@ -59,6 +59,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--forever", action="store_true", help="一直挂着，不因空闲退出")
     parser.add_argument("--max-iterations", type=int, default=0,
                         help="最多推进多少轮（0 表示不设上限）")
+    parser.add_argument("--force", action="store_true",
+                        help="即使 config/settings.yaml 里 execution.enabled=false 也照跑（调试用）")
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -73,6 +75,14 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     execution = get_execution_settings()
+    if not execution.enabled and not args.force:
+        _print({
+            "error": "execution_disabled",
+            "message": "执行开关未启用：把 config/settings.yaml 的 execution.enabled 改成 true，"
+                       "或者确知自己在做什么时加 --force。",
+            "execution_enabled": False,
+        })
+        return 4
     poll_seconds = float(args.poll_seconds or execution.worker_poll_seconds or 2.0)
     runtime = TaskRuntime(
         lease_seconds=execution.lease_seconds,
