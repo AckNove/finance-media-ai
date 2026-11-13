@@ -168,6 +168,22 @@ qc/              技术质检 + 内容质检
 - **内容质检**（`python -m backend.scripts.content_qc --job my_film`）：上屏数字能不能在材料里找到、
   每镜有没有来源、字幕是不是从旁白来的、素材授权。**它不判断好不好看**——那必须人看片。
 
+### 4.1 加背景音乐（先验授权，再混音）
+
+默认配乐是本地合成的（`synthesize_score`，不含版权素材）。想换成人手选的曲子：
+
+```powershell
+# 1) 把音频放进 content/assets/bgm/，在 library.yaml 里登记（授权必须可商用）
+# 2) 看曲库体检
+.venv\Scripts\python.exe -m backend.scripts.bgm_check --list
+# 3) 混音（授权不过会直接拒绝，不会生成半个文件）
+.venv\Scripts\python.exe -m backend.scripts.mix_bgm --video content/jobs/my_film/output/final.mp4 `
+    --track calm-01 --out content/jobs/my_film/output/final_bgm.mp4 --volume 0.3
+```
+
+授权白名单：`cc0 / public-domain / cc-by / cc-by-4.0 / cc-by-sa / royalty-free / purchased / own-work`。
+`cc-by*` 必须写 `attribution`，否则拒绝——这条不是提醒，是硬拒绝。
+
 ---
 
 ## 5. 运营（内容日历）

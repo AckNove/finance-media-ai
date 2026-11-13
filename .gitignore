@@ -70,6 +70,10 @@ logs/
 *.psd
 *.aep
 content/assets/**
+# 曲库的登记表与说明要入库（音频文件本身仍然忽略，见上面的 *.mp3/*.wav）
+!content/assets/bgm/
+!content/assets/bgm/README.md
+!content/assets/bgm/library.yaml
 video_engine/render_tmp/**
 !**/.gitkeep
 

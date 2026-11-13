@@ -9,7 +9,7 @@
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、70 个 API 操作、
-> 20 个前端页面、`pytest` 1029 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、`pytest` 1044 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -126,7 +126,7 @@
 | 中文 TTS / 字幕 | `capabilities/tts/`（edge-tts WordBoundary + sapi 兜底） | DONE | — |
 | 素材搜索与获取（真实素材） | — | **NOT_IMPLEMENTED** | 只用自绘图与纯视觉底板（诚实记录） |
 | 动态产业链图 / 动画 | 组合 + 轨道（`cards.py`） | PARTIAL | 无产业链专用图形 |
-| 背景音乐管理 | `synthesize_score`（OpenKatana 合成） | PARTIAL | 无曲库与授权记录 |
+| 背景音乐管理 | `backend/app/video/bgm.py`（曲库登记 + 授权白名单）+ `backend/scripts/mix_bgm.py`（先验授权再混音） | DONE | 曲库自带是空的（诚实状态）：默认走 `synthesize_score` 合成配乐；要加曲目必须登记授权，白名单外一律拒绝，cc-by 类强制写署名 |
 
 ## I. 视频质量控制
 
