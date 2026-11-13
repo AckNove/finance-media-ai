@@ -292,3 +292,63 @@ pytest -o addopts=""        # 全量：839 passed, 2 skipped, 1 warning
 3. **规划结果进任务结构**：把模型规划的子任务直接写成 `research_subtasks`（而不是只放在 plan 阶段输出里），前端就能显示「计划的 vs 实际跑的」。
 4. **人工复核闭环**：`confirmed` 目前只改核查行；应该规定「结论没 `confirmed` 就不许进成稿」（口径要你定）。
 5. **前端真点一遍**：页面已接真接口，建议在浏览器里走 `#/tasks/1` → `#/checks?report=1` → 点一次「人工确认」。
+
+---
+
+## 13. 追加能力：成稿闸门（confirmed 才能进成稿）
+
+> 2026-11-13 追加。起因是你问了两个问题：「链接打不开」和「结论必须 confirmed 才能进入成稿吧」。
+> 后者原本只是本报告 §12 的一条**建议**（"口径要你定"），现在按你的口径落成**硬闸门**。
+
+### 13.1 规则
+
+一条结论要进成稿，必须同时满足：
+
+1. 报告里存在这条结论（按 `finding_index` 对齐）；
+2. `finding_checks` 里有它的一行核查记录；
+3. 其 `human_review_status = "confirmed"`（人在核查页点过，并写了理由）。
+
+模型判定 `supported` **不算数**——`supported` 只是 `verdict`，与 `human_review_status` 是两条互不覆盖的状态线。
+
+拦截点（三处，同一个判据，代码只有一份）：
+
+| 位置 | 文件 | 行为 |
+| --- | --- | --- |
+| 建视频任务（API） | `backend/app/api/routes/research_reports.py` | 409 `ConflictError`，`details` 带完整 readiness |
+| 建视频任务（交接层） | `backend/app/video/handoff.py` | `VideoHandoffError("draft_not_confirmed")`，**在创建任务目录之前**就拒绝 |
+| 命令行出片 | `backend/scripts/produce_video.py` | 退出码 3，打印 `draft_readiness` 与 `next_step` |
+
+判据的唯一实现是 `backend/app/research/draft_gate.py`（`readiness_of` / `confirmed_findings` / `assert_draft_ready`），**没有任何"忽略闸门"的开关**。
+
+### 13.2 交接出去的稿子长什么样
+
+`content/jobs/<job>/research/report.md` 现在分两节：
+
+- 「可进成稿的结论（人工已确认）」——只放确认过的，每条标 `结论 #i（核查记录 #k｜模型判定 supported｜人工已确认）`；
+- 「尚未人工确认（不得进成稿）」——其余结论照样列出，标「待人工复核」。
+
+两类编号必须分开看：**结论序号来自报告**，**核查记录号来自 `finding_checks.id`**。第一版把两者都写成 `#N`，于是「核查 #4」和「未确认 #4」看起来像同一条，已改。
+
+### 13.3 真机验证（演示库，未用真实开发库）
+
+演示库 `%TEMP%\fmai_demo\demo.db`（从最近一次 e2e 临时库复制的副本），工作台跑在 `http://127.0.0.1:8000/app/`：
+
+| 步骤 | 请求 | 结果 |
+| --- | --- | --- |
+| 1 | `GET /api/research-reports/1/draft-readiness` | `allowed=false`、`reason=not_confirmed`、`total_checks=6`、`confirmed=0` |
+| 2 | `GET /api/research-reports/1/checks?limit=100` | 200，6 条，`notes=["usage_share:1/6"]` |
+| 3 | `POST .../checks/4/review {"status":"confirmed","note":"对照 S16 原文…"}` | 200，`human_review_status=confirmed` |
+| 4 | `GET .../draft-readiness` | `allowed=true`、`confirmed=1`、`by_human_review={"pending":5,"confirmed":1}` |
+| 5 | `POST /api/research-reports/1/video-job {"job_id":"gate_demo_after_confirm"}` | **201**、`stage=storyboard_ready`，产出 `content/jobs/gate_demo_after_confirm/` |
+
+### 13.4 顺带修掉的三个真缺陷
+
+1. **`GET /checks` 500（两处列形态）**：`finding_checks.notes` 实际写的是数组 `["usage_share:1/6"]`，schema 却声明成对象；`supporting/contradicting/missing` 可能为 NULL，schema 却声明成字符串。任何一个形态对不上，整个列表就 500。现在四种形态都收，并有回归用例 `test_checks_list_survives_the_notes_and_quotes_columns`。
+2. **失败不记账**：规划/分析/核查撞 `max_tokens` 时抛错，但**那几次调用是花了钱的**，任务成本却记 0。现在 `PlanningError`/`AnalysisError`/`SemanticError` 都带 `usage`，执行器用 `_usage_kwargs` 逐次入账；`research_tasks.cost_spent` 与 `SUM(model_calls.cost_estimate)` 一致（第九轮实测 4 次 ¥0.159294，任务行、调用明细、`/api/system/costs` 三方对齐）。
+3. **探针误触真实库（未写入）**：演示期有一次忘了传 `DATABASE_URL`，落到了真实开发库并尝试 `INSERT research_reports`，被 `table research_reports has no column named research_task_id` 挡住，**未写入任何数据**；此后所有建库/建任务命令都显式带 `--database-url` 或 `DATABASE_URL`。
+
+### 13.5 还没做的
+
+- 前端页面已接 `draft-readiness`（报告页新增「成稿闸门」列、核查页顶部显示闸门状态），但**还没在浏览器里真人点过**；
+- 闸门只管「建视频任务」这一条出口；`/api/scripts` 的脚本状态机尚未校验 `confirmed`（下一轮可接）；
+- `confirmed` 的审计目前只有 `human_note` / `human_reviewed_at`，没有独立的操作人字段（本地单人使用时足够）。

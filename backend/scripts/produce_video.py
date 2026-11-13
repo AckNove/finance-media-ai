@@ -25,6 +25,7 @@ from backend.app.database.session import build_engine
 from backend.app.models.evidence import Evidence
 from backend.app.models.research import ResearchReport
 from backend.app.models.source import Source
+from backend.app.research.draft_gate import confirmed_findings, readiness_of
 from backend.app.video.handoff import VideoHandoffError, create_video_job
 from backend.app.video.render import RenderError, render_job
 
@@ -95,10 +96,19 @@ def main(argv: Sequence[str] | None = None) -> int:
                 sources=sources,
                 job_id=args.job_id or f"report_{args.report_id}",
                 root=jobs_root,
+                confirmed=confirmed_findings(session, report),
             )
         except VideoHandoffError as error:
-            print(json.dumps({"ok": False, "stage": "handoff", "error": error.reason,
-                              "message": str(error)}, ensure_ascii=False))
+            payload = {"ok": False, "stage": "handoff", "error": error.reason,
+                       "message": str(error)}
+            if error.reason == "draft_not_confirmed":
+                state = readiness_of(session, report)
+                payload["draft_readiness"] = state.as_dict()
+                payload["next_step"] = (
+                    "先到工作台 #/checks?report=<id> 逐条人工确认结论，"
+                    "或者 POST /api/research-reports/<id>/checks/<check_id>/review"
+                )
+            print(json.dumps(payload, ensure_ascii=False))
             return 3
 
     print(json.dumps({"ok": True, "stage": "handoff", **scaffold.as_dict()},

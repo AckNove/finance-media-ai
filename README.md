@@ -213,7 +213,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（839 例）
+tests/                            pytest 回归测试（849 例）
 ```
 
 ## 文档
@@ -277,6 +277,23 @@ tests/                            pytest 回归测试（839 例）
 仍然没做的（不掩饰）：`contradicted`（与证据冲突）**还没有真实样本**，只有单测覆盖；
 语义核查一次最多看 30 条证据；规划出来的子任务还没写回任务表（只在 `research.plan`
 阶段的输出里）。
+
+**成稿闸门（2026-11-13 追加）**：一条结论要进成稿，必须有 `finding_checks` 行且
+`human_review_status = "confirmed"`——模型判 `supported` 不算数。三个出口同一份判据
+（`backend/app/research/draft_gate.py`）：建视频任务 API 返回 409、交接层
+`VideoHandoffError("draft_not_confirmed")`、`produce_video` 退出码 3；
+`content/jobs/<job>/research/report.md` 会分成「可进成稿（人工已确认）」与
+「尚未人工确认（不得进成稿）」两节。工作台报告页有「成稿闸门」列，核查页可直接点确认。
+
+本地看页面：
+
+```bash
+# 用演示库起服务（不碰 data/finance_media.db，也不给密钥 → 浏览不花钱）
+set DATABASE_URL=sqlite:///%TEMP%/fmai_demo/demo.db
+set APP_ENV=development
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+# 打开 http://127.0.0.1:8000/app/  → 「语义核查」页 → 点一次「人工已确认」
+```
 
 模型与价目现状（`config/models.yaml`，2026-11-12 按官方文档核对）：
 `deepseek-flash`（输入 0.00213 / 输出 0.00852 元每千 token）、

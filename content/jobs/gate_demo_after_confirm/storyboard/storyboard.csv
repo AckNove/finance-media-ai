@@ -1,0 +1,5 @@
+shot_id,start_time,end_time,narrative_purpose,narration,visual_description,asset_id,asset_type,asset_source,license,animation,camera_motion,transition,subtitle,sound_effect,safety_zone,fps,canvas_width,canvas_height,notes
+sh01,0,4,开场,这一条讲的是：结论整合：2024 年以来光伏组件价格持续下跌，行业出现普遍亏损。请研究：组件价格战是怎么形成、又通过哪些环节影响龙头组件企业的现金流与资本开支的？请给出可核对的公开数据。。下面每一句话都能追到原文。,纯色底 + 大字排版,,solid,#1d2a44,原创（纯色底，程序生成）,fade_in,push,none,结论整合：2024 年以来光伏组件价,none,bottom,30,1080,1920,规则草稿
+sh02,4,8.5,引用数据点,2026 年 1-4 月国内新增光伏装机 50.91GW，同比下降 74.3%，主要受 2025 年初抢装高基数影响；,数据卡：放大数字 + 来源标注,CARD_sh02,composition,assets/compositions/card_sh02.json,原创（程序生成）,fade_in,pan_right,dissolve,,none,bottom,30,1080,1920,规则草稿；来源 S11
+sh03,8.5,13,引用数据点,事件：通威股份发布2024年业绩预告，预计归母净利亏损70-75亿，据此测算，2024Q4归母净利亏损30-35亿。,数据卡：放大数字 + 来源标注,CARD_sh03,composition,assets/compositions/card_sh03.json,原创（程序生成）,fade_in,punch,slide,,none,bottom,30,1080,1920,规则草稿；来源 S14
+sh04,13,18,收尾,以上 2 个数字来自 21 份资料（S11、S14）。这只是资料汇编，不是投资建议。,纯色底 + 大字排版,,solid,#1d2a44,原创（纯色底，程序生成）,fade_in,push,dissolve,资料汇编 · 不是投资建议,none,bottom,30,1080,1920,规则草稿

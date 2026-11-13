@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -62,12 +63,28 @@ def no_model(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
+def _confirmed(*indexes: int, evidence_ids: tuple[int, ...] = (1,)) -> list[dict[str, Any]]:
+    """人工确认过的结论（成稿闸门要求至少一条）。"""
+    return [
+        {
+            "finding_index": index,
+            "check_id": 900 + index,
+            "verdict": "supported",
+            "evidence_ids": list(evidence_ids),
+            "source_ids": ["S01"],
+            "text": "营业收入 4.28 万亿元",
+        }
+        for index in indexes
+    ]
+
+
 def test_handoff_copies_research_and_leaves_script_empty(tmp_path: Path, no_model: None) -> None:
     scaffold = create_video_job(
         _FakeReport(),
         evidence=[_FakeEvidence(1, "营业收入 4.28 万亿元")],
         sources=[_FakeSource()],
         root=tmp_path,
+        confirmed=_confirmed(0),
     )
     job = tmp_path / scaffold.job_id
     assert job.is_dir()
@@ -91,7 +108,11 @@ def test_handoff_copies_research_and_leaves_script_empty(tmp_path: Path, no_mode
     # 两者处理办法不同（配密钥 vs 补抓另一个来源），所以必须分开报。
     assert manifest["blocked_reason"] == "insufficient_sources"
     assert manifest["stage"] == "research_imported"
-    assert manifest["counts"] == {"evidence": 1, "sources": 1}
+    assert manifest["counts"]["evidence"] == 1
+    assert manifest["counts"]["sources"] == 1
+    # 成稿闸门：只有人工确认过的结论才进稿，这里必须记下确认了几条
+    assert manifest["counts"]["confirmed_findings"] == 1
+    assert manifest["draft_gate"]["check_ids"] == [900]
     assert len(manifest["report"]["sha256"]) == 64
     assert any("script/script.md" in item for item in manifest["not_done"])
 
@@ -108,7 +129,7 @@ def test_handoff_marks_unblocked_when_a_provider_is_ready(
         "provider_status",
         lambda **_: {"deepseek": {"status": "ready"}},
     )
-    scaffold = create_video_job(_FakeReport(), root=tmp_path)
+    scaffold = create_video_job(_FakeReport(), root=tmp_path, confirmed=_confirmed(0))
     assert scaffold.blocked is False
     assert scaffold.blocked_reason == ""
     manifest = json.loads((tmp_path / scaffold.job_id / "job.json").read_text(encoding="utf-8"))
@@ -118,17 +139,65 @@ def test_handoff_marks_unblocked_when_a_provider_is_ready(
 
 
 def test_handoff_refuses_to_overwrite_an_existing_job(tmp_path: Path, no_model: None) -> None:
-    first = create_video_job(_FakeReport(), root=tmp_path, job_id="fixed_job")
+    first = create_video_job(
+        _FakeReport(), root=tmp_path, job_id="fixed_job", confirmed=_confirmed(0)
+    )
     target = tmp_path / first.job_id / "script" / "script.md"
     target.write_text("人写的脚本", encoding="utf-8")
     with pytest.raises(VideoHandoffError) as error:
-        create_video_job(_FakeReport(), root=tmp_path, job_id="fixed_job")
+        create_video_job(
+            _FakeReport(), root=tmp_path, job_id="fixed_job", confirmed=_confirmed(0)
+        )
     assert error.value.reason == "job_exists"
     assert target.read_text(encoding="utf-8") == "人写的脚本"
 
 
+def _confirm_all(db_session: Any, report_id: int, count: int) -> None:
+    """把报告的前 count 条结论标成人工已确认（模拟人在核查页点过）。"""
+    from backend.app.models.research import FindingCheck
+
+    for index in range(count):
+        db_session.add(
+            FindingCheck(
+                research_report_id=report_id,
+                finding_index=index,
+                claim=f"结论 {index}",
+                verdict="supported",
+                reason="人工已核对原文",
+                human_review_status="confirmed",
+            )
+        )
+    db_session.commit()
+
+
+def test_video_job_api_refuses_until_a_conclusion_is_confirmed(client, tmp_path: Path) -> None:
+    """成稿闸门：一条结论都没人工确认时，不许建视频任务。"""
+    created = client.post(
+        "/api/research-reports",
+        json={
+            "title": "没确认就不许成稿",
+            "summary": "这是摘要。",
+            "limitations": "样本有限。",
+            "findings": [{"statement": "净息差降至 1.52%", "nature": "fact"}],
+        },
+    )
+    assert created.status_code == 201, created.text
+    report_id = created.json()["id"]
+
+    readiness = client.get(f"/api/research-reports/{report_id}/draft-readiness")
+    assert readiness.status_code == 200, readiness.text
+    assert readiness.json()["allowed"] is False
+    assert readiness.json()["reason"] == "no_checks"
+
+    refused = client.post(f"/api/research-reports/{report_id}/video-job")
+    assert refused.status_code == 409, refused.text
+    details = refused.json()["error"]["details"]
+    assert details["reason"] == "no_checks"
+    assert details["allowed"] is False
+
+
 def test_video_job_api_creates_directory_and_reports_blocked(
-    client, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    client, db_session: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setattr(handoff_module, "JOBS_ROOT", tmp_path)
     monkeypatch.setattr(
@@ -143,10 +212,16 @@ def test_video_job_api_creates_directory_and_reports_blocked(
             "title": "交接接口测试报告",
             "summary": "这是摘要。",
             "limitations": "样本有限。",
+            "findings": [{"statement": "营业收入 4.28 万亿元", "nature": "fact"}],
         },
     )
     assert created.status_code == 201, created.text
     report_id = created.json()["id"]
+    _confirm_all(db_session, report_id, 1)
+
+    readiness = client.get(f"/api/research-reports/{report_id}/draft-readiness")
+    assert readiness.json()["allowed"] is True
+    assert readiness.json()["confirmed"] == 1
 
     response = client.post(f"/api/research-reports/{report_id}/video-job")
     assert response.status_code == 201, response.text
@@ -161,10 +236,14 @@ def test_video_job_api_creates_directory_and_reports_blocked(
     assert Path(body["path"]).is_dir()
     assert Path(body["path"]).parent == tmp_path
     assert (Path(body["path"]) / "job.json").is_file()
+    # 报告副本里必须写清"哪几条能进稿"
+    report_md = (Path(body["path"]) / "research" / "report.md").read_text(encoding="utf-8")
+    assert "可进成稿的结论（人工已确认）" in report_md
+    assert "营业收入 4.28 万亿元" in report_md
 
 
 def test_video_job_api_accepts_an_explicit_job_id(
-    client, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    client, db_session: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     """同一天对同一份报告再点一次不该只能撞 409：允许调用方自己起名。"""
     monkeypatch.setattr(handoff_module, "JOBS_ROOT", tmp_path)
@@ -175,9 +254,15 @@ def test_video_job_api_accepts_an_explicit_job_id(
     )
     created = client.post(
         "/api/research-reports",
-        json={"title": "重试也要能建", "summary": "摘要。", "limitations": "样本有限。"},
+        json={
+            "title": "重试也要能建",
+            "summary": "摘要。",
+            "limitations": "样本有限。",
+            "findings": [{"statement": "净息差 1.52%", "nature": "fact"}],
+        },
     )
     report_id = created.json()["id"]
+    _confirm_all(db_session, report_id, 1)
 
     first = client.post(f"/api/research-reports/{report_id}/video-job", json={"job_id": "retry_one"})
     assert first.status_code == 201, first.text
@@ -216,6 +301,7 @@ def test_two_sources_are_enough_for_a_rule_made_storyboard(
         evidence=[_FakeEvidence(1, "营业收入 4.28 万亿元"), _SecondEvidence(2, "净息差 1.52%")],
         sources=[_FakeSource(), _Second()],
         root=tmp_path,
+        confirmed=_confirmed(0, evidence_ids=(1, 2)),
     )
 
     job = tmp_path / scaffold.job_id
@@ -246,6 +332,7 @@ def test_outline_can_be_switched_off(tmp_path: Path, no_model: None) -> None:
         sources=[_FakeSource(), _Second()],
         root=tmp_path,
         outline=False,
+        confirmed=_confirmed(0, evidence_ids=(1, 2)),
     )
     assert list((tmp_path / scaffold.job_id / "storyboard").iterdir()) == []
     manifest = json.loads((tmp_path / scaffold.job_id / "job.json").read_text(encoding="utf-8"))

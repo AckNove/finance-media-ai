@@ -576,15 +576,22 @@ async function pageChecks(view) {
     const box = document.getElementById('checks-box');
     if (!reportId) { box.innerHTML = '<div class="empty">先选一份报告</div>'; return; }
     box.innerHTML = '<div class="note">读取核查结果…</div>';
-    const [summary, checks] = await Promise.all([
+    const [summary, checks, gate] = await Promise.all([
       api(`/research-reports/${reportId}/checks/summary`),
       api(`/research-reports/${reportId}/checks?limit=100`),
+      api(`/research-reports/${reportId}/draft-readiness`),
     ]);
     if (!summary.ok) { box.innerHTML = failure(summary); return; }
     if (!checks.ok) { box.innerHTML = failure(checks); return; }
     const data = summary.data;
+    const gateText = gate.ok
+      ? (gate.data.allowed
+        ? `<span class="tag ok">可成稿 · 已确认 ${gate.data.confirmed} 条</span>`
+        : `<span class="tag warn">还不能成稿：${esc(gate.data.note || '')}</span>`)
+      : '<span class="tag">闸门状态未知</span>';
     if (!data.total) {
       box.innerHTML = `<div class="card"><h2>还没有核查记录</h2>
+        <div class="row">${gateText}</div>
         <p class="muted">这份报告还没跑到 <code>verify.claims</code>，或者当时没有可用模型（核查不会假装做过）。</p></div>`;
       return;
     }
@@ -595,7 +602,10 @@ async function pageChecks(view) {
       <div class="card">
         <h2>${data.total} 条结论 · 模型花费 ${money(data.model_cost_cny)} · ${data.model_calls} 次调用</h2>
         <div class="row">${verdictCells}</div>
+        <div class="row">${gateText}</div>
         <p class="muted">${esc(data.note || '')}</p>
+        <p class="muted">口径：<strong>只有人工确认（confirmed）的结论可以进入成稿</strong>；
+          模型判定只是意见，驳回与待复核的结论不会进稿。</p>
       </div>
       <div class="card"><h2>逐条核查</h2>
         <table class="grid">
@@ -640,12 +650,28 @@ async function pageChecks(view) {
 
 async function pageReports(view) {  const result = await api('/research-reports?limit=50');
   const items = result.ok ? result.data.items : [];
+  // 成稿闸门：只有人工确认过的结论才允许建视频任务。这里把每份报告的状态先取回来，
+  // 免得用户点了按钮才知道被拦（本地工具，一次几十个小请求可以接受）。
+  const gates = new Map();
+  await Promise.all(items.map(async (row) => {
+    const answer = await api(`/research-reports/${row.id}/draft-readiness`);
+    if (answer.ok) gates.set(row.id, answer.data);
+  }));
+  const gateTag = (row) => {
+    const state = gates.get(row.id);
+    if (!state) return '<span class="tag">未知</span>';
+    if (state.allowed) return `<span class="tag ok">可成稿 · 已确认 ${state.confirmed} 条</span>`;
+    const label = state.reason === 'no_checks' ? '未做语义核查' : `待人工确认 ${state.total_checks} 条`;
+    return `<span class="tag warn">${label}</span>`;
+  };
   view.innerHTML = `
     <div class="card"><h2>研究报告</h2>
+      <p class="muted">口径：语义核查的判定只是模型意见，<strong>必须人工确认（confirmed）之后才允许进入成稿</strong>。</p>
       ${result.ok ? table([
         { title: 'ID', key: 'id', num: true },
         { title: '标题', key: 'title' },
         { title: '核验状态', value: (row) => statusTag((row.verification_status || 'unverified').toLowerCase()), raw: true },
+        { title: '成稿闸门', value: (row) => gateTag(row), raw: true },
         { title: '创建时间', value: (row) => when(row.created_at) },
         { title: '操作', value: (row) => `<a href="#/planning?report=${row.id}">用它做内容策划</a>
           · <a href="#/checks?report=${row.id}">看语义核查</a>
@@ -660,6 +686,16 @@ async function pageReports(view) {  const result = await api('/research-reports?
   view.querySelectorAll('button[data-video]').forEach((button) => {
     button.onclick = async () => {
       const reportId = button.dataset.video;
+      const gate = gates.get(Number(reportId)) || {};
+      if (!gate.allowed) {
+        output.innerHTML = `<div class="card">
+          <h2>还不能成稿</h2>
+          <div class="note warn">${esc(gate.note || '这份报告还没有人工确认过的结论。')}</div>
+          <p class="muted">先把结论逐条核对一遍：<a href="#/checks?report=${reportId}">打开语义核查页</a>，
+            确认（confirmed）之后这里的按钮才会真的建任务。</p>
+        </div>`;
+        return;
+      }
       output.innerHTML = '<div class="note">正在把研究材料搬进任务目录…</div>';
       const response = await api(`/research-reports/${reportId}/video-job`, { method: 'POST', body: '{}' });
       if (!response.ok) { output.innerHTML = failure(response); return; }

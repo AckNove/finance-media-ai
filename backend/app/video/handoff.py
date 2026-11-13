@@ -26,7 +26,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping, Sequence
 
 from backend.app.core.config import PROJECT_ROOT
 
@@ -106,7 +106,15 @@ def _write(path: Path, text: str) -> str:
     return str(path)
 
 
-def _report_markdown(report: Any) -> str:
+def _report_markdown(report: Any, confirmed: Sequence[Mapping[str, Any]] = ()) -> str:
+    """交接给视频任务的报告副本。
+
+    只有**人工确认过**的结论写在「可进成稿」一节里；其余结论照样列出来，但明确标注
+    「不得进成稿」并带上当前复核状态——既不隐藏，也不许下游拿去当定稿。
+    """
+    confirmed_by_index = {
+        int(item.get("finding_index", -1)): item for item in confirmed
+    }
     lines = [
         f"# {report.title}",
         "",
@@ -114,23 +122,47 @@ def _report_markdown(report: Any) -> str:
         f"- 研究任务 ID：{getattr(report, 'research_task_id', None)}",
         f"- 核查状态：{_value(report.verification_status)}",
         f"- 生成方式：{report.author_agent or '规则汇编'}",
+        f"- 人工已确认结论：{len(confirmed_by_index)} 条（只有这些可以进成稿）",
         "",
         "## 摘要",
         "",
         report.summary or "（报告没有摘要）",
         "",
-        "## 要点",
+        "## 可进成稿的结论（人工已确认）",
         "",
     ]
-    findings = report.findings or []
-    if not findings:
-        lines.append("（报告没有列要点——写脚本前必须先补研究）")
-    for item in findings:
+    if not confirmed_by_index:
+        lines.append("（没有已确认的结论——按口径不得成稿）")
+    findings = list(report.findings or [])
+
+    def _text_of(item: Any) -> str:
         if isinstance(item, dict):
-            text = item.get("claim") or item.get("text") or json.dumps(item, ensure_ascii=False)
-        else:
-            text = str(item)
-        lines.append(f"- {text}")
+            return str(
+                item.get("claim")
+                or item.get("text")
+                or item.get("statement")
+                or json.dumps(item, ensure_ascii=False)
+            )
+        return str(item)
+
+    for index, item in enumerate(findings):
+        entry = confirmed_by_index.get(index)
+        if entry is None:
+            continue
+        lines.append(
+            f"- 结论 #{index}：{_text_of(item)}"
+            f"（核查记录 #{entry.get('check_id')}｜模型判定 {entry.get('verdict') or 'unknown'}"
+            f"｜人工已确认）"
+        )
+    pending = [
+        (index, item)
+        for index, item in enumerate(findings)
+        if index not in confirmed_by_index
+    ]
+    if pending:
+        lines += ["", "## 尚未人工确认（不得进成稿）", ""]
+        for index, item in pending:
+            lines.append(f"- 结论 #{index}（待人工复核）：{_text_of(item)}")
     lines += ["", "## 局限", "", report.limitations or "（未填写）", ""]
     return "\n".join(lines)
 
@@ -212,8 +244,19 @@ def create_video_job(
     root: Path | None = None,
     now: dt.datetime | None = None,
     outline: bool = True,
+    confirmed: Sequence[Mapping[str, Any]] = (),
 ) -> VideoJobScaffold:
-    """把一份报告交接成一个视频任务目录（不生成脚本、不渲染）。"""
+    """把一份报告交接成一个视频任务目录（不生成脚本、不渲染）。
+
+    `confirmed` 是**人工已确认**的结论（来自 `backend/app/research/draft_gate.py`）。
+    按用户定的口径：没有确认过的结论就不许成稿——所以这里空着就直接拒绝，
+    并且只把确认结论背后的证据交给分镜阶段（未确认的结论照样写进报告副本并标注）。
+    """
+    if not confirmed:
+        raise VideoHandoffError(
+            "draft_not_confirmed",
+            "这份报告还没有人工确认过的结论：先到「语义核查」页逐条确认，再来建视频任务",
+        )
     base = root or JOBS_ROOT
     stamp = (now or dt.datetime.now(dt.UTC)).strftime("%Y%m%d")
     identifier = job_id or f"v5_r{report.id}_{stamp}_{_slug(report.title)}"
@@ -225,11 +268,38 @@ def create_video_job(
     evidence_rows = list(evidence)
     source_rows = list(sources)
 
+    # 分镜只能吃"确认结论背后的证据"：先按证据 id 圈定，再按来源标签兜底。
+    allowed_evidence_ids = {
+        int(value)
+        for item in confirmed
+        for value in (item.get("evidence_ids") or ())
+        if isinstance(value, int)
+    }
+    allowed_source_labels = {
+        str(value) for item in confirmed for value in (item.get("source_ids") or ())
+    }
+    if allowed_evidence_ids:
+        draft_evidence = [
+            item for item in evidence_rows if getattr(item, "id", None) in allowed_evidence_ids
+        ]
+    else:
+        draft_evidence = []
+    if not draft_evidence and allowed_source_labels:
+        label_by_db_id = {
+            getattr(source, "id", None): f"S{index:02d}"
+            for index, source in enumerate(source_rows, start=1)
+        }
+        draft_evidence = [
+            item
+            for item in evidence_rows
+            if label_by_db_id.get(getattr(item, "source_id", None)) in allowed_source_labels
+        ]
+
     directory.mkdir(parents=True, exist_ok=False)
     for name in JOB_DIRS:
         (directory / name).mkdir(exist_ok=True)
 
-    report_md = _report_markdown(report)
+    report_md = _report_markdown(report, confirmed)
     files = [
         _write(directory / "research" / "report.md", report_md),
         _write(
@@ -277,7 +347,7 @@ def create_video_job(
 
     ready, provider_note = _provider_ready()
     outline_result = (
-        _try_outline(report, evidence_rows, source_rows, directory, identifier)
+        _try_outline(report, draft_evidence, source_rows, directory, identifier)
         if outline
         else {"ok": False, "reason": "outline_disabled"}
     )
@@ -342,6 +412,13 @@ def create_video_job(
         "counts": {
             "evidence": len(evidence_rows),
             "sources": len(source_rows),
+            "confirmed_findings": len(confirmed),
+            "draft_evidence": len(draft_evidence),
+        },
+        "draft_gate": {
+            "rule": "只有 human_review_status=confirmed 的结论可以进入成稿",
+            "confirmed_findings": [item.get("finding_index") for item in confirmed],
+            "check_ids": [item.get("check_id") for item in confirmed],
         },
         "narrative_style": "AK（accessible-explainer + investigative-storytelling + ak-signature）",
         "not_done": [

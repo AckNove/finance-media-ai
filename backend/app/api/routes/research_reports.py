@@ -13,8 +13,15 @@ from backend.app.core.errors import ConflictError, DomainValidationError, NotFou
 from backend.app.models.evidence import Evidence
 from backend.app.models.research import FindingCheck
 from backend.app.models.source import Source
+from backend.app.research.draft_gate import (
+    DraftGateError,
+    assert_draft_ready,
+    confirmed_findings,
+    readiness_of,
+)
 from backend.app.research.persistence import HUMAN_REVIEW_STATUSES, set_human_review
 from backend.app.schemas.common import Page
+from backend.app.schemas.draft_gate import DraftReadinessOut
 from backend.app.schemas.finding_check import (
     FindingCheckOut,
     FindingCheckReviewIn,
@@ -87,6 +94,11 @@ def create_video_job_for_report(
     db: DbSession, payload: VideoJobIn | None = None, report_id: int = Path(ge=1)
 ) -> VideoJobOut:
     report = ResearchReportService(db).get(report_id)
+    try:
+        gate = assert_draft_ready(db, report)
+    except DraftGateError as error:
+        raise ConflictError(str(error), details=dict(error.readiness)) from error
+    confirmed = confirmed_findings(db, report)
     evidence = list(
         db.scalars(select(Evidence).where(Evidence.research_report_id == report.id))
     )
@@ -102,14 +114,29 @@ def create_video_job_for_report(
             evidence=evidence,
             sources=sources,
             job_id=(payload.job_id if payload else None),
+            confirmed=confirmed,
         )
     except VideoHandoffError as error:
         if error.reason == "job_exists":
             raise ConflictError(
                 "同名视频任务目录已存在，未覆盖", details={"reason": error.reason}
             ) from error
+        if error.reason == "draft_not_confirmed":
+            raise ConflictError(
+                str(error), details={"reason": error.reason, **gate.as_dict()}
+            ) from error
         raise NotFoundError(str(error)) from error
     return VideoJobOut(**{**scaffold.as_dict(), "path": str(scaffold.path)})
+
+
+@router.get(
+    "/{report_id}/draft-readiness",
+    summary="这份报告能不能成稿（只有人工确认过的结论才允许）",
+    response_model=DraftReadinessOut,
+)
+def read_draft_readiness(db: DbSession, report_id: int = Path(ge=1)) -> DraftReadinessOut:
+    report = ResearchReportService(db).get(report_id)
+    return DraftReadinessOut(**readiness_of(db, report).as_dict())
 
 
 # ---------------------------------------------------------------- 语义核查

@@ -13,7 +13,7 @@ from backend.app.core.config import Settings
 from backend.app.database.base import Base
 from backend.app.database.session import build_engine
 from backend.app.models.evidence import Evidence
-from backend.app.models.research import ResearchReport
+from backend.app.models.research import FindingCheck, ResearchReport
 from backend.app.models.source import Source
 from backend.scripts import produce_video
 
@@ -42,25 +42,44 @@ def _seed(tmp_path: Path) -> tuple[Any, int]:
         report = ResearchReport(
             title="商业银行是怎么赚钱的",
             summary="规则汇编（未使用模型）",
-            findings=[],
+            findings=[
+                {"text": "净息差降至1.52%", "kind": "fact", "source_ids": ["S01"]},
+                {"text": "城市商业银行净息差为1.38%", "kind": "fact", "source_ids": ["S02"]},
+            ],
             limitations="单一来源需佐证",
         )
         session.add(report)
         session.flush()
+        evidence_rows = [
+            Evidence(
+                source_id=sources[0].id,
+                research_report_id=report.id,
+                claim="净息差降至1.52%",
+                original_excerpt="净息差降至1.52%",
+            ),
+            Evidence(
+                source_id=sources[1].id,
+                research_report_id=report.id,
+                claim="城市商业银行净息差为1.38%",
+                original_excerpt="城商行1.38%",
+            ),
+        ]
+        session.add_all(evidence_rows)
+        session.flush()
+        # 成稿闸门：只有人工确认过的结论可以进稿，所以夹具里必须先"确认"这两条。
         session.add_all(
             [
-                Evidence(
-                    source_id=sources[0].id,
+                FindingCheck(
                     research_report_id=report.id,
-                    claim="净息差降至1.52%",
-                    original_excerpt="净息差降至1.52%",
-                ),
-                Evidence(
-                    source_id=sources[1].id,
-                    research_report_id=report.id,
-                    claim="城市商业银行净息差为1.38%",
-                    original_excerpt="城商行1.38%",
-                ),
+                    finding_index=index,
+                    claim=row.claim,
+                    verdict="supported",
+                    reason="原文逐字可查，人工已核对",
+                    evidence_ids=[row.id],
+                    source_ids=[f"S{index + 1:02d}"],
+                    human_review_status="confirmed",
+                )
+                for index, row in enumerate(evidence_rows)
             ]
         )
         session.commit()
@@ -135,16 +154,31 @@ def test_a_report_without_enough_sources_is_blocked_not_faked(
         session.add(source)
         session.flush()
         report = ResearchReport(
-            title="只有一条来源", summary="规则汇编", findings=[], limitations=""
+            title="只有一条来源",
+            summary="规则汇编",
+            findings=[{"text": "净息差降至1.52%", "kind": "fact", "source_ids": ["S01"]}],
+            limitations="",
         )
         session.add(report)
         session.flush()
+        evidence = Evidence(
+            source_id=source.id,
+            research_report_id=report.id,
+            claim="净息差降至1.52%",
+            original_excerpt="净息差降至1.52%",
+        )
+        session.add(evidence)
+        session.flush()
         session.add(
-            Evidence(
-                source_id=source.id,
+            FindingCheck(
                 research_report_id=report.id,
+                finding_index=0,
                 claim="净息差降至1.52%",
-                original_excerpt="净息差降至1.52%",
+                verdict="supported",
+                reason="原文逐字可查，人工已核对",
+                evidence_ids=[evidence.id],
+                source_ids=["S01"],
+                human_review_status="confirmed",
             )
         )
         session.commit()
