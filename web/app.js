@@ -964,11 +964,13 @@ async function pageScripts(view) {
         { title: '批准人', value: (row) => esc(row.approved_by || '—') },
         { title: '操作', raw: true, value: (row) => {
           const moves = SCRIPT_NEXT[row.status] || [];
-          return moves.map(([label, next]) =>
+          const adaptButton = `<button class="btn ghost" data-adapt="${row.id}">一稿三版</button>`;
+          return (moves.map(([label, next]) =>
             `<button class="btn ghost" data-script="${row.id}" data-next="${next}">${esc(label)}</button>`
-          ).join(' ') || '<span class="muted">终态</span>';
+          ).join(' ') || '<span class="muted">终态</span>') + ' ' + adaptButton;
         } },
-      ], rows, '还没有脚本版本')}`;
+      ], rows, '还没有脚本版本')}
+      <div id="adapt-box"></div>`;
     listBox.querySelectorAll('button[data-script]').forEach((button) => {
       button.onclick = async () => {
         button.disabled = true;
@@ -980,6 +982,42 @@ async function pageScripts(view) {
           ? `<div class="note ok">#${button.dataset.script} → ${esc(moved.data.status)}</div>`
           : failure(moved);
         await refresh();
+      };
+    });
+    listBox.querySelectorAll('button[data-adapt]').forEach((button) => {
+      button.onclick = async () => {
+        button.disabled = true;
+        const box = document.getElementById('adapt-box');
+        box.innerHTML = '<div class="note">正在适配…</div>';
+        const adapted = await api(`/scripts/${button.dataset.adapt}/adapt`, {
+          method: 'POST',
+          body: JSON.stringify({}),
+        });
+        button.disabled = false;
+        if (!adapted.ok) { box.innerHTML = failure(adapted); return; }
+        box.innerHTML = `<h3>一稿三版（脚本 #${adapted.data.script_id}）</h3>
+          <div class="note">${esc(adapted.data.note || '')}</div>
+          ${adapted.data.variants.map((item) => `
+            <div class="alert ok" style="margin:10px 0">
+              <div class="row" style="justify-content:space-between"><b>${esc(item.name)}</b>
+                <button class="btn ghost" data-copy="${esc(item.platform)}">复制正文</button></div>
+              <div class="note">标题：${esc(item.title)}</div>
+              <div class="note">摘要：${esc(item.summary)}</div>
+              <pre class="note" data-body="${esc(item.platform)}" style="white-space:pre-wrap">${esc(item.body)}</pre>
+              <div class="note">标签：${item.hashtags.length ? esc(item.hashtags.map((t) => '#' + t).join(' ')) : '（无）'}</div>
+              ${item.warnings.length ? `<ul class="note" style="margin:6px 0 0 16px">${item.warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>` : '<div class="note ok">没有需要注意的地方</div>'}
+            </div>`).join('')}`;
+        box.querySelectorAll('button[data-copy]').forEach((copy) => {
+          copy.onclick = async () => {
+            const text = box.querySelector(`pre[data-body="${copy.dataset.copy}"]`)?.textContent || '';
+            try {
+              await navigator.clipboard.writeText(text);
+              copy.textContent = '已复制';
+            } catch (error) {
+              copy.textContent = '复制失败，请手动选中';
+            }
+          };
+        });
       };
     });
   };

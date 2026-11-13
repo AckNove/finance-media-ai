@@ -5,10 +5,18 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Path, status
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
+from backend.app.content import PLATFORMS, adapt_payload
 from backend.app.core.caller import CallerKind
 from backend.app.models.enums import ScriptStatus
 from backend.app.schemas.common import Page
-from backend.app.schemas.script import ScriptCreate, ScriptOut, ScriptStatusUpdate
+from backend.app.schemas.script import (
+    AdaptedVariantOut,
+    ScriptAdaptIn,
+    ScriptAdaptOut,
+    ScriptCreate,
+    ScriptOut,
+    ScriptStatusUpdate,
+)
 from backend.app.services.script_service import ScriptService
 
 router = APIRouter(
@@ -69,3 +77,33 @@ def update_script_status(
 ) -> ScriptOut:
     script = ScriptService(db).set_status(script_id, payload.status, actor=payload.actor)
     return ScriptOut.model_validate(script)
+
+@router.post(
+    "/{script_id}/adapt",
+    response_model=ScriptAdaptOut,
+    summary="一稿三版（抖音 / 小红书 / 公众号）",
+)
+def adapt_script(
+    db: DbSession,
+    payload: ScriptAdaptIn | None = None,
+    script_id: int = Path(ge=1),
+) -> ScriptAdaptOut:
+    """把同一份脚本改成三个平台的成稿：只调长度与排版，**不改事实、不编标签**。
+
+    被截断、凑不够标签、出现导流词等情况都会写进每个平台的 ``warnings``。
+    """
+    script = ScriptService(db).get(script_id)
+    body = payload or ScriptAdaptIn()
+    platforms = tuple(body.platforms) if body.platforms else PLATFORMS
+    envelope = adapt_payload(
+        title=str(script.title or ""),
+        body=str(script.body or ""),
+        tags=tuple(body.tags or ()),
+        platforms=platforms,
+    )
+    return ScriptAdaptOut(
+        script_id=int(script.id),
+        platforms=envelope["platforms"],
+        variants=[AdaptedVariantOut.model_validate(item) for item in envelope["variants"]],
+        note=envelope["note"],
+    )

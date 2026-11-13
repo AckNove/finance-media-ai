@@ -43,8 +43,7 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("POST", "/api/topics"): HUMAN_ONLY,
     ("GET", "/api/topics"): HUMAN_ONLY,
     ("GET", "/api/topics/columns"): HUMAN_ONLY,
-    ("GET", "/api/topics/suggestions"): HUMAN_ONLY,
-    ("GET", "/api/topics/{topic_id}"): HUMAN_ONLY,
+    ("GET", "/api/topics/suggestions"): HUMAN_ONLY,    ("GET", "/api/topics/{topic_id}"): HUMAN_ONLY,
     ("PATCH", "/api/topics/{topic_id}"): HUMAN_ONLY,
     ("GET", "/api/topics/{topic_id}/collections"): HUMAN_ONLY,
     ("POST", "/api/topics/{topic_id}/collections"): HUMAN_ONLY,
@@ -78,6 +77,7 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("GET", "/api/scripts"): HUMAN_ONLY,
     ("GET", "/api/scripts/{script_id}"): HUMAN_ONLY,
     ("PATCH", "/api/scripts/{script_id}/status"): HUMAN_ONLY,
+    ("POST", "/api/scripts/{script_id}/adapt"): HUMAN_ONLY,
     # M8：研究任务编排/执行（人工建任务，人工推进，人工闸门）
     ("POST", "/api/research-tasks"): HUMAN_ONLY,
     ("GET", "/api/research-tasks"): HUMAN_ONLY,

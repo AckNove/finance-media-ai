@@ -8,8 +8,8 @@
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
-> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、68 个 API 操作、
-> 20 个前端页面、`pytest` 1003 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、69 个 API 操作、
+> 20 个前端页面、`pytest` 1021 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -114,7 +114,7 @@
 | 热点发现 / 选题推荐 | `backend/app/research/topic_suggestions.py` + `GET /api/topics/suggestions` + 工作台「选题建议」面板 | DONE | 只看**已入库**来源（不联网、不调模型）；五维打分（时效/来源层级/带单位的量/命中合集/多源共同报道）且每条都给理由；与已有选题相似度 ≥0.82 直接丢弃；壳标题（日报/免责声明）与 <6 字标题不做；采纳仍需人点 |
 | 报告 → 内容策划（定位/受众/标题/钩子/故事线/结构/观点） | `web/app.js#pagePlanning` 只做展示 | PARTIAL | 后端无策划产物 |
 | 脚本生成（AK 风格） | `script` 状态机 + `agents/scriptwriter/PROMPT.md` | PARTIAL | 生成仍是规则 + 人工写 |
-| 多平台内容适配 | — | **NOT_IMPLEMENTED** | 本轮补（公众号/抖音/小红书三版） |
+| 多平台内容适配 | `backend/app/content/platform_adapt.py` + `POST /api/scripts/{id}/adapt` + 工作台「一稿三版」 | DONE | 只调长度与排版（抖音 18 字/行、小红书 24 字/行、公众号保留段落）；**不改事实、不编标签**（标签不够就明说"这里不替你编"）；切行时不会把 `19.3%` 切成 `1` + `9.3%`；导流词只提示不代删 |
 | 内容审核 | `/api/reviews` + `review_service` | DONE | — |
 
 ## H. 视频生产
@@ -151,7 +151,7 @@
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
 | 内容日历 / 排期 / 状态 | `models/operations.py` 的 `content_calendar` + `/api/calendar/*`（7 个端点）+ `web/app.js#pageOperations` | DONE | 迁移 `b6_v6_operations`；`tests/test_operations.py` 14 例 |
-| 导出记录 / 发布记录 / 多平台适配 | 同表 `export_path`/`publish_state`/`published_url`/`published_at`（**发布必须有链接**，撤回留痕） | PARTIAL | 多平台内容适配（一稿三版）没做 |
+| 导出记录 / 发布记录 / 多平台适配 | 同表 `export_path`/`publish_state`/`published_url`/`published_at`（**发布必须有链接**，撤回留痕）；文案三版见 `backend/app/content/platform_adapt.py` | PARTIAL | 只有"手工标记导出路径"，没有自动导出文件与平台回执 |
 | 账号数据导入 / 播放量 / 互动分析 | `platform_metrics` + `POST /api/calendar/{id}/metrics` + `POST /api/calendar/{id}/metrics/import`（CSV 批量）+ `GET /api/calendar/analytics`（取最新快照，不累加） | DONE | CSV 认中英列名与千分位；撞时间戳的跳过、坏行带行号报错、平台不一致直接拒（`tests/test_metrics_import.py` 13 例） |
 
 ## 优先级与执行顺序（自主决定，不等确认）

@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：52
+- 路径数：53
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -61,6 +61,7 @@
 | GET | `/api/scripts` | 脚本列表 | 人 | `topic_id`（query，可选，integer | null）、`status`（query，可选，ScriptStatus | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ScriptOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/scripts` | 创建脚本（版本号按选题+模板自增） | 人 | — | application/json → `ScriptCreate` | 201 `ScriptOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/scripts/{script_id}` | 脚本详情 | 人 | `script_id`（path，必填，integer） | — | 200 `ScriptOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| POST | `/api/scripts/{script_id}/adapt` | 一稿三版（抖音 / 小红书 / 公众号） | 人 | `script_id`（path，必填，integer） | application/json → `ScriptAdaptIn | null` | 200 `ScriptAdaptOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | PATCH | `/api/scripts/{script_id}/status` | 迁移脚本状态 | 人 | `script_id`（path，必填，integer） | application/json → `ScriptStatusUpdate` | 200 `ScriptOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/sources` | 资料来源列表 | 人 | `source_type`（query，可选，string | null）、`credibility_level`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_SourceOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/sources` | 登记资料来源 | 人 | — | application/json → `SourceCreate` | 201 `SourceOut`；404 `object`；409 `object`；422 `object`；503 `object` |

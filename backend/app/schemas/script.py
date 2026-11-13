@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -55,3 +55,33 @@ class ScriptOut(ORMBase):
     approved_by: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class ScriptAdaptIn(BaseModel):
+    """一稿三版的入参：平台可裁剪，标签只能补不能编。"""
+
+    platforms: list[Literal["douyin", "xiaohongshu", "wechat"]] | None = Field(
+        default=None, description="留空表示三个平台都要"
+    )
+    tags: list[str] = Field(default_factory=list, description="脚本自带的标签（可选）")
+
+
+class AdaptedVariantOut(BaseModel):
+    """单个平台的成稿：标题、摘要、正文、标签、注意事项与警告。"""
+
+    platform: str
+    name: str
+    title: str
+    summary: str
+    body: str
+    hashtags: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+    numbers: list[str] = Field(default_factory=list)
+
+
+class ScriptAdaptOut(BaseModel):
+    script_id: int
+    platforms: list[str] = Field(default_factory=list)
+    variants: list[AdaptedVariantOut] = Field(default_factory=list)
+    note: str = ""
