@@ -302,6 +302,29 @@ def test_main_returns_one_when_attention_needed(tmp_path: Path, db_url: str, cap
     assert code == 1
 
 
+def test_main_returns_zero_when_everything_is_fine(tmp_path: Path, db_url: str, capsys) -> None:
+    backups = tmp_path / "backups"
+    backups.mkdir()
+    fresh = backups / "finance-20260520-100000-000.db"
+    fresh.write_bytes(b"z")
+
+    code = daily_check.main(
+        [
+            "--database-url",
+            db_url,
+            "--jobs-root",
+            str(tmp_path / "jobs"),
+            "--backups",
+            str(backups),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["attention"] == []
+    assert payload["ok"] is True
+    assert code == 0
+
+
 def test_main_returns_three_when_the_database_is_missing(tmp_path: Path, capsys) -> None:
     code = daily_check.main(
         [
