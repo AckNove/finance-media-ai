@@ -276,7 +276,10 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 
 ## 12. Git 与运行证据
 
-- 提交与推送记录见 `git log --oneline -6`（本轮：`3b1e40c` 运维底座与研究骨架、`93cdc2c` 内容日历、以及本报告同一次提交）。
+- 本轮三个提交，全部已推送（`origin/main` 与 `HEAD` 一致、工作区干净）：
+  - `3b1e40c` 运维底座与研究骨架，并把开关做成真闸门
+  - `93cdc2c` 内容日历与平台数据回填，发布必须有痕迹
+  - `4822525` 三主题真实验收、失败尝试记账、内容质检真片闭环（本报告同批）
 - 验收原始数据：`content/acceptance/v6/acceptance.json`（三主题）、`content/acceptance/v6/acceptance_company_recheck.json`（记账复核）。
 - 成片与质检：`content/jobs/v6_accept_industry/output/final.mp4`、`qc/report.json`、`qc/content_qc.{json,md}`。
 - 复跑三个主题（会花钱，默认每题预算 ¥0.4）：
