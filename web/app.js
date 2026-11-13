@@ -179,13 +179,42 @@ async function refreshHealth() {
 
 /* -------------------------------------------------------------------- 页面 */
 
+function dailyCard(data) {
+  const lines = (data.attention || []).map((item) => `<li>${esc(item)}</li>`).join('');
+  const today = data.cost && data.cost.today ? data.cost.today : { calls: 0, cost_cny: 0 };
+  const window = data.cost && data.cost.window ? data.cost.window : { calls: 0, cost_cny: 0 };
+  const backup = data.backup || {};
+  const disk = data.disk || {};
+  const pending = (data.checks && data.checks.pending) || 0;
+  return `<div class="card">
+      <h2>今天的体检 <span class="tag ${data.ok ? 'ok' : 'bad'}">${data.ok ? '没有待办' : `${(data.attention || []).length} 件要处理`}</span></h2>
+      <div class="row">
+        <span class="tag">今天模型调用 ${today.calls} 次 / ${money(today.cost_cny)}</span>
+        <span class="tag">近 ${data.window_days} 天 ${window.calls} 次 / ${money(window.cost_cny)}</span>
+        <span class="tag ${pending ? 'warn' : ''}">待人工确认 ${pending} 条</span>
+        <span class="tag">暂停任务 ${(data.tasks.by_status || {}).paused || 0} 个</span>
+        <span class="tag ${backup.age_days == null || backup.age_days > 7 ? 'warn' : 'ok'}">最近备份 ${backup.age_days == null ? '没有' : `${backup.age_days} 天前`}</span>
+        <span class="tag ${disk.ok ? 'ok' : 'warn'}">磁盘 ${disk.ok ? `${disk.free_gb} GB 可用` : '读不到'}</span>
+      </div>
+      ${lines ? `<ul class="list">${lines}</ul>` : '<p class="muted">今天没有需要处理的事。</p>'}
+      <div class="row">
+        <a class="btn ghost" href="#/costs">看花费明细</a>
+        <a class="btn ghost" href="#/tasks">看任务</a>
+        <a class="btn ghost" href="#/checks">去确认核查</a>
+      </div>
+      <p class="muted">这条卡片和 <span class="mono">python -m backend.scripts.daily_check</span> 是同一套判断逻辑
+      （${esc(data.generated_at || '')} 生成），所以命令行和页面不会打架。</p>
+    </div>`;
+}
+
 async function pageHome(view) {
-  const [status, tasks, costs, jobs, reports] = await Promise.all([
+  const [status, tasks, costs, jobs, reports, daily] = await Promise.all([
     api('/system/status'),
     api('/research-tasks'),
     api('/system/costs'),
     loadJobs(),
     api('/research-reports'),
+    api('/system/daily?days=7'),
   ]);
   const features = status.ok ? status.data.features : {};
   const blocked = Object.entries(features || {})
@@ -203,6 +232,7 @@ async function pageHome(view) {
       <div class="card kpi"><span class="k">视频任务目录</span><span class="v">${jobs.length}</span>
         <span class="muted">${jobs.filter((job) => job.has_output).length} 个有成片</span></div>
     </div>
+    ${daily.ok ? dailyCard(daily.data) : `<div class="card"><h2>今天的体检</h2><p class="muted">读不到体检数据：${esc(daily.error || '接口没返回')}</p></div>`}
     <div class="card">
       <h2>能力开关（真实状态，来自 config/settings.yaml）</h2>
       <div class="row">

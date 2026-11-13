@@ -690,6 +690,47 @@ pytest -o addopts="" -q   → 1119 passed, 2 skipped, 1 warning
   ! 1 个视频任务的确认被撤回过（已标记失效）
 ```
 
-`tests/test_daily_check.py` 10 例覆盖：空库、任务/子任务/核查计数、窗口外失败不误报、花费只算当天 UTC、
+`tests/test_daily_check.py` 11 例覆盖：空库、任务/子任务/核查计数、窗口外失败不误报、花费只算当天 UTC、
 失效任务扫描（含坏 `job.json` 不炸）、备份过期提醒与"新备份顶掉旧提醒"、受保护库标注、文本渲染八节齐全、
-需要处理时退出码 1、库文件不存在时退出码 3。
+需要处理时退出码 1、库文件不存在时退出码 3、**一切干净时退出码 0**。
+
+### §24.1 同一条体检也做成了首页卡片
+
+命令行没人愿意每天开一次，页面是天天会看的。所以体检从脚本里**抽成服务层**
+`backend/app/services/daily_service.py`，CLI 与接口共用同一份判断：
+
+| 入口 | 位置 | 谁用 |
+| --- | --- | --- |
+| 命令行 | `backend/scripts/daily_check.py`（122 行薄层） | 运维、脚本、定时任务 |
+| 接口 | `GET /api/system/daily?days=N`（`HUMAN_ONLY`，`Days` 上限 90） | 工作台首页卡片 |
+| 页面 | `web/app.js` 的 `dailyCard()`，首页第一张卡 | 人 |
+
+**为什么必须共用一份**：两个入口各写一遍，迟早出现"命令行说 3 件待办、页面说 5 件"这种没人敢信的东西。
+现在首页卡片底下直接写着一行小字：「这条卡片和 python -m backend.scripts.daily_check 是同一套判断逻辑（生成时间），
+所以命令行和页面不会打架」。
+
+真机实测（演示库 `%TEMP%mai_demo\demo.db` 副本，服务跑在 8013，密钥留空故本轮 0 元）：
+
+```
+GET /api/system/daily?days=7 -> 200
+ok=False  attention=[5 条语义核查还没人工确认（报告 [1]）——content.script 会一直等着,
+                     1 个视频任务的确认被撤回过（已标记失效）,
+                     data/backups 里还没有任何备份]
+cost.today={calls:0}  cost.window={calls:4, tokens:47132, cost_cny:0.159294}
+checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
+```
+
+无头浏览器（Playwright + 本机 chromium）打开 `#/` 实拍：卡片标题「今天的体检 3 件要处理」、
+六枚标签（今天调用 0 次 / 近 7 天 4 次 ¥0.159294 / 待人工确认 5 条 / 暂停任务 0 个 / 最近备份 没有 / 磁盘 6.3 GB 可用）、
+三条待办逐条列出、三个跳转按钮（看花费明细 / 看任务 / 去确认核查），
+`console_errors=[]`、`page_errors=[]`。
+
+`tests/test_daily_api.py` 5 例守住形状：必需键齐全、`ok` 与 `attention` 一致、
+`days` 越界（0 与 91）返回 422、窗口天数原样带回、**空库（一张表都没有）不抛异常而是把四块标成查不了**。
+
+### §24.2 顺手修掉的两处显示问题
+
+1. 待办文本里原来带 Markdown 反引号（`——`content.script` 会一直等着`），在页面上原样显示成乱码一样的反引号；
+   现在统一去掉反引号，命令行和页面读着都正常。
+2. `sections_unavailable` 的键是给人看的中文标签（任务 / 子任务 / 花费 / 语义核查），值是数据库给的原因
+   （`no such table: research_tasks`）——一开始测试按英文键断言，按真实形状改了测试而不是改实现。

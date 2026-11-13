@@ -21,9 +21,14 @@ from backend.app.core.config import get_agent_routing
 from backend.app.models.enums import ResearchTaskStatus, TaskEventType
 from backend.app.models.execution import ResearchTask, TaskEvent
 from backend.app.models.metering import ModelCall, ToolCall
-from backend.app.schemas.monitoring import HistoryDayOut, HistoryOut
+from backend.app.schemas.monitoring import (
+    DailySummaryOut,
+    HistoryDayOut,
+    HistoryOut,
+)
 from backend.app.schemas.research_task import CostBucket, CostSummaryOut, ProviderStatusOut
 from backend.app.services.agent_registry import load_roster
+from backend.app.services.daily_service import collect_daily
 
 router = APIRouter(
     prefix="/system",
@@ -289,3 +294,25 @@ def get_history(
         total_tasks_failed=sum(item.tasks_failed for item in items),
         note=_history_note(items),
     )
+
+
+@router.get(
+    "/daily",
+    response_model=DailySummaryOut,
+    summary="每日体检：有没有卡住等人、花了多少钱、备份新不新",
+)
+def get_daily(db: DbSession, days: int = Query(default=1, ge=1, le=MAX_HISTORY_DAYS)) -> DailySummaryOut:
+    """一条接口看完操作者每天该看的全部东西。
+
+    判断逻辑与 CLI（`python -m backend.scripts.daily_check`）**共用同一份实现**
+    （`backend.app.services.daily_service.collect_daily`），所以命令行和页面上的数字不会打架。
+    只读：不写任何表，也不改文件。
+
+    老库（缺 `research_tasks` / `model_calls` 等表）不会报错，会在
+    `sections_unavailable` 里说明哪几块查不了、为什么。
+    """
+
+    bind = db.get_bind()
+    url = str(getattr(bind, "url", "") or "")
+    payload = collect_daily(db, days=days, database_url=url)
+    return DailySummaryOut(**payload)

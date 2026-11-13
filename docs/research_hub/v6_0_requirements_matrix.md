@@ -41,7 +41,7 @@
 | 服务健康检查 | `GET /health`、`GET /api/system/status` | DONE | — |
 | 服务自动恢复 | `scripts/watchdog.ps1`（健康探测 + 退避 3→6→12→24 封顶 60 秒 + 日志） | DONE | 8031 端口实测起服务并通过健康检查 |
 | 系统运行监控 | `GET /api/system/{costs,providers,agents}` + `GET /api/system/history` + 工作台「运行历史」折线 | DONE | 历史按天给出调用/tokens/成本/新建任务/完成/失败/子任务失败/闸门次数，**缺的天补 0**；只有"当前库里的记录"，没有跨库归档（换库就看不到旧曲线） |
-| 每日体检（一条命令） | `backend/scripts/daily_check.py`（任务状态/暂停/失败 + 窗口内失败子任务 + 待确认核查 + 失效视频任务 + 今日与近 N 天真实花费 + 备份新鲜度 + 磁盘） | DONE | 只读；退出码 0 干净 / 1 有事项 / 3 连不上库；老库缺表时如实说"这几块查不了"而不是抛异常；`tests/test_daily_check.py` 10 例 |
+| 每日体检（命令行 + 接口 + 首页卡片） | 判断逻辑在 `backend/app/services/daily_service.py`（任务状态/暂停/失败 + 窗口内失败子任务 + 待确认核查 + 失效视频任务 + 今日与近 N 天真实花费 + 备份新鲜度 + 磁盘）；入口 `backend/scripts/daily_check.py`（薄 CLI）与 `GET /api/system/daily`（`HUMAN_ONLY`）；页面 `web/app.js` 的 `dailyCard()` | DONE | **两个入口共用同一份判断**，不会出现命令行与页面数字打架；只读、不联网、不调模型；退出码 0 干净 / 1 有事项 / 3 连不上库；老库缺表时如实说"这几块查不了"而不是抛异常；`tests/test_daily_check.py` 11 例 + `tests/test_daily_api.py` 5 例（含空库不崩、无头浏览器实拍首页卡片） |
 
 ## B. 模型系统
 
