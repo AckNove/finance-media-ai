@@ -93,6 +93,11 @@
 | [`phase2_handover_report.md`](phase2_handover_report.md)、[`phase2_artifact_index.md`](phase2_artifact_index.md)、[`phase2_remaining_issues.md`](phase2_remaining_issues.md) | **Phase 2 冻结三件套**：交接总说明（做了什么、验证结果、能否交付）、交付物索引（每份文件的实际路径与是否入库）、遗留问题清单（工程债 / 授权审核 / 待人工决策 / 可选增强） | 接手 Phase 2 或判断"能不能发"时先看这三份 |
 | [`v5_0_delivery_report.md`](v5_0_delivery_report.md) | **V5.0 交付报告**：接管审计与 Codex 成果分类、20 个模块落地状态、11 个提交、真实运行证据（搜索/抓取/证据链/语音/视频/工作台）、607 例测试、BLOCKED 项与最少人工操作、15 条安全边界核对、数据库与 Git 证明 | 想知道"现在到底能干什么、卡在哪" |
 | [`v5_0_oss_evaluation.md`](v5_0_oss_evaluation.md) | **V5.0 开源项目源码级评估**：17 个项目的固定 SHA、许可证、Windows 可用性、采用方式（DEPENDENCY/SIDECAR/REFERENCE/REJECTED） | 要引入外部框架之前必读 |
+| [`v5_1_semantic_and_planning_report.md`](v5_1_semantic_and_planning_report.md) | **V5.1 语义核查与模型规划**：五档判定、12 项留痕、8 类错误、三条"不许把模型判定当人工确认"的硬规则、模型规划 10 项、9 个真缺陷 | 想知道"结论能不能信" |
+| [`v6_0_requirements_matrix.md`](v6_0_requirements_matrix.md) | **V6.0 需求追踪矩阵**：A–K 逐条需求 → 实现位置 → 状态（DONE/PARTIAL/TEST_ONLY/CODE_ONLY/BLOCKED/NOT_IMPLEMENTED）→ 差距 | 想知道"哪条要求做到哪一步" |
+| [`v6_0_delivery_report.md`](v6_0_delivery_report.md) | **V6.0 交付报告**：本轮新增与修复、三主题真实验收、内容质检从 3 条硬错到通过、记账复核、费用、20 条安全边界逐条核对、六状态总表 | 想知道"这一轮到底交付了什么" |
+| [`v6_0_operator_manual.md`](v6_0_operator_manual.md) | **V6.0 操作手册**：起服务、跑研究、人工确认、出视频、运营排期与 CSV 导入、每日该看的三处、故障排查、备份恢复、五条不能破的规矩 | **自己用的时候从这里开始** |
+| [`v6_0_api_reference.md`](v6_0_api_reference.md) | **V6.0 API 参考**（由 `python -m backend.scripts.dump_api_doc` 从代码生成，勿手改）：每个操作的允许调用者、参数、请求体、响应 | 要直接打接口时看 |
 | 本文 `README.md` | 总说明与索引 | 从这里开始 |
 
 ---
