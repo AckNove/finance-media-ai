@@ -23,13 +23,14 @@ from backend.app.capabilities.guard import ToolSpec, require
 from backend.app.core.caller import CallerContext, CallerKind
 from backend.app.core.errors import AppError
 
-# 十个工具的规范名（与 config/agent_routing.yaml 中 tools 取值一致）
+# 十一个工具的规范名（与 config/agent_routing.yaml 中 tools 取值一致）
 TOOL_NAMES: frozenset[str] = frozenset(
     {
         "web_search",
         "fetch_url",
         "parse_pdf",
         "parse_xlsx",
+        "parse_docx",
         "db_query",
         "db_write",
         "llm_complete",
@@ -96,6 +97,15 @@ TOOL_SPECS: dict[str, ToolSpec] = {
         implemented=True,
         notes="已由 capabilities/adapters/markitdown_adapter.py 实现（xlsx/xls/csv/tsv → "
         "spreadsheet_rows）；不允许把摘要当证据",
+    ),
+    "parse_docx": ToolSpec(
+        name="parse_docx",
+        category="parsing",
+        required_scope="source_extractions",
+        agent_only=True,
+        implemented=True,
+        notes="已由 capabilities/adapters/markitdown_adapter.py 实现（docx/doc → raw_text）；"
+        "只抽文字，**不保留排版、批注与修订痕迹**，所以别拿它判断'原文是否强调过'",
     ),
     "db_query": ToolSpec(
         name="db_query",

@@ -80,6 +80,7 @@ task_types:
       - case_analyst
     tools:
       - parse_pdf
+      - parse_docx
       - parse_xlsx
       - db_query
       - db_write
@@ -203,6 +204,7 @@ agents:
       - web_search
       - fetch_url
       - parse_pdf
+      - parse_docx
       - parse_xlsx
       - llm_complete
       - db_query
@@ -220,6 +222,7 @@ agents:
       - web_search
       - fetch_url
       - parse_pdf
+      - parse_docx
       - parse_xlsx
       - llm_complete
       - db_query
@@ -237,6 +240,7 @@ agents:
       - web_search
       - fetch_url
       - parse_pdf
+      - parse_docx
       - parse_xlsx
       - llm_complete
       - db_query
@@ -254,6 +258,7 @@ agents:
       - web_search
       - fetch_url
       - parse_pdf
+      - parse_docx
       - parse_xlsx
       - llm_complete
       - db_query

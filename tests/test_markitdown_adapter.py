@@ -180,3 +180,77 @@ def test_unimplemented_tools_still_say_so():
     for tool in ("web_search", "llm_complete", "fact_check"):
         result = get_tool_registry().dispatch(CallerContext.human(), tool)
         assert result.status in {"denied", "not_implemented"}
+
+
+# --- Word 文档（docx）-----------------------------------------------------
+
+
+def _docx_path(tmp_path):
+    """手写一个最小 docx（就是 zip + word/document.xml），不引新依赖。"""
+    import zipfile
+
+    document = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        "<w:body>"
+        "<w:p><w:r><w:t>净息差从 2.10% 降到 1.52%。</w:t></w:r></w:p>"
+        "<w:p><w:r><w:t>手续费及佣金净收入占比 19.3%。</w:t></w:r></w:p>"
+        "</w:body></w:document>"
+    )
+    content_types = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+        '<Default Extension="xml" ContentType="application/xml"/>'
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+        '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-'
+        'officedocument.wordprocessingml.document.main+xml"/>'
+        "</Types>"
+    )
+    rels = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+        'relationships/officeDocument" Target="word/document.xml"/>'
+        "</Relationships>"
+    )
+    target = tmp_path / "notes.docx"
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", content_types)
+        archive.writestr("_rels/.rels", rels)
+        archive.writestr("word/document.xml", document)
+    return target
+
+
+def test_docx_is_parsed_through_markitdown(tmp_path):
+    result = adapter.parse_docx_tool(caller=_agent_caller(), path=str(_docx_path(tmp_path)))
+    assert result.status == "ok", result.error_message
+    data = result.data or {}
+    text = data["text"]
+    assert "净息差" in text
+    assert "19.3%" in text
+    assert data["kind"] == "raw_text"
+    assert data["parser"] == "markitdown"
+    assert result.billable is False
+
+
+def test_docx_tool_rejects_other_suffixes(tmp_path):
+    target = tmp_path / "table.csv"
+    target.write_text("a,b\n1,2\n", encoding="utf-8")
+    result = adapter.parse_docx_tool(caller=_agent_caller(), path=str(target))
+    assert result.status == "error"
+    assert result.error_code == "unsupported_document_type"
+
+
+def test_docx_is_reachable_through_the_default_registry(tmp_path):
+    result = get_tool_registry().dispatch(
+        CallerContext.for_executor(
+            agent="financial_researcher",
+            task_id="t-docx",
+            attempt_token="k-docx",
+            db_scopes={"source_extractions"},
+        ),
+        "parse_docx",
+        path=str(_docx_path(tmp_path)),
+    )
+    assert result.status == "ok", result.error_message
+    assert "净息差" in (result.data or {})["text"]

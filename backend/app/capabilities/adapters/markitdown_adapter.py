@@ -49,6 +49,7 @@ SUFFIX_KIND: dict[str, ExtractionKind] = {
 TOOL_SUFFIXES: dict[str, frozenset[str]] = {
     "parse_pdf": frozenset({".pdf"}),
     "parse_xlsx": frozenset({".xlsx", ".xls", ".csv", ".tsv"}),
+    "parse_docx": frozenset({".docx", ".doc"}),
 }
 
 
@@ -230,10 +231,16 @@ def parse_xlsx_tool(*, caller: Any, path: str, max_chars: int | None = None, **k
     return parse_document_tool(caller=caller, tool="parse_xlsx", path=path, max_chars=max_chars, **kwargs)
 
 
+def parse_docx_tool(*, caller: Any, path: str, max_chars: int | None = None, **kwargs: Any) -> Any:
+    """Word 文档：只抽文字，**不保留**排版、批注、修订痕迹。"""
+    return parse_document_tool(caller=caller, tool="parse_docx", path=path, max_chars=max_chars, **kwargs)
+
+
 #: 默认注册表要挂上的实现
 DEFAULT_TOOLS: dict[str, Any] = {
     "parse_pdf": parse_pdf_tool,
     "parse_xlsx": parse_xlsx_tool,
+    "parse_docx": parse_docx_tool,
 }
 
 
@@ -255,6 +262,7 @@ __all__ = [
     "TOOL_SUFFIXES",
     "is_available",
     "parse_document_tool",
+    "parse_docx_tool",
     "parse_pdf_tool",
     "parse_xlsx_tool",
     "parser_version",

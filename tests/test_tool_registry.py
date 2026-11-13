@@ -37,7 +37,7 @@ def agent_caller(agent: str = "financial_researcher", *, scopes: set[str] | None
 
 def test_tool_specs_cover_all_tool_names():
     assert set(TOOL_SPECS) == TOOL_NAMES
-    assert len(TOOL_NAMES) == 10
+    assert len(TOOL_NAMES) == 11
 
 
 def test_only_parser_tools_are_claimed_as_implemented():
@@ -46,7 +46,7 @@ def test_only_parser_tools_are_claimed_as_implemented():
     M2.0 交付时十个工具全部 ``implemented=False``；随后 MarkItDown 适配器让
     ``parse_pdf`` / ``parse_xlsx`` 变成真实现，V5.0 M2 让 ``llm_complete``
     接到统一模型网关，V5.0 M3 又让 ``web_search`` / ``fetch_url`` 接到真实
-    搜索与抓取，其余五个仍然没有。
+    搜索与抓取，V6.0 补上 ``parse_docx``（Word 文档，只抽文字）。
     这条断言的两半都必须成立，防止有人只改标记不改实现（或反之）。
     """
     claimed = sorted(name for name, spec in TOOL_SPECS.items() if spec.implemented)
@@ -57,6 +57,7 @@ def test_only_parser_tools_are_claimed_as_implemented():
         "fetch_url",
         "handoff",
         "llm_complete",
+        "parse_docx",
         "parse_pdf",
         "parse_xlsx",
         "task_update",
@@ -175,6 +176,7 @@ def test_default_registry_matches_declared_implementations():
         "fetch_url",
         "handoff",
         "llm_complete",
+        "parse_docx",
         "parse_pdf",
         "parse_xlsx",
         "task_update",

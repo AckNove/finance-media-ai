@@ -9,7 +9,7 @@
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、70 个 API 操作、
-> 20 个前端页面、`pytest` 1026 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、`pytest` 1029 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -60,7 +60,7 @@
 | Agent Registry | `config/agent_routing.yaml` + `execution/routing.py` + 9 份 `agents/*/PROMPT.md` | DONE | — |
 | Skill Registry | `backend/app/skills/registry.py` + `skills/registry.yaml`（5 个 Skill，含 sha256） | DONE | — |
 | Skill 注入提示词 | `executor._skill_notes()` → `analysis.build_messages(skill_notes=…)`；只有 Agent 身份能加载，加载失败只记 warning、链路继续，`output.skills_used` 如实记录用了哪些 | DONE | 每个 Skill 正文最多带 1800 字进提示词（超出截断并标注） |
-| Tool Registry | `capabilities/tools.py`（10 个工具全部 `implemented=True`） | DONE | — |
+| Tool Registry | `capabilities/tools.py`（11 个工具全部 `implemented=True`） | DONE | — |
 | Agent 权限 | `core/caller.py` + `capabilities/guard.py`（agent_only / db_scopes / 白名单） | DONE | — |
 | Agent 执行状态 | `agent_runs` 表（`agent`、`task_id`、`subtask_id`、`status`、`cost_estimate`） | DONE | — |
 | Agent 间协作 | `handoff` 工具（五型，`need_human` 会改状态） | DONE | — |
@@ -75,7 +75,7 @@
 | 网络搜索 | `capabilities/search/{engine,safety}.py`（bing/sogou/so360） | DONE | — |
 | 网页抓取 / 正文提取 / 快照 | `capabilities/search/fetcher.py` + `data/snapshots/` | DONE | — |
 | PDF / Excel / CSV 解析与表格提取 | `capabilities/adapters/markitdown_adapter.py` + `structured.py` | DONE | — |
-| Word(docx) 解析 | `markitdown_adapter.py` 已映射 `.docx`，但无对外工具 | PARTIAL | 本轮补工具或明确不支持 |
+| Word(docx) 解析 | `capabilities/adapters/markitdown_adapter.py` 的 `parse_docx`（经 MarkItDown）+ 四个研究角色的 tools 已授权 | DONE | 只抽文字：**不保留排版、批注、修订痕迹**，所以不能拿它判断"原文是否强调过" |
 | 来源记录 / 发布时间 | `sources` 表（`published_at`、`site_name`、`sha256`、`snapshot_path`） | DONE | — |
 | 来源可信度管理 | `backend/app/research/source_quality.py`（`tier_of`：官方/一手/媒体/聚合/未知五档，按域名后缀与显式白名单） | DONE | 分级只提示"要不要回原文核对"，不代表内容已核实（`tests/test_source_quality.py` 20 例） |
 | 数据时效性判断 | `source_quality.freshness_of`（30 天 fresh / 180 天 recent / 更早 stale / 无发布时间 unknown，可用 `as_of` 按底稿日期判） | DONE | 阈值是口径不是真理，写死在代码里可复核；发布时间解析不了就判 unknown，不猜 |
