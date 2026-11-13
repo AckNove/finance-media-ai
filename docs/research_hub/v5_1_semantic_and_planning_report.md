@@ -347,8 +347,40 @@ pytest -o addopts=""        # 全量：839 passed, 2 skipped, 1 warning
 2. **失败不记账**：规划/分析/核查撞 `max_tokens` 时抛错，但**那几次调用是花了钱的**，任务成本却记 0。现在 `PlanningError`/`AnalysisError`/`SemanticError` 都带 `usage`，执行器用 `_usage_kwargs` 逐次入账；`research_tasks.cost_spent` 与 `SUM(model_calls.cost_estimate)` 一致（第九轮实测 4 次 ¥0.159294，任务行、调用明细、`/api/system/costs` 三方对齐）。
 3. **探针误触真实库（未写入）**：演示期有一次忘了传 `DATABASE_URL`，落到了真实开发库并尝试 `INSERT research_reports`，被 `table research_reports has no column named research_task_id` 挡住，**未写入任何数据**；此后所有建库/建任务命令都显式带 `--database-url` 或 `DATABASE_URL`。
 
-### 13.5 还没做的
+### 13.5 闸门覆盖第二条出口：脚本（2026-11-13 补）
+
+脚本本身就是成稿，只拦「建视频任务」等于留了后门。现在 `backend/app/services/script_service.py` 的
+`ScriptService.create` 在带 `research_report_id` 时先过同一个闸门：
+
+- 报告不存在 → 422（原有校验不变）；跨选题 → 422（原有校验不变）；
+- 闸门不放行 → **409 `ConflictError`**，`details` 就是 `DraftReadiness.as_dict()`（`reason` 为
+  `no_checks` / `not_confirmed`），前端拿到的信息和视频任务那条出口完全一致。
+
+判据仍然只有 `backend/app/research/draft_gate.py` 一份，脚本层只是调用 `readiness_of`。
+回归用例 `tests/test_draft_gate.py::test_script_from_an_unconfirmed_report_is_refused`：
+没有核查记录时 `POST /api/scripts` → 409 `no_checks`；插一条 `confirmed` 之后同一个请求 → 201 且回填 `research_report_id`。
+
+### 13.6 Windows 一键启动脚本加固（同日）
+
+`scripts/start.ps1` 是「重启后还能一条命令起来」的入口，这次补了三处真问题：
+
+| 问题 | 原来的表现 | 现在 |
+| --- | --- | --- |
+| 文件无 BOM | Windows PowerShell 5.1 按 ANSI（GBK）解析，脚本里的中文注释与提示全变乱码 | 存成 **UTF-8 带 BOM**，并在文件头写明原因 |
+| 端口被占用 | 直接把 uvicorn 的堆栈甩给人看 | 先用 `TcpClient` 探 400ms，占用则打印 `Get-NetTCPConnection` 查到的占用进程名与 pid，提示换 `-Port 8011`，**退出码 3** |
+| 起没起来不知道 | 只打印地址，起失败要自己翻日志 | 起一个探测 job，每 800ms 打 `/health` 最多 10 次，通了打印绿色「健康检查通过」，8 秒没通也明说 |
+
+另加 `-SkipPreflight`（跳过预检，CI 里省一次冷启动），并用 `try/finally` 清掉探测 job。
+
+实测（Windows PowerShell 5.1，不是 pwsh 7）：
+
+- 端口占用分支：`start.ps1 -Port 8000` → 正确打印「端口 8000 已被占用…占用进程：python (pid 11736)」，**退出码 3**，中文无乱码；
+- 真启动分支：`start.ps1 -Port 8011 -Database %TEMP%\fmai_start_test.db -SkipPreflight -NoBrowser`
+  → 自动建库（alembic 一路跑到 `b5_finding_checks`）→ 启动自检 **8/8 项通过** → 探测 job 打印「健康检查通过」→
+  `/health` 200、`/app/` 200（1021 B）、`/api/system/status` 里 `table_count=30`、`revision=b5_finding_checks`、`journal_mode=delete`。
+
+### 13.7 还没做的
 
 - 前端页面已接 `draft-readiness`（报告页新增「成稿闸门」列、核查页顶部显示闸门状态），但**还没在浏览器里真人点过**；
-- 闸门只管「建视频任务」这一条出口；`/api/scripts` 的脚本状态机尚未校验 `confirmed`（下一轮可接）；
+- 闸门已覆盖「建视频任务」与「建脚本」两条出口；`/api/reviews` 的审核流水不拦（它的语义是"对已存在的稿子给意见"，不是产出稿子）；
 - `confirmed` 的审计目前只有 `human_note` / `human_reviewed_at`，没有独立的操作人字段（本地单人使用时足够）。

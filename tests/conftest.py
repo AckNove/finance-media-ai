@@ -87,3 +87,36 @@ def db_session() -> Iterator[Any]:
     finally:
         session.rollback()
         session.close()
+
+
+def confirm_findings(session: Any, report: Any, *, count: int = 1) -> list[int]:
+    """把一份报告的前 ``count`` 条结论标成"人工已确认"，返回核查行 id。
+
+    成稿闸门要求结论必须有 ``human_review_status='confirmed'`` 的核查行才能进稿；
+    凡是"从报告生脚本/视频"的用例都得先过这一步，否则拿到的是 409。
+    """
+    from backend.app.models.research import FindingCheck
+
+    findings = list(getattr(report, "findings", None) or [])
+    created: list[int] = []
+    for index in range(min(count, len(findings))):
+        item = findings[index]
+        text = ""
+        if isinstance(item, dict):
+            text = str(item.get("text") or item.get("claim") or item.get("statement") or "")
+        row = FindingCheck(
+            research_report_id=int(report.id),
+            finding_index=index,
+            claim=text,
+            verdict="supported",
+            reason="原文逐字可查，人工已核对",
+            evidence_ids=[],
+            source_ids=["S01"],
+            human_review_status="confirmed",
+            human_note="用例里模拟人工确认",
+        )
+        session.add(row)
+        session.flush()
+        created.append(int(row.id))
+    session.commit()
+    return created

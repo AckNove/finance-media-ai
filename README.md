@@ -203,7 +203,7 @@ backend/scripts/                  seed_collections / enable_wal / install_ffmpeg
                                   / produce_video / preflight / recover_tasks
                                   / model_smoke（真实模型冒烟）/ model_e2e_check（12 步真实闭环）/ v51_evidence（核查与成本取证）/ import_digest（底稿导入复现）
                                   / flow_check（前端全链路验收）
-scripts/start.ps1                 一键启动（建库、预检、起服务、开浏览器）
+scripts/start.ps1                 一键启动（建库、预检、端口占用检查、起服务、健康探测、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
 agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
 skills/                           Skill 目录（ak/ 三个自研 + vendor/anthropic 的 pdf、xlsx）
@@ -213,7 +213,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（849 例）
+tests/                            pytest 回归测试（850 例）
 ```
 
 ## 文档
@@ -279,9 +279,10 @@ tests/                            pytest 回归测试（849 例）
 阶段的输出里）。
 
 **成稿闸门（2026-11-13 追加）**：一条结论要进成稿，必须有 `finding_checks` 行且
-`human_review_status = "confirmed"`——模型判 `supported` 不算数。三个出口同一份判据
+`human_review_status = "confirmed"`——模型判 `supported` 不算数。四个出口同一份判据
 （`backend/app/research/draft_gate.py`）：建视频任务 API 返回 409、交接层
-`VideoHandoffError("draft_not_confirmed")`、`produce_video` 退出码 3；
+`VideoHandoffError("draft_not_confirmed")`、`produce_video` 退出码 3、**建脚本
+`POST /api/scripts`（带 `research_report_id` 时）同样 409**；
 `content/jobs/<job>/research/report.md` 会分成「可进成稿（人工已确认）」与
 「尚未人工确认（不得进成稿）」两节。工作台报告页有「成稿闸门」列，核查页可直接点确认。
 

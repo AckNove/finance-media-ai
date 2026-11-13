@@ -24,6 +24,7 @@ from backend.app.models.enums import ScriptStatus, VideoTemplate
 from backend.app.models.research import ResearchReport
 from backend.app.models.script import Script
 from backend.app.models.topic import Topic
+from backend.app.research.draft_gate import readiness_of
 from backend.app.services.base import BaseService
 
 #: 允许的状态迁移。表上没有触发器，所以这层就是唯一的闸门。
@@ -73,6 +74,11 @@ class ScriptService(BaseService):
                     "研究报告与选题不是同一个，脚本不能跨选题引用",
                     details={"field": "research_report_id"},
                 )
+            # 成稿闸门：脚本就是成稿本身，所以和"建视频任务"用同一条判据——
+            # 报告里必须有结论被人工确认过，模型判 supported 不算数。
+            gate = readiness_of(self.db, report)
+            if not gate.allowed:
+                raise ConflictError(gate.note, details=dict(gate.as_dict()))
         if not (body or "").strip():
             raise DomainValidationError("body 不能为空", details={"field": "body"})
 

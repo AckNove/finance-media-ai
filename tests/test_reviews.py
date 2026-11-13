@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from conftest import confirm_findings
 from backend.app.models.enums import ReviewTargetType, VerificationStatus
 from backend.app.services.research_service import ResearchReportService
 from backend.app.schemas.research import ResearchReportCreate
@@ -20,6 +21,8 @@ def _report(db_session: Session, title: str = "商业银行盈利结构") -> int
             verification_status=VerificationStatus.UNVERIFIED,
         )
     )
+    # 报告要能生脚本，就得先有一条人工确认过的结论（成稿闸门）。
+    confirm_findings(db_session, report)
     return report.id
 
 

@@ -1,10 +1,14 @@
-# 一键启动 finance-media-ai（Windows / PowerShell）
+﻿# 一键启动 finance-media-ai（Windows / PowerShell）
 #
 # 设计原则：
 #   1. 绝不碰 data/finance_media.db —— 那是只读的开发库，迁移与 WAL 一律不在它上面做。
 #      默认使用独立的工作库 data/finance_media.work.db，第一次启动时自动建表（alembic upgrade head）。
 #   2. 缺少依赖就明确报错并给出安装命令，不假装成功。
 #   3. 启动后打印真实地址；用 -NoBrowser 可以不自动开浏览器（CI / 脚本里用）。
+#   4. 端口被占用直接说清楚是谁占的，别把 uvicorn 的堆栈甩给人看。
+#
+# 注意：本文件必须保存成 **UTF-8 带 BOM**。Windows PowerShell 5.1 在没有 BOM 时
+# 会用系统 ANSI 代码页（中文机器上是 GBK）解析脚本，里面的中文会变成乱码。
 
 [CmdletBinding()]
 param(
@@ -12,12 +16,14 @@ param(
     [string]$BindHost = "127.0.0.1",
     [string]$Database = "",
     [switch]$NoBrowser,
-    [switch]$Reload
+    [switch]$Reload,
+    [switch]$SkipPreflight
 )
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 function Write-Step($message) { Write-Host "[start] $message" -ForegroundColor Cyan }
 function Write-Warn($message) { Write-Host "[start] $message" -ForegroundColor Yellow }
@@ -32,7 +38,33 @@ if (-not (Test-Path $python)) {
 }
 Write-Step ("python: " + (& $python --version))
 
-# --- 2. 数据库 ---------------------------------------------------------------
+# --- 2. 端口 ----------------------------------------------------------------
+function Test-PortBusy([string]$TargetHost, [int]$TargetPort) {
+    try {
+        $client = New-Object System.Net.Sockets.TcpClient
+        $async = $client.BeginConnect($TargetHost, $TargetPort, $null, $null)
+        $done = $async.AsyncWaitHandle.WaitOne(400)
+        $open = $done -and $client.Connected
+        $client.Close()
+        return $open
+    } catch {
+        return $false
+    }
+}
+
+if (Test-PortBusy $BindHost $Port) {
+    Write-Host "[start] 端口 $Port 已被占用：$BindHost`:$Port 上还有服务在跑。" -ForegroundColor Red
+    $owners = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique
+    foreach ($processId in $owners) {
+        $proc = Get-Process -Id $processId -ErrorAction SilentlyContinue
+        if ($proc) { Write-Host ("[start]   占用进程：{0} (pid {1})" -f $proc.ProcessName, $proc.Id) -ForegroundColor Red }
+    }
+    Write-Host "[start] 换一个端口：.\scripts\start.ps1 -Port 8011（或先把上面那个进程停掉）" -ForegroundColor Red
+    exit 3
+}
+
+# --- 3. 数据库 ---------------------------------------------------------------
 if ([string]::IsNullOrWhiteSpace($Database)) {
     $Database = "data/finance_media.work.db"
 }
@@ -58,28 +90,54 @@ if (-not (Test-Path $dbPath)) {
     Write-Step "使用已有工作库：$dbPath"
 }
 
-# --- 3. 环境检查（缺什么就说什么） --------------------------------------------
+# --- 4. 环境检查（缺什么就说什么） --------------------------------------------
 $env:DATABASE_URL = $dbUrl
 $env:PYTHONIOENCODING = "utf-8"
-& $python -m backend.scripts.preflight
-if ($LASTEXITCODE -ne 0) {
-    Write-Warn "预检有阻塞项（见上）。服务仍会启动，但相关能力会是 BLOCKED 而不是伪造成功。"
+if (-not $SkipPreflight) {
+    & $python -m backend.scripts.preflight
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "预检有阻塞项（见上）。服务仍会启动，但相关能力会是 BLOCKED 而不是伪造成功。"
+    }
 }
 
-# --- 4. 启动 ----------------------------------------------------------------
+# --- 5. 启动 ----------------------------------------------------------------
 $url = "http://${BindHost}:${Port}"
 Write-Step "工作台：$url/app/ ｜ 接口文档：$url/docs ｜ 健康检查：$url/api/system/status"
 
 $arguments = @("-m", "uvicorn", "backend.app.main:app", "--host", $BindHost, "--port", "$Port")
 if ($Reload) { $arguments += "--reload" }
 
+# 起来之前就先把"到底起没起来"告诉人：等 4 秒打一次真实健康检查。
+$probe = Start-Job -ScriptBlock {
+    param($target)
+    for ($i = 0; $i -lt 10; $i++) {
+        Start-Sleep -Milliseconds 800
+        try {
+            $response = Invoke-WebRequest -Uri "$target/health" -UseBasicParsing -TimeoutSec 2
+            if ($response.StatusCode -eq 200) {
+                Write-Host "[start] 健康检查通过：$target/health -> 200" -ForegroundColor Green
+                Write-Host "[start] 工作台地址：$target/app/" -ForegroundColor Green
+                return
+            }
+        } catch {
+            # 还没起来，继续等
+        }
+    }
+    Write-Host "[start] 8 秒内没等到 /health 通过，往上看 uvicorn 输出里的报错。" -ForegroundColor Yellow
+} -ArgumentList $url
+
 if (-not $NoBrowser) {
     Start-Job -ScriptBlock {
         param($target)
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 4
         Start-Process $target
     } -ArgumentList "$url/app/" | Out-Null
 }
 
-& $python @arguments
+try {
+    & $python @arguments
+} finally {
+    if ($probe) { Remove-Job -Job $probe -Force -ErrorAction SilentlyContinue }
+    Write-Step "服务已退出。"
+}
 exit $LASTEXITCODE

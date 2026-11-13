@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from conftest import confirm_findings
 from backend.app.models.enums import VerificationStatus
 from backend.app.schemas.research import ResearchReportCreate
 from backend.app.services.research_service import ResearchReportService
@@ -27,6 +28,8 @@ def _report(db_session: Session, topic_id: int) -> int:
             verification_status=VerificationStatus.VERIFIED,
         )
     )
+    # 脚本是成稿本身：闸门要求至少有一条结论被人工确认过。
+    confirm_findings(db_session, report)
     return report.id
 
 

@@ -125,6 +125,51 @@ def test_no_checks_blocks_the_draft(db_session: Any) -> None:
     assert confirmed_findings(db_session, report) == []
 
 
+def test_script_from_an_unconfirmed_report_is_refused(client, db_session: Any) -> None:
+    """脚本也是成稿：报告没有人工确认的结论时，建脚本应当 409 而不是放行。"""
+    topic = client.post("/api/topics", json={"title": "闸门脚本用选题"}).json()
+    report = client.post(
+        "/api/research-reports",
+        json={
+            "title": "未确认的报告",
+            "summary": "摘要。",
+            "limitations": "样本有限。",
+            "findings": [{"statement": "结论一", "nature": "fact"}],
+            "topic_id": topic["id"],
+        },
+    )
+    assert report.status_code == 201, report.text
+    report_id = report.json()["id"]
+
+    blocked = client.post(
+        "/api/scripts",
+        json={
+            "topic_id": topic["id"],
+            "research_report_id": report_id,
+            "title": "还没确认就想写稿",
+            "body": "正文。",
+        },
+    )
+    assert blocked.status_code == 409, blocked.text
+    details = blocked.json()["error"]["details"]
+    assert details["allowed"] is False
+    assert details["reason"] == "no_checks"
+
+    # 人工确认一条之后，同一份报告就能出稿；没挂报告的脚本照旧随便写。
+    _check(db_session, index=0, status="confirmed", report_id=report_id, evidence_ids=[])
+    allowed = client.post(
+        "/api/scripts",
+        json={
+            "topic_id": topic["id"],
+            "research_report_id": report_id,
+            "title": "确认后写稿",
+            "body": "正文。",
+        },
+    )
+    assert allowed.status_code == 201, allowed.text
+    assert allowed.json()["research_report_id"] == report_id
+
+
 def test_pending_checks_still_block(db_session: Any) -> None:
     report = _seed_report(db_session)
     _check(db_session, index=0, status="pending", evidence_ids=[1])
