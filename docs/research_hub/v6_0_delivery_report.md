@@ -268,10 +268,10 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 
 | 需求 | 现在能做什么 | 还差什么 |
 | --- | --- | --- |
-| 9 个 Agent 角色里只有 5 条链路真被 `_handlers` 调用 | 角色名册与 task_type 注册表一致、启动自检会比对 | 其余角色只是名册，文档需逐个标注（`agents/*/PROMPT.md` 已声明接受哪些 task_type） |
+| 9 个 Agent 角色里只有部分链路真被 `_handlers` 调用 | **10 个 task_type 全部有真实处理器**（含 `topic.discover` 与 `content.script/visual/produce`），启动自检会比对角色名册与注册表 | 角色名册里仍有几个只靠 prompt 区分（`agents/*/PROMPT.md` 已逐个声明接受哪些 task_type） |
 | 重复内容识别 | 选题层 `topics.dedupe_key` + 研究层 `corroborate.py` 的数字冲突识别 | 来源/证据层没有"同一篇被多站转载"的合并 |
-| 报告 → 内容策划（定位/受众/标题/钩子/故事线/观点） | 工作台 `/planning` 页展示；脚本状态机已就绪 | 后端没有策划产物生成（要接 `content.plan` 阶段） |
-| 脚本生成（AK 风格） | `content.script` 阶段在流水线里真跑、Skill（`ak-signature` 等）已注入 | 生成偏规则 + 人工，没有"一次成型"的模型初稿 |
+| 报告 → 内容策划（定位/受众/标题/钩子/故事线/结构/观点） | `content.script/visual/produce` 三阶段真跑：脚本草稿、镜头计划、制作计划都落盘（见 §15） | 受众定位与故事线仍靠人定，没有独立的策划产物 |
+| 脚本生成（AK 风格） | `content.script` 只写**人工确认过的结论**，Skill（`ak-signature` 等）已注入分析阶段 | 草稿是规则拼句，不是模型改写；"一次成型"还得人工润色 |
 | 动态产业链图 / 动画 | 数据卡、图表、镜头轨道都能做 | 没有产业链专用图形（上下游链路示意图） |
 | 历史任务 / 错误信息页 | 任务页列出最近 50 条 | 没有分页与按状态/失败原因筛选 |
 
@@ -328,10 +328,35 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 | 背景音乐授权 | `backend/app/video/bgm.py` + `bgm_check` / `mix_bgm`（先验授权再混音） | `pytest tests/test_bgm.py`（15 例，含真调 ffmpeg 混音） |
 | 导出成文件并留记录 | `POST /api/calendar/{id}/export` → `content/exports/entry-<id>/<时间戳>/{douyin,xiaohongshu,wechat}.md` + `meta.json`，路径回写 `export_path`、状态转 `exported` | `pytest tests/test_export_entry.py`（4 例，含 404/422 与"导出不等于发布"断言） |
 
-## 14. 最终验证（本轮最后一次实跑）
+## 15. 内容三阶段接上真实现（本轮修的"假成功"）
+
+这一轮最重要的一处修复不是加功能，而是**堵住一个假成功**。
+
+**问题**：`MODEL_TASK_TYPES` 里有 8 个类型，`_handlers` 只注册了 6 个。没注册的类型会走
+`_model_blocked()`，而它在"模型可用"时返回 `status="completed"`——于是 `topic.discover`、
+`content.script`、`content.visual`、`content.produce` 四个阶段**什么都没做，却报 succeeded**。
+之前 e2e 里那句"9/9 succeeded"就是这么来的。
+
+**修法**（都是加真实实现，不是改断言）：
+
+| 阶段 | 现在的真实动作 | 产物 |
+| --- | --- | --- |
+| `topic.discover` | 按目标判出研究骨架（行业/产业链/公司），列出前 6 节要回答的问题；不检索、不调模型 | `discovery.md` / `discovery.json` |
+| `content.script` | 只取 `human_review_status=confirmed` 的结论拼口播草稿；**没有确认就 `blocked`**（任务暂停等人确认），并写 `scripts` 表一行 | `script_draft.md` / `script_draft.json` |
+| `content.visual` | 草稿 → 镜头计划（开场标题板 / 一句一镜 / 收尾免责），带单位的数字走数据卡 | `visual_plan.json` |
+| `content.produce` | 出制作计划：画布、时长、配音、字幕来源、音乐授权策略、渲染命令、质检清单 | `production_plan.json` |
+
+三条硬规矩写进代码而不是提示词：①没有人工确认的结论进不了草稿（`confirmed_findings` 直接过滤）；
+②视觉与制作**只出计划**，`not_done` 里明写"渲染/配音/素材下载/发布都没做"；③任何 blocked 结果的
+`output` 都带 `blocked: true`，形状统一，调用方不用猜。
+
+验证：`pytest tests/test_content_stages.py`（10 例：三个纯函数 + 四条执行器链路，含"没确认就 blocked"
+与"visual/produce 在没有草稿时 blocked"）。
+
+## 16. 最终验证（本轮最后一次实跑）
 
 ```text
-pytest -o addopts="" -q           → 1048 passed, 2 skipped, 1 warning
+pytest -o addopts="" -q           → 1058 passed, 2 skipped, 1 warning
 真实开发库（只读打开）              → 540,672 B / sha256 2df764e5…8203 / 19 表 /
                                     revision de8148733a9b / journal_mode delete /
                                     无 -wal/-shm / integrity ok / 无 model_calls 表

@@ -234,12 +234,16 @@ class AgentExecutor:
         #: 模型网关（缺省用全局单例；测试注入 MockTransport，绝不真发请求）
         self._model_gateway = model_gateway
         self._handlers: dict[str, Callable[[Claim, CallerContext], ExecutionOutcome]] = {
+            TaskType.TOPIC_DISCOVER.value: self._discover,
             TaskType.RESEARCH_PLAN.value: self._plan,
             TaskType.RESEARCH_COLLECT.value: self._collect,
             TaskType.RESEARCH_EXTRACT.value: self._extract,
             TaskType.RESEARCH_ANALYZE.value: self._analyze,
             TaskType.RESEARCH_SYNTHESIZE.value: self._synthesize,
             TaskType.VERIFY_CLAIMS.value: self._verify_claims,
+            TaskType.CONTENT_SCRIPT.value: self._script,
+            TaskType.CONTENT_VISUAL.value: self._visual,
+            TaskType.CONTENT_PRODUCE.value: self._produce,
         }
 
     # ------------------------------------------------------------------ 入口
@@ -810,6 +814,7 @@ class AgentExecutor:
         if persisted is not None:
             output["report"] = persisted
         if blocked.status == "blocked":
+            output["blocked"] = True
             output["next_step"] = (blocked.output or {}).get("next_step", "")
             return ExecutionOutcome(
                 status="blocked",
@@ -876,6 +881,7 @@ class AgentExecutor:
         if persisted is not None:
             output["report"] = persisted
         if blocked.status == "blocked":
+            output["blocked"] = True
             output["next_step"] = (blocked.output or {}).get("next_step", "")
             return ExecutionOutcome(
                 status="blocked",
@@ -1026,6 +1032,7 @@ class AgentExecutor:
         }
         blocked = self._model_blocked(claim)
         if blocked.status == "blocked":
+            output["blocked"] = True
             output["next_step"] = (blocked.output or {}).get("next_step", "")
             return ExecutionOutcome(status="blocked", reason=blocked.reason, output=output)
 
@@ -1217,6 +1224,302 @@ class AgentExecutor:
             encoding="utf-8",
         )
         return {"markdown": str(markdown_path), "json": str(json_path)}
+
+    # -------------------------------------------------------------- 内容阶段
+
+    def _discover(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """``topic.discover``：把研究目标拆成一页"要回答哪些问题"的框架。
+
+        这里**不检索、不调模型**：它给出骨架（行业/产业链/公司三选一）与前几节要回答的
+        问题，供人工在立项闸门上判断"这个方向值不值得查"。真正的检索词由
+        ``research.plan`` 产出。
+        """
+        import json as _json
+
+        from backend.app.research.frameworks import framework_for
+
+        payload = claim.input_payload if isinstance(claim.input_payload, dict) else {}
+        objective = (
+            self._task_objective(claim.task_id)
+            or str(payload.get("objective") or "")
+            or claim.question
+            or ""
+        ).strip()
+        framework = framework_for(objective)
+        questions = [
+            {
+                "key": section.key,
+                "title": section.title,
+                "question": section.question,
+                "allowed_kinds": list(section.kinds),
+            }
+            for section in framework.sections[:6]
+        ]
+
+        directory = self._stage_dir(claim)
+        directory.mkdir(parents=True, exist_ok=True)
+        payload_out = {
+            "objective": objective,
+            "framework": framework.kind,
+            "framework_title": framework.title,
+            "questions": questions,
+            "note": "这一阶段只出研究框架，没有检索、没有调用模型",
+        }
+        json_path = directory / "discovery.json"
+        json_path.write_text(
+            _json.dumps(payload_out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        markdown_path = directory / "discovery.md"
+        lines = [
+            f"# 研究框架：{framework.title}",
+            "",
+            f"> 目标：{objective}",
+            "",
+            "## 要回答的问题",
+            "",
+        ]
+        lines += [f"{index}. **{item['title']}**：{item['question']}" for index, item in enumerate(questions, start=1)]
+        lines += ["", "> 这一步只定框架，检索词由研究规划阶段产出。"]
+        markdown_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+        return ExecutionOutcome(
+            status="completed",
+            output={
+                "generated_by": "rules",
+                "framework": framework.kind,
+                "framework_title": framework.title,
+                "questions": questions,
+                "files": {"markdown": str(markdown_path), "json": str(json_path)},
+                "note": "这一阶段只出研究框架，没有检索、没有调用模型",
+            },
+        )
+
+    def _latest_report(self, claim: Claim) -> Any | None:
+        """这条任务最新的一份研究报告（没有就是还没跑到 synthesize）。"""
+        from sqlalchemy import select
+
+        from backend.app.models.research import ResearchReport
+
+        with self._session_factory() as session:
+            return session.scalars(
+                select(ResearchReport)
+                .where(ResearchReport.research_task_id == claim.task_id)
+                .order_by(ResearchReport.id.desc())
+                .limit(1)
+            ).first()
+
+    def _stage_dir(self, claim: Claim) -> Path:
+        base = self.artifacts_root or (PROJECT_ROOT / "content" / "research")
+        return Path(base) / f"task-{claim.task_id}" / "content"
+
+    def _blocked_stage(self, reason: str, note: str, *, next_step: str) -> ExecutionOutcome:
+        return ExecutionOutcome(
+            status="blocked",
+            reason=reason,
+            output={"note": note, "next_step": next_step},
+        )
+
+    def _script(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """``content.script``：把**人工确认过的结论**写成口播草稿。
+
+        没确认就不写。这不是提示词里的一句劝告，是这里根本拿不到未确认的结论——
+        ``confirmed_findings`` 只返回 ``human_review_status=confirmed`` 的那些行。
+        """
+        from backend.app.content.stages import StageError, draft_script, write_stage_files
+        from backend.app.research.draft_gate import confirmed_findings
+
+        report = self._latest_report(claim)
+        if report is None:
+            return self._blocked_stage(
+                "no_report",
+                "这条任务还没有研究报告，写不了脚本",
+                next_step="先让 research.synthesize 跑完产出报告",
+            )
+
+        with self._session_factory() as session:
+            from backend.app.models.research import ResearchReport
+
+            stored = session.get(ResearchReport, report.id)
+            confirmed = confirmed_findings(session, stored) if stored is not None else []
+            report_id = report.id
+            report_title = str(getattr(report, "title", "") or "")
+
+        if not confirmed:
+            return self._blocked_stage(
+                "no_confirmed_findings",
+                "这份报告还没有人工确认过的结论：脚本必须只写确认过的内容",
+                next_step="先到「语义核查」页逐条确认，再恢复任务",
+            )
+
+        objective = self._task_objective(claim.task_id)
+        try:
+            draft = draft_script(
+                report=report,
+                confirmed=confirmed,
+                requested_title=objective or report_title,
+            )
+        except StageError as error:
+            return self._blocked_stage(
+                error.reason,
+                error.message,
+                next_step="检查结论内容后再恢复任务",
+            )
+
+        directory = self._stage_dir(claim)
+        files = write_stage_files(out_dir=directory, draft=draft)
+
+        script_id = self._store_script(claim, draft, report_id)
+        output: dict[str, Any] = {
+            "generated_by": draft.generated_by,
+            "script_id": script_id,
+            "title": draft.title,
+            "line_count": len(draft.lines),
+            "word_count": draft.word_count,
+            "estimated_seconds": draft.estimated_seconds,
+            "confirmed_used": len(draft.lines),
+            "dropped": list(draft.dropped),
+            "files": files,
+            "note": (
+                "草稿只用了人工确认过的结论；未确认的一条都没进来。"
+                "机器音与渲染都不在这一步。"
+            ),
+        }
+        if script_id is None:
+            output["store_note"] = (
+                "任务没有绑定选题（topic_id 为空），脚本只落盘未入库"
+                if self._task_topic_id(claim.task_id) is None
+                else "脚本入库失败，产物已落盘，详见日志"
+            )
+        return ExecutionOutcome(status="completed", output=output)
+
+    def _task_topic_id(self, task_id: int) -> int | None:
+        from backend.app.models.execution import ResearchTask
+
+        with self._session_factory() as session:
+            task = session.get(ResearchTask, task_id)
+            return getattr(task, "topic_id", None) if task is not None else None
+
+    def _store_script(self, claim: Claim, draft: Any, report_id: int) -> int | None:
+        """把草稿写成 ``scripts`` 表的一行（版本号由 ``ScriptService`` 管）。"""
+        topic_id = self._task_topic_id(claim.task_id)
+        if topic_id is None:
+            return None
+        from backend.app.services.script_service import ScriptService
+
+        try:
+            with self._session_factory() as session:
+                script = ScriptService(session).create(
+                    topic_id=topic_id,
+                    title=draft.title,
+                    body=draft.body,
+                    research_report_id=report_id,
+                    hook=draft.hook,
+                    segments=[line.as_dict() for line in draft.lines],
+                    disclaimer=draft.disclaimer,
+                    estimated_duration=int(round(draft.estimated_seconds)),
+                )
+                script_id = script.id
+                session.commit()
+                return script_id
+        except Exception as error:  # noqa: BLE001 - 入库失败不该吞掉已生成的草稿
+            logger.warning("脚本入库失败（草稿已落盘）：%s", error)
+            return None
+
+    def _visual(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """``content.visual``：把草稿排成镜头计划（只排，不渲染）。"""
+        import json as _json
+
+        from backend.app.content.stages import ScriptDraft, ScriptLine, plan_shots, write_stage_files
+
+        directory = self._stage_dir(claim)
+        draft_path = directory / "script_draft.json"
+        if not draft_path.exists():
+            return self._blocked_stage(
+                "no_script_draft",
+                "还没有脚本草稿，排不了镜头",
+                next_step="先让 content.script 产出草稿（需要先人工确认结论）",
+            )
+        raw = _json.loads(draft_path.read_text(encoding="utf-8"))
+        draft = ScriptDraft(
+            title=str(raw.get("title") or ""),
+            hook=str(raw.get("hook") or ""),
+            lines=tuple(
+                ScriptLine(
+                    text=str(item.get("text") or ""),
+                    role=str(item.get("role") or "evidence"),
+                    source_ids=tuple(str(x) for x in (item.get("source_ids") or [])),
+                    numbers=tuple(str(x) for x in (item.get("numbers") or [])),
+                )
+                for item in (raw.get("lines") or [])
+                if str(item.get("text") or "").strip()
+            ),
+            disclaimer=str(raw.get("disclaimer") or ""),
+            generated_by=str(raw.get("generated_by") or "rules"),
+        )
+        if not draft.lines:
+            return self._blocked_stage(
+                "empty_script",
+                "草稿里没有可用的句子",
+                next_step="回到 content.script 重新生成",
+            )
+        shots = plan_shots(draft)
+        files = write_stage_files(out_dir=directory, shots=shots)
+        return ExecutionOutcome(
+            status="completed",
+            output={
+                "generated_by": "rules",
+                "shot_count": len(shots),
+                "total_seconds": round(sum(float(shot["seconds"]) for shot in shots), 2),
+                "asset_types": sorted({str(shot["asset_type"]) for shot in shots}),
+                "files": files,
+                "note": "这一阶段只排镜头计划，没有任何画面被渲染出来",
+            },
+        )
+
+    def _produce(self, claim: Claim, caller: CallerContext) -> ExecutionOutcome:
+        """``content.produce``：出制作计划（配音/字幕/音乐/渲染参数/质检清单）。"""
+        import json as _json
+
+        from backend.app.content.stages import production_plan, write_stage_files
+
+        directory = self._stage_dir(claim)
+        script_path = directory / "script_draft.json"
+        shots_path = directory / "visual_plan.json"
+        if not script_path.exists() or not shots_path.exists():
+            return self._blocked_stage(
+                "no_visual_plan",
+                "脚本或分镜计划还缺一个，出不了制作计划",
+                next_step="先跑 content.script 与 content.visual",
+            )
+        raw_script = _json.loads(script_path.read_text(encoding="utf-8"))
+        raw_shots = _json.loads(shots_path.read_text(encoding="utf-8"))
+        shots = list(raw_shots.get("shots") or [])
+
+        from backend.app.content.stages import ScriptDraft
+
+        draft = ScriptDraft(
+            title=str(raw_script.get("title") or ""),
+            hook=str(raw_script.get("hook") or ""),
+            lines=(),
+            disclaimer=str(raw_script.get("disclaimer") or ""),
+            generated_by=str(raw_script.get("generated_by") or "rules"),
+        )
+        job_id = f"task-{claim.task_id}"
+        plan = production_plan(draft=draft, shots=shots, job_id=job_id)
+        files = write_stage_files(out_dir=directory, plan=plan)
+        return ExecutionOutcome(
+            status="completed",
+            output={
+                "generated_by": "rules",
+                "job_id": job_id,
+                "shot_count": plan["shot_count"],
+                "duration_seconds": plan["duration_seconds"],
+                "not_done": plan["not_done"],
+                "files": files,
+                "note": "制作计划已就绪；渲染、配音、素材下载、发布都还没做（next_step 里有命令）",
+                "next_step": plan["render"]["command"],
+            },
+        )
 
     # ------------------------------------------------------------------ 记录
 

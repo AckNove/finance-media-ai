@@ -44,6 +44,23 @@ def no_real_model_keys(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv(name, raising=False)
 
 
+@pytest.fixture(autouse=True)
+def isolate_artifacts_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """测试写出的底稿/分析/脚本产物不许落进仓库的 ``content/research``。
+
+    执行器的默认产物根是 ``PROJECT_ROOT / "content" / "research"``；用例里忘了传
+    ``artifacts_root`` 就会在仓库里留下一堆 ``task-1`` 目录（早先真的发生过）。
+    这里把执行器看到的 ``PROJECT_ROOT`` 指到临时目录，一个文件都不进仓库。
+    """
+    from backend.app.core import config as config_module
+    from backend.app.execution import executor as executor_module
+
+    # 执行器是在函数体里 ``from backend.app.core.config import PROJECT_ROOT`` 的，
+    # 所以必须打**源模块**上的这个名字，只打 executor 模块属性没用。
+    monkeypatch.setattr(config_module, "PROJECT_ROOT", tmp_path, raising=False)
+    monkeypatch.setattr(executor_module, "PROJECT_ROOT", tmp_path, raising=False)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def test_database(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
     """整个测试会话共享一个临时数据库文件。"""

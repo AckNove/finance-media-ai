@@ -413,14 +413,21 @@ def test_extract_reads_a_real_csv_with_row_locations(
 
 
 def test_model_stage_blocks_without_credentials(runtime: TaskRuntime, factory) -> None:
-    orchestrator = Orchestrator(runtime)
-    result = orchestrator.plan_task(
-        title="选题发现", objective="找出净息差相关选题", pipeline="research_to_script"
+    # topic.discover 现在是真实现（只出研究框架、不调模型），所以"缺凭据"要用
+    # 真正依赖模型的阶段来验：research.analyze。
+    task = runtime.create_task(title="选题发现", objective="找出净息差相关选题")
+    runtime.start_task(task.id)
+    runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="分析：商业银行是怎么赚钱的",
+        task_type="research.analyze",
+        assignee="financial_researcher",
+        depends_on=(),
     )
-    runtime.start_task(result.task.id)
     claim = runtime.claim_next(worker="worker-1")
     assert claim is not None
-    assert claim.task_type == "topic.discover"
+    assert claim.task_type == "research.analyze"
 
     outcome = AgentExecutor(tools=FakeTools(), session_factory=factory).execute(claim)
     assert outcome.status == "blocked"
@@ -474,15 +481,23 @@ def test_worker_completes_stage_and_wakes_the_next_one(runtime: TaskRuntime, fac
 def test_worker_pauses_the_task_for_human_review_when_blocked(
     runtime: TaskRuntime, factory
 ) -> None:
-    orchestrator = Orchestrator(runtime)
-    result = orchestrator.plan_task(title="选题发现", objective="找选题")
-    runtime.start_task(result.task.id)
+    # 同上：用一个真依赖模型、且没有可用 provider 的阶段来验"阻塞 → 任务暂停"。
+    task = runtime.create_task(title="选题发现", objective="找选题")
+    runtime.start_task(task.id)
+    runtime.add_subtask(
+        task.id,
+        sequence=1,
+        question="分析：找选题",
+        task_type="research.analyze",
+        assignee="financial_researcher",
+        depends_on=(),
+    )
 
     worker = Worker(runtime, AgentExecutor(tools=FakeTools(), session_factory=factory))
     report = worker.run_once()
 
     assert len(report.blocked) == 1
-    snapshot = runtime.task(result.task.id)
+    snapshot = runtime.task(task.id)
     assert snapshot.status == "paused"
     assert snapshot.counts()["blocked"] == 1
 
