@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "base_url": "http://127.0.0.1:8002",
+  "report_id": 1,
+  "steps": [
+    {
+      "step": "打开核查页",
+      "gate": "还不能成稿：报告里还没有被人工确认的结论：语义核查的判定只是模型意见，必须有人在「语义核查」页逐条确认后才允许进入成稿。",
+      "rows": 6
+    },
+    {
+      "step": "点确认后",
+      "gate": "可成稿 · 已确认 1 条",
+      "confirmed_rows": 1,
+      "note_in_row": true
+    },
+    {
+      "step": "报告页",
+      "shows_gate_allowed": true
+    }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": [],
+  "screenshots": [
+    "01_checks_before.png",
+    "02_checks_after.png",
+    "03_reports.png"
+  ]
+}

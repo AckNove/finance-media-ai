@@ -117,7 +117,10 @@ const ROUTES = [
 ];
 
 function matchRoute(hash) {
-  const clean = (hash || '#/').replace(/^#/, '') || '/';
+  // 先切掉查询串再匹配：`#/checks?report=1` 的路径是 `/checks`，`?report=1` 是给页面自己的参数。
+  // （早先直接拿整段 hash 按 `/` 切，于是任何带查询串的深链都会掉回首页。）
+  const raw = (hash || '#/').replace(/^#/, '') || '/';
+  const clean = raw.split('?')[0] || '/';
   const parts = clean.split('/').filter(Boolean);
   for (const route of ROUTES) {
     const routeParts = route.path.split('/').filter(Boolean);
