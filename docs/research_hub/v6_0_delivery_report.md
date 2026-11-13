@@ -258,18 +258,17 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 | 状态 | 数量 | 主要条目 |
 | --- | --- | --- |
 | **DONE** | 主干全部 | 配置/迁移/队列/网关计费/预算/限流/脱敏/降级链/TaskRuntime/编排/失败传播；搜索抓取解析；来源与证据；来源可信度与时效；三套研究骨架；Skill 注入提示词；语义核查五档 + 成稿闸门 + 撤回失效；内容质检；内容日历与平台回填 + CSV 批量导入；选题建议（规则推荐）；一稿三版（抖音/小红书/公众号，不改事实不编标签）；背景音乐曲库与授权校验（先验授权再混音）；备份恢复/诊断/停止/自愈；20 页前端 |
-| **PARTIAL** | 2 | 见下表（本文件 §9.1）——这些是**部分可用但不是完整能力**的条目，不冒充 DONE |
+| **PARTIAL** | 1 | 见下表（本文件 §9.1）——这些是**部分可用但不是完整能力**的条目，不冒充 DONE |
 | **TEST_ONLY** | 1 | `contradicted` 判定（代码 + 单测通过，真实语料里还没出现过） |
 | **CODE_ONLY** | 0 | — |
 | **BLOCKED** | 2 | 真实素材获取（需授权素材源）；云渲染/发布（未授权） |
 | **NOT_IMPLEMENTED** | 1 | 多平台账号 API 对接（抖音/小红书等开放平台需企业资质与授权，不是本地能补的） |
 
-### 9.1 目前仍是 PARTIAL 的两项（如实列出）
+### 9.1 目前仍是 PARTIAL 的一项（如实列出）
 
 | 需求 | 现在能做什么 | 还差什么 |
 | --- | --- | --- |
 | 脚本生成（AK 风格） | `content.script` 只写**人工确认过的结论**，Skill（`ak-signature` 等）已注入分析阶段 | 草稿是规则拼句，不是模型改写；"一次成型"还得人工润色 |
-| 动态产业链图 / 动画 | 数据卡、图表、镜头轨道都能做 | 没有产业链专用图形（上下游链路示意图） |
 
 ## 10. 用户怎么开始用（最少三步）
 
@@ -352,7 +351,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 ## 16. 最终验证（本轮最后一次实跑）
 
 ```text
-pytest -o addopts="" -q           → 1073 passed, 2 skipped, 1 warning
+pytest -o addopts="" -q           → 1084 passed, 2 skipped, 1 warning
 真实开发库（只读打开）              → 540,672 B / sha256 2df764e5…8203 / 19 表 /
                                     revision de8148733a9b / journal_mode delete /
                                     无 -wal/-shm / integrity ok / 无 model_calls 表
@@ -392,5 +391,36 @@ git ls-files .env                 → 空（密钥从未入库）
 - 前端 `pageTasks` 改成深链分页 `#/tasks?offset=20&status=failed`，带状态下拉与
   「第 X–Y 条 / 共 N 条」。
 - 验证：`tests/test_research_task_api.py::test_listing_supports_pagination_and_a_status_filter`。
+
+## 18. 产业链示意图（本轮关掉最后一项 PARTIAL）
+
+数据卡只能讲一个数字，讲产业链要的是"东西怎么流动、利润卡在哪一环"。做法
+（`backend/app/video/chain.py` + `backend/scripts/chain_diagram.py`）：
+
+- **图上只写有依据的东西**：节点取自研究结论里 `section` 命中 `upstream / midstream /
+  downstream` 的句子，每行最多 3 个、每个最多 12 字；挂不上骨架的结论不上图；
+- 某一环一条都没查到就写「（本环缺证据）」——**空着比编一句好看**；
+- 三行按"整段时长三等分"依次进入（透明度 + 横向位移），行间箭头一路下沉、整块内容
+  缓慢推近到最后一帧（否则纯色底会被 `freezedetect` 判成冻结画面）；
+- 画板写成 `assets/compositions/<id>.json`，同时登记进 `assets_manifest.csv`
+  （B 类原创、授权 `allowed`），分镜里用 `asset_type=composition` 引用它。
+
+真机验证：
+
+```text
+python -m backend.scripts.chain_diagram --job <job> --seconds 4
+→ 已生成产业链图：assets/compositions/chain_01.json（120 帧）
+  upstream: ['硅料价格下跌三成'] / midstream: ['组件价格跌破现金成本线']
+  downstream: ['电站装机增速放缓']
+```
+
+引擎侧真渲染 24 帧（工程目录内需先有 `fonts/NotoSansSC-VF.ttf`，与数据卡同一套字体
+同步逻辑；缺字体时引擎报 `ContractError: Asset missing or unsupported: fonts/…`），
+抽帧目视核验：三行标签与节点齐整、箭头在行间、最后一帧三行齐全。
+
+验证：`tests/test_video_chain.py`（11 例：三行顺序与去重、无 section 不上图、每行上限、
+空环节文案、逐行进入、画板契约、最后一帧仍在变化、登记 B 类且幂等、`register=False`
+不建清单）。
+
 
 

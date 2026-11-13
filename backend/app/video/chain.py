@@ -1,0 +1,343 @@
+"""产业链示意图：把"上游 → 中游 → 下游"画成会动的画板。
+
+为什么单独做一层：数据卡只能显示**一个数字**，讲产业链时需要的是"东西怎么流动、
+利润卡在哪一环"。这类图必须能一眼看出结构，所以固定三行（上游/中游/下游），
+每行放该环节的具体节点，节点从上到下依次出现，再用一条流动的箭头把顺序说清楚。
+
+硬约束（和 `cards.py` 同一套画板契约）：
+
+- 只用画板支持的样式白名单（flex 布局、宽高、背景色、字号、颜色、字距）；
+- 轨道只允许 ``opacity / reveal / translateX / translateY / rotate / scale``，
+  easing 只有 ``linear / smooth / step``；
+- 关键帧必须落在 ``0 .. frames-1``；
+- **最后一帧仍要有变化**——纯色底一旦静止，``freezedetect`` 会判"画面冻结"。
+  所以节点的 ``scale`` 轨道一路拉到最后一帧。
+
+数据来源只有一处：研究结论里**挂到产业链骨架节点上**的那些句子
+（``backend.app.research.frameworks.CHAIN`` 的 upstream / midstream / downstream）。
+挂不上的句子不上图——图上不写没有依据的东西。
+"""
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Iterable, Mapping, Sequence
+
+from backend.app.video.cards import (
+    CARD_DIR,
+    CYAN,
+    DIM,
+    FONT_FAMILY,
+    FONT_SRC,
+    INK,
+    LIME,
+    PAPER,
+    _text,
+    _track,
+)
+
+__all__ = [
+    "CHAIN_STAGES",
+    "ChainDocument",
+    "MAX_NODES_PER_STAGE",
+    "chain_document",
+    "chain_path",
+    "nodes_from_findings",
+    "write_chain",
+]
+
+#: 三行固定顺序：上游 → 中游 → 下游（顺序本身就是信息，不按数据多少排）
+CHAIN_STAGES: tuple[tuple[str, str], ...] = (
+    ("upstream", "上游"),
+    ("midstream", "中游"),
+    ("downstream", "下游"),
+)
+
+#: 每行最多几个节点（再多字就糊了，宁可少画）
+MAX_NODES_PER_STAGE = 3
+#: 单个节点最多几个字（超出截断并加省略号）
+MAX_NODE_CHARS = 12
+
+
+@dataclass(frozen=True)
+class ChainDocument:
+    """一张产业链示意图：资产编号、落盘路径、画板文档、帧数。"""
+
+    asset_id: str
+    path: Path
+    document: dict[str, Any]
+    frames: int
+
+    @property
+    def relative_path(self) -> str:
+        return f"{CARD_DIR.as_posix()}/{self.path.name}"
+
+
+def _pill(node_id: str, label: str, *, width: int = 300) -> dict[str, Any]:
+    """一个环节节点：圆角块 + 文字。"""
+    return {
+        "id": node_id,
+        "type": "box",
+        "style": {
+            "display": "flex",
+            "align-items": "center",
+            "justify-content": "center",
+            "width": f"{width}px",
+            "min-height": "96px",
+            "border-radius": "18px",
+            "background-color": "#243352",
+            "padding": "18px 22px",
+        },
+        "children": [_text(f"{node_id}_text", label, size=34, color=PAPER)],
+    }
+
+
+def _stage_row(
+    key: str, label: str, nodes: Sequence[str], *, width: int
+) -> dict[str, Any]:
+    """一行：左边固定的环节名，右边是这一环的节点。
+
+    节点宽度按"这一行有几个节点"算：一个节点占满，两个各半，三个各三分之一。
+    这样 12 个字的节点也能排在一行里，不会被挤成两行。
+    """
+    label_width = 120
+    gap = 18
+    usable = width - label_width - gap * (len(nodes) + 1)
+    node_width = max(220, usable // max(1, len(nodes)))
+    children: list[dict[str, Any]] = [
+        {
+            "id": f"{key}_label_box",
+            "type": "box",
+            "style": {
+                "display": "flex",
+                "align-items": "center",
+                "justify-content": "flex-start",
+                "width": f"{label_width}px",
+            },
+            "children": [
+                _text(f"{key}_label", label, size=30, color=CYAN, spacing="0.10em")
+            ],
+        }
+    ]
+    for position, node in enumerate(nodes):
+        children.append(_pill(f"{key}_n{position}", node, width=node_width))
+    return {
+        "id": f"{key}_row",
+        "type": "box",
+        "style": {
+            "display": "flex",
+            "flex-direction": "row",
+            "align-items": "stretch",
+            "justify-content": "flex-start",
+            "gap": f"{gap}px",
+            "width": f"{width}px",
+        },
+        "children": children,
+    }
+
+
+
+def chain_document(
+    *,
+    title: str,
+    stages: Mapping[str, Sequence[str]],
+    frames: int,
+    width: int = 1080,
+    height: int = 1920,
+    note: str = "",
+) -> dict[str, Any]:
+    """生成产业链示意图的画板文档。
+
+    ``stages`` 只用 ``upstream / midstream / downstream`` 三个键；空阶段仍会画出来，
+    并写「（本环缺证据）」，让人一眼看到哪一环没查到东西。
+    """
+    if frames < 2:
+        raise ValueError("frames 至少为 2，否则动画没有可用的时间轴")
+
+    rows: list[dict[str, Any]] = []
+    tracks: list[dict[str, Any]] = []
+    arrows: list[str] = []
+
+    title_node = _text("title", title, size=58, color=PAPER, weight=700)
+    if note:
+        note_node = _text("note", note, size=28, color=DIM)
+    else:
+        note_node = None
+
+    # 三行按出现顺序做时间轴：整段时长里三等分，保证每一行都能在片子里露过面
+    span = max(6, int(round((frames - 6) / 3)))
+    for index, (key, label) in enumerate(CHAIN_STAGES):
+        labels = [str(item).strip() for item in (stages.get(key) or ()) if str(item).strip()]
+        labels = [_clip(item) for item in labels[:MAX_NODES_PER_STAGE]]
+        if not labels:
+            labels = ["（本环缺证据）"]
+        row = _stage_row(key, label, labels, width=width - 120)
+        rows.append(row)
+
+        start = min(6 + index * span, frames - 2)
+        end = min(start + max(8, span - 2), frames - 1)
+        tracks.append(_track(f"{key}_row", "opacity", [[start, 0], [end, 1]], frames=frames))
+        tracks.append(
+            _track(f"{key}_row", "translateX", [[start, -28], [end, 0]], frames=frames)
+        )
+        if index < len(CHAIN_STAGES) - 1:
+            arrows.append(f"{key}_arrow")
+
+    content_children: list[dict[str, Any]] = [title_node]
+    if note_node is not None:
+        content_children.append(note_node)
+    for index, row in enumerate(rows):
+        content_children.append(row)
+        if index < len(rows) - 1:
+            arrow_id = f"{CHAIN_STAGES[index][0]}_arrow"
+            content_children.append(
+                {
+                    "id": arrow_id,
+                    "type": "box",
+                    "style": {
+                        "display": "flex",
+                        "align-items": "center",
+                        "justify-content": "center",
+                        "height": "70px",
+                        "width": "100%",
+                    },
+                    "children": [_text(f"{arrow_id}_text", "▼", size=44, color=LIME)],
+                }
+            )
+            arrow_start = min(span // 2 + index * span, frames - 2)
+            arrow_end = min(arrow_start + max(6, span // 2), frames - 1)
+            tracks.append(
+                _track(arrow_id, "opacity", [[arrow_start, 0], [arrow_end, 1]], frames=frames)
+            )
+            # 箭头持续下沉：既是"往下流"的意思，也保证最后一帧还在变
+            tracks.append(
+                _track(
+                    arrow_id,
+                    "translateY",
+                    [[arrow_start, -10], [frames - 1, 6]],
+                    easing="linear",
+                    frames=frames,
+                )
+            )
+
+    root: dict[str, Any] = {
+        "id": "root",
+        "type": "box",
+        "style": {
+            "display": "flex",
+            "flex-direction": "column",
+            "align-items": "center",
+            "justify-content": "center",
+            "gap": "40px",
+            "width": f"{width}px",
+            "height": f"{height}px",
+            "padding": "0 55px",
+            "background-color": INK,
+        },
+        "children": [
+            {
+                "id": "content",
+                "type": "box",
+                "style": {
+                    "display": "flex",
+                    "flex-direction": "column",
+                    "align-items": "center",
+                    "justify-content": "center",
+                    "gap": "34px",
+                    "width": "100%",
+                },
+                "children": content_children,
+            }
+        ],
+    }
+    # 整块内容缓慢推近：让"静止画面"这件事不可能发生
+    tracks.append(_track("content", "scale", [[0, 1.0], [frames - 1, 1.05]], frames=frames))
+    tracks.append(_track("title", "opacity", [[0, 0], [min(8, frames - 1), 1]], frames=frames))
+
+    return {
+        "schema": 1,
+        "canvas": {"w": width, "h": height, "fps": 30, "frames": frames},
+        "fonts": [{"family": FONT_FAMILY, "src": FONT_SRC}],
+        "root": root,
+        "tracks": tracks,
+    }
+
+
+def _clip(text: str) -> str:
+    clean = " ".join(str(text).split())
+    if len(clean) <= MAX_NODE_CHARS:
+        return clean
+    return clean[: MAX_NODE_CHARS - 1] + "…"
+
+
+def chain_path(job_root: Path | str, asset_id: str) -> Path:
+    return Path(job_root) / CARD_DIR / f"{asset_id.lower()}.json"
+
+
+def write_chain(
+    job_root: Path | str,
+    *,
+    asset_id: str,
+    title: str,
+    stages: Mapping[str, Sequence[str]],
+    frames: int,
+    width: int = 1080,
+    height: int = 1920,
+    fps: int = 30,
+    note: str = "",
+    register: bool = True,
+) -> ChainDocument:
+    """把示意图写进任务目录（同内容重复写是幂等的），并登记成 B 类素材。"""
+    root = Path(job_root).resolve()
+    document = chain_document(
+        title=title, stages=stages, frames=frames, width=width, height=height, note=note
+    )
+    document["canvas"]["fps"] = int(fps)
+    target = chain_path(root, asset_id)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if register:
+        from backend.app.video.generated import register_generated_asset
+
+        register_generated_asset(
+            root,
+            target,
+            kind="composition",
+            purpose=f"产业链示意图 {asset_id}",
+            credit="本仓库按研究结论排版生成（上游/中游/下游三段示图）",
+            used_in_shots=asset_id,
+            asset_id=asset_id,
+        )
+    return ChainDocument(asset_id=asset_id, path=target, document=document, frames=frames)
+
+
+def nodes_from_findings(
+    findings: Iterable[Mapping[str, Any]],
+    *,
+    per_stage: int = MAX_NODES_PER_STAGE,
+) -> dict[str, list[str]]:
+    """从结论里挑出三行节点：只认挂到产业链骨架节点上的句子。
+
+    - 每条结论的 ``section`` 必须是 ``upstream / midstream / downstream``；
+    - 句子取第一个短句（逗号前），最多 ``MAX_NODE_CHARS`` 字；
+    - 同一行按出现顺序去重，最多 ``per_stage`` 条。
+
+    挂不上骨架的结论**不上图**：图上不写没有依据的东西，缺就写"（本环缺证据）"。
+    """
+    stages: dict[str, list[str]] = {key: [] for key, _ in CHAIN_STAGES}
+    for item in findings:
+        section = str(item.get("section") or "").strip().lower()
+        if section not in stages:
+            continue
+        text = str(item.get("text") or item.get("claim") or item.get("statement") or "").strip()
+        if not text:
+            continue
+        head = text.split("，")[0].split(",")[0].strip()
+        label = _clip(head)
+        if not label or label in stages[section]:
+            continue
+        if len(stages[section]) >= per_stage:
+            continue
+        stages[section].append(label)
+    return stages
