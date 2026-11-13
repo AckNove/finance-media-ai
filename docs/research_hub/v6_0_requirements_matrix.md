@@ -9,7 +9,7 @@
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、71 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1084 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、11 个已实现工具、`pytest` 1101 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -126,7 +126,7 @@
 | 图表生成 | `analysis/charts.py` + `chart_from_table.py` | DONE | — |
 | 中文 TTS / 字幕 | `capabilities/tts/`（edge-tts WordBoundary + sapi 兜底） | DONE | — |
 | 素材搜索与获取（真实素材） | — | **NOT_IMPLEMENTED** | 只用自绘图与纯视觉底板（诚实记录） |
-| 动态产业链图 / 动画 | `backend/app/video/chain.py`（三段示图）+ `backend/scripts/chain_diagram.py` | DONE | 上游/中游/下游三行按研究结论的 `section` 取节点，逐行进入 + 箭头下沉 + 整块缓推；挂不上骨架的结论不上图；空环节写「（本环缺证据）」；真机渲染 24 帧已抽帧目视核验 |
+| 动态产业链图 / 动画 | `backend/app/video/chain.py`（三段示图 + `insert_chain_shot` / `resize_chains`）+ `backend/scripts/chain_diagram.py` | DONE | 上游/中游/下游三行按研究结论的 `section` 取节点，逐行进入 + 箭头下沉 + 整块缓推；挂不上骨架的结论不上图；空环节写「（本环缺证据）」；**报告→视频任务时自动插入**（覆盖 ≥2 段才插，插在开场之后并重排时间轴）；配音重排后按新时长重写画板帧数；真机渲染已抽帧目视核验 |
 | 背景音乐管理 | `backend/app/video/bgm.py`（曲库登记 + 授权白名单）+ `backend/scripts/mix_bgm.py`（先验授权再混音） | DONE | 曲库自带是空的（诚实状态）：默认走 `synthesize_score` 合成配乐；要加曲目必须登记授权，白名单外一律拒绝，cc-by 类强制写署名 |
 
 ## I. 视频质量控制

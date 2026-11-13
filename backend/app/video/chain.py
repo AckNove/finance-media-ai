@@ -39,11 +39,14 @@ from backend.app.video.cards import (
 
 __all__ = [
     "CHAIN_STAGES",
+    "CHAIN_SHOT_SECONDS",
     "ChainDocument",
     "MAX_NODES_PER_STAGE",
     "chain_document",
     "chain_path",
+    "insert_chain_shot",
     "nodes_from_findings",
+    "resize_chains",
     "write_chain",
 ]
 
@@ -58,6 +61,10 @@ CHAIN_STAGES: tuple[tuple[str, str], ...] = (
 MAX_NODES_PER_STAGE = 3
 #: 单个节点最多几个字（超出截断并加省略号）
 MAX_NODE_CHARS = 12
+#: 示意镜头默认时长（秒）：三行依次出现需要时间，太短看不清结构
+CHAIN_SHOT_SECONDS = 5.0
+#: 自动插进分镜时用的素材编号
+CHAIN_ASSET_ID = "CHAIN_01"
 
 
 @dataclass(frozen=True)
@@ -341,3 +348,181 @@ def nodes_from_findings(
             continue
         stages[section].append(label)
     return stages
+
+
+def _row_of(shot: Any) -> dict[str, str]:
+    """把已解析的镜头摊成 CSV 行。
+
+    不能直接用 ``Shot.as_dict()``：它不含 ``notes``/``source_ids``，而且多一个
+    非列的 ``duration``。这里按分镜表的真实列取，时间写成字符串避免精度噪音。
+    """
+    from backend.app.media.storyboard import OPTIONAL_COLUMNS, REQUIRED_COLUMNS
+
+    columns = [name for name in REQUIRED_COLUMNS + OPTIONAL_COLUMNS if name not in (
+        "fps", "canvas_width", "canvas_height",
+    )]
+    row: dict[str, str] = {}
+    for name in columns:
+        if name in ("start_time", "end_time"):
+            row[name] = f"{float(getattr(shot, name, 0.0) or 0.0):.6f}"
+        else:
+            row[name] = str(getattr(shot, name, "") or "")
+    return row
+
+
+def insert_chain_shot(
+    job_root: Path | str,
+    *,
+    title: str,
+    stages: Mapping[str, Sequence[str]],
+    asset_id: str = CHAIN_ASSET_ID,
+    seconds: float = CHAIN_SHOT_SECONDS,
+    fps: int = 30,
+    width: int = 1080,
+    height: int = 1920,
+    source_ids: str = "",
+) -> dict[str, Any]:
+    """生成产业链画板，并把它插进已有分镜（开场之后），随后重排时间轴。
+
+    为什么插在开场之后：观众得先知道"这件事发生在哪一环"，后面的数字才有位置感。
+    插完必须重排每个人的起止时间——分镜校验要求镜头有序、连续、不重叠，
+    改写一行而不重排会让后面所有镜头的时间错位。
+    """
+    from backend.app.media.storyboard import load_storyboard, write_storyboard
+    from backend.app.video.outline import STORYBOARD_REL, retime_rows
+
+    root = Path(job_root).resolve()
+    path = root / STORYBOARD_REL
+    if not path.is_file():
+        raise FileNotFoundError(f"分镜表不存在：{path}")
+
+    frames = max(2, int(round(seconds * fps)))
+    document = write_chain(
+        root,
+        asset_id=asset_id,
+        title=title,
+        stages=stages,
+        frames=frames,
+        width=width,
+        height=height,
+        fps=fps,
+    )
+
+    board = load_storyboard(path)
+    rows = [_row_of(shot) for shot in board.shots]
+    filled = [key for key, nodes in stages.items() if nodes]
+    narration = f"先看结构：这件事发生在产业链的{len(filled)}个环节里，链条是这样传下去的。"
+    row: dict[str, str] = {
+        "shot_id": "",
+        "start_time": "0",
+        "end_time": f"{seconds:g}",
+        "narrative_purpose": "产业链结构",
+        "narration": narration,
+        "visual_description": "产业链示意图：上游 / 中游 / 下游三段依次出现，箭头指示传导方向",
+        "asset_id": asset_id,
+        "asset_type": "composition",
+        "asset_source": str(document.relative_path),
+        "license": "原创（程序生成）",
+        "animation": "fade_in",
+        "camera_motion": "static",
+        "transition": "dissolve",
+        "subtitle": "产业链：上游 → 中游 → 下游",
+        "sound_effect": "none",
+        "safety_zone": "bottom",
+        "notes": "产业链示意图；节点只取挂到上游/中游/下游的结论",
+        "source_ids": source_ids,
+    }
+    position = 1 if len(rows) > 1 else len(rows)
+    rows.insert(position, row)
+    # 插入一镜后重编镜头号，避免出现两个 sh02；配音按 shot_id 对齐，编号必须唯一。
+    for index, item in enumerate(rows, start=1):
+        item["shot_id"] = f"sh{index:02d}"
+    retimed, notes = retime_rows(rows, {}, fps=board.fps)
+
+    write_storyboard(path, retimed, fps=board.fps, width=board.width, height=board.height)
+    # 写完立刻按正式格式读回来：宁可现在报错，也不要让渲染阶段才发现分镜不合法。
+    checked = load_storyboard(path)
+    return {
+        "asset_id": asset_id,
+        "shot_id": retimed[position]["shot_id"],
+        "frames": frames,
+        "seconds": round(seconds, 3),
+        "inserted_at": position,
+        "shot_count": len(checked.shots),
+        "total_seconds": round(checked.duration, 3),
+        "stages": {key: list(nodes) for key, nodes in stages.items()},
+        "notes": notes,
+    }
+
+
+def _stages_of(document: Mapping[str, Any]) -> dict[str, list[str]]:
+    """从已有画板里读回三行节点（重排时长时要按原样重建，不能换个内容）。"""
+    stages: dict[str, list[str]] = {}
+    children = list(document.get("root", {}).get("children", []))
+    content = next((item for item in children if item.get("id") == "content"), None)
+    nodes = list((content or {}).get("children", [])) or children
+    for key, _ in CHAIN_STAGES:
+        row = next((item for item in nodes if item.get("id") == f"{key}_row"), None)
+        if row is None:
+            continue
+        labels: list[str] = []
+        for pill in list(row.get("children", []))[1:]:
+            text = ""
+            for child in pill.get("children", []):
+                if child.get("type") == "text":
+                    text = str(child.get("text") or "")
+                    break
+            if text and text != "（本环缺证据）":
+                labels.append(text)
+        stages[key] = labels
+    return stages
+
+
+def resize_chains(
+    job_root: Path | str,
+    storyboard: Any,
+    *,
+    fps: int | None = None,
+) -> list[str]:
+    """按分镜里每个产业链镜头的真实时长重写画板帧数。
+
+    配音多长镜头就多长（重排后往往 7 秒以上）。画板只有 150 帧、镜头有 210 帧时，
+    后 60 帧一直是最后一帧，`freezedetect` 就会判"画面冻结"。所以重排之后
+    必须按新时长重写一次画板——和数据卡的 ``resize_cards`` 是同一个道理。
+    """
+    root = Path(job_root).resolve()
+    rate = int(fps or getattr(storyboard, "fps", 30) or 30)
+    touched: list[str] = []
+    for shot in getattr(storyboard, "shots", ()):
+        asset_id = (getattr(shot, "asset_id", "") or "").strip()
+        if (getattr(shot, "asset_type", "") or "") != "composition" or not asset_id:
+            continue
+        target = chain_path(root, asset_id)
+        if not target.is_file():
+            continue
+        document = json.loads(target.read_text(encoding="utf-8"))
+        stages = _stages_of(document)
+        if not stages:
+            continue  # 不是产业链画板（可能是数据卡），交给 resize_cards
+        frames = max(2, int(round((shot.end_time - shot.start_time) * rate)))
+        if int(document.get("canvas", {}).get("frames", 0)) == frames:
+            continue
+        title = ""
+        for item in document.get("root", {}).get("children", []):
+            if item.get("id") == "content":
+                for child in item.get("children", []):
+                    if child.get("id") == "title":
+                        title = str(child.get("text") or "")
+                        break
+        write_chain(
+            root,
+            asset_id=asset_id,
+            title=title or "产业链结构",
+            stages={key: labels or ["（本环缺证据）"] for key, labels in stages.items()},
+            frames=frames,
+            width=int(document["canvas"]["w"]),
+            height=int(document["canvas"]["h"]),
+            fps=rate,
+        )
+        touched.append(asset_id)
+    return touched

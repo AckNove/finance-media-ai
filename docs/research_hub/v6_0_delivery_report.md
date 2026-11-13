@@ -355,7 +355,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 ## 16. 最终验证（本轮最后一次实跑）
 
 ```text
-pytest -o addopts="" -q           → 1084 passed, 2 skipped, 1 warning
+pytest -o addopts="" -q           → 1101 passed, 2 skipped, 1 warning
 真实开发库（只读打开）              → 540,672 B / sha256 2df764e5…8203 / 19 表 /
                                     revision de8148733a9b / journal_mode delete /
                                     无 -wal/-shm / integrity ok / 无 model_calls 表
@@ -467,3 +467,66 @@ python -m backend.scripts.chain_diagram --job <job> --seconds 4
 
 验证：`tests/test_script_model.py`（8 例：提示词只含确认结论、正常改写、无来源丢弃、
 数字不在结论里丢弃、区间不许压成单值、角色回落与非 JSON、执行器记账、失败退回规则版）。
+
+---
+
+## 20. 产业链图接进自动链路 + 配音重排不再留静音
+
+上一节把产业链示意图做出来了，但它当时只能手工跑 CLI，而且**镜头时长是写死的 5 秒**——
+配音一变长，画板后半段就是静止的最后一帧；配音比 5 秒短，镜头尾部又会留一段纯静音。
+本节把这两件事一起修掉，并且是真机渲染验证过的。
+
+### 20.1 自动插进分镜（`backend/app/video/chain.py`、`backend/app/video/handoff.py`）
+
+- `insert_chain_shot(job_root, *, title, stages, asset_id="CHAIN_01", seconds=5.0, ...)`：
+  写画板 → 读回分镜 → **插在开场之后**（先看结构再看数字）→ **重编镜头号**（避免两个 `sh02`）→
+  `retime_rows` 重排时间 → 写盘 → 再 `load_storyboard` 校验一遍。返回插入位置、镜头号、帧数、总时长。
+- `handoff._try_chain_shot(report, directory)`：结论里挂到上游/中游/下游的节点**至少覆盖两段**才插；
+  只讲一环时不画（画了三段有一段全是「（本环缺证据）」，反而误导）。插不进去只记
+  `{"ok": False, "reason": "chain_failed"}`，**不让交接整体失败**。
+- `_try_outline` 的返回里多了 `chain` 字段，`job.json`/`OUTLINE.md` 都能看到这次有没有插、插在哪。
+
+### 20.2 配音多长，镜头就多长（正反两个方向）
+
+`backend/app/video/outline.py` 的 `retime_rows` 原来只放大不缩小：
+`length_frames = max(原时长, 配音+0.35)`。于是配音只有 2 秒、镜头 5 秒时，尾部 3 秒是**纯静音**，
+`silencedetect` 直接判失败。现在改成：**配到音的镜头以配音为准**（长了拉长、短了缩短，
+下限 `min_seconds=2.0`）；没配到音的镜头保持原时长，绝不压成 2 秒。
+
+### 20.3 画板跟着新时长重写（`resize_chains`）
+
+- 新增 `chain.resize_chains(job_root, storyboard)`：按每个产业链镜头的**真实时长**重写帧数，
+  三行节点从已有画板里读回来（不换内容，只换时长）。
+- `cards.resize_cards` 加了一道保护：画板里**没有 `number` 节点**就不当数据卡处理——
+  否则它会把产业链图按卡片形状重写，整张图变成空白。这是接通时才暴露的真缺陷。
+- `render.py` 在重排之后同时调 `resize_cards` 与 `resize_chains`，任一有改动就重新导入素材。
+
+### 20.4 真机验证（本地渲染，零费用）
+
+临时任务 `%TEMP%\fmai_chain_render\chain_micro`（2 个来源 + 2 个数据点 + 三行产业链节点）：
+
+| 项目 | 数值 |
+| --- | --- |
+| 规则分镜 | 4 镜 / 18.0 秒 |
+| 插入示意图后 | 5 镜 / 23.0 秒（`sh02` = `CHAIN_01`，150 帧） |
+| 配音重排后 | **26.133 秒 / 784 帧 / 4,569,979 字节** |
+| 技术 QC | `black_segments=0`、`freeze_longest=0.533s`、`silence=0` → **`failed=[]`** |
+| 重排说明 | 「5 个镜头改了时长，长了拉长、短了缩短」+「按新时长重写了 1 张产业链画板」 |
+
+修之前的两版对照（同一任务）：第一版 `freeze` 与 `silence` 两项失败（画板 150 帧撑 210 帧的镜头，
+尾部静止；镜头尾部留 2.2 秒静音）；补了 `resize_chains` 后只剩 `silence` 失败；
+把「只放大」改成「按配音双向调整」后全绿。
+
+抽帧目视：`sh02` 里上游/中游/下游三行依次出现、箭头下沉、画板整块缓推，底部字幕
+「产业链：上游 → 中游 → 下游」。
+
+### 20.5 测试
+
+新建 `tests/test_chain_integration.py`（9 例）：插在开场之后且镜头号连续、时间轴连续不重叠、
+总时长等于各段之和、素材进了清单且路径与分镜一致、缺分镜抛 `FileNotFoundError`、
+只覆盖一段时不插、覆盖两段时插、`_try_outline` 的返回带 `chain` 结果、示意图坏了不影响交接、
+「至少 2 个来源」这条底线没被示意图绕过。
+
+```
+pytest -o addopts="" -q   → 1101 passed, 2 skipped, 1 warning
+```

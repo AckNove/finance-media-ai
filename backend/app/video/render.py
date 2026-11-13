@@ -683,7 +683,7 @@ def render_job(
                 storyboard = load_storyboard(storyboard_path)
                 narration_payload["retimed"] = changed
                 notes.append(
-                    f"分镜已按配音重排（{len(changed)} 个镜头加长），总时长 "
+                    f"分镜已按配音重排（{len(changed)} 个镜头改了时长，长了拉长、短了缩短），总时长 "
                     f"{storyboard.duration:g} 秒；改的是时间，不改文案与素材"
                 )
                 # 音频起播点要跟着新的镜头起点走，重算一次轨道。
@@ -698,10 +698,15 @@ def render_job(
                     narration_audio = audio_mix(list(again.tracks))
                 # 镜头变长了，数据卡画板也要按新时长重写，否则后半段是静止的最后一帧。
                 from backend.app.video.cards import resize_cards
+                from backend.app.video.chain import resize_chains
 
                 resized = resize_cards(root, storyboard)
+                resized_chains = resize_chains(root, storyboard)
                 if resized:
                     notes.append(f"按新时长重写了 {len(resized)} 张数据卡画板")
+                if resized_chains:
+                    notes.append(f"按新时长重写了 {len(resized_chains)} 张产业链画板")
+                if resized or resized_chains:
                     clips, asset_rows, calls = prepare_clips(
                         storyboard, job_root=root, engine=engine,
                         animate_plates=animate_plates,

@@ -234,7 +234,39 @@ def _try_outline(report: Any, evidence_rows: list[Any], source_rows: list[Any],
         return {"ok": False, "reason": "outline_failed", "message": f"{type(error).__name__}: {error}"}
     payload = result.as_dict()
     payload["ok"] = True
+    payload["chain"] = _try_chain_shot(report, directory)
     return payload
+
+
+def _try_chain_shot(report: Any, directory: Path) -> dict[str, Any]:
+    """结论里有产业链结构时，自动生成示意图并插进分镜（开场之后）。
+
+    只在挂到上游/中游/下游的结论**至少覆盖两段**时才插：只讲到一环的稿子，
+    画三段会有一段全是"（本环缺证据）"，反而误导观众。
+    """
+    from backend.app.video.chain import insert_chain_shot, nodes_from_findings
+
+    findings = getattr(report, "findings", None) or []
+    stages = nodes_from_findings(
+        item for item in findings if isinstance(item, dict)
+    )
+    filled = [key for key, nodes in stages.items() if nodes]
+    if len(filled) < 2:
+        return {
+            "ok": False,
+            "reason": "not_a_chain_story",
+            "message": f"结论覆盖的产业链环节只有 {len(filled)} 段（至少 2 段才画示意图）",
+        }
+    try:
+        result = insert_chain_shot(
+            directory,
+            title=str(getattr(report, "title", "") or "")[:24] or "产业链结构",
+            stages=stages,
+        )
+    except Exception as error:  # noqa: BLE001 - 示意图插不进去不该毁掉整个交接
+        return {"ok": False, "reason": "chain_failed", "message": f"{type(error).__name__}: {error}"}
+    result["ok"] = True
+    return result
 
 
 def create_video_job(

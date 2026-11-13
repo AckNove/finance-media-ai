@@ -516,9 +516,19 @@ def retime_rows(
         shot_id = str(row.get("shot_id", ""))
         span = float(row["end_time"]) - float(row["start_time"])
         need = span
+        measured = 0.0
         if durations:
-            need = max(min_seconds, float(durations.get(shot_id, 0.0)) + pad)
-        length_frames = max(frames_of(span), frames_of(need))
+            measured = float(durations.get(shot_id, 0.0))
+            # 有配音就以配音为准：短了就缩、长了就拉。只放大不缩小会在镜头尾部
+            # 留下几秒纯静音（`silencedetect` 直接判失败），而且观众会觉得卡住了。
+            # 没配到音的镜头（measured == 0）保持原时长，不能压成 min_seconds。
+            if measured > 0:
+                need = max(min_seconds, measured + pad)
+        length_frames = (
+            frames_of(need)
+            if measured > 0
+            else max(frames_of(span), frames_of(need))
+        )
         start_frames = cursor_frames
         end_frames = start_frames + max(length_frames, 1)
         # 分镜校验要求「起始帧对齐误差 < 1e-6 秒」，所以秒数按 帧/帧率 精确写出，
@@ -530,6 +540,11 @@ def retime_rows(
             notes.append(
                 f"{shot_id}: {span:g}s → {(end_frames - start_frames) * frame:.2f}s"
                 f"（配音 {durations.get(shot_id, 0.0):.2f}s）"
+            )
+        elif (end_frames - start_frames) * frame < span - 1e-9:
+            notes.append(
+                f"{shot_id}: {span:g}s → {(end_frames - start_frames) * frame:.2f}s"
+                f"（配音只有 {durations.get(shot_id, 0.0):.2f}s，缩到配音长度）"
             )
         cursor_frames = end_frames
         updated.append(new_row)

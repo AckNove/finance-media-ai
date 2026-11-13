@@ -234,6 +234,11 @@ def resize_cards(job_root: Path | str, storyboard: Any, *, fps: int | None = Non
         document = json.loads(target.read_text(encoding="utf-8"))
         children = document.get("root", {}).get("children", [])
         number = next((n.get("text", "") for n in children if n.get("id") == "number"), "")
+        if not str(number).strip():
+            # 这一格里没有 number 节点，说明它不是数据卡（例如产业链示意图）。
+            # 按卡片的形状重写它会把整张图替换成空白——这里必须跳过，交给它自己的
+            # resize 逻辑（见 backend.app.video.chain.resize_chains）。
+            continue
         caption = next((n.get("text", "") for n in children if n.get("id") == "caption"), "")
         source = next((n.get("text", "") for n in children if n.get("id") == "source"), "")
         source_id = source.replace("来源", "").strip()
