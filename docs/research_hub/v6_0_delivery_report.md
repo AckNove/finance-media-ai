@@ -28,7 +28,7 @@
 | 目录结构 | `backend/app/{api,core,capabilities,execution,research,video,media,analysis,services,models,schemas,skills}`、`web/`、`scripts/`、`content/jobs/`、`tools/` |
 | 接口 | `create_app().openapi()`：接管时 45 路径 / 58 操作 → 现在 **46 路径 / 67 操作** |
 | 数据 | 接管时 29 表 → 现在 **31 表**（`alembic check` 无漂移） |
-| 测试 | 接管时 850 passed / 2 skipped → 现在 **987 passed / 2 skipped** |
+| 测试 | 接管时 850 passed / 2 skipped → 现在 **1003 passed / 2 skipped** |
 | 前端 | 19 页 → **20 页**（新增「内容日历」），全部接真接口，无静态假数据 |
 | 工具 | 10 个全部 `implemented=True` |
 | 已实现但没接业务流程的 | `preflight.py` 被 `doctor.py` 超过但仍可用 |
@@ -257,12 +257,12 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 
 | 状态 | 数量 | 主要条目 |
 | --- | --- | --- |
-| **DONE** | 主干全部 | 配置/迁移/队列/网关计费/预算/限流/脱敏/TaskRuntime/编排/失败传播；搜索抓取解析；来源与证据；三套研究骨架；语义核查五档 + 成稿闸门 + 撤回失效；内容质检；内容日历与平台回填；备份恢复/诊断/停止/自愈；20 页前端 |
-| **PARTIAL** | 7 | 监控历史曲线；Skill 注入提示词；docx 对外工具；多平台内容适配；账号数据 CSV 批量导入；背景音乐曲库与授权；来源可信度/时效 |
+| **DONE** | 主干全部 | 配置/迁移/队列/网关计费/预算/限流/脱敏/降级链/TaskRuntime/编排/失败传播；搜索抓取解析；来源与证据；来源可信度与时效；三套研究骨架；Skill 注入提示词；语义核查五档 + 成稿闸门 + 撤回失效；内容质检；内容日历与平台回填 + CSV 批量导入；选题建议（规则推荐）；备份恢复/诊断/停止/自愈；20 页前端 |
+| **PARTIAL** | 4 | 监控历史曲线；docx 对外工具；多平台内容适配（一稿三版）；背景音乐曲库与授权 |
 | **TEST_ONLY** | 1 | `contradicted` 判定（代码 + 单测通过，真实语料里还没出现过） |
 | **CODE_ONLY** | 0 | — |
 | **BLOCKED** | 2 | 真实素材获取（需授权素材源）；云渲染/发布（未授权） |
-| **NOT_IMPLEMENTED** | 3 | 模型降级链（主模型失败切备用）；热点发现与选题推荐；多平台账号 API 对接 |
+| **NOT_IMPLEMENTED** | 1 | 多平台账号 API 对接（抖音/小红书等开放平台需企业资质与授权，不是本地能补的） |
 
 ## 10. 用户怎么开始用（最少三步）
 

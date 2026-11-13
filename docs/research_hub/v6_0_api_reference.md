@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：51
+- 路径数：52
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -71,6 +71,7 @@
 | GET | `/api/topics` | 选题列表 | 人 | `knowledge_domain`（query，可选，string | null）、`research_status`（query，可选，string | null）、`content_status`（query，可选，string | null）、`tag_id`（query，可选，integer | null）、`tag`（query，可选，string | null）、`tag_namespace`（query，可选，TagNamespace | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_TopicOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/topics` | 创建选题 | 人 | — | application/json → `TopicCreate` | 201 `TopicOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/topics/columns` | 栏目列表 | 人 | — | — | 200 `TopicColumnOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/topics/suggestions` | 选题建议（规则推荐，不联网） | 人 | `window_days`（query，可选，integer）、`limit`（query，可选，integer）、`min_score`（query，可选，integer） | — | 200 `TopicSuggestionsOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/topics/{topic_id}` | 选题详情 | 人 | `topic_id`（path，必填，integer） | — | 200 `TopicOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | PATCH | `/api/topics/{topic_id}` | 更新选题流程状态 | 人 | `topic_id`（path，必填，integer） | application/json → `TopicUpdate` | 200 `TopicOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/topics/{topic_id}/collections` | 选题所在的合集 | 人 | `topic_id`（path，必填，integer） | — | 200 `TopicCollectionOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |

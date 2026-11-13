@@ -248,6 +248,21 @@ async function pageTopics(view) {
         { title: '评分', key: 'score_total', num: true },
         { title: '创建时间', value: (row) => when(row.created_at) },
       ], result.data.items, '还没有选题') : failure(result)}
+    </div>
+    <div class="card" id="topic-suggest-box">
+      <h2>选题建议 <span class="dim">（规则推荐，不联网、不花钱）</span></h2>
+      <div class="row">
+        <label>看最近
+          <select id="suggest-window">
+            <option value="7">7 天</option>
+            <option value="30" selected>30 天</option>
+            <option value="90">90 天</option>
+          </select>
+        </label>
+        <button class="btn ghost" id="suggest-refresh">重新计算</button>
+      </div>
+      <div id="suggest-msg" class="note">数据来自已经抓到的来源；分数只用来排序，采纳与否由你定。</div>
+      <div id="suggest-list"></div>
     </div>`;
 
   const columns = await api('/topics/columns');
@@ -274,6 +289,57 @@ async function pageTopics(view) {
       ? `<div class="note ok">已创建选题 #${created.data.id}</div>`
       : failure(created);
     if (created.ok) route();
+  });
+
+  loadTopicSuggestions();
+
+  document.getElementById('suggest-refresh').addEventListener('click', () => loadTopicSuggestions());
+  document.getElementById('suggest-window').addEventListener('change', () => loadTopicSuggestions());
+}
+
+async function loadTopicSuggestions() {
+  const box = document.getElementById('suggest-list');
+  const msg = document.getElementById('suggest-msg');
+  if (!box) return;
+  const windowDays = document.getElementById('suggest-window')?.value || '30';
+  box.innerHTML = '<div class="note">正在算…</div>';
+  const result = await api(`/topics/suggestions?window_days=${windowDays}&limit=10`);
+  if (!result.ok) {
+    box.innerHTML = failure(result);
+    return;
+  }
+  const data = result.data;
+  msg.innerHTML = `扫了 <b>${data.scanned}</b> 条已入库来源，窗口 ${data.window_days} 天，最低分 ${data.min_score}。${esc(data.note || '')}`;
+  if (!data.items?.length) {
+    box.innerHTML = '<div class="note">这段时间里没有够格的候选：要么来源太少，要么都已做过。先去「搜索」页抓一批资料。</div>';
+    return;
+  }
+  box.innerHTML = data.items.map((item, index) => `
+    <div class="alert ok" style="margin:10px 0">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <b>${esc(item.title)}</b>
+        <span class="tag">${item.score} 分</span>
+      </div>
+      <div class="note">${item.tier_label} · ${item.freshness_label}${item.age_days === null ? '' : ` · ${item.age_days} 天前`}${item.corroborated ? ' · 多家报道' : ''}${item.collections?.length ? ` · 合集 ${esc(item.collections.join('、'))}` : ''}</div>
+      <ul class="note" style="margin:6px 0 8px 16px">${(item.reasons || []).map((line) => `<li>${esc(line)}</li>`).join('')}</ul>
+      <div class="row">
+        <button class="btn" data-adopt="${index}">采纳为选题</button>
+        ${item.urls?.length ? `<a class="dim" href="${esc(item.urls[0])}" target="_blank" rel="noreferrer">看来源（${item.urls.length}）</a>` : ''}
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('[data-adopt]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const item = data.items[Number(button.dataset.adopt)];
+      button.disabled = true;
+      const created = await api('/topics', { method: 'POST', body: JSON.stringify({ title: item.title }) });
+      if (created.ok) {
+        msg.innerHTML = `<div class="note ok">已采纳为选题 #${created.data.id}，可以到「研究任务」页为它建任务。</div>`;
+        route();
+      } else {
+        msg.innerHTML = failure(created);
+        button.disabled = false;
+      }
+    });
   });
 }
 

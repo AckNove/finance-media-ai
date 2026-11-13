@@ -109,3 +109,37 @@ class TopicTagOut(ORMBase):
     name: str
     slug: str
     usage_count: int = 0
+
+
+class TopicSuggestionOut(BaseModel):
+    """一条选题建议（来自已入库来源的规则推荐）。
+
+    ``reasons`` 是给人看的分数构成——**采纳与否由人决定**，
+    系统不会自动把建议变成研究任务。
+    """
+
+    title: str
+    score: int
+    reasons: list[str] = Field(default_factory=list)
+    source_ids: list[int] = Field(default_factory=list)
+    urls: list[str] = Field(default_factory=list)
+    publishers: list[str] = Field(default_factory=list)
+    collections: list[str] = Field(default_factory=list)
+    numbers: list[str] = Field(default_factory=list)
+    tier: str
+    tier_label: str
+    freshness: str
+    freshness_label: str
+    age_days: int | None = None
+    corroborated: bool = False
+
+
+class TopicSuggestionsOut(BaseModel):
+    """一次选题建议的结果：扫描了多少来源、按什么窗口、以及建议列表。"""
+
+    generated_at: str
+    window_days: int
+    min_score: int
+    scanned: int
+    items: list[TopicSuggestionOut] = Field(default_factory=list)
+    note: str = ""

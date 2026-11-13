@@ -8,8 +8,8 @@
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
-> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、67 个 API 操作、
-> 20 个前端页面、`pytest` 987 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、68 个 API 操作、
+> 20 个前端页面、`pytest` 1003 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -111,7 +111,7 @@
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
 | 选题管理 / 优先级 / 合集 | `topics` 表 + `/api/topics/*` | DONE | 优先级只有 `score_total` 手工值 |
-| 热点发现 / 选题推荐 | — | **NOT_IMPLEMENTED** | 本轮补（基于已抓取来源的规则推荐） |
+| 热点发现 / 选题推荐 | `backend/app/research/topic_suggestions.py` + `GET /api/topics/suggestions` + 工作台「选题建议」面板 | DONE | 只看**已入库**来源（不联网、不调模型）；五维打分（时效/来源层级/带单位的量/命中合集/多源共同报道）且每条都给理由；与已有选题相似度 ≥0.82 直接丢弃；壳标题（日报/免责声明）与 <6 字标题不做；采纳仍需人点 |
 | 报告 → 内容策划（定位/受众/标题/钩子/故事线/结构/观点） | `web/app.js#pagePlanning` 只做展示 | PARTIAL | 后端无策划产物 |
 | 脚本生成（AK 风格） | `script` 状态机 + `agents/scriptwriter/PROMPT.md` | PARTIAL | 生成仍是规则 + 人工写 |
 | 多平台内容适配 | — | **NOT_IMPLEMENTED** | 本轮补（公众号/抖音/小红书三版） |

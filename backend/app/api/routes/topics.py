@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Path, Response, status
+from fastapi import APIRouter, Depends, Path, Query, Response, status
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
 from backend.app.models.enums import TagNamespace
 from backend.app.models.taxonomy import TopicCollection, TopicTag
+from backend.app.research.topic_suggestions import suggest_from_db
 from backend.app.schemas.common import Page
 from backend.app.schemas.topic import (
     TopicCollectionCreate,
@@ -15,6 +16,8 @@ from backend.app.schemas.topic import (
     TopicColumnOut,
     TopicCreate,
     TopicOut,
+    TopicSuggestionOut,
+    TopicSuggestionsOut,
     TopicTagCreate,
     TopicTagOut,
     TopicUpdate,
@@ -78,6 +81,28 @@ def list_topics(
 @router.get("/columns", response_model=list[TopicColumnOut], summary="栏目列表")
 def list_columns(db: DbSession) -> list[TopicColumnOut]:
     return [TopicColumnOut.model_validate(column) for column in TopicService(db).list_columns()]
+
+
+@router.get(
+    "/suggestions",
+    response_model=TopicSuggestionsOut,
+    summary="选题建议（规则推荐，不联网）",
+)
+def list_topic_suggestions(
+    db: DbSession,
+    window_days: int = Query(default=30, ge=1, le=365, description="只看最近多少天抓到的来源"),
+    limit: int = Query(default=10, ge=1, le=50),
+    min_score: int = Query(default=40, ge=0, le=200),
+) -> TopicSuggestionsOut:
+    """从**已经入库**的来源里挑候选题目，给出分数与理由。
+
+    这里不联网、不调模型：数据就是 ``sources`` 表里抓到的那些，
+    分数构成写在 ``reasons`` 里，采纳与否由人决定。
+    """
+    payload = suggest_from_db(
+        db, window_days=window_days, limit=limit, min_score=min_score
+    )
+    return TopicSuggestionsOut.model_validate(payload)
 
 
 @router.get("/{topic_id}", response_model=TopicOut, summary="选题详情")
