@@ -9,7 +9,7 @@
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、70 个 API 操作、
-> 20 个前端页面、`pytest` 1044 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、`pytest` 1048 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -151,7 +151,7 @@
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
 | 内容日历 / 排期 / 状态 | `models/operations.py` 的 `content_calendar` + `/api/calendar/*`（7 个端点）+ `web/app.js#pageOperations` | DONE | 迁移 `b6_v6_operations`；`tests/test_operations.py` 14 例 |
-| 导出记录 / 发布记录 / 多平台适配 | 同表 `export_path`/`publish_state`/`published_url`/`published_at`（**发布必须有链接**，撤回留痕）；文案三版见 `backend/app/content/platform_adapt.py` | PARTIAL | 只有"手工标记导出路径"，没有自动导出文件与平台回执 |
+| 导出记录 / 发布记录 / 多平台适配 | `POST /api/calendar/{id}/export` 真写文件（三平台 `.md` + `meta.json`）并把路径写进 `export_path`、状态转 `exported`；`publish_state`/`published_url`/`published_at` 记发布痕迹（**发布必须有链接**，撤回留痕）；文案三版见 `backend/app/content/platform_adapt.py` | DONE | 发布回执（平台侧的真实链接与数据）仍需人工回填；系统不调任何平台 API |
 | 账号数据导入 / 播放量 / 互动分析 | `platform_metrics` + `POST /api/calendar/{id}/metrics` + `POST /api/calendar/{id}/metrics/import`（CSV 批量）+ `GET /api/calendar/analytics`（取最新快照，不累加） | DONE | CSV 认中英列名与千分位；撞时间戳的跳过、坏行带行号报错、平台不一致直接拒（`tests/test_metrics_import.py` 13 例） |
 
 ## 优先级与执行顺序（自主决定，不等确认）

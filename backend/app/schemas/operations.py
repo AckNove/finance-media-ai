@@ -160,12 +160,21 @@ class CalendarAnalyticsOut(BaseModel):
     note: str
 
 
+class CalendarExportIn(BaseModel):
+    """导出时可选指定平台；不填就按一稿三版的三个平台全导。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    platforms: list[Literal["douyin", "xiaohongshu", "wechat"]] | None = None
+
+
 __all__ = [
     "CALENDAR_STATUSES",
     "PLATFORMS",
     "PUBLISH_STATES",
     "CalendarAnalyticsOut",
     "CalendarCreate",
+    "CalendarExportIn",
     "CalendarOut",
     "CalendarUpdate",
     "MetricIn",

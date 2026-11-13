@@ -1547,7 +1547,8 @@ async function pageOperations(view) {
             <button data-advance="${row.id}" data-status="rendered">标已渲染</button>
             <button data-publish="${row.id}">标已发布</button>
             <button data-metric="${row.id}">回填数据</button>
-            <button data-import="${row.id}">导入 CSV</button>`, raw: true },
+            <button data-import="${row.id}">导入 CSV</button>
+            <button data-export="${row.id}">导出</button>`, raw: true },
       ], rows, '还没有排期：先在上面加一条')}
       <div id="cal-row-feedback"></div>
     </div>`;
@@ -1639,6 +1640,27 @@ async function pageOperations(view) {
         `导入 ${data.imported} 行${skipped ? `，跳过 ${skipped} 行（时间点已有快照）` : ''}` +
           (bad.length ? `；${bad.length} 行有问题：${bad.slice(0, 3).join('；')}` : ''),
       );
+    });
+  });
+  view.querySelectorAll('[data-export]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-export');
+      const result = await api(`/calendar/${id}/export`, { method: 'POST', body: JSON.stringify({}) });
+      if (!result.ok) {
+        const reason = result.error?.details?.reason ? `（${result.error.details.reason}）` : '';
+        say(feedback, false, `${result.status} ${result.error.message}${reason}`);
+        return;
+      }
+      const data = result.data;
+      const warns = (data.warnings || []).length;
+      say(
+        feedback,
+        true,
+        `已导出到 ${data.export_path}（${data.platforms.length} 个平台文件）` +
+          (warns ? `；${warns} 条提醒` : '') +
+          '。导出不等于发布：发布后请回来填链接。',
+      );
+      setTimeout(route, 1200);
     });
   });
 }

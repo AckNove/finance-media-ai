@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：54
+- 路径数：55
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -27,6 +27,7 @@
 | GET | `/api/calendar/analytics` | 按平台汇总 | 人 | — | — | 200 `CalendarAnalyticsOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/calendar/{entry_id}` | 排期详情 | 人 | `entry_id`（path，必填，integer） | — | 200 `CalendarOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | PATCH | `/api/calendar/{entry_id}` | 改排期 | 人 | `entry_id`（path，必填，integer） | application/json → `CalendarUpdate` | 200 `CalendarOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| POST | `/api/calendar/{entry_id}/export` | 导出成文件并留记录（导出不是发布，发布仍要人工填链接） | 人 | `entry_id`（path，必填，integer） | application/json → `CalendarExportIn | null` | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/calendar/{entry_id}/metrics` | 一次排期的所有快照 | 人 | `entry_id`（path，必填，integer） | — | 200 `MetricOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/calendar/{entry_id}/metrics` | 回填一次平台数据 | 人 | `entry_id`（path，必填，integer） | application/json → `MetricIn` | 201 `MetricOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/calendar/{entry_id}/metrics/import` | 批量导入平台 CSV（撞时间戳的跳过，坏行带行号报错） | 人 | `entry_id`（path，必填，integer） | application/json → `MetricsImportIn` | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |

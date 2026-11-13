@@ -10,11 +10,12 @@ from fastapi import APIRouter, Depends, Path, Query, status
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
-from backend.app.core.errors import DomainValidationError
+from backend.app.core.errors import DomainValidationError, NotFoundError
 from backend.app.schemas.common import Page
 from backend.app.schemas.operations import (
     CalendarAnalyticsOut,
     CalendarCreate,
+    CalendarExportIn,
     CalendarOut,
     CalendarUpdate,
     MetricIn,
@@ -108,3 +109,21 @@ def import_metrics(
             f"这份 CSV 用不了：{error.message}",
             details={"reason": error.reason},
         ) from error
+
+
+@router.post(
+    "/{entry_id}/export",
+    summary="导出成文件并留记录（导出不是发布，发布仍要人工填链接）",
+)
+def export_entry(
+    db: DbSession, payload: CalendarExportIn | None = None, entry_id: int = Path(ge=1)
+) -> dict:
+    from backend.app.services.export_service import ExportError, export_entry as run_export
+
+    try:
+        return run_export(db, entry_id, platforms=(payload.platforms if payload else None))
+    except ExportError as error:
+        if error.reason == "unknown_entry":
+            raise NotFoundError(f"没有这条排期：{entry_id}", details={"reason": error.reason}) from error
+        raise DomainValidationError(error.message, details={"reason": error.reason}) from error
+

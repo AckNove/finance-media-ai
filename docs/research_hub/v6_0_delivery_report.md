@@ -28,7 +28,7 @@
 | 目录结构 | `backend/app/{api,core,capabilities,execution,research,video,media,analysis,services,models,schemas,skills}`、`web/`、`scripts/`、`content/jobs/`、`tools/` |
 | 接口 | `create_app().openapi()`：接管时 45 路径 / 58 操作 → 现在 **46 路径 / 67 操作** |
 | 数据 | 接管时 29 表 → 现在 **31 表**（`alembic check` 无漂移） |
-| 测试 | 接管时 850 passed / 2 skipped → 现在 **1044 passed / 2 skipped** |
+| 测试 | 接管时 850 passed / 2 skipped → 现在 **1048 passed / 2 skipped** |
 | 前端 | 19 页 → **20 页**（新增「内容日历」），全部接真接口，无静态假数据 |
 | 工具 | 10 个全部 `implemented=True` |
 | 已实现但没接业务流程的 | `preflight.py` 被 `doctor.py` 超过但仍可用 |
@@ -258,11 +258,22 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 | 状态 | 数量 | 主要条目 |
 | --- | --- | --- |
 | **DONE** | 主干全部 | 配置/迁移/队列/网关计费/预算/限流/脱敏/降级链/TaskRuntime/编排/失败传播；搜索抓取解析；来源与证据；来源可信度与时效；三套研究骨架；Skill 注入提示词；语义核查五档 + 成稿闸门 + 撤回失效；内容质检；内容日历与平台回填 + CSV 批量导入；选题建议（规则推荐）；一稿三版（抖音/小红书/公众号，不改事实不编标签）；背景音乐曲库与授权校验（先验授权再混音）；备份恢复/诊断/停止/自愈；20 页前端 |
-| **PARTIAL** | 0 | — |
+| **PARTIAL** | 6 | 见下表（本文件 §9.1）——这些是**部分可用但不是完整能力**的条目，不冒充 DONE |
 | **TEST_ONLY** | 1 | `contradicted` 判定（代码 + 单测通过，真实语料里还没出现过） |
 | **CODE_ONLY** | 0 | — |
 | **BLOCKED** | 2 | 真实素材获取（需授权素材源）；云渲染/发布（未授权） |
 | **NOT_IMPLEMENTED** | 1 | 多平台账号 API 对接（抖音/小红书等开放平台需企业资质与授权，不是本地能补的） |
+
+### 9.1 目前仍是 PARTIAL 的七项（如实列出）
+
+| 需求 | 现在能做什么 | 还差什么 |
+| --- | --- | --- |
+| 9 个 Agent 角色里只有 5 条链路真被 `_handlers` 调用 | 角色名册与 task_type 注册表一致、启动自检会比对 | 其余角色只是名册，文档需逐个标注（`agents/*/PROMPT.md` 已声明接受哪些 task_type） |
+| 重复内容识别 | 选题层 `topics.dedupe_key` + 研究层 `corroborate.py` 的数字冲突识别 | 来源/证据层没有"同一篇被多站转载"的合并 |
+| 报告 → 内容策划（定位/受众/标题/钩子/故事线/观点） | 工作台 `/planning` 页展示；脚本状态机已就绪 | 后端没有策划产物生成（要接 `content.plan` 阶段） |
+| 脚本生成（AK 风格） | `content.script` 阶段在流水线里真跑、Skill（`ak-signature` 等）已注入 | 生成偏规则 + 人工，没有"一次成型"的模型初稿 |
+| 动态产业链图 / 动画 | 数据卡、图表、镜头轨道都能做 | 没有产业链专用图形（上下游链路示意图） |
+| 历史任务 / 错误信息页 | 任务页列出最近 50 条 | 没有分页与按状态/失败原因筛选 |
 
 ## 10. 用户怎么开始用（最少三步）
 
@@ -315,11 +326,12 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 | 选题建议 | `GET /api/topics/suggestions`（窗口内来源按五维打分，纯规则） | `pytest tests/test_topic_suggestions.py`（16 例） |
 | 一稿三版 | `POST /api/scripts/{id}/adapt`（抖音/小红书/公众号；只调长度排版，不改事实不编标签，不切断数字） | `pytest tests/test_platform_adapt.py`（18 例） |
 | 背景音乐授权 | `backend/app/video/bgm.py` + `bgm_check` / `mix_bgm`（先验授权再混音） | `pytest tests/test_bgm.py`（15 例，含真调 ffmpeg 混音） |
+| 导出成文件并留记录 | `POST /api/calendar/{id}/export` → `content/exports/entry-<id>/<时间戳>/{douyin,xiaohongshu,wechat}.md` + `meta.json`，路径回写 `export_path`、状态转 `exported` | `pytest tests/test_export_entry.py`（4 例，含 404/422 与"导出不等于发布"断言） |
 
 ## 14. 最终验证（本轮最后一次实跑）
 
 ```text
-pytest -o addopts="" -q           → 1044 passed, 2 skipped, 1 warning
+pytest -o addopts="" -q           → 1048 passed, 2 skipped, 1 warning
 真实开发库（只读打开）              → 540,672 B / sha256 2df764e5…8203 / 19 表 /
                                     revision de8148733a9b / journal_mode delete /
                                     无 -wal/-shm / integrity ok / 无 model_calls 表
