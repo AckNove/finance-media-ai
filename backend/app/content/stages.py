@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -216,6 +217,188 @@ def draft_script(
         dropped=tuple(dropped),
         notes=tuple(notes),
     )
+
+
+#: 模型改写时每条结论最多给多少字（给模型看，不是最终稿长）
+_MODEL_FINDING_CHARS = 200
+#: 允许模型写的角色（和规则版同一套词表）
+_ROLES = ("hook", "evidence", "mechanism", "counter", "closing")
+#: 带单位的数字（长单位在前，避免 "5.2万亿元" 只吃到 "5.2万亿"）
+_NUMBER_PATTERN = re.compile(
+    r"\d+(?:\.\d+)?\s*(?:个百分点|万亿元|亿美元|亿元|万元|万亿|美元|亿|万|倍|元|%|％)"
+)
+_BARE_NUMBER = re.compile(r"\d+(?:\.\d+)?")
+
+
+def _numbers_in(text: str) -> list[str]:
+    """抠出文本里的数字（先去空白，好比较 "1.52 %" 和 "1.52%"）。"""
+    squeezed = "".join(str(text).split())
+    return [match.group(0) for match in _NUMBER_PATTERN.finditer(squeezed)] or [
+        match.group(0) for match in _BARE_NUMBER.finditer(squeezed)
+    ]
+
+
+def _digit_runs(text: str) -> set[str]:
+    """所有连续数字（"70-75亿元" → {"70", "75"}），用来抓"整段数字被改写"。"""
+    return {match.group(0) for match in _BARE_NUMBER.finditer("".join(str(text).split()))}
+
+
+def _unsupported_numbers(sentence: str, origin: str) -> list[str]:
+    """句子里哪些数字在它引的那条结论里找不到。
+
+    两道检查都要过：
+
+    - **带单位的量**要原样出现（"1.52%" 不能变成 "1.5%"、"70-75亿元" 不能变成 "70亿元"）；
+    - 其余裸数字也要原样出现（年份、"四个环节"里的 4 之类）。
+    """
+    origin_squeezed = "".join(str(origin).split())
+    missing: list[str] = []
+    units = [match.group(0) for match in _NUMBER_PATTERN.finditer("".join(str(sentence).split()))]
+    for number in units:
+        if number not in origin_squeezed:
+            missing.append(number)
+    known_digits = _digit_runs(origin)
+    for digits in sorted(_digit_runs(sentence)):
+        if digits not in known_digits:
+            missing.append(digits)
+    return missing
+
+
+def build_script_messages(
+    *,
+    draft: ScriptDraft,
+    confirmed: Sequence[Mapping[str, Any]],
+    skill_notes: Sequence[tuple[str, str]] = (),
+) -> list[dict[str, str]]:
+    """把"确认结论 + 改写要求"写成一次对话。"""
+    lines = [
+        f"[{index}] {str(item.get('text') or '').strip()[:_MODEL_FINDING_CHARS]}"
+        for index, item in enumerate(confirmed, start=1)
+    ]
+    numbers = sorted({number for item in confirmed for number in _numbers_in(str(item.get("text") or ""))})
+    system = (
+        "你在为一档中文财经短视频写口播初稿。硬规矩（违反的整句作废）：\n"
+        "1. 只能改写给定的编号结论，不许引入任何新事实、新数字、新判断；\n"
+        "2. 每一句都要标注它来自哪一条结论（source_index 用给定编号）；\n"
+        "3. 不许出现结论里没有的数字；结论里的数字要原样保留，不得四舍五入改口径；\n"
+        "4. 一句不超过 45 字，口语化、有节奏感，不要书面对仗与套话；\n"
+        "5. 只输出 JSON：{\"title\": str, \"hook\": str, \"lines\": [{\"text\": str, "
+        "\"source_index\": int, \"role\": \"hook|evidence|mechanism|counter|closing\"}]}。\n"
+        "风格要求：专业、犀利、有趣味，敢下判断但不夸大；不写「震惊」「必看」这类标题党用语。"
+    )
+    user = [
+        f"主题：{draft.title}",
+        "",
+        "可用的编号结论（人工已确认，别的都不许用）：",
+        *lines,
+        "",
+        f"结论里出现过的数字白名单：{'、'.join(numbers) if numbers else '（没有）'}",
+        "",
+        "请写成 4-6 句的口播初稿。",
+    ]
+    if skill_notes:
+        blocks = [f"## {name}\n{instructions.strip()[:1200]}" for name, instructions in skill_notes if instructions.strip()]
+        if blocks:
+            user += ["", "写作风格参考（只约束怎么写，不许据此添事实）：", *blocks]
+    return [
+        {"role": "system", "content": system},
+        {"role": "user", "content": "\n".join(user)},
+    ]
+
+
+def parse_script_draft(
+    text: str,
+    *,
+    draft: ScriptDraft,
+    confirmed: Sequence[Mapping[str, Any]],
+) -> tuple[ScriptDraft, tuple[str, ...]]:
+    """解析模型输出；对不上结论的句子进 ``dropped``，绝不静默保留。"""
+    payload = _first_json_object(text)
+    if payload is None:
+        raise StageError("bad_model_script", "模型没有返回可解析的 JSON")
+
+    allowed = {
+        int(item.get("finding_index", -1)): item for item in confirmed if item.get("finding_index") is not None
+    }
+    by_number = {index: item for index, item in enumerate(confirmed, start=1)}
+    dropped: list[str] = []
+    lines: list[ScriptLine] = []
+    seen: set[str] = set()
+
+    for raw in payload.get("lines") or []:
+        if not isinstance(raw, Mapping):
+            continue
+        sentence = _sentence(str(raw.get("text") or ""), limit=45)
+        if not sentence:
+            continue
+        index = raw.get("source_index")
+        source: Mapping[str, Any] | None = None
+        if isinstance(index, int):
+            # 提示词里给模型看的是 1、2、3 这样的编号；也容忍它直接回 finding_index
+            source = by_number.get(index) or allowed.get(index)
+        if source is None:
+            dropped.append(f"{sentence}（没说清来自哪条结论）")
+            continue
+        origin = str(source.get("text") or "")
+        unknown = _unsupported_numbers(sentence, origin)
+        if unknown:
+            dropped.append(f"{sentence}（数字 {'、'.join(unknown)} 不在它所引的结论里）")
+            continue
+        if sentence in seen:
+            continue
+        seen.add(sentence)
+        role = str(raw.get("role") or "").strip().lower()
+        if role not in _ROLES:
+            role = "evidence"
+        lines.append(
+            ScriptLine(
+                text=sentence,
+                role=role,
+                source_ids=tuple(str(x) for x in (source.get("source_ids") or [])),
+                numbers=tuple(_numbers_in(sentence)),
+            )
+        )
+
+    if not lines:
+        raise StageError("empty_model_draft", "模型写的句子没有一句能对上确认结论")
+
+    title = str(payload.get("title") or draft.title).strip()[:80] or draft.title
+    hook = str(payload.get("hook") or lines[0].text).strip()[:80] or lines[0].text
+    return (
+        ScriptDraft(
+            title=title,
+            hook=hook,
+            lines=tuple(lines),
+            disclaimer=DISCLAIMER,
+            generated_by="model",
+            provider=str(payload.get("provider") or ""),
+            model=str(payload.get("model") or ""),
+            dropped=tuple(dropped),
+            notes=(
+                "只有人工确认过的结论进了提示词；模型写的每一句都能对回某条结论",
+                "数字逐条比对过：结论里没有的数字不会出现",
+            ),
+        ),
+        tuple(dropped),
+    )
+
+
+def _first_json_object(text: str) -> Mapping[str, Any] | None:
+    """从可能带代码围栏的回复里取出第一个 JSON 对象。"""
+    body = str(text or "").strip()
+    if body.startswith("```"):
+        body = body.split("\n", 1)[-1]
+        if body.endswith("```"):
+            body = body[: -3]
+    start = body.find("{")
+    end = body.rfind("}")
+    if start < 0 or end <= start:
+        return None
+    try:
+        payload = json.loads(body[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, Mapping) else None
 
 
 def plan_shots(draft: ScriptDraft) -> list[dict[str, Any]]:

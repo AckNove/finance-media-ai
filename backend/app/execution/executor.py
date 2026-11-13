@@ -26,7 +26,7 @@ import hashlib
 import json
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
@@ -1368,6 +1368,61 @@ class AgentExecutor:
                 next_step="检查结论内容后再恢复任务",
             )
 
+        # 有模型就让模型改写（更像口播），没有/失败就退回规则版并如实标注
+        usage: dict[str, Any] = {}
+        model_error = ""
+        if self._model_gateway is not None:
+            from backend.app.content.stages import (
+                build_script_messages,
+                parse_script_draft,
+            )
+            from backend.app.capabilities.model import ModelRequest
+
+            messages = build_script_messages(
+                draft=draft,
+                confirmed=confirmed,
+                skill_notes=self._skill_notes(caller, claim),
+            )
+            reply = self._model_gateway.complete(
+                caller,
+                ModelRequest(
+                    provider="deepseek",
+                    model="deepseek-flash",
+                    messages=messages,
+                    purpose="content.script",
+                    max_tokens=1600,
+                    response_format="json_object",
+                    cacheable=False,
+                ),
+                budget=self._budget_for(claim),
+            )
+            if reply.ok and reply.text:
+                try:
+                    model_draft, _ = parse_script_draft(
+                        reply.text, draft=draft, confirmed=confirmed
+                    )
+                except StageError as error:
+                    model_error = f"{error.reason}: {error.message}"
+                else:
+                    draft = replace(
+                        model_draft,
+                        provider=reply.record.provider if reply.record else "deepseek",
+                        model=reply.record.model if reply.record else "deepseek-flash",
+                    )
+                    if reply.record is not None:
+                        usage = {
+                            "calls": 1,
+                            "tokens": int(reply.record.prompt_tokens + reply.record.completion_tokens),
+                            "cost_cny": Decimal(str(round(float(reply.record.cost_cny or 0), 6))),
+                        }
+            else:
+                model_error = f"{reply.status}: {reply.error_code or 'no_reply'}"
+            if model_error:
+                draft = replace(
+                    draft,
+                    notes=tuple(draft.notes) + (f"模型改写失败，退回规则版：{model_error}",),
+                )
+
         directory = self._stage_dir(claim)
         files = write_stage_files(out_dir=directory, draft=draft)
 
@@ -1393,7 +1448,7 @@ class AgentExecutor:
                 if self._task_topic_id(claim.task_id) is None
                 else "脚本入库失败，产物已落盘，详见日志"
             )
-        return ExecutionOutcome(status="completed", output=output)
+        return ExecutionOutcome(status="completed", output=output, **usage)
 
     def _task_topic_id(self, task_id: int) -> int | None:
         from backend.app.models.execution import ResearchTask

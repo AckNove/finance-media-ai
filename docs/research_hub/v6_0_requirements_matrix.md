@@ -114,7 +114,7 @@
 | 选题管理 / 优先级 / 合集 | `topics` 表 + `/api/topics/*` | DONE | 优先级只有 `score_total` 手工值 |
 | 热点发现 / 选题推荐 | `backend/app/research/topic_suggestions.py` + `GET /api/topics/suggestions` + 工作台「选题建议」面板 | DONE | 只看**已入库**来源（不联网、不调模型）；五维打分（时效/来源层级/带单位的量/命中合集/多源共同报道）且每条都给理由；与已有选题相似度 ≥0.82 直接丢弃；壳标题（日报/免责声明）与 <6 字标题不做；采纳仍需人点 |
 | 报告 → 内容策划（定位/受众/标题/钩子/故事线/结构/观点） | `backend/app/content/stages.py` + `content.script/visual/produce` 三个阶段 | DONE | 产物是 `script_draft.{md,json}`、`visual_plan.json`、`production_plan.json`（落 `content/research/task-<id>/content/`）；**只排计划不渲染**，`not_done` 里明写渲染/配音/素材/发布都没做 |
-| 脚本生成（AK 风格） | `backend/app/content/stages.py#draft_script` + `script` 状态机 + `agents/scriptwriter/PROMPT.md` | PARTIAL | 现在只从**人工确认过的结论**拼句（规则版），不调模型改写；"一次成型"仍需人工润色 |
+| 脚本生成（AK 风格） | `backend/app/content/stages.py#draft_script` + `build_script_messages/parse_script_draft` + `script` 状态机 + `agents/scriptwriter/PROMPT.md` | DONE | 有模型时把**人工确认过的结论**交给模型改写成口播初稿，逐句校验来源与数字（不在所引结论里的数字整句丢弃），模型不可用/写歪了退回规则版并在产物里写明原因；"一次成型"仍建议人工润色 |
 | 多平台内容适配 | `backend/app/content/platform_adapt.py` + `POST /api/scripts/{id}/adapt` + 工作台「一稿三版」 | DONE | 只调长度与排版（抖音 18 字/行、小红书 24 字/行、公众号保留段落）；**不改事实、不编标签**（标签不够就明说"这里不替你编"）；切行时不会把 `19.3%` 切成 `1` + `9.3%`；导流词只提示不代删 |
 | 内容审核 | `/api/reviews` + `review_service` | DONE | — |
 
