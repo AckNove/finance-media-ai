@@ -243,7 +243,7 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 | 4 | 启动脚本 | `scripts/start.ps1`（建库、预检、端口占用检查、起服务、健康探测、开浏览器） |
 | 5 | 停止脚本 | `scripts/stop.ps1`（只杀 uvicorn + `backend.app.main` 的进程，`-Force` 才强杀） |
 | 6 | 环境诊断 | `backend/scripts/doctor.py`（22 项）+ `backend/scripts/daily_check.py`（每日业务体检）+ `scripts/watchdog.ps1`（自愈） |
-| 7 | 测试 | `tests/`（**1118 passed / 2 skipped / 1 known warning**） |
+| 7 | 测试 | `tests/`（**1119 passed / 2 skipped / 1 known warning**） |
 | 8 | 端到端验收脚本 | `backend/scripts/v6_acceptance.py`（三主题 + 内容链路）、`ui_acceptance.py`（Playwright 真点击）、`flow_check.py`、`model_e2e_check.py` |
 | 9 | 用户操作手册 | `docs/research_hub/v6_0_operator_manual.md`（10 节）+ `README.md`（三步开始用） |
 | 10 | 架构文档 | `docs/research_hub/system_architecture.md`（**§12 是 V5–V6 现状快照**）+ `module_design.md` / `api_design.md` / `database_design.md` |
@@ -606,7 +606,7 @@ tokens 与费用，前面撞上限那几次真花了的钱没进任务账，于�
 | 密钥 | `prompt_preview` 命中 `sk-` 的行数 **0** |
 
 ```
-pytest -o addopts="" -q   → 1108 passed, 2 skipped, 1 warning
+pytest -o addopts="" -q   → 1119 passed, 2 skipped, 1 warning
 ```
 
 ## §22 产业链图为啥没画出来：骨架节点在落库时被丢了
