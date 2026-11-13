@@ -97,6 +97,17 @@ class MetricIn(BaseModel):
     raw: dict | None = None
 
 
+class MetricsImportIn(BaseModel):
+    """把平台后台导出的 CSV 直接粘进来批量回填。
+
+    ``csv_text`` 上限 200,000 字符（约几千行），超过就该拆分而不是硬塞。
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    csv_text: str = Field(min_length=1, max_length=200_000)
+
+
 class MetricOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

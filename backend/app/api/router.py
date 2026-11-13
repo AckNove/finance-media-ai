@@ -108,6 +108,7 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("PATCH", "/api/calendar/{entry_id}"): HUMAN_ONLY,
     ("POST", "/api/calendar/{entry_id}/metrics"): HUMAN_ONLY,
     ("GET", "/api/calendar/{entry_id}/metrics"): HUMAN_ONLY,
+    ("POST", "/api/calendar/{entry_id}/metrics/import"): HUMAN_ONLY,
 }
 
 

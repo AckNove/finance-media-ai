@@ -30,6 +30,14 @@ from backend.app.schemas.operations import (
 from backend.app.services.base import BaseService
 
 
+def _naive_utc(value: datetime) -> datetime:
+    """统一成库里存的那种 naive UTC（带时区的先换算再剥掉 tzinfo）。"""
+
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(UTC).replace(tzinfo=None)
+
+
 class OperationsService(BaseService):
     def __init__(self, db: Session) -> None:
         super().__init__(db)
@@ -152,6 +160,52 @@ class OperationsService(BaseService):
             .order_by(PlatformMetric.captured_at)
         )
         return list(self.db.execute(stmt).scalars())
+
+    def import_metrics(self, entry_id: int, csv_text: str) -> dict:
+        """批量导入平台导出的 CSV：能写的写，撞时间戳的跳过，坏行带行号报出来。"""
+
+        from backend.app.services.metrics_import import parse_metrics_csv
+
+        entry = self.get(entry_id)
+        parsed = parse_metrics_csv(csv_text, platform=str(entry.platform))
+        # 库里 DateTime 是 naive 的，解析出来是带时区的 UTC——比较前要统一，
+        # 否则同一个时刻永远"不相等"，重复导入会撞唯一约束而不是被跳过。
+        existing = {
+            _naive_utc(row.captured_at)
+            for row in self.db.execute(
+                select(PlatformMetric).where(PlatformMetric.calendar_id == entry.id)
+            ).scalars()
+        }
+        written = []
+        for item in parsed.imported:
+            stamp = _naive_utc(item.captured_at)
+            if stamp in existing:
+                parsed.skipped.append(
+                    {
+                        "line": item.line,
+                        "reason": "这个时间点已经有快照了（历史不覆盖）",
+                        "captured_at": item.captured_at.isoformat(),
+                    }
+                )
+                continue
+            self.db.add(
+                PlatformMetric(
+                    calendar_id=entry.id,
+                    platform=entry.platform,
+                    captured_at=stamp,
+                    views=item.views,
+                    likes=item.likes,
+                    comments=item.comments,
+                    shares=item.shares,
+                    followers_delta=item.followers_delta,
+                    source="csv",
+                )
+            )
+            existing.add(stamp)
+            written.append(item)
+        parsed.imported = written
+        self.db.commit()
+        return parsed.as_dict()
 
     def analytics(self) -> list[dict]:
         """按平台汇总：每条取**最新**快照的绝对值，不给"累计"这种假数。"""

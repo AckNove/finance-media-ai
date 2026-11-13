@@ -26,9 +26,9 @@
 | 分支 / HEAD / origin | `main`，接管时 `HEAD == origin/main == 0090225`，工作区干净 |
 | 文档 | 读 `docs/research_hub/` 全部（含 V5.0/V5.1 报告、`acceptance_criteria.md`、`database_design.md`） |
 | 目录结构 | `backend/app/{api,core,capabilities,execution,research,video,media,analysis,services,models,schemas,skills}`、`web/`、`scripts/`、`content/jobs/`、`tools/` |
-| 接口 | `create_app().openapi()`：接管时 45 路径 / 58 操作 → 现在 **46 路径 / 66 操作** |
+| 接口 | `create_app().openapi()`：接管时 45 路径 / 58 操作 → 现在 **46 路径 / 67 操作** |
 | 数据 | 接管时 29 表 → 现在 **31 表**（`alembic check` 无漂移） |
-| 测试 | 接管时 850 passed / 2 skipped → 现在 **974 passed / 2 skipped** |
+| 测试 | 接管时 850 passed / 2 skipped → 现在 **987 passed / 2 skipped** |
 | 前端 | 19 页 → **20 页**（新增「内容日历」），全部接真接口，无静态假数据 |
 | 工具 | 10 个全部 `implemented=True` |
 | 已实现但没接业务流程的 | `preflight.py` 被 `doctor.py` 超过但仍可用 |
@@ -101,8 +101,9 @@
 
 | 交付 | 位置 | 证据 |
 | --- | --- | --- |
-| 内容日历 / 排期 / 发布留痕 | `models/operations.py` + `/api/calendar/*`（7 个端点）+ `web/app.js#pageOperations` | 迁移 `b6_v6_operations`；发布必须有链接、撤回留痕清时间；`tests/test_operations.py` 14 例 |
+| 内容日历 / 排期 / 发布留痕 | `models/operations.py` + `/api/calendar/*`（8 个端点）+ `web/app.js#pageOperations` | 迁移 `b6_v6_operations`；发布必须有链接、撤回留痕清时间；`tests/test_operations.py` 14 例 |
 | 平台数据回填与分析 | `platform_metrics` + `/api/calendar/analytics` | 同一时间戳覆盖被拒（历史不覆盖）；分析取**最新快照绝对值**，不累加 |
+| 账号数据 CSV 批量导入 | `/api/calendar/{id}/metrics/import` + `services/metrics_import.py`（纯函数解析）+ 前端「导入 CSV」按钮 | 认中英列名与千分位；撞时间戳的跳过并说明原因；坏行带行号返回、不猜数字；平台不一致整行拒绝；`tests/test_metrics_import.py` 13 例 |
 
 ## 3. 真实端到端验收（任务书第五部分）
 

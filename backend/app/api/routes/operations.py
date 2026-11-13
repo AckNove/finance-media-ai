@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, Path, Query, status
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
+from backend.app.core.errors import DomainValidationError
 from backend.app.schemas.common import Page
 from backend.app.schemas.operations import (
     CalendarAnalyticsOut,
@@ -18,6 +19,7 @@ from backend.app.schemas.operations import (
     CalendarUpdate,
     MetricIn,
     MetricOut,
+    MetricsImportIn,
 )
 from backend.app.services.operations_service import OperationsService
 
@@ -88,3 +90,21 @@ def add_metric(payload: MetricIn, db: DbSession, entry_id: int = Path(ge=1)) -> 
 @router.get("/{entry_id}/metrics", response_model=list[MetricOut], summary="一次排期的所有快照")
 def list_metrics(db: DbSession, entry_id: int = Path(ge=1)) -> list[MetricOut]:
     return [MetricOut.model_validate(item) for item in OperationsService(db).list_metrics(entry_id)]
+
+
+@router.post(
+    "/{entry_id}/metrics/import",
+    summary="批量导入平台 CSV（撞时间戳的跳过，坏行带行号报错）",
+)
+def import_metrics(
+    payload: MetricsImportIn, db: DbSession, entry_id: int = Path(ge=1)
+) -> dict:
+    from backend.app.services.metrics_import import CsvImportError
+
+    try:
+        return OperationsService(db).import_metrics(entry_id, payload.csv_text)
+    except CsvImportError as error:
+        raise DomainValidationError(
+            f"这份 CSV 用不了：{error.message}",
+            details={"reason": error.reason},
+        ) from error

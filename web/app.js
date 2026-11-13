@@ -1372,7 +1372,8 @@ async function pageOperations(view) {
         { title: '操作', value: (row) => `
             <button data-advance="${row.id}" data-status="rendered">标已渲染</button>
             <button data-publish="${row.id}">标已发布</button>
-            <button data-metric="${row.id}">回填数据</button>`, raw: true },
+            <button data-metric="${row.id}">回填数据</button>
+            <button data-import="${row.id}">导入 CSV</button>`, raw: true },
       ], rows, '还没有排期：先在上面加一条')}
       <div id="cal-row-feedback"></div>
     </div>`;
@@ -1437,6 +1438,33 @@ async function pageOperations(view) {
       });
       if (!result.ok) { say(feedback, false, `${result.status} ${result.error.message}`); return; }
       say(feedback, true, '数据已回填（每次回填都是一个快照，不覆盖历史）');
+    });
+  });
+  view.querySelectorAll('[data-import]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-import');
+      const csvText = window.prompt(
+        '把平台后台导出的 CSV 粘进来（第一行要有 captured_at/采集时间 与 views/播放量 之类的列）',
+      );
+      if (!csvText) return;
+      const result = await api(`/calendar/${id}/metrics/import`, {
+        method: 'POST',
+        body: JSON.stringify({ csv_text: csvText }),
+      });
+      if (!result.ok) {
+        const reason = result.error?.details?.reason ? `（${result.error.details.reason}）` : '';
+        say(feedback, false, `${result.status} ${result.error.message}${reason}`);
+        return;
+      }
+      const data = result.data;
+      const bad = (data.error_detail || []).map((item) => `第 ${item.line} 行：${item.reason}`);
+      const skipped = data.skipped || 0;
+      say(
+        feedback,
+        data.errors === 0,
+        `导入 ${data.imported} 行${skipped ? `，跳过 ${skipped} 行（时间点已有快照）` : ''}` +
+          (bad.length ? `；${bad.length} 行有问题：${bad.slice(0, 3).join('；')}` : ''),
+      );
     });
   });
 }
