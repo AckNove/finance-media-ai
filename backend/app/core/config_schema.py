@@ -140,6 +140,9 @@ class ModelSettings(BaseModel):
     # 本地限流：官方并发上限之外，自己在进程内先摁住节奏，避免 429 才回头重试。
     requests_per_minute: int | None = Field(default=None, gt=0)
     max_concurrency: int | None = Field(default=None, ge=1)
+    # 降级目标："provider/model"。只有超时/传输失败/服务端 5xx/限流这类"这条线路
+    # 现在不通"的错才降级；鉴权失败与请求非法不降级（换模型也解决不了，只会藏问题）。
+    fallback_to: str | None = None
     note: str | None = None
 
     @property

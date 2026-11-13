@@ -28,7 +28,7 @@
 | 目录结构 | `backend/app/{api,core,capabilities,execution,research,video,media,analysis,services,models,schemas,skills}`、`web/`、`scripts/`、`content/jobs/`、`tools/` |
 | 接口 | `create_app().openapi()`：接管时 45 路径 / 58 操作 → 现在 **46 路径 / 66 操作** |
 | 数据 | 接管时 29 表 → 现在 **31 表**（`alembic check` 无漂移） |
-| 测试 | 接管时 850 passed / 2 skipped → 现在 **929 passed / 2 skipped** |
+| 测试 | 接管时 850 passed / 2 skipped → 现在 **964 passed / 2 skipped** |
 | 前端 | 19 页 → **20 页**（新增「内容日历」），全部接真接口，无静态假数据 |
 | 工具 | 10 个全部 `implemented=True` |
 | 已实现但没接业务流程的 | `skills/registry.yaml` 的 5 个 Skill 只登记未注入提示词（仍 PARTIAL）；`preflight.py` 被 `doctor.py` 超过但仍可用 |
@@ -60,6 +60,13 @@
 `worker._apply` 两个失败分支都传 `outcome.*`。
 回归用例：`tests/test_execution_pipeline.py::test_a_failed_attempt_that_already_burned_tokens_is_charged_too`。
 
+**模型降级链**（B 段补齐）：`gateway.py` 新增 `FALLBACK_CODES = {timeout, transport_error, server_error, rate_limited}`、
+`_fallback_reply()` 与 `_fallback_target()`；`config/models.yaml` 的 `deepseek-flash` 配 `fallback_to: deepseek/deepseek-v4-pro`。
+三条硬规矩：①**只降一跳**（备用模型再失败就如实报错，不递归）②**鉴权失败与请求非法不降级**（换模型解决不了，只会把问题藏起来）
+③**备用模型价目没核实就拒绝降级**（不许花不知道价钱的钱）。降级成功后回复的 `raw_usage` 带
+`fallback_from` / `fallback_reason`，审计表里主模型与备用模型各一行。
+`tests/test_model_guardrails.py` 新增 4 例：超时会降级且两行审计、401 不降级、价目缺失不降级、两跳都失败只留两行。
+
 ### C/D. 研究骨架与来源
 
 | 交付 | 位置 | 证据 |
@@ -67,8 +74,12 @@
 | 行业 / 产业链 / 公司三套研究骨架 | `backend/app/research/frameworks.py` | 10 / 11 / 14 节；`market_size` 与公司财务四节**只允许事实**；`tests/test_frameworks.py` 17 例 |
 | 骨架接进分析链路 | `analysis.py` 的 `build_messages(..., framework=)` / `parse_analysis` / `to_markdown()` | 分析按节输出，空节写"本节缺证据…不补写"，末尾给覆盖率 |
 | 骨架接进执行器 | `executor._analyse_with_model` 用 `_task_objective()` 判类型 | output 带 `framework` / `framework_checklist` |
+| 来源可信度分级 | `backend/app/research/source_quality.py` 的 `tier_of()` | 官方/监管 → 一手披露 → 财经媒体 → 聚合/自媒体 → 未知，五档按**域名后缀 + 显式白名单**判定 |
+| 来源时效判断 | `source_quality.freshness_of()` | 30 天内 fresh、180 天内 recent、更早 stale、**没有发布时间就是 unknown（不猜）**；可用 `as_of` 按底稿日期判，避免拿今天去判八月的稿 |
+| 底稿自带这两样 | `digest.to_markdown()` 新增「来源可信度与时效」一节 + `as_dict()` 的 `source_quality` | `tests/test_source_quality.py` 21 例（含"发布时间比参照时间还晚 → 报负数天数，不裁成 0"） |
 
 三个真实主题的骨架判定全部正确：储能 → industry、光伏产业链 → chain、隆基绿能 → company。
+来源分级**只回答"要不要回原文核对"**，不代表这条内容已被核实——分级按域名，不按内容。
 
 ### E/F. 语义核查与成稿闸门
 
@@ -230,7 +241,7 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 | 4 | 启动脚本 | `scripts/start.ps1` |
 | 5 | 停止脚本 | `scripts/stop.ps1` |
 | 6 | 环境诊断 | `backend/scripts/doctor.py`（另有 `scripts/watchdog.ps1` 做自愈） |
-| 7 | 测试 | `tests/`（929 passed / 2 skipped） |
+| 7 | 测试 | `tests/`（964 passed / 2 skipped） |
 | 8 | 端到端验收脚本 | `backend/scripts/v6_acceptance.py`（另有 `ui_acceptance.py` 做浏览器点击） |
 | 9 | 用户操作手册 | `README.md`（含"三步开始用"） |
 | 10 | 架构文档 | `docs/research_hub/{system_architecture,module_design,api_design,database_design}.md` |

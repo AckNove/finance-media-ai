@@ -9,7 +9,7 @@
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、66 个 API 操作、
-> 20 个前端页面、`pytest` 929 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、`pytest` 964 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
 
 ## 0. 审计方法
@@ -51,7 +51,7 @@
 | 未知价目阻止请求 | `gateway.py` → `budget_blocked/pricing_missing` | DONE | — |
 | 审计与密钥脱敏 | `model_calls` 表 + `_redact` + `mask_secret` | DONE | — |
 | 模型可用性检查 | `provider_status()` + `/api/system/providers` + `preflight` | DONE | — |
-| 模型降级（主模型失败切备用） | — | **NOT_IMPLEMENTED** | 本轮补 `models.yaml` 的 fallback 链 |
+| 模型降级（主模型失败切备用） | `gateway.py` 的 `FALLBACK_CODES` + `_fallback_reply` + `_fallback_target`；`config/models.yaml` 的 `fallback_to` | DONE | 只降一跳；只对超时/传输失败/5xx/限流降级，鉴权失败与请求非法不降级；备用模型价目未核实则拒绝降级（`tests/test_model_guardrails.py` 4 例） |
 
 ## C. Agent / Skill / Tool / 编排
 
@@ -76,8 +76,8 @@
 | PDF / Excel / CSV 解析与表格提取 | `capabilities/adapters/markitdown_adapter.py` + `structured.py` | DONE | — |
 | Word(docx) 解析 | `markitdown_adapter.py` 已映射 `.docx`，但无对外工具 | PARTIAL | 本轮补工具或明确不支持 |
 | 来源记录 / 发布时间 | `sources` 表（`published_at`、`site_name`、`sha256`、`snapshot_path`） | DONE | — |
-| 来源可信度管理 | — | **NOT_IMPLEMENTED** | 本轮补 `source_quality`（域名分级） |
-| 数据时效性判断 | — | **NOT_IMPLEMENTED** | 本轮补 `freshness` 判定 |
+| 来源可信度管理 | `backend/app/research/source_quality.py`（`tier_of`：官方/一手/媒体/聚合/未知五档，按域名后缀与显式白名单） | DONE | 分级只提示"要不要回原文核对"，不代表内容已核实（`tests/test_source_quality.py` 20 例） |
+| 数据时效性判断 | `source_quality.freshness_of`（30 天 fresh / 180 天 recent / 更早 stale / 无发布时间 unknown，可用 `as_of` 按底稿日期判） | DONE | 阈值是口径不是真理，写死在代码里可复核；发布时间解析不了就判 unknown，不猜 |
 | 重复内容识别 | `topics.dedupe_key`（选题域） | PARTIAL | 来源/证据层没有 |
 | 来源冲突识别 | `research/corroborate.py` | DONE | — |
 | Evidence / Finding 管理 | `evidence` 表 + `finding_checks` + `research_reports.findings` | DONE | — |
@@ -91,7 +91,7 @@
 | 产业链研究十二维度（上中下游/原材料/设备/技术/环节/成本/供应链/价值分配/瓶颈/机会） | `frameworks.py` 的 `CHAIN`（11 节） | DONE | 已真跑：光伏产业链主题 |
 | 公司研究十四维度（基本信息…最新动态） | `frameworks.py` 的 `COMPANY`（14 节，财务四节只允许 fact） | DONE | 已真跑：隆基绿能主题 |
 | 事实 / 推断 / 观点区分 | `analysis.py` 的 `kind` + 语义核查 | DONE | — |
-| 数据缺口 / 冲突 / 时效 / 局限 | 报告 `limitations` + `data_gaps` + `framework.checklist` 的覆盖率 | PARTIAL | 时效判定还没做（D 段） |
+| 数据缺口 / 冲突 / 时效 / 局限 | 报告 `limitations` + `data_gaps` + `framework.checklist` 的覆盖率 + 底稿「来源可信度与时效」一节 | DONE | 时效只进底稿与 JSON（`source_quality`），还没回写进 `limitations` 文本 |
 
 ## F. 语义核查与人工审核
 

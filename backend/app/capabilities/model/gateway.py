@@ -21,7 +21,7 @@ import json
 import logging
 import time
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Literal, Mapping, Sequence
 
@@ -294,6 +294,8 @@ class ModelGateway:
         self._backoff = backoff_seconds
         self._cache = _ReplyCache(self._config.cost.cache_ttl_hours)
         self._limiter = _LocalLimiter(clock=clock)
+        # 降级深度：只允许"主模型 → 备用模型"一跳，避免 A→B→A 打转
+        self._fallback_depth = 0
 
     # -- 只读辅助 ---------------------------------------------------------
 
@@ -508,6 +510,9 @@ class ModelGateway:
                 latency_ms=latency,
                 error=message,
             )
+            fallback = self._fallback_reply(caller, request, context, status=status, code=code, message=message)
+            if fallback is not None:
+                return fallback
             return self._fail(status, code, message)
 
         actual_cost: float | None = None
@@ -545,6 +550,67 @@ class ModelGateway:
         )
 
     # -- 内部 -------------------------------------------------------------
+
+    #: 这些失败说明"这台机器/这条线路/这个模型现在用不了"，换备用模型还有意义。
+    #: 鉴权失败与请求非法不降级：换模型也解决不了，还可能把问题藏起来。
+    FALLBACK_CODES = frozenset({"timeout", "transport_error", "server_error", "rate_limited"})
+
+    def _fallback_reply(
+        self,
+        caller: CallerContext,
+        request: ModelRequest,
+        context: BudgetContext,
+        *,
+        status: str,
+        code: str,
+        message: str,
+    ) -> ModelReply | None:
+        """主模型失败后按 `fallback_to` 试一次备用模型；不成则返回 None（照常报错）。"""
+
+        if code not in self.FALLBACK_CODES or self._fallback_depth >= 1:
+            return None
+        target = self._fallback_target(request)
+        if target is None:
+            return None
+        provider_name, _, model_name = target.partition("/")
+        logger.warning(
+            "模型调用失败（%s/%s：%s），按配置降级到 %s/%s",
+            request.provider,
+            request.model,
+            code,
+            provider_name,
+            model_name,
+        )
+        # 失败的那次调用已经占掉一次配额（审计行也记了），预算上下文要往前推一格；
+        # 金钱按"这次没有回话"处理（cost=None），不虚增成本。
+        bumped = replace(context, calls_spent=context.calls_spent + 1)
+        self._fallback_depth += 1
+        try:
+            reply = self.complete(
+                caller, replace(request, provider=provider_name, model=model_name), budget=bumped
+            )
+        finally:
+            self._fallback_depth -= 1
+        usage = dict(reply.raw_usage or {})
+        usage["fallback_from"] = f"{request.provider}/{request.model}"
+        usage["fallback_reason"] = message[:200]
+        return replace(reply, raw_usage=usage)
+
+    def _fallback_target(self, request: ModelRequest) -> str | None:
+        entry = self._config.find_model(request.provider, request.model)
+        target = getattr(entry, "fallback_to", None) if entry is not None else None
+        if not isinstance(target, str) or "/" not in target:
+            return None
+        provider_name, _, model_name = target.partition("/")
+        model_entry = self._config.find_model(provider_name, model_name)
+        if model_entry is None or not model_entry.enabled:
+            logger.warning("备用模型 %s 没有启用，放弃降级", target)
+            return None
+        if model_entry.input_price_per_1k_cny is None or model_entry.output_price_per_1k_cny is None:
+            # 价目未核实 = 不知道会花多少钱，按 V5.0 的规矩一律不发请求
+            logger.warning("备用模型 %s 价目未核实，放弃降级（不许花不知道价钱的钱）", target)
+            return None
+        return target
 
     def _safe_daily_spent(self) -> float:
         try:

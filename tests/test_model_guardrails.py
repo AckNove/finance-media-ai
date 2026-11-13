@@ -323,3 +323,152 @@ def test_budget_context_of_zero_does_not_block(model_enabled):
     gateway = make_gateway(recorder, build_config())
     reply = gateway.complete(_caller(), request(), budget=BudgetContext())
     assert reply.ok is True
+
+
+# --- 模型降级链 -------------------------------------------------------------
+
+
+def build_fallback_config(*, backup_price: float | None = 0.009372, fallback: str = "deepseek/deepseek-v4-pro"):
+    """主模型 flash + 备用模型 v4-pro（价目可故意留空，测"不知道价钱不许调用"）。"""
+
+    data = {
+        "version": 1,
+        "updated_at": "2026-11-12",
+        "cost": {
+            "currency": "CNY",
+            "pricing_policy": "reject_unknown",
+            "approved_exceptions": [],
+            "cache_ttl_hours": 24,
+        },
+        "providers": {
+            "deepseek": {
+                "display_name": "DeepSeek",
+                "base_url_env": "DEEPSEEK_BASE_URL",
+                "api_key_env": "DEEPSEEK_API_KEY",
+                "enabled": True,
+            }
+        },
+        "models": [
+            {
+                "provider": "deepseek",
+                "model": "deepseek-flash",
+                "input_price_per_1k_cny": 0.00213,
+                "output_price_per_1k_cny": 0.00852,
+                "enabled": True,
+                "fallback_to": fallback,
+            },
+            {
+                "provider": "deepseek",
+                "model": "deepseek-v4-pro",
+                "input_price_per_1k_cny": backup_price,
+                "output_price_per_1k_cny": backup_price,
+                "enabled": True,
+            },
+        ],
+    }
+    return ModelsConfig.model_validate(data)
+
+
+class PerModelTransport:
+    """按 payload 里的 model 决定这次请求怎么失败/成功。"""
+
+    def __init__(self, *, fail_model: str, failure: str = "timeout") -> None:
+        self.fail_model = fail_model
+        self.failure = failure
+        self.models: list[str] = []
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        import json as _json
+
+        payload = _json.loads(request.content.decode("utf-8"))
+        model = str(payload.get("model") or "")
+        self.models.append(model)
+        if model == self.fail_model:
+            if self.failure == "timeout":
+                raise httpx.ReadTimeout("timed out", request=request)
+            if self.failure == "auth":
+                return httpx.Response(
+                    401, json={"error": {"message": "invalid api key", "type": "auth"}}
+                )
+            return httpx.Response(503, text="upstream boom")
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"role": "assistant", "content": "备用模型答的"}}],
+                "usage": {"prompt_tokens": 11, "completion_tokens": 5, "total_tokens": 16},
+            },
+        )
+
+
+def test_primary_timeout_falls_back_to_the_configured_model(model_enabled):
+    """主模型超时 → 按 `fallback_to` 换备用模型，并在回复里标明"这是降级来的"。"""
+
+    transport = PerModelTransport(fail_model="deepseek-flash")
+    gateway = ModelGateway(
+        models_config=build_fallback_config(),
+        transport=httpx.MockTransport(transport),
+        environ={"DEEPSEEK_API_KEY": FAKE_KEY},
+        retries=0,
+    )
+    reply = gateway.complete(_caller(), request())
+    assert reply.ok is True
+    assert reply.text == "备用模型答的"
+    assert reply.raw_usage["fallback_from"] == "deepseek/deepseek-flash"
+    assert "timeout" in reply.raw_usage["fallback_reason"].lower() or "超时" in reply.raw_usage["fallback_reason"]
+    assert transport.models == ["deepseek-flash", "deepseek-v4-pro"]
+    rows = model_rows()
+    assert len(rows) == 2, "失败的尝试与降级后的成功各要一条审计行"
+    assert rows[0].status != "ok" and rows[1].status == "ok"
+    assert rows[1].model == "deepseek-v4-pro"
+
+
+def test_auth_failure_does_not_fall_back(model_enabled):
+    """密钥错换模型也没用：不许拿降级把鉴权问题糊过去。"""
+
+    transport = PerModelTransport(fail_model="deepseek-flash", failure="auth")
+    gateway = ModelGateway(
+        models_config=build_fallback_config(),
+        transport=httpx.MockTransport(transport),
+        environ={"DEEPSEEK_API_KEY": FAKE_KEY},
+        retries=0,
+    )
+    reply = gateway.complete(_caller(), request())
+    assert reply.ok is False
+    assert reply.error_code == "auth_failed"
+    assert transport.models == ["deepseek-flash"]
+    assert len(model_rows()) == 1
+
+
+def test_fallback_is_refused_when_the_backup_price_is_unknown(model_enabled):
+    """备用模型价目没核实 = 不知道要花多少钱 → 宁可不降级。"""
+
+    transport = PerModelTransport(fail_model="deepseek-flash")
+    gateway = ModelGateway(
+        models_config=build_fallback_config(backup_price=None),
+        transport=httpx.MockTransport(transport),
+        environ={"DEEPSEEK_API_KEY": FAKE_KEY},
+        retries=0,
+    )
+    reply = gateway.complete(_caller(), request())
+    assert reply.ok is False
+    assert reply.status == "timeout"
+    assert transport.models == ["deepseek-flash"], "价目不明时不许发第二个请求"
+    assert len(model_rows()) == 1
+
+
+def test_fallback_happens_at_most_once(model_enabled):
+    """备用模型也失败时不再往下找：A→B 一跳到底，不会打转。"""
+
+    transport = PerModelTransport(fail_model="deepseek-flash")
+    transport.fail_model = "__none__"  # 两个都失败
+    gateway = ModelGateway(
+        models_config=build_fallback_config(),
+        transport=httpx.MockTransport(
+            lambda req: (_ for _ in ()).throw(httpx.ReadTimeout("timed out", request=req))
+        ),
+        environ={"DEEPSEEK_API_KEY": FAKE_KEY},
+        retries=0,
+    )
+    reply = gateway.complete(_caller(), request())
+    assert reply.ok is False
+    assert len(model_rows()) == 2, "主模型 + 备用模型各一条，不许无限递归"

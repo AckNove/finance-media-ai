@@ -22,6 +22,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+from backend.app.research import source_quality
+
 SCHEMA_VERSION = 1
 
 #: 抽"数据点"的判据：一句话里同时出现数字与单位/百分号/量级词
@@ -130,6 +132,12 @@ class Digest:
             "notes": list(self.notes),
             "meta": dict(self.meta),
         }
+        if self.sources:
+            qualities = source_quality.assess_all(self.sources, as_of=self.generated_at[:10])
+            payload["source_quality"] = {
+                "summary": source_quality.summarise(qualities),
+                "items": [item.as_dict() for item in qualities],
+            }
         if self.corroboration is not None:
             payload["corroboration"] = self.corroboration.as_dict()
         return payload
@@ -175,6 +183,12 @@ class Digest:
                 snapshot = source.snapshot_path or "（未保存快照）"
                 lines.append(f"- {source.source_id} {source.url}")
                 lines.append(f"  - 快照：`{snapshot}`")
+            lines.append("")
+            lines.append(
+                source_quality.to_markdown(
+                    source_quality.assess_all(self.sources, as_of=self.generated_at[:10])
+                )
+            )
             lines.append("")
 
         lines += ["## 候选数据点（原文摘录，未核验）", ""]
