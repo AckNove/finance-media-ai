@@ -1,0 +1,203 @@
+{
+  "summary": "2024年中国新型储能没有权威的“新增GW”官方数字：国家能源局只披露截至2024年底累计7376万千瓦/1.68亿千瓦时、同比增长超130%[S03][S06]；市场上流传的“2024年新增43.7GW”实际来自CNESA数据库[S11]。两者并不抵触：官方累计73.76GW与CNESA累计78.3GW仅差约6%，差异来自统计边界（已建成投运项目与数据库不完全统计的差别）。CNESA口径更接近官方，也更适合纵向比较，因为其2025年底144.7GW、同比增长85%可倒推出与78.3GW一致的基数[S09]。",
+  "findings": [
+    {
+      "claim": "官方口径只给累计数：2024年底累计7376万千瓦、同比增长超130%，未直接发布“2024年新增GW”",
+      "kind": "fact",
+      "source_ids": [
+        "S03",
+        "S06"
+      ],
+      "numbers": [
+        "7376",
+        "130",
+        "1.68"
+      ],
+      "section": "market_size"
+    },
+    {
+      "claim": "CNESA口径2024年新增投运43.7GW/109.8GWh，累计78.3GW/184.2GWh，同比增126.5%/147.5%",
+      "kind": "fact",
+      "source_ids": [
+        "S11"
+      ],
+      "numbers": [
+        "43.7",
+        "109.8",
+        "78.3",
+        "184.2",
+        "126.5",
+        "147.5"
+      ],
+      "section": "market_size"
+    },
+    {
+      "claim": "两口径不冲突：官方累计73.76GW与CNESA累计78.3GW差约4.5GW，属统计边界差异而非同一指标打架",
+      "kind": "inference",
+      "source_ids": [
+        "S03",
+        "S11"
+      ],
+      "numbers": [
+        "7376",
+        "78.3"
+      ],
+      "section": "market_size"
+    },
+    {
+      "claim": "市面上“2024年新增GW”数字几乎都由CNESA提供，所谓机构与官方抵触实为把机构新增与官方累计混比",
+      "kind": "inference",
+      "source_ids": [
+        "S11",
+        "S03"
+      ],
+      "numbers": [
+        "43.7",
+        "7376"
+      ],
+      "section": "market_size"
+    },
+    {
+      "claim": "CNESA序列内部自洽：2025年底144.7GW同比增85%，倒推2024年底约78.2GW，与其78.3GW吻合",
+      "kind": "inference",
+      "source_ids": [
+        "S09",
+        "S11"
+      ],
+      "numbers": [
+        "144.7",
+        "85",
+        "78.3"
+      ],
+      "section": "market_size"
+    },
+    {
+      "claim": "2025年9月底“突破1亿千瓦”是时点更晚的累计数，不能用作2024年新增规模的证据",
+      "kind": "inference",
+      "source_ids": [
+        "S01",
+        "S09"
+      ],
+      "numbers": [
+        "1",
+        "144.7"
+      ],
+      "section": "market_size"
+    }
+  ],
+  "data_gaps": [
+    "国家能源局从未公布2024年“新增”装机GW值，缺少官方新增口径这一基准",
+    "缺少CNESA“不完全统计”的项目覆盖率或与官方项目库的比对说明，差异4.5GW无法分解",
+    "缺少第三个独立口径（如中电联、电网公司调度口径）的2024年新增GW，无法做三方交叉验证",
+    "缺少《DL/T 2922-2025新型储能电站统计技术导则》生效后的实际执行与口径统一情况证据",
+    "缺少2023年底官方累计装机绝对值，无法用“增长超130%”精确倒算官方新增GW"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 3,
+  "prompt_tokens": 13384,
+  "completion_tokens": 1938,
+  "cost_cny": 0.04502,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "industry",
+  "checklist": {
+    "framework": "industry",
+    "title": "行业研究",
+    "sections": {
+      "definition": {
+        "title": "行业定义与边界",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "stage": {
+        "title": "发展阶段",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "market_size": {
+        "title": "市场规模",
+        "claims": 6,
+        "facts": 2,
+        "inferences": 4,
+        "sources": [
+          "S03",
+          "S06",
+          "S11",
+          "S09",
+          "S01"
+        ]
+      },
+      "structure": {
+        "title": "产业结构",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "supply_demand": {
+        "title": "供需关系",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "competition": {
+        "title": "竞争格局",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "drivers": {
+        "title": "驱动因素",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "cycle": {
+        "title": "周期位置",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "policy": {
+        "title": "政策与监管",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "risks": {
+        "title": "主要风险",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      }
+    },
+    "empty_sections": [
+      "definition",
+      "stage",
+      "structure",
+      "supply_demand",
+      "competition",
+      "drivers",
+      "cycle",
+      "policy",
+      "risks"
+    ],
+    "inference_only_sections": [],
+    "unsectioned": [],
+    "coverage": 0.1
+  },
+  "skills_used": [
+    "investigative-storytelling"
+  ]
+}

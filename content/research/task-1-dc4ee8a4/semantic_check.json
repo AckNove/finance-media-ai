@@ -1,0 +1,160 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 5,
+  "prompt_tokens": 14060,
+  "completion_tokens": 5018,
+  "cost_cny": 0.072701,
+  "checked_at": "2026-11-13T17:50:09+00:00",
+  "counts": {
+    "supported": 0,
+    "partially_supported": 1,
+    "contradicted": 0,
+    "insufficient_evidence": 3,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "官方口径只给累计数：2024年底累计7376万千瓦、同比增长超130%，未直接发布“2024年新增GW”",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "官方累计7376万千瓦、较2023年底增长超130%均有原文直述；但“未直接发布2024年新增GW”属否定性断言，现有摘录只能说明这段文字中未出现新增数，无法据此确认官方从未发布。",
+      "evidence_ids": [
+        19
+      ],
+      "source_ids": [
+        "S03",
+        "S06"
+      ],
+      "supporting": [
+        "截至2024年底全国已建成投运新型储能项目累计装机规模达7376万千瓦/1.68亿千瓦时，约为“十三五”末的20倍，较2023年底增长超过130%"
+      ],
+      "contradicting": [],
+      "missing": [
+        "国家能源局发布会全文或统计口径说明，用以确认官方是否另行发布过“2024年新增装机”数据"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3515,
+      "completion_tokens": 1254,
+      "cost_cny": 0.018175,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:50:09+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "CNESA口径2024年新增投运43.7GW/109.8GWh，累计78.3GW/184.2GWh，同比增126.5%/147.5%",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "S11的给定摘录只有网页导航、标题和发布时间，未出现43.7GW/109.8GWh、78.3GW/184.2GWh或126.5%/147.5%等任何数字，无法核对。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S11"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "CNESA原文中含新增投运43.7GW/109.8GWh、累计78.3GW/184.2GWh及同比增速的正文段落"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3515,
+      "completion_tokens": 1254,
+      "cost_cny": 0.018175,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:50:09+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "两口径不冲突：官方累计73.76GW与CNESA累计78.3GW差约4.5GW，属统计边界差异而非同一指标打架",
+      "claim_kind": "inference",
+      "verdict": "insufficient_evidence",
+      "reason": "官方73.76GW（7376万千瓦）有原文支持，但CNESA的78.3GW及两者相差约4.5GW的对比在给定证据中没有依据；“统计边界差异”只是未经证据支持的归因。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S03",
+        "S11"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "CNESA 2024年累计78.3GW的原文数字",
+        "两套统计口径的定义与覆盖范围说明，以支撑“统计边界差异”的解释"
+      ],
+      "issues": [
+        {
+          "code": "causal_leap",
+          "note": "把两个口径的数字差异直接归因为统计边界差异，证据中无口径定义或差异说明支撑"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3515,
+      "completion_tokens": 1254,
+      "cost_cny": 0.018175,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:50:09+00:00",
+      "notes": [
+        "supporting_quote_not_found",
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "市面上“2024年新增GW”数字几乎都由CNESA提供，所谓机构与官方抵触实为把机构新增与官方累计混比",
+      "claim_kind": "inference",
+      "verdict": "insufficient_evidence",
+      "reason": "证据中没有“市面上新增GW数字几乎都由CNESA提供”的统计或列举，也没有机构新增数与官方累计数被混比的任何材料，整条推断无证据支撑。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S11",
+        "S03"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "对市面上2024年新增装机数字来源的普查或举例",
+        "把机构新增数据与官方累计数据混用比较的具体案例"
+      ],
+      "issues": [
+        {
+          "code": "overgeneralized",
+          "note": "用“几乎都”“所谓抵触实为”把未列举的个别情况推广为整体判断"
+        },
+        {
+          "code": "causal_leap",
+          "note": "将口径抵触直接归因于“机构新增与官方累计混比”，无证据链支撑"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3515,
+      "completion_tokens": 1254,
+      "cost_cny": 0.018175,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-13T17:50:09+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    }
+  ],
+  "notes": [
+    "retried:2 次（撞上限后减少条数重试，费用按实际累加）"
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

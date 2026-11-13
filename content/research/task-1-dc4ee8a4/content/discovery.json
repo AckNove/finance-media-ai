@@ -1,0 +1,61 @@
+{
+  "objective": "查清2024年中国新型储能新增装机规模（GW）到底是多少：不同机构的统计口径与数字是否互相抵触，谁的口径更接近官方，差异来自哪里。",
+  "framework": "industry",
+  "framework_title": "行业研究",
+  "questions": [
+    {
+      "key": "definition",
+      "title": "行业定义与边界",
+      "question": "这个行业到底做什么、边界在哪、常被混淆的近邻行业是什么",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "stage",
+      "title": "发展阶段",
+      "question": "处于导入/成长/成熟/衰退的哪一段，依据是什么",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "market_size",
+      "title": "市场规模",
+      "question": "规模多大、按什么口径统计、增速多少",
+      "allowed_kinds": [
+        "fact"
+      ]
+    },
+    {
+      "key": "structure",
+      "title": "产业结构",
+      "question": "由哪些环节/玩家构成，集中度如何",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "supply_demand",
+      "title": "供需关系",
+      "question": "供给与需求的强弱、缺口或过剩有多大",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "competition",
+      "title": "竞争格局",
+      "question": "谁在打、靠什么打、价格战还是差异化",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    }
+  ],
+  "note": "这一阶段只出研究框架，没有检索、没有调用模型"
+}
