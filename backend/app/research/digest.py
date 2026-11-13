@@ -17,12 +17,12 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from backend.app.research import source_quality
+from backend.app.research import dedupe, source_quality
 
 SCHEMA_VERSION = 1
 
@@ -65,6 +65,8 @@ class SourceRef:
     snapshot_path: str = ""
     char_count: int = 0
     query: str = ""
+    #: 非空表示这一页是另一页的转载/同文（值是被保留为代表的那条编号）
+    republished_from: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -78,6 +80,7 @@ class SourceRef:
             "snapshot_path": self.snapshot_path,
             "char_count": self.char_count,
             "query": self.query,
+            "republished_from": self.republished_from,
             "verification_status": "unverified",
         }
 
@@ -111,6 +114,11 @@ class Digest:
     def source_count(self) -> int:
         return len(self.sources)
 
+    @property
+    def independent_source_count(self) -> int:
+        """把跨站转载合并之后，真正独立的来源条数。"""
+        return len({item.republished_from or item.source_id for item in self.sources})
+
     def source(self, source_id: str) -> SourceRef | None:
         for item in self.sources:
             if item.source_id == source_id:
@@ -126,6 +134,7 @@ class Digest:
             "generated_by": self.generated_by,
             "queries": list(self.queries),
             "source_count": self.source_count,
+            "independent_source_count": self.independent_source_count,
             "data_point_count": len(self.data_points),
             "sources": [item.as_dict() for item in self.sources],
             "data_points": [item.as_dict() for item in self.data_points],
@@ -150,7 +159,8 @@ class Digest:
             f"- 生成时间：{self.generated_at}",
             "- 生成方式：**规则汇编（未使用模型）** —— 本文件只整理已抓取的真实资料，"
             "不含分析结论；分析、对比、结论需接入模型后另出。",
-            f"- 来源数：{self.source_count}　候选数据点：{len(self.data_points)}",
+            f"- 来源数：{self.source_count}（合并跨站转载后 {self.independent_source_count} 个独立来源）"
+            f"　候选数据点：{len(self.data_points)}",
             "",
         ]
         if self.queries:
@@ -181,9 +191,26 @@ class Digest:
             lines += ["URL 与快照路径：", ""]
             for source in self.sources:
                 snapshot = source.snapshot_path or "（未保存快照）"
-                lines.append(f"- {source.source_id} {source.url}")
+                tail = (
+                    f"　**同一篇**（与 {source.republished_from} 正文一致，不重复计入来源数）"
+                    if source.republished_from
+                    else ""
+                )
+                lines.append(f"- {source.source_id} {source.url}{tail}")
                 lines.append(f"  - 快照：`{snapshot}`")
             lines.append("")
+            groups = [
+                item
+                for item in _republished_groups(self.sources)
+            ]
+            if groups:
+                lines += ["跨站转载合并：", ""]
+                for canonical, members in groups:
+                    lines.append(
+                        f"- {canonical} 为代表；同文：{'、'.join(members)}"
+                        "（**只算一个来源**，不能当成多来源印证）"
+                    )
+                lines.append("")
             lines.append(
                 source_quality.to_markdown(
                     source_quality.assess_all(self.sources, as_of=self.generated_at[:10])
@@ -297,12 +324,31 @@ def build_digest(
     ]
     usable = [item for item in collect_outputs if isinstance(item, Mapping)]
     sources = sources_from_collect(usable)
-    points: list[DataPoint] = []
     excerpts: dict[str, str] = {}
+    excerpt_list: list[tuple[str, str]] = []
     for source in sources:
         excerpt = _excerpt_for(sources=usable, url=source.url)
         excerpts[source.source_id] = excerpt
-        points.extend(extract_data_points(excerpt, source_id=source.source_id))
+        excerpt_list.append((source.source_id, excerpt))
+
+    # 跨站转载识别：正文几乎一样的那几条合并成一组，只留一条代表计入"几个来源"
+    groups = dedupe.group_republished(
+        dict(excerpt_list), order=[item[0] for item in excerpt_list]
+    )
+    republished = dedupe.duplicate_map(groups)
+    if republished:
+        sources = [
+            replace(source, republished_from=republished[source.source_id])
+            if source.source_id in republished
+            else source
+            for source in sources
+        ]
+
+    points: list[DataPoint] = []
+    for source in sources:
+        points.extend(
+            extract_data_points(excerpts.get(source.source_id, ""), source_id=source.source_id)
+        )
 
     notes = [
         "本文件由规则汇编生成，**没有使用模型**：不含分析、对比、归因与结论。",
@@ -320,7 +366,12 @@ def build_digest(
     if cross_check:
         from backend.app.research.corroborate import corroborate
 
-        corroboration = corroborate(points)
+        corroboration = corroborate(points, aliases=republished)
+    if republished:
+        notes.append(
+            "跨站转载已合并：正文几乎一样的页面只算一个来源，"
+            "**不能把同一篇文章的多个转载页当成多来源印证**。"
+        )
     return Digest(
         title=title,
         objective=objective,
@@ -329,9 +380,23 @@ def build_digest(
         queries=tuple(dict.fromkeys(queries)),
         generated_at=stamp.isoformat(timespec="seconds"),
         notes=tuple(notes),
-        meta={"upstream_stages": len(usable), "excerpts": excerpts},
+        meta={
+            "upstream_stages": len(usable),
+            "excerpts": excerpts,
+            "republished": republished,
+            "independent_source_count": len(sources) - len(republished),
+        },
         corroboration=corroboration,
     )
+
+
+def _republished_groups(sources: Sequence[SourceRef]) -> list[tuple[str, list[str]]]:
+    """把 ``republished_from`` 反查成 ``代表 -> [同文条目]``，保持来源原有顺序。"""
+    grouped: dict[str, list[str]] = {}
+    for source in sources:
+        if source.republished_from:
+            grouped.setdefault(source.republished_from, []).append(source.source_id)
+    return list(grouped.items())
 
 
 def _excerpt_for(*, sources: Sequence[Mapping[str, Any]], url: str) -> str:

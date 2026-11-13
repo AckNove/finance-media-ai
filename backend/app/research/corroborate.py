@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Sequence
 
 from backend.app.research.digest import DataPoint
 
@@ -269,14 +269,40 @@ class _DisjointSet:
             self._parent[right_root] = left_root
 
 
+def _canonical_map(aliases: Mapping[str, str] | None) -> dict[str, str]:
+    """把「重复条目 -> 代表条目」整理成可传递的映射（A->B、B->C 时 A 归到 C）。"""
+    if not aliases:
+        return {}
+    resolved: dict[str, str] = {}
+    for item, canonical in aliases.items():
+        seen = {item}
+        target = canonical
+        while target in aliases and target not in seen:
+            seen.add(target)
+            target = aliases[target]
+        resolved[item] = target
+    return resolved
+
+
+def _same_source(source_id: str, canonical: Mapping[str, str]) -> str:
+    return canonical.get(source_id, source_id)
+
+
 def corroborate(
     points: Sequence[DataPoint],
     *,
     min_sources: int = DEFAULT_MIN_SOURCES,
     min_overlap: float = DEFAULT_MIN_OVERLAP,
+    aliases: Mapping[str, str] | None = None,
 ) -> Corroboration:
-    """对候选数据点做跨来源比对；规则见模块 docstring。"""
+    """对候选数据点做跨来源比对；规则见模块 docstring。
+
+    ``aliases`` 是「重复条目 -> 代表条目」的映射（见 ``research.dedupe``）：
+    同一篇文章被多个站点转载时，它们在"几个来源在说"这件事上**只能算一个**，
+    否则转载三遍就变成"三个来源互相印证"。
+    """
     usable = [point for point in points if point.numbers]
+    canonical = _canonical_map(aliases)
     contexts = _contexts(usable)
     groups = _DisjointSet(len(usable))
 
@@ -303,7 +329,7 @@ def corroborate(
     single: list[DataPoint] = []
     conflict_signatures: set[tuple[str, str]] = set()
     for members in clusters.values():
-        if len({usable[index].source_id for index in members}) < 2:
+        if len({_same_source(usable[index].source_id, canonical) for index in members}) < 2:
             single.extend(usable[index] for index in members)
             continue
 
@@ -317,17 +343,18 @@ def corroborate(
         # 一个数字一条记录：分开列才不会把"城商行 1.38%"和"民营银行 4.11%"混成一句
         for number in _sorted_numbers(source_ids_by_number):
             indexes = source_ids_by_number[number]
-            sources = {usable[index].source_id for index in indexes}
+            sources = {_same_source(usable[index].source_id, canonical) for index in indexes}
             if len(sources) < min_sources:
                 continue
-            # 每个来源只留一条引文，最多三条，避免同义重复刷屏
+            # 每个来源只留一条引文，最多三条，避免同义重复刷屏；转载页不能各占一格
             picked: list[DataPoint] = []
             used_sources: set[str] = set()
             for index in indexes:
                 point = usable[index]
-                if point.source_id in used_sources:
+                key = _same_source(point.source_id, canonical)
+                if key in used_sources:
                     continue
-                used_sources.add(point.source_id)
+                used_sources.add(key)
                 picked.append(point)
                 if len(picked) >= 3:
                     break

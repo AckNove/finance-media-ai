@@ -344,7 +344,41 @@ async function loadTopicSuggestions() {
 }
 
 async function pageTasks(view) {
-  const result = await api('/research-tasks?limit=50');
+  // 深链参数放在 hash 里：`#/tasks?offset=50&status=failed`
+  const query = new URLSearchParams((location.hash.split('?')[1] || ''));
+  const offset = Math.max(0, Number(query.get('offset') || 0) || 0);
+  const status = query.get('status') || '';
+  const limit = 20;
+  const suffix = `limit=${limit}&offset=${offset}${status ? `&status=${encodeURIComponent(status)}` : ''}`;
+  const result = await api(`/research-tasks?${suffix}`);
+  const total = result.ok ? Number(result.data.total || 0) : 0;
+  const shown = result.ok ? result.data.items.length : 0;
+  const from = shown === 0 ? 0 : offset + 1;
+  const to = offset + shown;
+  const statusOptions = [
+    ['', '全部状态'],
+    ['created', '已创建'],
+    ['running', '运行中'],
+    ['paused', '暂停（等人）'],
+    ['completed', '已完成'],
+    ['failed', '失败'],
+    ['cancelled', '已取消'],
+  ];
+  const pager = `
+      <div class="row" style="justify-content:space-between;align-items:center;margin:8px 0">
+        <div class="row">
+          <label style="margin:0">状态
+            <select id="task-status">${statusOptions
+              .map(([value, label]) => `<option value="${value}"${value === status ? ' selected' : ''}>${label}</option>`)
+              .join('')}</select>
+          </label>
+        </div>
+        <div class="row">
+          <span class="note">第 ${from}–${to} 条 / 共 ${total} 条</span>
+          <a class="btn ghost${offset === 0 ? ' disabled' : ''}" href="#/tasks?offset=${Math.max(0, offset - limit)}${status ? `&status=${status}` : ''}">上一页</a>
+          <a class="btn ghost${to >= total ? ' disabled' : ''}" href="#/tasks?offset=${offset + limit}${status ? `&status=${status}` : ''}">下一页</a>
+        </div>
+      </div>`;
   view.innerHTML = `
     <div class="card">
       <h2>建研究任务</h2>
@@ -360,6 +394,7 @@ async function pageTasks(view) {
       <div id="task-msg"></div>
     </div>
     <div class="card"><h2>任务列表</h2>
+      ${result.ok ? pager : ''}
       ${result.ok ? table([
         { title: 'ID', key: 'id', num: true },
         { title: '标题', value: (row) => `<a href="#/tasks/${row.id}">${esc(row.title)}</a>`, raw: true },
@@ -367,8 +402,16 @@ async function pageTasks(view) {
         { title: '花费', value: (row) => money(row.cost_spent_cny), num: true },
         { title: '原因', value: (row) => esc(row.failure_reason || '—') },
         { title: '更新时间', value: (row) => when(row.updated_at) },
-      ], result.data.items, '还没有任务：上面建一个') : failure(result)}
+      ], result.data.items, status ? '这个状态下没有任务' : '还没有任务：上面建一个') : failure(result)}
     </div>`;
+
+  const statusSelect = document.getElementById('task-status');
+  if (statusSelect) {
+    statusSelect.addEventListener('change', () => {
+      const value = statusSelect.value;
+      location.hash = `#/tasks?offset=0${value ? `&status=${value}` : ''}`;
+    });
+  }
 
   document.getElementById('task-form').addEventListener('submit', async (event) => {
     event.preventDefault();

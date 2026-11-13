@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy import select
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
@@ -166,7 +166,7 @@ def create_research_task(payload: ResearchTaskCreate, db: DbSession) -> Research
 def list_research_tasks(
     db: DbSession,
     page: Pagination,
-    status_filter: str | None = None,
+    status_filter: str | None = Query(default=None, alias="status"),
 ) -> Page[ResearchTaskOut]:
     runtime = _runtime()
     try:
@@ -175,9 +175,12 @@ def list_research_tasks(
         raise DomainValidationError(f"未知任务状态：{status_filter}") from error
     window = snapshots[page.offset : page.offset + page.limit]
     stats = runtime.stats()
+    # 带了状态筛选，"共几条"就必须是**该状态**的条数；否则翻到第 3 页会发现
+    # 分母一直不变，看起来像分页坏了。
+    total = stats.tasks.get(status_filter, 0) if status_filter else sum(stats.tasks.values())
     return Page[ResearchTaskOut](
         items=[ResearchTaskOut.model_validate(item) for item in window],
-        total=sum(stats.tasks.values()),
+        total=total,
         limit=page.limit,
         offset=page.offset,
     )

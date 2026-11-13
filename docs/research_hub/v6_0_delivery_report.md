@@ -258,22 +258,18 @@ render rc 0  →  content_qc {"ok": true, "errors": [], "warnings": [],
 | 状态 | 数量 | 主要条目 |
 | --- | --- | --- |
 | **DONE** | 主干全部 | 配置/迁移/队列/网关计费/预算/限流/脱敏/降级链/TaskRuntime/编排/失败传播；搜索抓取解析；来源与证据；来源可信度与时效；三套研究骨架；Skill 注入提示词；语义核查五档 + 成稿闸门 + 撤回失效；内容质检；内容日历与平台回填 + CSV 批量导入；选题建议（规则推荐）；一稿三版（抖音/小红书/公众号，不改事实不编标签）；背景音乐曲库与授权校验（先验授权再混音）；备份恢复/诊断/停止/自愈；20 页前端 |
-| **PARTIAL** | 6 | 见下表（本文件 §9.1）——这些是**部分可用但不是完整能力**的条目，不冒充 DONE |
+| **PARTIAL** | 2 | 见下表（本文件 §9.1）——这些是**部分可用但不是完整能力**的条目，不冒充 DONE |
 | **TEST_ONLY** | 1 | `contradicted` 判定（代码 + 单测通过，真实语料里还没出现过） |
 | **CODE_ONLY** | 0 | — |
 | **BLOCKED** | 2 | 真实素材获取（需授权素材源）；云渲染/发布（未授权） |
 | **NOT_IMPLEMENTED** | 1 | 多平台账号 API 对接（抖音/小红书等开放平台需企业资质与授权，不是本地能补的） |
 
-### 9.1 目前仍是 PARTIAL 的七项（如实列出）
+### 9.1 目前仍是 PARTIAL 的两项（如实列出）
 
 | 需求 | 现在能做什么 | 还差什么 |
 | --- | --- | --- |
-| 9 个 Agent 角色里只有部分链路真被 `_handlers` 调用 | **10 个 task_type 全部有真实处理器**（含 `topic.discover` 与 `content.script/visual/produce`），启动自检会比对角色名册与注册表 | 角色名册里仍有几个只靠 prompt 区分（`agents/*/PROMPT.md` 已逐个声明接受哪些 task_type） |
-| 重复内容识别 | 选题层 `topics.dedupe_key` + 研究层 `corroborate.py` 的数字冲突识别 | 来源/证据层没有"同一篇被多站转载"的合并 |
-| 报告 → 内容策划（定位/受众/标题/钩子/故事线/结构/观点） | `content.script/visual/produce` 三阶段真跑：脚本草稿、镜头计划、制作计划都落盘（见 §15） | 受众定位与故事线仍靠人定，没有独立的策划产物 |
 | 脚本生成（AK 风格） | `content.script` 只写**人工确认过的结论**，Skill（`ak-signature` 等）已注入分析阶段 | 草稿是规则拼句，不是模型改写；"一次成型"还得人工润色 |
 | 动态产业链图 / 动画 | 数据卡、图表、镜头轨道都能做 | 没有产业链专用图形（上下游链路示意图） |
-| 历史任务 / 错误信息页 | 任务页列出最近 50 条 | 没有分页与按状态/失败原因筛选 |
 
 ## 10. 用户怎么开始用（最少三步）
 
@@ -356,7 +352,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 ## 16. 最终验证（本轮最后一次实跑）
 
 ```text
-pytest -o addopts="" -q           → 1058 passed, 2 skipped, 1 warning
+pytest -o addopts="" -q           → 1073 passed, 2 skipped, 1 warning
 真实开发库（只读打开）              → 540,672 B / sha256 2df764e5…8203 / 19 表 /
                                     revision de8148733a9b / journal_mode delete /
                                     无 -wal/-shm / integrity ok / 无 model_calls 表
@@ -364,4 +360,37 @@ FFmpeg                            → 8.1.2-full_build-www.gyan.dev（未改动�
 backend/app/main.py 第 27 行       → DESCRIPTION = """（品牌行未改动）
 git ls-files .env                 → 空（密钥从未入库）
 ```
+
+## 17. 跨站转载合并与历史任务分页（本轮补的两项）
+
+### 17.1 跨站转载：同一个来源不能再数三遍
+
+真问题：搜索阶段要的是"多来源互相印证"，但中文财经稿大量是一家发稿、几十家转载。
+按 URL 去重的话，转载稿各有各的 URL，于是「3 家都说 4.8%」其实是「同一篇被抄了三遍」，
+`corroborate` 的"多来源印证"就成了假象。
+
+做法（`backend/app/research/dedupe.py`）：
+
+- 归一化（全角转半角、英文小写、去掉所有空白与标点）后取正文前 1200 字算 sha256 指纹；
+- 指纹相同 → 同一篇；指纹不同但 4-gram Jaccard ≥ 0.90 → 也算同一篇（转载方常加一句"本文转自…"）；
+- **正文短于 120 字不参与判定**——两条 30 字的摘录撞车概率太高，宁可漏判也不误合并；
+- 合并只打标记：`SourceRef.republished_from` 指向被保留的代表，**原始字段一个都不改**；
+- `corroborate(points, aliases=…)` 把转载页归到代表名下：同文的多个页面只算**一个**来源，
+  选引文时也不让两个转载页各占一格；
+- 底稿里 `independent_source_count`、`meta.republished`、markdown 的「跨站转载合并」小节，
+  以及分析提示词里 `—— 与 [S01] 是同一篇文章的转载页，只算一个来源` 都会写出来。
+
+验证（`tests/test_research_dedupe.py`，14 例）：同文合并、加前缀的转载仍合并、不同文章不合并、
+短摘录不参与、指纹忽略空白标点、**只有转载页时不再冒充"两来源印证"**、
+真实两来源时转载页不占引文格、底稿标记与 markdown 小节、无转载时不出现该小节。
+
+### 17.2 历史任务分页
+
+- 接口 `GET /api/research-tasks?status=&limit=&offset=`：`status` 参数原来叫 `status_filter`，
+  前端传 `?status=` 会被**静默忽略**，已加 `Query(alias="status")`；带筛选时 `total` 改成
+  该状态的条数（否则翻到第 3 页分母一直不变，看起来像分页坏了）。
+- 前端 `pageTasks` 改成深链分页 `#/tasks?offset=20&status=failed`，带状态下拉与
+  「第 X–Y 条 / 共 N 条」。
+- 验证：`tests/test_research_task_api.py::test_listing_supports_pagination_and_a_status_filter`。
+
 

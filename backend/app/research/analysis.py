@@ -235,7 +235,9 @@ def _excerpt_for(ref: Any, excerpts: dict[str, str]) -> str:
 
 def _source_block(digest: Any) -> str:
     lines: list[str] = []
-    excerpts = (getattr(digest, "meta", {}) or {}).get("excerpts", {}) or {}
+    meta = getattr(digest, "meta", {}) or {}
+    excerpts = meta.get("excerpts", {}) or {}
+    republished = meta.get("republished", {}) or {}
     for ref in getattr(digest, "sources", ()) or ():
         source_id = str(getattr(ref, "source_id", "") or "")
         title = str(getattr(ref, "title", "") or "")
@@ -243,6 +245,9 @@ def _source_block(digest: Any) -> str:
         published = str(getattr(ref, "published_at", "") or "")
         excerpt = _excerpt_for(ref, excerpts)
         head = f"[{source_id}] {title}（{site} {published}）".strip()
+        twin = str(republished.get(source_id, "") or "")
+        if twin:
+            head += f" —— 与 [{twin}] 是同一篇文章的转载页，只算一个来源"
         lines.append(head)
         if excerpt:
             lines.append(f"  摘录：{excerpt}")

@@ -114,6 +114,36 @@ def test_listing_and_reading_back_a_task(client: Any, clean_db: None) -> None:
     assert "plan_created" in types
 
 
+def test_listing_supports_pagination_and_a_status_filter(client: Any, clean_db: None) -> None:
+    """翻页与筛选要真的生效——包括"共几条"的分母。"""
+    first = _create_task(client).json()["id"]
+    second = _create_task(client).json()["id"]
+
+    page = client.get("/api/research-tasks", params={"limit": 1, "offset": 0})
+    assert page.status_code == 200
+    body = page.json()
+    assert body["limit"] == 1 and body["offset"] == 0
+    assert len(body["items"]) == 1
+    assert body["total"] >= 2
+
+    second_page = client.get("/api/research-tasks", params={"limit": 1, "offset": 1}).json()
+    assert second_page["items"][0]["id"] != body["items"][0]["id"]
+
+    everything = client.get("/api/research-tasks", params={"limit": 100}).json()
+    # 状态筛选：总数必须是**该状态**的条数，不是全表条数
+    created = client.get("/api/research-tasks", params={"status": "created"}).json()
+    assert all(item["status"] == "created" for item in created["items"])
+    assert created["total"] == sum(1 for item in everything["items"] if item["status"] == "created")
+
+    failed = client.get("/api/research-tasks", params={"status": "failed"}).json()
+    assert all(item["status"] == "failed" for item in failed["items"])
+    assert failed["total"] == 0  # 刚建的任务都还没失败
+
+    bad = client.get("/api/research-tasks", params={"status": "not-a-status"})
+    assert bad.status_code == 422
+    assert first and second
+
+
 def test_unknown_task_is_404(client: Any, clean_db: None) -> None:
     response = client.get("/api/research-tasks/999999")
     assert response.status_code == 404

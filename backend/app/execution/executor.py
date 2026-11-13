@@ -35,6 +35,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.capabilities.tools import ToolRegistry, get_tool_registry
 from backend.app.core.caller import CallerContext
+from backend.app.core.config import PROJECT_ROOT
 from backend.app.database.session import get_session_factory
 from backend.app.execution.runtime import Claim
 from backend.app.execution.task_types import TaskType
@@ -68,6 +69,8 @@ FETCH_PER_QUERY = 3
 MAX_QUERIES = 3
 #: 单篇正文截断长度（保存全文会导致输出 JSON 过大）
 EXCERPT_CHARS = 1200
+#: 研究产物默认落盘根目录。测试里替换这个常量，产物就不会写进仓库。
+DEFAULT_ARTIFACTS_ROOT = PROJECT_ROOT / "content" / "research"
 #: 一个查询最多试几个搜索结果（前几条常被 robots 拒或撞上人机校验）
 MAX_FETCH_ATTEMPTS = 8
 #: 正文短于这个长度就当成"没抓到内容"（反爬拦截页通常只有几十个字）
@@ -630,7 +633,7 @@ class AgentExecutor:
             upstream=[item for item in upstream if isinstance(item, dict)],
             queries=queries,
         )
-        directory = (self.artifacts_root or (PROJECT_ROOT / "content" / "research")) / f"task-{claim.task_id}"
+        directory = (self.artifacts_root or DEFAULT_ARTIFACTS_ROOT) / f"task-{claim.task_id}"
         directory = _safe_digest_dir(directory, digest)
         paths = write_digest(digest, directory)
         return digest, payload, paths
@@ -1309,7 +1312,7 @@ class AgentExecutor:
             ).first()
 
     def _stage_dir(self, claim: Claim) -> Path:
-        base = self.artifacts_root or (PROJECT_ROOT / "content" / "research")
+        base = self.artifacts_root or DEFAULT_ARTIFACTS_ROOT
         return Path(base) / f"task-{claim.task_id}" / "content"
 
     def _blocked_stage(self, reason: str, note: str, *, next_step: str) -> ExecutionOutcome:

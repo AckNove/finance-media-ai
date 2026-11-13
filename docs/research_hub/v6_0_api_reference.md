@@ -48,7 +48,7 @@
 | POST | `/api/research-reports/{report_id}/checks/{check_id}/review` | 人工复核一条核查（只能人写） | 人 | `report_id`（path，必填，integer）、`check_id`（path，必填，integer） | application/json → `FindingCheckReviewIn` | 200 `FindingCheckOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}/draft-readiness` | 这份报告能不能成稿（只有人工确认过的结论才允许） | 人 | `report_id`（path，必填，integer） | — | 200 `DraftReadinessOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-reports/{report_id}/video-job` | 从报告开一个视频任务目录 | 人 | `report_id`（path，必填，integer） | application/json → `VideoJobIn | null` | 201 `VideoJobOut`；404 `object`；409 `object`；422 `object`；503 `object` |
-| GET | `/api/research-tasks` | 研究任务列表 | 人 | `status_filter`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchTaskOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/research-tasks` | 研究任务列表 | 人 | `status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchTaskOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks` | 建研究任务（按流水线拆解） | 人 | — | application/json → `ResearchTaskCreate` | 201 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-tasks/{task_id}` | 研究任务详情 | 人 | `task_id`（path，必填，integer） | — | 200 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks/{task_id}/cancel` | 取消任务 | 人 | `task_id`（path，必填，integer） | — | 200 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |

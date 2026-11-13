@@ -8,9 +8,10 @@
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
-> **最近一次刷新**（V6.0 收尾提交，2026-11-13）：31 张表、70 个 API 操作、
-> 20 个前端页面、`pytest` 1048 passed / 2 skipped；三主题真实验收已跑通（见 §L），
-> 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`）。
+> **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、71 个 API 操作、
+> 20 个前端页面、`pytest` 1073 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
+> 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
 ## 0. 审计方法
 
@@ -79,7 +80,7 @@
 | 来源记录 / 发布时间 | `sources` 表（`published_at`、`site_name`、`sha256`、`snapshot_path`） | DONE | — |
 | 来源可信度管理 | `backend/app/research/source_quality.py`（`tier_of`：官方/一手/媒体/聚合/未知五档，按域名后缀与显式白名单） | DONE | 分级只提示"要不要回原文核对"，不代表内容已核实（`tests/test_source_quality.py` 20 例） |
 | 数据时效性判断 | `source_quality.freshness_of`（30 天 fresh / 180 天 recent / 更早 stale / 无发布时间 unknown，可用 `as_of` 按底稿日期判） | DONE | 阈值是口径不是真理，写死在代码里可复核；发布时间解析不了就判 unknown，不猜 |
-| 重复内容识别 | `topics.dedupe_key`（选题域） | PARTIAL | 来源/证据层没有 |
+| 重复内容识别 | `backend/app/research/dedupe.py`（跨站转载合并）＋ `topics.dedupe_key`（选题域）＋ `corroborate.py`（数字冲突） | DONE | 只合并**正文几乎一样**的页面（归一化后指纹相同，或 4-gram 相似度 ≥ 0.90）；正文短于 120 字不参与判定，宁可漏判不误合并；转载页不算独立来源，底稿与提示词里都标出来 |
 | 来源冲突识别 | `research/corroborate.py` | DONE | — |
 | Evidence / Finding 管理 | `evidence` 表 + `finding_checks` + `research_reports.findings` | DONE | — |
 
@@ -144,7 +145,7 @@
 | 19 个页面接真接口 | `web/app.js`（68 KB，无静态假数据） | DONE | — |
 | 研究规划 / 子任务 / 成本 / 阻塞原因 | `pageTaskDetail` 的规划卡 | DONE | — |
 | 语义核查 + 人工复核 | `pageChecks` | DONE | 真机点击已验证（`backend/scripts/ui_acceptance.py`） |
-| 历史任务 / 错误信息页 | — | PARTIAL | 任务页只列最近 50 条 |
+| 历史任务 / 错误信息页 | `pageTasks`（深链分页 + 状态下拉）+ `GET /api/research-tasks?status=&limit=&offset=` + `pageTaskDetail` 的失败原因 | DONE | 翻页靠深链（`#/tasks?offset=20&status=failed`），不做无限滚动 |
 
 ## K. 自媒体运营管理
 
