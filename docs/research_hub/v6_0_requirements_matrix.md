@@ -125,7 +125,7 @@
 
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
-| 分镜 / 时间轴 / 转场 / 渲染 | `video/{outline,render,narration,cards}.py` + **`video/script_board.py`（按脚本排分镜）** + OpenKatana | DONE | 报告已经有脚本时，建视频任务**按脚本排分镜**（一句一镜、带单位的句子做成数据卡、`source_ids` 落到逐镜可追溯列），没脚本才退回规则分镜；两种来源都写进 `job.json.outline.source`，脚本排不出来时**不悄悄换规则分镜** |
+| 分镜 / 时间轴 / 转场 / 渲染 | `video/{outline,render,narration,cards}.py` + **`video/script_board.py`（按脚本排分镜）** + OpenKatana | DONE | 报告已经有脚本时，建视频任务**按脚本排分镜**（一句一镜、带单位的句子做成数据卡、`source_ids` 落到逐镜可追溯列），没脚本才退回规则分镜；两种来源都写进 `job.json.outline.source`，脚本排不出来时**不悄悄换规则分镜**；字幕字号按最长一句自适应（`render.caption_font_size()`，只降不升、下限 32），长度上限与规则分镜共用 `outline.MAX_CAPTION_CHARS = 18`，超长按标点收口 |
 | 图表生成 | `analysis/charts.py` + `chart_from_table.py` | DONE | — |
 | 中文 TTS / 字幕 | `capabilities/tts/`（edge-tts WordBoundary + sapi 兜底） | DONE | — |
 | 素材搜索与获取（真实素材） | — | **NOT_IMPLEMENTED** | 只用自绘图与纯视觉底板（诚实记录） |

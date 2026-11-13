@@ -197,3 +197,40 @@ def test_script_storyboard_accepts_a_script_row(tmp_path: Path) -> None:
     notes = (tmp_path / "storyboard" / "FROM_SCRIPT.md").read_text(encoding="utf-8")
     assert "分镜来自脚本" in notes
     assert "不要在这里改字" in notes
+
+
+def test_captions_obey_the_same_screen_limit_as_the_rule_storyboard(tmp_path: Path) -> None:
+    """字幕是 46px 中文，一屏只放得下 18 个字；两套分镜必须用同一个上限。
+
+    实测事故：脚本分镜曾经自己写 24 字上限，成片里"全产业链亏损：2024年三季度起…"
+    直接顶到画面左右边缘。
+    """
+
+    from backend.app.video import outline, script_board
+
+    assert script_board.MAX_CAPTION_CHARS == outline.MAX_CAPTION_CHARS == 18
+
+    draft = ScriptDraft(
+        title="光伏",
+        hook="光伏为什么亏",
+        lines=(
+            ScriptLine(
+                text="全产业链亏损：2024年三季度起主链毛利率持续为负，硅料硅片电池组件普遍亏损。",
+                role="evidence",
+                source_ids=("S01",),
+            ),
+            ScriptLine(
+                text="供给过剩把报价压到成本线以下。",
+                role="mechanism",
+                source_ids=("S02",),
+            ),
+        ),
+    )
+    storyboard_from_draft(draft, job_root=tmp_path)
+    board = load_storyboard(tmp_path / "storyboard" / "storyboard.csv")
+
+    subtitles = [shot.subtitle for shot in board.shots if shot.subtitle]
+    assert subtitles, "至少有旁白镜头要带字幕"
+    assert max(len(text) for text in subtitles) <= script_board.MAX_CAPTION_CHARS
+    assert any(text.endswith("…") for text in subtitles)
+

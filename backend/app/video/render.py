@@ -567,6 +567,48 @@ def scan_media(path: Path, *, run_ffmpeg: Callable[[list[str]], str] | None = No
 # ------------------------------------------------------------------ 主流程
 
 
+#: 字幕占画幅宽度的上限。留出左右边距，长句才不会顶到屏幕边缘。
+CAPTION_WIDTH_BUDGET = 0.9
+
+#: 一个字符大概占多少个 `size`。中文全角按 1.35 校准（实测 46px 的 18 字字幕
+#: 在 1080 宽画面上正好铺满，说明实际步进约是 size 的 1.35 倍），半角按 0.7。
+_CJK_ADVANCE = 1.35
+_ASCII_ADVANCE = 0.7
+
+
+def _display_width(text: str) -> float:
+    """按"占几个全角字"估算一句字幕的宽度（只用来选字号，不追求精确）。"""
+    total = 0.0
+    for char in text:
+        total += _ASCII_ADVANCE if ord(char) < 0x2E80 else _CJK_ADVANCE
+    return total
+
+
+def caption_font_size(
+    storyboard: Any,
+    *,
+    base: int,
+    width: int,
+    budget: float = CAPTION_WIDTH_BUDGET,
+) -> int:
+    """给这一份分镜挑一个放得下的字幕字号（只降不升，最短 32）。
+
+    为什么不是固定字号：字幕 46px 时一行只放得下 18 个全角字，脚本写出来的句子
+    经常正好顶到边缘（抽帧实拍"全产业链亏损：2024年三季度起主…"贴住左右两边）。
+    短字幕保持原字号，长字幕自动降到放得下为止。
+    """
+    longest = 0.0
+    for shot in getattr(storyboard, "shots", ()) or ():
+        text = (getattr(shot, "subtitle", "") or "").strip()
+        if text:
+            longest = max(longest, _display_width(text))
+    if longest <= 0:
+        return base
+    limit = width * budget
+    fitted = int(limit / longest)
+    return max(32, min(base, fitted))
+
+
 def render_job(
     job_root: Path | str,
     *,
@@ -713,7 +755,10 @@ def render_job(
                     )
 
     captions = subtitle_events(
-        storyboard, family=font_family, size=font_size, source="subtitle"
+        storyboard,
+        family=font_family,
+        size=caption_font_size(storyboard, base=font_size, width=storyboard.width),
+        source="subtitle",
     )
     fonts: list[dict[str, Any]] = []
     # 字幕要有字体才能渲染。新任务目录里通常还没有字体文件，就从本机已知位置复制

@@ -38,6 +38,10 @@ from backend.app.content.stages import (
     ScriptLine,
     plan_shots,
 )
+from backend.app.video.outline import (
+    MAX_CAPTION_CHARS as _OUTLINE_CAPTION_CHARS,
+    caption_around as _caption_around,
+)
 
 #: 分镜表位置（与规则分镜一致，渲染阶段只认这一个路径）。
 STORYBOARD_REL = Path("storyboard") / "storyboard.csv"
@@ -45,8 +49,10 @@ STORYBOARD_REL = Path("storyboard") / "storyboard.csv"
 #: 说明文件：告诉人这份分镜是怎么来的。
 NOTES_REL = Path("storyboard") / "FROM_SCRIPT.md"
 
-#: 一屏放得下的说明字数；超出就交给 `caption_around` 处理。
-MAX_CAPTION_CHARS = 24
+#: 一屏放得下的说明字数。**必须与规则分镜同一套**（`video/outline.py` 的
+#: `MAX_CAPTION_CHARS`）：字幕是 46px 中文，1080 宽只放得下 18 个字；写成 24 会让
+#: 长句顶到画面左右边缘（抽帧实测"全产业链亏损：2024年三季度起…"直接贴边）。
+MAX_CAPTION_CHARS = _OUTLINE_CAPTION_CHARS
 
 #: 带单位的量（长单位在前，否则"亿元"会被"亿"抢先吃掉一半）。
 #: 与 `video/outline.py` 的 `_UNITS` 保持同一套口径：脚本排分镜和规则分镜
@@ -116,17 +122,38 @@ def _card_number(text: str) -> str:
     return match.group(0).strip() if match else ""
 
 
-def _caption(text: str) -> str:
-    """一屏说明：优先整句，太长就在标点处截断。"""
-    from backend.app.video.outline import _caption_around  # 同一套"数字与单位完整"口径
+#: 可以整句收口的位置（句末标点）。命中它就从这里断，不加省略号。
+_SENTENCE_ENDS = "。；！？"
+#: 只能在半句处断的位置。命中它们要在末尾补省略号，读者才知道后面还有。
+_CLAUSE_BREAKS = "，、：,"
 
+
+def _caption(text: str) -> str:
+    """一屏说明：优先整句；太长就在标点处收口，实在找不到标点才硬截加省略号。
+
+    直接 `text[:18] + "…"` 会把"不构成投资建议；所有数字…"切成半句（成片抽帧实测
+    片尾字幕看起来像没写完）。这里先找句末标点，其次找逗号，都不行才硬截。
+    """
     cleaned = " ".join(text.split())
     number = _card_number(cleaned)
     if number:
         return _caption_around(cleaned, number)
     if len(cleaned) <= MAX_CAPTION_CHARS:
         return cleaned
-    return cleaned[: MAX_CAPTION_CHARS - 1] + "…"
+    window = cleaned[:MAX_CAPTION_CHARS]
+    # 句末标点可以在前半句就收口；逗号类必须留够字，否则"全产业链亏损…"这种
+    # 只剩五六个字的字幕等于没说。
+    sentence_floor = max(8, MAX_CAPTION_CHARS // 3)
+    clause_floor = MAX_CAPTION_CHARS - 5
+    for mark in _SENTENCE_ENDS:
+        index = window.rfind(mark)
+        if index >= sentence_floor:
+            return window[:index]
+    for mark in _CLAUSE_BREAKS:
+        index = window.rfind(mark)
+        if index >= clause_floor:
+            return window[:index] + "…"
+    return window[: MAX_CAPTION_CHARS - 1] + "…"
 
 
 def storyboard_from_draft(
