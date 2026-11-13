@@ -227,6 +227,16 @@ def _number_with_unit(text: str, numbers: Sequence[str]) -> str:
     return best[1] if best is not None else ""
 
 
+def caption_around(text: str, number: str) -> str:
+    """公开版：给定原句与要上卡的数字，返回一屏放得下的说明（数字与单位必须完整）。
+
+    脚本分镜（`backend/app/content/stages.py`）复用同一套口径，避免两处各写一份
+    "怎么把句子截到 18 个字还不切断数字"。
+    """
+
+    return _caption_around(text, number)
+
+
 def _caption_around(text: str, number: str) -> str:
     """取这个数字前后的那一小段（不超过一行）做卡面说明。
 
@@ -639,4 +649,5 @@ __all__ = [
     "SECONDS_PER_POINT",
     "STORYBOARD_REL",
     "build_outline",
+    "caption_around",
 ]

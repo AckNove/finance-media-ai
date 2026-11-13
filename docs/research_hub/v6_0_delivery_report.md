@@ -796,6 +796,76 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
 
 `tests/test_report_pipeline.py` 6 例：卡在未确认时不许继续、确认一条后允许继续、
 运行中的任务不需要人推、失败任务把原因带出来而不是假装能恢复、没有关联任务的报告如实说明、
-未知报告 404。全量 `pytest -o addopts="" -q` → **1131 passed, 2 skipped, 1 warning**。
+未知报告 404。全量 `pytest -o addopts="" -q` → **1143 passed, 2 skipped, 1 warning**。
 接口数 71 → **73 个操作**（`/api/system/daily` 与 `/api/research-reports/{{id}}/pipeline`），
 启动自检双向核对仍然 8/8 通过。
+
+---
+
+## §26 模型写的那份稿子终于进得了片子（脚本 → 分镜）
+
+### §26.1 问题：两条互不相干的喉舌
+
+到这一轮为止，系统里有两套话：
+
+* `content.script` 阶段让模型把**人工确认过的结论**改写成 AK 风格口播稿，存进 `scripts` 表，
+  逐句核对来源与数字（不在所引结论里的数字整句丢弃）；
+* 建视频任务（`POST /api/research-reports/{id}/video-job`）却只按报告里的数据点排**规则分镜**
+  （`video/outline.py`：一句话一个数据点、镜头模板固定）。
+
+两条线各自都跑得通，但搭在一起就出问题：模型写出来的稿子**从来没有进过片子**，
+片子里念的永远是规则摘引的句子。任务书 G/H 两段要的是"脚本 → 分镜 → 成片"，这里断了一环。
+
+### §26.2 做法：一句一镜，带单位的句子做数据卡
+
+新增 `backend/app/video/script_board.py`：
+
+| 函数 | 干什么 |
+|---|---|
+| `draft_from_script(script)` | 把 `scripts` 表的一行还原成 `ScriptDraft`（`segments` 里存着每句的文字、角色、来源、数字） |
+| `storyboard_from_draft(draft, job_root=…)` | `plan_shots` → 逐镜算时间轴 → 带单位的句子生成数据卡 → 写 `storyboard/storyboard.csv` → **读回来校验** → 登记素材 → 写 `storyboard/FROM_SCRIPT.md` |
+| `script_storyboard(script, job_root=…)` | 上面两步合一（接口与脚本直接用这个） |
+
+四条硬规矩：
+
+1. **句子一个字都不改**：脚本是模型逐句核对过来源与数字的产物，排分镜只负责"怎么上屏"。
+2. **只认带单位的量上卡面**：`1.52%`、`4.28 万亿元` 这类能做数据卡；"2024 年第四季度"里的
+   `2024` 不做卡（日历数字当主数字会误导，这是前几轮踩过的坑）。
+3. **来源跟着句子走**：每镜的 `source_ids` 落到分镜表的可追溯列，内容质检靠它判"这一镜能不能回溯"。
+4. **时间轴按整帧累加**：`plan_shots` 给的是 `字数/4.2` 这类浮点秒（如 11.43 秒），直接写进分镜表
+   会被 `load_storyboard` 判成 `bad_time`（时间必须落在整数帧上）。所以先换算成帧数累加，
+   再写 `%.9f` 的秒——渲染器本来就是逐帧取图的，这一步不做，渲染阶段才报错就晚了。
+
+顺手把 `video/outline.py` 里私有的 `_caption_around` 包成公开的 `caption_around()`：
+"把句子截到 18 字还不切断数字"这套口径只能有一份，两处各写一遍迟早不一致。
+
+### §26.3 接线：有脚本按脚本，没脚本按规则
+
+* `video/handoff.py` 的 `create_video_job(..., script=None, script_id=None)`：
+  给了脚本就走 `_try_script_storyboard`，没给才走 `_try_outline`。
+* **脚本排不出来时不悄悄退回规则分镜**：规则分镜念的是原文摘引、脚本站的是另一回事，
+  悄悄换掉等于让人以为"片子就是脚本那条"。所以只如实记 `outline.reason`（如 `empty_script`、
+  `too_few_lines`）并保持 `storyboard/` 为空。
+* 用哪种来源写进 `job.json.outline.source`（`script` / `rules`）与 `outline.script_id`，
+  `next_step` 也跟着换文案（脚本那条指向 `FROM_SCRIPT.md`）。
+* 接口侧 `POST /api/research-reports/{id}/video-job` 通过 `ScriptService.latest_for_report()`
+  取该报告**最新一版**脚本（按 `version` 倒序），显式传入。
+
+### §26.4 测试
+
+`tests/test_script_board.py` 9 例（全离线）：脚本往返还原、空脚本拒绝、一句排不出片、
+逐句保留原句与来源、带单位那句生成数据卡并登记素材、无数字保持纯色底且字幕等于原句、
+时间轴从 0 开始且相邻相接、与 `plan_shots` 镜数一致、`FROM_SCRIPT.md` 写明"不许在这里改字"。
+
+`tests/test_video_handoff.py` 新增 3 例：脚本在手时按脚本排（并断言规则分镜的 `OUTLINE.md`
+不出现）、脚本坏掉时如实报 `empty_script` 而不是悄悄换规则分镜、接口层真的取了库里最新的脚本。
+
+全量 `pytest -o addopts="" -q` → **1143 passed, 2 skipped, 1 warning**（唯一 warning 仍是
+`agent_runs↔research_subtasks` 双向外键环，已记录为设计内风险）。
+
+### §26.5 这一步之后仍然没做的
+
+* 分镜的"镜头时长"还是按字数估的（4.2 字/秒）——真正对齐要靠配音实测时长，
+  那一步在渲染阶段（`render_job --narration`）才会按实测重排时间轴。
+* 脚本里的"钩子句"只作为开场镜的口播，没有单独做标题卡；要更强开场需要人工在分镜表里改。
+* 多镜头复用同一句话时会各排一镜（不去重），因为重复多半是脚本自身的问题，交给审核环节发现。

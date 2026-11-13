@@ -34,6 +34,7 @@ from backend.app.schemas.pipeline import PipelineSubtaskOut, ReportPipelineOut
 from backend.app.schemas.research import ResearchReportCreate, ResearchReportOut
 from backend.app.schemas.video import VideoJobIn, VideoJobOut
 from backend.app.services.research_service import ResearchReportService
+from backend.app.services.script_service import ScriptService
 from backend.app.video.handoff import VideoHandoffError, create_video_job
 
 logger = logging.getLogger(__name__)
@@ -114,6 +115,9 @@ def create_video_job_for_report(
         if source_ids
         else []
     )
+    # 报告已经有脚本（`content.script` 阶段让模型写的那一份）就按脚本排分镜，
+    # 否则退回规则分镜——`outline.source` 会如实写明用的是哪一种。
+    script = ScriptService(db).latest_for_report(report.id)
     try:
         scaffold = create_video_job(
             report,
@@ -121,6 +125,8 @@ def create_video_job_for_report(
             sources=sources,
             job_id=(payload.job_id if payload else None),
             confirmed=confirmed,
+            script=script,
+            script_id=(script.id if script is not None else None),
         )
     except VideoHandoffError as error:
         if error.reason == "job_exists":

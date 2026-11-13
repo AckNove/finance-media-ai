@@ -33,6 +33,8 @@ MIN_SHOT_SECONDS = 2.5
 MAX_SHOT_SECONDS = 12.0
 #: 中文口播语速（字/秒），用来估时长——只是估算，实测时长以 TTS 为准
 CHARS_PER_SECOND = 4.2
+#: 每份稿子都要带的免责声明（成片结尾也会念这一句）
+DISCLAIMER = "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。"
 
 
 class StageError(RuntimeError):
@@ -67,7 +69,8 @@ class ScriptDraft:
     title: str
     hook: str
     lines: tuple[ScriptLine, ...]
-    disclaimer: str
+    #: 免责声明默认就是那条固定文案——构造草稿的人不该被迫重复抄一遍。
+    disclaimer: str = DISCLAIMER
     generated_by: str = "rules"
     provider: str = ""
     model: str = ""
@@ -117,9 +120,6 @@ class ScriptDraft:
             lines.append("## 被丢弃的句子（对不上确认结论，未进稿）")
             lines += [f"- {item}" for item in self.dropped]
         return "\n".join(lines).rstrip() + "\n"
-
-
-DISCLAIMER = "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。"
 
 
 def _findings_of(report: Any) -> list[dict[str, Any]]:

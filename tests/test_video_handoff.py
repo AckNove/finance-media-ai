@@ -278,9 +278,78 @@ def test_video_job_api_accepts_an_explicit_job_id(
     assert duplicate.status_code == 409, "同名目录仍然拒绝覆盖"
 
 
+def _topic_id(db_session: Any) -> int:
+    """脚本必须挂在选题上（`ScriptService.create` 会校验选题存在）。"""
+    from backend.app.models.topic import Topic
+
+    topic = Topic(title="接口按脚本排分镜", slug="api-script-storyboard")
+    db_session.add(topic)
+    db_session.commit()
+    return topic.id
+
+
 def test_video_job_api_returns_404_for_unknown_report(client, tmp_path: Path) -> None:
     response = client.post("/api/research-reports/999999/video-job")
     assert response.status_code == 404
+
+
+def test_video_job_api_uses_the_latest_script_when_one_exists(
+    client, db_session: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """报告已经有脚本时，接口建出来的分镜必须是**脚本**那条，而不是规则模板。"""
+    from backend.app.services.script_service import ScriptService
+
+    monkeypatch.setattr(handoff_module, "JOBS_ROOT", tmp_path)
+    monkeypatch.setattr(
+        model_providers,
+        "provider_status",
+        lambda **_: {"deepseek": {"status": "missing_api_key"}},
+    )
+    created = client.post(
+        "/api/research-reports",
+        json={
+            "title": "接口按脚本排分镜",
+            "summary": "这是摘要。",
+            "limitations": "样本有限。",
+            "findings": [{"statement": "净息差降至 1.52%", "nature": "fact"}],
+        },
+    )
+    assert created.status_code == 201, created.text
+    report_id = created.json()["id"]
+    _confirm_all(db_session, report_id, 1)
+
+    ScriptService(db_session).create(
+        topic_id=_topic_id(db_session),
+        title="脚本写出来的标题",
+        body="2024年第四季度净息差降到1.52%。\n\n贷款利息收得少了，存款还得照样付息。",
+        research_report_id=report_id,
+        hook="一句话说清银行靠什么赚钱。",
+        segments=[
+            {
+                "text": "2024年第四季度净息差降到1.52%。",
+                "role": "evidence",
+                "source_ids": ["S01"],
+                "numbers": ["1.52%"],
+            },
+            {
+                "text": "贷款利息收得少了，存款还得照样付息。",
+                "role": "mechanism",
+                "source_ids": ["S01"],
+                "numbers": [],
+            },
+        ],
+        disclaimer="本片为合规资料整理，不构成投资建议。",
+        estimated_duration=12,
+    )
+
+    response = client.post(f"/api/research-reports/{report_id}/video-job")
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert body["outline"]["source"] == "script"
+    assert body["outline"]["script_id"]
+    assert body["stage"] == "storyboard_ready"
+    board = (Path(body["path"]) / "storyboard" / "storyboard.csv").read_text(encoding="utf-8")
+    assert "贷款利息收得少了" in board
 
 
 def test_two_sources_are_enough_for_a_rule_made_storyboard(
@@ -338,3 +407,85 @@ def test_outline_can_be_switched_off(tmp_path: Path, no_model: None) -> None:
     manifest = json.loads((tmp_path / scaffold.job_id / "job.json").read_text(encoding="utf-8"))
     assert manifest["outline"]["reason"] == "outline_disabled"
     assert manifest["blocked"] is True
+
+
+class _FakeScript:
+    """`scripts` 表里的一行（`content.script` 让模型写出来的那份稿子）。"""
+
+    id = 12
+    title = "净息差为什么重要"
+    hook = "银行赚钱，就靠那一点点利差。"
+    disclaimer = "本片为合规资料整理，不构成投资建议。"
+    segments = [
+        {
+            "text": "2024年第四季度净息差降到1.52%。",
+            "role": "evidence",
+            "source_ids": ["S01"],
+            "numbers": ["1.52%"],
+        },
+        {
+            "text": "贷款利息收得少了，存款还得照样付息。",
+            "role": "mechanism",
+            "source_ids": ["S01"],
+            "numbers": [],
+        },
+    ]
+
+
+def test_a_script_turns_into_the_storyboard_instead_of_the_rule_outline(
+    tmp_path: Path, no_model: None
+) -> None:
+    """脚本在手时，分镜必须按脚本排——不然模型写的那份稿子永远进不了片子。"""
+    scaffold = create_video_job(
+        _FakeReport(),
+        evidence=[_FakeEvidence(1, "营业收入 4.28 万亿元")],
+        sources=[_FakeSource()],
+        root=tmp_path,
+        confirmed=_confirmed(0),
+        script=_FakeScript(),
+        script_id=_FakeScript.id,
+    )
+    job = tmp_path / scaffold.job_id
+    board = (job / "storyboard" / "storyboard.csv").read_text(encoding="utf-8")
+
+    assert "银行赚钱，就靠那一点点利差。" in board
+    assert "贷款利息收得少了" in board
+    # 来源跟着句子走：内容质检靠它判断"这一镜能不能回溯"
+    assert "S01" in board
+    assert (job / "storyboard" / "FROM_SCRIPT.md").is_file()
+    # 规则分镜那套说明不该出现
+    assert not (job / "storyboard" / "OUTLINE.md").exists()
+
+    manifest = json.loads((job / "job.json").read_text(encoding="utf-8"))
+    assert manifest["outline"]["source"] == "script"
+    assert manifest["outline"]["script_id"] == 12
+    assert manifest["outline"]["shot_count"] >= 4
+    # 有分镜就能出片，所以即使没配模型也不算阻塞（分镜不再依赖模型）
+    assert manifest["blocked"] is False
+    assert scaffold.stage == "storyboard_ready"
+
+
+def test_a_broken_script_is_reported_not_silently_replaced(
+    tmp_path: Path, no_model: None
+) -> None:
+    """脚本排不出分镜时，不许悄悄换成规则分镜——那等于骗人"片子就是脚本那条"。"""
+
+    class _Empty(_FakeScript):
+        segments: list[dict[str, Any]] = []
+
+    scaffold = create_video_job(
+        _FakeReport(),
+        evidence=[_FakeEvidence(1, "a"), _FakeEvidence(2, "b")],
+        sources=[_FakeSource(), _FakeSource()],
+        root=tmp_path,
+        confirmed=_confirmed(0, evidence_ids=(1, 2)),
+        script=_Empty(),
+        script_id=13,
+    )
+    job = tmp_path / scaffold.job_id
+    assert list((job / "storyboard").iterdir()) == []
+
+    manifest = json.loads((job / "job.json").read_text(encoding="utf-8"))
+    assert manifest["outline"]["ok"] is False
+    assert manifest["outline"]["reason"] == "empty_script"
+    assert manifest["outline"]["source"] == "script"

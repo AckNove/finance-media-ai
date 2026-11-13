@@ -238,6 +238,41 @@ def _try_outline(report: Any, evidence_rows: list[Any], source_rows: list[Any],
     return payload
 
 
+def _try_script_storyboard(
+    report: Any, script: Any, directory: Path, script_id: int | None
+) -> dict[str, Any]:
+    """有脚本就按脚本排分镜（模型写过的那份稿子终于能进片子了）。
+
+    脚本排不出来时**不退化成规则分镜**：规则分镜的句子跟脚本站的不是一回事，
+    悄悄换掉等于让人以为"片子就是脚本那条"，所以只如实记原因。
+    """
+    from backend.app.video.script_board import ScriptStoryboardError, script_storyboard
+
+    try:
+        result = script_storyboard(script, job_root=directory)
+    except ScriptStoryboardError as error:
+        return {
+            "ok": False,
+            "source": "script",
+            "script_id": script_id,
+            "reason": error.reason,
+            "message": str(error),
+        }
+    except Exception as error:  # noqa: BLE001 - 交接不能因为排版问题整体失败
+        return {
+            "ok": False,
+            "source": "script",
+            "script_id": script_id,
+            "reason": "storyboard_failed",
+            "message": f"{type(error).__name__}: {error}",
+        }
+    payload = dict(result)
+    payload["ok"] = True
+    payload["script_id"] = script_id
+    payload["chain"] = _try_chain_shot(report, directory)
+    return payload
+
+
 def _try_chain_shot(report: Any, directory: Path) -> dict[str, Any]:
     """结论里有产业链结构时，自动生成示意图并插进分镜（开场之后）。
 
@@ -279,12 +314,18 @@ def create_video_job(
     now: dt.datetime | None = None,
     outline: bool = True,
     confirmed: Sequence[Mapping[str, Any]] = (),
+    script: Any | None = None,
+    script_id: int | None = None,
 ) -> VideoJobScaffold:
     """把一份报告交接成一个视频任务目录（不生成脚本、不渲染）。
 
     `confirmed` 是**人工已确认**的结论（来自 `backend/app/research/draft_gate.py`）。
     按用户定的口径：没有确认过的结论就不许成稿——所以这里空着就直接拒绝，
     并且只把确认结论背后的证据交给分镜阶段（未确认的结论照样写进报告副本并标注）。
+
+    `script` 是 `scripts` 表里的那一行（`content.script` 阶段写出来的稿子）。
+    给了它，分镜就按**脚本**排（一句一镜、带数字的句子做数据卡），而不是按报告
+    数据点套规则模板；没给则退回规则分镜，并在 `outline.source` 里如实标明。
     """
     if not confirmed:
         raise VideoHandoffError(
@@ -380,22 +421,31 @@ def create_video_job(
     ]
 
     ready, provider_note = _provider_ready()
-    outline_result = (
-        _try_outline(report, draft_evidence, source_rows, directory, identifier)
-        if outline
-        else {"ok": False, "reason": "outline_disabled"}
-    )
+    if script is not None:
+        outline_result = _try_script_storyboard(report, script, directory, script_id)
+    elif outline:
+        outline_result = _try_outline(report, draft_evidence, source_rows, directory, identifier)
+    else:
+        outline_result = {"ok": False, "reason": "outline_disabled", "source": "rules"}
     outline_ready = bool(outline_result.get("ok"))
     blocked = not ready and not outline_ready
     if outline_ready:
         blocked_reason = ""
         stage = "storyboard_ready"
         next_stage = "render"
-        next_step = (
-            "分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。"
-            "先人工看一遍分镜，然后跑 python -m backend.scripts.render_job "
-            f"--job {identifier} --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。"
-        )
+        if outline_result.get("source") == "script":
+            next_step = (
+                "分镜已按**脚本**排好（storyboard/storyboard.csv，逐镜来源见 "
+                "storyboard/FROM_SCRIPT.md）：每句一拍、带数字的句子做成了数据卡。"
+                "先人工看一遍分镜，然后跑 python -m backend.scripts.render_job "
+                f"--job {identifier} --narration 出片。"
+            )
+        else:
+            next_step = (
+                "分镜已按规则排好（storyboard/storyboard.csv，逐镜来源见 storyboard/OUTLINE.md）。"
+                "先人工看一遍分镜，然后跑 python -m backend.scripts.render_job "
+                f"--job {identifier} --narration 出片；要换成模型写的脚本，配好密钥后重排分镜。"
+            )
     elif ready:
         blocked_reason = ""
         stage = "research_imported"

@@ -6,11 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 73 个 API 操作 / 20 个页面 / 11 个工具 / **1131 passed**。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 73 个 API 操作 / 20 个页面 / 11 个工具 / **1143 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、73 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1131 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、11 个已实现工具、`pytest` 1143 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -125,7 +125,7 @@
 
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
-| 分镜 / 时间轴 / 转场 / 渲染 | `video/{outline,render,narration,cards}.py` + OpenKatana | DONE | — |
+| 分镜 / 时间轴 / 转场 / 渲染 | `video/{outline,render,narration,cards}.py` + **`video/script_board.py`（按脚本排分镜）** + OpenKatana | DONE | 报告已经有脚本时，建视频任务**按脚本排分镜**（一句一镜、带单位的句子做成数据卡、`source_ids` 落到逐镜可追溯列），没脚本才退回规则分镜；两种来源都写进 `job.json.outline.source`，脚本排不出来时**不悄悄换规则分镜** |
 | 图表生成 | `analysis/charts.py` + `chart_from_table.py` | DONE | — |
 | 中文 TTS / 字幕 | `capabilities/tts/`（edge-tts WordBoundary + sapi 兜底） | DONE | — |
 | 素材搜索与获取（真实素材） | — | **NOT_IMPLEMENTED** | 只用自绘图与纯视觉底板（诚实记录） |

@@ -112,6 +112,15 @@ class ScriptService(BaseService):
             )
         return script
 
+    def latest_for_report(self, research_report_id: int) -> Script | None:
+        """这份报告最新的一版脚本；没有就返回 None（调用方据此退回规则分镜）。"""
+        return self.db.scalars(
+            select(Script)
+            .where(Script.research_report_id == research_report_id)
+            .order_by(Script.version.desc(), Script.id.desc())
+            .limit(1)
+        ).first()
+
     def list(
         self,
         *,
