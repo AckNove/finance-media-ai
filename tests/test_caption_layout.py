@@ -6,8 +6,9 @@ from pathlib import Path
 
 from backend.app.content.stages import DISCLAIMER, ScriptDraft, ScriptLine
 from backend.app.media.storyboard import load_storyboard
-from backend.app.video.render import CAPTION_WIDTH_BUDGET, _display_width, caption_font_size
+from backend.app.video.render import CAPTION_WIDTH_BUDGET, caption_font_size
 from backend.app.video.script_board import MAX_CAPTION_CHARS, _caption, storyboard_from_draft
+from backend.app.video.textfit import display_width
 
 
 def _draft(*lines: ScriptLine) -> ScriptDraft:
@@ -51,7 +52,7 @@ def test_caption_font_size_shrinks_only_when_needed() -> None:
     size = caption_font_size(long, base=46, width=1080)
     assert size < 46
     assert size >= 32
-    assert _display_width("本片为合规资料整理，不构成投资建议") * size <= 1080 * CAPTION_WIDTH_BUDGET
+    assert display_width("本片为合规资料整理，不构成投资建议") * size <= 1080 * CAPTION_WIDTH_BUDGET
 
 
 def test_storyboard_captions_fit_the_frame(tmp_path: Path) -> None:
@@ -74,5 +75,43 @@ def test_storyboard_captions_fit_the_frame(tmp_path: Path) -> None:
     assert subtitles
     assert max(len(text) for text in subtitles) <= MAX_CAPTION_CHARS
     size = caption_font_size(board, base=46, width=board.width)
-    widest = max(_display_width(text) for text in subtitles)
+    widest = max(display_width(text) for text in subtitles)
     assert widest * size <= board.width, "字幕宽度必须落在画面内"
+
+
+def _caption_size_of(document: dict) -> int:
+    for node in document.get("root", {}).get("children", []):
+        if node.get("id") == "caption":
+            return int(str(node["style"]["font-size"]).removesuffix("px"))
+    raise AssertionError("画板里没有 caption 节点")
+
+
+def test_card_caption_shrinks_when_the_sentence_is_long(tmp_path: Path) -> None:
+    """卡面说明与字幕共用同一套宽度估算：长句必须缩字号，不能顶出卡面。"""
+
+    from backend.app.video.cards import CARD_CAPTION_BASE, write_card
+
+    short = write_card(
+        tmp_path,
+        asset_id="CARD_short",
+        number="920GW",
+        caption="2023年组件产能920GW",
+        source_id="S01",
+        frames=60,
+    )
+    long = write_card(
+        tmp_path,
+        asset_id="CARD_long",
+        number="4315美元",
+        caption="美联储降息预期把黄金推到4315美元每盎司",
+        source_id="S02",
+        frames=60,
+    )
+
+    short_size = _caption_size_of(short.document)
+    long_size = _caption_size_of(long.document)
+    assert short_size == CARD_CAPTION_BASE
+    assert long_size < short_size
+    widest = display_width("美联储降息预期把黄金推到4315美元每盎司")
+    assert widest * long_size <= 1080, "卡面说明必须落在画幅内"
+

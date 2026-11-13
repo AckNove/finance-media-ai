@@ -16,9 +16,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
+from backend.app.video import textfit
+
 __all__ = [
     "CARD_DIR",
     "CardDocument",
+    "CARD_CAPTION_BASE",
+    "CARD_CAPTION_BUDGET",
     "card_document",
     "card_path",
     "register_cards",
@@ -36,6 +40,12 @@ CYAN = "#35e0ff"
 
 FONT_FAMILY = "AKSC"
 FONT_SRC = "fonts/NotoSansSC-VF.ttf"
+
+#: 说明文字的基准字号；一行放不下时按 `video/textfit.py` 的同一套口径缩小。
+CARD_CAPTION_BASE = 50
+
+#: 说明文字最多占画幅宽度的多少（比字幕略宽：卡面四周本来就有留白）。
+CARD_CAPTION_BUDGET = 0.86
 
 _ALLOWED_EASINGS = ("linear", "smooth", "step")
 
@@ -100,7 +110,16 @@ def card_document(
         children.append(_text("kicker", kicker, size=34, color=CYAN, spacing="0.16em"))
         tracks.append(_track("kicker", "reveal", [[0, 0], [min(10, frames - 1), 1]], frames=frames))
     children.append(_text("number", number, size=176, color=LIME, weight=700))
-    children.append(_text("caption", caption, size=50, color=PAPER))
+    # 说明可能长到 18-19 个字：50px 全角字一行放不下 1080 宽的卡面，会把整句顶出
+    # 画面（字幕那边踩过同样的坑）。这里用同一套估算口径按需缩小，只降不升。
+    caption_size = textfit.fit_text_size(
+        [caption],
+        base=CARD_CAPTION_BASE,
+        canvas_width=width,
+        budget=CARD_CAPTION_BUDGET,
+        minimum=30,
+    )
+    children.append(_text("caption", caption, size=caption_size, color=PAPER))
     if source_id:
         children.append(_text("source", f"来源 {source_id}", size=32, color=DIM))
 

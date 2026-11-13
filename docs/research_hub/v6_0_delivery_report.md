@@ -894,8 +894,15 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
    省略号；逗号类要留够 13 字才允许断并补省略号；都没有才硬截。
    现在片尾是完整的"本片为合规资料整理，不构成投资建议"。
 
-两条都补了回归（`tests/test_caption_layout.py` 5 例 + `tests/test_script_board.py`
-1 例），全离线。
+3. **卡面说明也可能顶出卡片**：数据卡的说明是 50px，同样按"18 个字铺满"的账算，
+   一句 19 字的说明就会溢出。修法是把宽度估算抽成**共用模块**
+   `backend/app/video/textfit.py`（`display_width()` / `fit_text_size()`），字幕与
+   数据卡都调它——两处各算一套正是单位表那次翻车的同一个病根。卡面说明按 0.86 画幅
+   预算缩放，下限 30px；短说明保持 50px 不动。
+
+三条都补了回归（`tests/test_caption_layout.py` 6 例 + `tests/test_script_board.py`
+1 例），全离线；改完重渲染同一份分镜：39.9 秒 / 1197 帧 / QC `failed=[]`，
+画面与上一版一致（这条分镜的卡面说明只有 14 个字，字号不变属预期）。
 
 ### §26.5 这一步之后仍然没做的
 
