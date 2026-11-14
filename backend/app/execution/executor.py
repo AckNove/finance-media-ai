@@ -459,6 +459,23 @@ class AgentExecutor:
             )
 
         if fetched_total == 0:
+            # 能力开关关掉 ≠ 抓取失败。features.search=false 时每一个检索都返回
+            # feature_disabled，那不是"网络抖了一下"，是**配置上就是关的**：
+            # 该停下来等人去开开关，而不是耗掉两次重试把整个任务判死。
+            if errors and all("feature_disabled" in item for item in errors):
+                return ExecutionOutcome(
+                    status="blocked",
+                    reason="feature_disabled",
+                    output={
+                        "note": "联网检索被开关关掉了（config/settings.yaml 的 features.search=false）："
+                                "这一格没有干活，也没有发起任何外部请求。",
+                        "next_step": "把 features.search 改成 true 再点「继续跑」；"
+                                     "想先看真实链路怎么跑，用 python -m backend.scripts.flow_check。",
+                        "feature": "search",
+                        "errors": errors[:5],
+                    },
+                    tool_calls=tuple(tool_calls),
+                )
             return ExecutionOutcome(
                 status="retry",
                 reason="no_page_fetched:" + "; ".join(errors[:3]),

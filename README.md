@@ -207,6 +207,7 @@ backend/scripts/                  seed_collections / enable_wal / install_ffmpeg
                                   / flow_check（前端全链路验收）/ daily_check（每日体检：任务、核查、花费、备份、发布回填、磁盘；首页卡片是同一份判断）
                                   / backup_verify（备份能不能恢复）/ asset_audit（素材清单与成片对不对得上）/ matrix_lint（需求矩阵当账本查）
 / upgrade_drill（跨版本升级演练：带数据整库升到 head）
+/ bootstrap_check（空库到能用：一条命令验完第一脚）
 scripts/start.ps1                 一键启动（建库、预检、端口占用检查、起服务、起后台执行器、健康探测、开浏览器）
 web/                              18 页工作台（原生 HTML/CSS/JS，挂在 /app/）
 agents/                           九角色提示词 + roster.yaml + PROTOCOL.md
@@ -217,7 +218,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（1312 例）
+tests/                            pytest 回归测试（1323 例）
 ```
 
 ## 文档

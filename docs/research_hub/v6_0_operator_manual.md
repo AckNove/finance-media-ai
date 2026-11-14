@@ -346,3 +346,14 @@ python -m backend.scripts.upgrade_drill --source-db data/finance_media.work.db
 退出码 0=能升，1=有失败步骤（别升），2=参数或源库有问题。
 真实开发库 `data/finance_media.db` 是受保护对象，演练只会**只读复制**它，不会就地升级。
 
+### 装完之后，先跑这一条
+
+```powershell
+python -m backend.scripts.bootstrap_check
+```
+
+它会自己建一个空库，从头走到"能建选题、能建任务、worker 能推一格"，
+共九步，每步打 `[OK  ]`/`[FAIL]`。一路绿灯说明这台机器上这套系统从零能长出来。
+它**不会花钱**（运行期间把模型密钥从进程里摘掉），也不联网
+（最后一步会故意把检索开关关掉，验"关了会不会如实停下"）。
+

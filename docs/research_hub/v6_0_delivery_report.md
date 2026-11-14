@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1312 passed, 2 skipped**。
+全量 `pytest` **1323 passed, 2 skipped**。
 
 ---
 
@@ -1923,3 +1923,99 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 - `roundtrip` 只走到起点版本，不是"逐级回退到每一个历史版本"。
 - 演练证明的是"迁移能升、数据能活、回填会发生"，**不证明**新功能在旧数据上表现正确
   （那要靠真实使用与验收）。
+
+---
+
+## §42 空库到能用：一条命令验完第一脚
+
+### 42.1 缺口在哪
+
+`doctor.py` 查**环境**（Python、依赖、ffmpeg、配置能不能读），`upgrade_drill.py` 查**迁移**
+（老库能不能升上来），`daily_check.py` 查**运行中**的库有没有欠账。三件都有人验，但
+"**一个空库文件能不能长成一个能用的库**"没人按顺序走过一遍——而这才是第一次上手的第一步。
+这条路上有四个坑，每个单独都有测试，连起来没有：
+
+1. 迁移没跑（表都没有）；
+2. 栏目没种子 → 建选题 422（`column_id` 不存在）；
+3. 启动自检不过（配置/角色/Skill/路由任何一处不一致）；
+4. worker 起来抢不到活，或者抢到却因为没开搜索/没配模型直接判死。
+
+### 42.2 一条命令
+
+```powershell
+python -m backend.scripts.bootstrap_check            # 临时库，跑完即删
+python -m backend.scripts.bootstrap_check --keep     # 保留库，自己接着点
+python -m backend.scripts.bootstrap_check --json     # 机器可读
+```
+
+九步，每步都打 `[OK  ]`/`[FAIL]`，退出码 0 全过 / 1 有失败 / 2 目标库不可用（受保护库、非 SQLite）。
+
+| 步骤 | 验什么 |
+|---|---|
+| `migrate` | 空库 → `alembic upgrade head`，报 revision 与业务表数 |
+| `seed` | `config/content_taxonomy.yaml` 六个栏目写进 `topic_columns` |
+| `startup` | 起一个真 app，启动自检全绿（**并把模型密钥从进程里摘掉**） |
+| `api` | 走真 HTTP：`/health`、`/api/system/status` |
+| `topic` | `POST /api/topics`（带真实 `column_id`）→ 201 |
+| `task` | `POST /api/research-tasks` → 201，报出子任务数 |
+| `worker` | worker 真推一格（`topic.discover`），**0 次模型调用** |
+| `honest_stop` | 把检索开关临时关掉再往下推：采集阶段必须**如实停下** |
+| `no_spending` | `model_calls` 必须 0 行，事件流必须有记录 |
+
+### 42.3 这一步顺手抓到的真问题：开关关掉会把任务**判死**
+
+第一版跑出来是这样：
+
+```
+research.collect: failed（attempts=2，failure_reason=no_page_fetched:search:feature_disabled）
+research.extract / analyze / synthesize / verify / script: blocked（upstream_failed）
+task: failed（failed=6/9）
+```
+
+`features.search=false` 时每个检索都返回 `feature_disabled`，而 `_collect` 把"一页都没抓到"
+一律当成**可重试失败**：耗掉两次重试，再把下游六个子任务连坐成 `upstream_failed`，
+整个任务判死。用户唯一的错是"开关没开"，代价是整个任务作废——还得重新建、重新花钱。
+
+修法（`backend/app/execution/executor.py::_collect`）：**能力开关关掉不是抓取失败**。
+当所有错误都是 `feature_disabled` 时返回 `status="blocked"`：
+
+- `reason="feature_disabled"`，任务转 `paused`（可恢复），不消耗重试；
+- `output.next_step` 直接写"把 `features.search` 改成 true 再点「继续跑」"；
+- 顺带记 `output.errors[:5]`，让人看得到当时到底拒了什么。
+
+改完同一条路变成：
+
+```
+[OK] honest_stop: 采集阶段如实停下（human_review: feature_disabled），任务状态 paused
+```
+
+### 42.4 两个工程细节（都跟"这是别人的进程"有关）
+
+1. **不许花钱**：脚本运行期间从进程里摘掉 `DEEPSEEK_API_KEY` 等四个键并设 `FM_SKIP_DOTENV=1`，
+   于是规划走规则拆词（`planner="keywords"`）。跑完**原样放回**——它是别人（可能是常驻终端）的进程。
+2. **`--json` 的干净输出**：应用启动会把 logging 配到 stdout，直接打 JSON 会混进
+   `INFO | backend.app.main | starting ...`。`--json` 期间把 `sys.stdout` 临时指到 stderr，
+   跑完再换回来，JSON 里就只有 JSON。
+
+### 42.5 实测
+
+```
+空库到能用：全部通过（9 步，失败 0 步）
+[OK  ] migrate: 迁移到 head：revision=b7_topic_origin，业务表 31 张
+[OK  ] seed: 栏目种子：{'total': 6, 'created': 6, 'updated': 0, 'unchanged': 0}
+[OK  ] startup: 启动自检 8/8 项通过；模型密钥已从进程移除
+[OK  ] api: /health=200，/api/system/status=200
+[OK  ] topic: 建选题 -> 201（栏目 1·金融知识）
+[OK  ] task: 建研究任务 -> 201（task=1，9 个子任务）
+[OK  ] worker: 第一格完成（子任务 1）
+[OK  ] honest_stop: 采集阶段如实停下（human_review: feature_disabled），任务状态 paused，其间放行人工闸门 1 次
+[OK  ] no_spending: model_calls=0 行，事件 21 条，/api/system/costs=200
+```
+
+### 42.6 诚实边界
+
+- 只覆盖 **SQLite**；
+- `honest_stop` 是**故意**把检索关掉跑出来的，它证明的是"会停"，不是"能抓到东西"——
+  真抓取请用 `python -m backend.scripts.flow_check`；
+- 不验证模型调用（脚本明确不让它花钱），模型的真实链路看 `python -m backend.scripts.model_e2e_check`；
+- 用的是 `TestClient`（进程内真 HTTP），不是外网可达的 uvicorn；端口、TLS、反代这些不在这条路上。
