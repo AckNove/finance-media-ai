@@ -962,3 +962,53 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
 （必须有 `-NoWorker`、`run_worker`、`worker.pid`、`started=`）与
 `test_stop_script_only_kills_the_worker_it_started`（必须读回启动时间、比对 `StartTime`、
 留 `-Force` 口子）。文件 15 例全过。
+
+---
+
+## §28 排期里那条片子，到底能不能发
+
+### §28.1 问题：日历只知道"打算发什么"，不知道"片子成不成"
+
+`content_calendar` 记的是计划：哪天、哪个平台、哪条标题。可到要发的那一刻，
+真正要回答的是三个更硬的问题——片子渲染出来了吗？它依据的结论现在还作数吗？导出过没有？
+这三件事的答案都不在数据库里，只在 `content/jobs/<job_id>/` 这个目录里。
+
+真实数据里就躺着一条反例：`content/jobs/v6_accept_industry/` 的 `output/final.mp4` 还在
+（一条 37.8 秒的成片），但 `job.json` 的 `draft_gate.usable` 已经是 `false`——
+它的结论后来被撤回了确认。**文件还在，结论已经不作数**，拿去发就是拿旧结论冒充当前结论。
+
+### §28.2 做法：读目录事实，按"先闸门后文件"的顺序判
+
+新模块 `backend/app/services/calendar_readiness.py`，`job_readiness(video_job_id, *, jobs_root=None)`
+返回五种状态之一（每种都带人话标签与下一步建议，只有 `ready` 的 `usable` 为真）：
+
+| 状态 | 什么时候 | 下一步 |
+| --- | --- | --- |
+| `no_job` | 排期还没填任务号 | 先建视频任务，渲染完回来填号 |
+| `job_missing` | 目录或 `job.json` 不在 | 确认是不是换了机器或删过目录 |
+| `film_missing` | 目录在、`output/*.mp4` 没有 | 到视频任务里跑一次渲染 |
+| `draft_invalid` | `draft_gate.usable` 为 false（**哪怕片子还在**） | 重新确认结论后重跑渲染 |
+| `ready` | 片子存在且闸门没判失效 | 可以导出/发布；发完回来填链接 |
+
+判定顺序刻意是"先闸门、后文件"：如果反过来，`draft_invalid` 那条永远显示"就绪"。
+
+接口侧：`GET/POST/PATCH /api/calendar*` 的返回里多了 `readiness` 字段（`CalendarReadinessOut`），
+列表、详情、新建、改排期四处都有。前端「内容日历」页多了「底片就绪度」一列（就绪绿、
+失效/缺片红），并给了「绑任务号」按钮——绑完立刻能看到这个号到底成不成。
+
+### §28.3 实测
+
+对仓库里现成的 11 个任务目录逐个判：
+
+| job_id | 判定 |
+| --- | --- |
+| `v6_accept_industry` | `draft_invalid`（片子 37.8 秒还在，但结论被撤回） |
+| `v6_accept_company_v2`、`v5_flow_acceptance_v2`、`v6_accept_chain_11131719` 等 | `ready` |
+| 不存在的目录 / 空任务号 / 带 `../` 的输入 | `job_missing` / `no_job` / `job_missing` |
+
+### §28.4 测试
+
+`tests/test_calendar_readiness.py` 9 例：五种状态的构造与断言、穿越输入被拒、
+影片存在但闸门失效时**仍要如实报出片子路径**（不能因为失效就说"没有片子"）、
+渲染回执会带出来、接口层列表/详情/新建/改排期四处都带 `readiness`。
+与既有的 `tests/test_operations.py` 合跑 23 例全过。

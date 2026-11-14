@@ -17,11 +17,13 @@ from backend.app.schemas.operations import (
     CalendarCreate,
     CalendarExportIn,
     CalendarOut,
+    CalendarReadinessOut,
     CalendarUpdate,
     MetricIn,
     MetricOut,
     MetricsImportIn,
 )
+from backend.app.services.calendar_readiness import job_readiness
 from backend.app.services.operations_service import OperationsService
 
 router = APIRouter(
@@ -32,9 +34,20 @@ router = APIRouter(
 )
 
 
+def _to_out(entry) -> CalendarOut:
+    """把排期行连"那片子在磁盘上的真实状态"一起返回。
+
+    状态读的是 ``content/jobs/<job_id>/`` 里的文件，不是数据库字段——
+    数据库只知道"打算发哪条"，不知道"片子渲染好了没有、结论还作不作数"。
+    """
+    payload = CalendarOut.model_validate(entry)
+    readiness = CalendarReadinessOut(**job_readiness(entry.video_job_id))
+    return payload.model_copy(update={"readiness": readiness})
+
+
 @router.post("", response_model=CalendarOut, status_code=status.HTTP_201_CREATED, summary="新建排期")
 def create_entry(payload: CalendarCreate, db: DbSession) -> CalendarOut:
-    return CalendarOut.model_validate(OperationsService(db).create(payload))
+    return _to_out(OperationsService(db).create(payload))
 
 
 @router.get("", response_model=Page[CalendarOut], summary="排期列表")
@@ -53,7 +66,7 @@ def list_entries(
         offset=page.offset,
     )
     return Page[CalendarOut](
-        items=[CalendarOut.model_validate(item) for item in items],
+        items=[_to_out(item) for item in items],
         total=total,
         limit=page.limit,
         offset=page.offset,
@@ -67,7 +80,7 @@ def analytics(db: DbSession) -> list[CalendarAnalyticsOut]:
 
 @router.get("/{entry_id}", response_model=CalendarOut, summary="排期详情")
 def get_entry(db: DbSession, entry_id: int = Path(ge=1)) -> CalendarOut:
-    return CalendarOut.model_validate(OperationsService(db).get(entry_id))
+    return _to_out(OperationsService(db).get(entry_id))
 
 
 @router.patch("/{entry_id}", response_model=CalendarOut, summary="改排期")
@@ -75,7 +88,7 @@ def update_entry(
     payload: CalendarUpdate, db: DbSession, entry_id: int = Path(ge=1)
 ) -> CalendarOut:
     """改状态/发布时间。标记为已发布必须带 `published_url`，否则 422。"""
-    return CalendarOut.model_validate(OperationsService(db).update(entry_id, payload))
+    return _to_out(OperationsService(db).update(entry_id, payload))
 
 
 @router.post(

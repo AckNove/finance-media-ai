@@ -1658,9 +1658,12 @@ async function pageOperations(view) {
           <option value="other">其他</option>
         </select>
         <input id="cal-when" type="datetime-local" value="${defaultWhen}">
+        <input id="cal-job" placeholder="视频任务号（可留空）" style="width:200px">
         <button id="cal-create">加进日历</button>
       </div>
-      <div class="note">系统不会自己发布：标「已发布」必须填链接，没发就是没发。</div>
+      <div class="note">系统不会自己发布：标「已发布」必须填链接，没发就是没发。
+        填了视频任务号之后，「底片就绪度」会去 <code>content/jobs/&lt;任务号&gt;/</code> 里核对片子有没有渲染出来、
+        它依据的结论还作不作数。</div>
       <div id="cal-feedback"></div>
     </div>
     <div class="card"><h2>排期（${rows.length} 条）</h2>
@@ -1670,6 +1673,14 @@ async function pageOperations(view) {
         { title: '平台', key: 'platform' },
         { title: '排期时间', value: (row) => row.scheduled_for ? when(row.scheduled_for) : '—' },
         { title: '进度', value: (row) => `<span class="tag">${esc(CALENDAR_STATUS_LABEL[row.status] || row.status)}</span>` , raw: true },
+        { title: '底片就绪度', value: (row) => {
+            const ready = row.readiness || {};
+            const cls = ready.status === 'ready' ? 'ok'
+              : (ready.status === 'draft_invalid' || ready.status === 'film_missing' ? 'bad' : '');
+            const film = ready.film && ready.film.relative_path
+              ? ` <span class="muted">${Math.round((ready.film.byte_size || 0) / 1024)} KB</span>` : '';
+            return `<span class="tag ${cls}" title="${esc(ready.next_step || '')}">${esc(ready.label || '未知')}</span>${film}`;
+          }, raw: true },
         { title: '发布', value: (row) => `<span class="tag ${row.publish_state === 'published' ? 'ok' : ''}">${esc(PUBLISH_LABEL[row.publish_state] || row.publish_state)}</span>`, raw: true },
         { title: '链接', value: (row) => row.published_url
             ? `<a href="${esc(row.published_url)}" target="_blank" rel="noreferrer">打开</a>` : '—', raw: true },
@@ -1678,7 +1689,8 @@ async function pageOperations(view) {
             <button data-publish="${row.id}">标已发布</button>
             <button data-metric="${row.id}">回填数据</button>
             <button data-import="${row.id}">导入 CSV</button>
-            <button data-export="${row.id}">导出</button>`, raw: true },
+            <button data-export="${row.id}">导出</button>
+            <button data-bind-job="${row.id}" data-job="${row.video_job_id || ''}">绑任务号</button>`, raw: true },
       ], rows, '还没有排期：先在上面加一条')}
       <div id="cal-row-feedback"></div>
     </div>`;
@@ -1690,11 +1702,13 @@ async function pageOperations(view) {
 
   view.querySelector('#cal-create').addEventListener('click', async () => {
     const title = view.querySelector('#cal-title').value.trim();
+    const jobId = view.querySelector('#cal-job').value.trim();
     const payload = {
       title,
       platform: view.querySelector('#cal-platform').value,
       scheduled_for: view.querySelector('#cal-when').value || null,
     };
+    if (jobId) payload.video_job_id = jobId;
     const result = await api('/calendar', { method: 'POST', body: JSON.stringify(payload) });
     if (!result.ok) { say(view.querySelector('#cal-feedback'), false, `${result.status} ${result.error.message}`); return; }
     route();
@@ -1790,6 +1804,30 @@ async function pageOperations(view) {
           (warns ? `；${warns} 条提醒` : '') +
           '。导出不等于发布：发布后请回来填链接。',
       );
+      setTimeout(route, 1200);
+    });
+  });
+  view.querySelectorAll('[data-bind-job]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-bind-job');
+      const current = button.getAttribute('data-job') || '';
+      const answer = window.prompt(
+        '填视频任务号（content/jobs 下的目录名；留空表示解绑）：',
+        current,
+      );
+      if (answer === null) return;
+      const jobId = answer.trim();
+      const result = await api(`/calendar/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ video_job_id: jobId ? jobId : null }),
+      });
+      if (!result.ok) {
+        const reason = result.error?.details?.reason ? `（${result.error.details.reason}）` : '';
+        say(feedback, false, `${result.status} ${result.error.message}${reason}`);
+        return;
+      }
+      const ready = result.data.readiness || {};
+      say(feedback, true, `已绑定：${ready.label || '未知'}。${ready.next_step || ''}`);
       setTimeout(route, 1200);
     });
   });

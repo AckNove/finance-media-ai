@@ -125,6 +125,27 @@ class MetricOut(BaseModel):
     created_at: datetime
 
 
+class CalendarReadinessOut(BaseModel):
+    """排期背后那条片子的真实状态（读 ``content/jobs/<job_id>/`` 得来）。
+
+    ``usable`` 为真才代表"可以导出或发布"：片子渲染出来了，且它依据的结论
+    没有被撤回确认。这两个条件缺一个都不算就绪。
+    """
+
+    status: str
+    label: str
+    usable: bool
+    next_step: str
+    job_id: str
+    path: str
+    film: dict = Field(default_factory=dict)
+    stage: str = ""
+    render: dict = Field(default_factory=dict)
+    outline_source: str = ""
+    invalidated_at: str = ""
+    invalidated_reason: str = ""
+
+
 class CalendarOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -144,6 +165,7 @@ class CalendarOut(BaseModel):
     notes: str
     created_at: datetime
     updated_at: datetime
+    readiness: CalendarReadinessOut | None = None
 
 
 class CalendarAnalyticsOut(BaseModel):
@@ -176,6 +198,7 @@ __all__ = [
     "CalendarCreate",
     "CalendarExportIn",
     "CalendarOut",
+    "CalendarReadinessOut",
     "CalendarUpdate",
     "MetricIn",
     "MetricOut",

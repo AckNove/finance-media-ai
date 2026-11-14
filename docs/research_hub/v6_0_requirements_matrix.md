@@ -155,6 +155,7 @@
 | 需求 | 实现位置 | 状态 | 差距 |
 | --- | --- | --- | --- |
 | 内容日历 / 排期 / 状态 | `models/operations.py` 的 `content_calendar` + `/api/calendar/*`（7 个端点）+ `web/app.js#pageOperations` | DONE | 迁移 `b6_v6_operations`；`tests/test_operations.py` 14 例 |
+| 排期背后的片子能不能发 | `backend/app/services/calendar_readiness.py` 的 `job_readiness()`（读 `content/jobs/<job_id>/`，五档：`no_job`/`job_missing`/`film_missing`/`draft_invalid`/`ready`，只有 `ready` 可发）+ 四个日历接口返回里的 `readiness` 字段 + 页面「底片就绪度」列与「绑任务号」按钮 | DONE | 判定顺序是"先闸门后文件"：片子还在但结论被撤回确认时报 `draft_invalid`（`tests/test_calendar_readiness.py` 9 例） |
 | 导出记录 / 发布记录 / 多平台适配 | `POST /api/calendar/{id}/export` 真写文件（三平台 `.md` + `meta.json`）并把路径写进 `export_path`、状态转 `exported`；`publish_state`/`published_url`/`published_at` 记发布痕迹（**发布必须有链接**，撤回留痕）；文案三版见 `backend/app/content/platform_adapt.py` | DONE | 发布回执（平台侧的真实链接与数据）仍需人工回填；系统不调任何平台 API |
 | 账号数据导入 / 播放量 / 互动分析 | `platform_metrics` + `POST /api/calendar/{id}/metrics` + `POST /api/calendar/{id}/metrics/import`（CSV 批量）+ `GET /api/calendar/analytics`（取最新快照，不累加） | DONE | CSV 认中英列名与千分位；撞时间戳的跳过、坏行带行号报错、平台不一致直接拒（`tests/test_metrics_import.py` 13 例） |
 
