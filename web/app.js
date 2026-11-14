@@ -53,9 +53,27 @@ function bytes(value) {
   return `${(size / 1048576).toFixed(2)} MB`;
 }
 
+/**
+ * 后端的时间都是"不带时区的 UTC"（DB 里存 naive UTC）。`new Date("2026-11-14T07:54:37")`
+ * 会被浏览器按**本地时间**解释，于是北京时间的人看到的排期和创建时间整整差 8 小时。
+ * 这里统一：没有 Z / 偏移的一律当 UTC 解析，显示时再转成本地。
+ */
+function parseTs(value) {
+  if (!value) return null;
+  let text = String(value).trim();
+  if (!/[zZ]$|[+-]\d{2}:?\d{2}$/.test(text)) {
+    text = text.replace(' ', 'T') + 'Z';
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function when(value) {
-  if (!value) return '—';
-  return String(value).replace('T', ' ').slice(0, 19);
+  const date = parseTs(value);
+  if (!date) return '—';
+  const pad = (number) => String(number).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} `
+    + `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
 /**
@@ -233,14 +251,66 @@ function dailyCard(data) {
     </div>`;
 }
 
+/* 今天该发什么：只列"已排期但还没发、且时间落在未来 24 小时内（或已经过点）"的。
+ * 排期表本身是记事本，这里做的是"打开工作台就知道今天欠哪几条"。 */
+function publishQueueCard(result) {
+  if (!result || !result.ok) {
+    return `<div class="card"><h2>今天该发什么</h2>
+      <p class="muted">读不到排期：${esc((result && result.error) || '接口没返回')}</p></div>`;
+  }
+  const items = (result.data && result.data.items) || [];
+  const now = Date.now();
+  const horizon = now + 24 * 3600 * 1000;
+  const due = items
+    .filter((row) => row.publish_state !== 'published' && row.scheduled_for)
+    .filter((row) => {
+      const at = (parseTs(row.scheduled_for) || { getTime: () => NaN }).getTime();
+      return Number.isFinite(at) && at <= horizon;
+    })
+    .sort((left, right) => (parseTs(left.scheduled_for) || 0) - (parseTs(right.scheduled_for) || 0));
+  const overdue = due.filter((row) => { const at = parseTs(row.scheduled_for); return at && at.getTime() < now; });
+  const blocked = due.filter((row) => row.readiness && row.readiness.status && row.readiness.status !== 'ready');
+
+  const rows = due.slice(0, 6).map((row) => {
+    const ready = row.readiness || {};
+    const tone = ready.status === 'ready' ? 'ok'
+      : (ready.status === 'draft_invalid' || ready.status === 'film_missing' ? 'bad' : 'warn');
+    const at = parseTs(row.scheduled_for);
+    const late = Boolean(at) && at.getTime() < now;
+    return `<li>
+      <span class="tag ${late ? 'bad' : ''}">${esc(when(row.scheduled_for))}</span>
+      ${esc(row.title)}
+      <span class="tag">${esc(row.platform)}</span>
+      <span class="tag ${tone}" title="${esc(ready.next_step || '')}">${esc(ready.label || '还没绑片子')}</span>
+    </li>`;
+  }).join('');
+
+  const more = due.length > 6 ? `<p class="muted">还有 ${due.length - 6} 条没列出来，去内容日历看全部。</p>` : '';
+  return `<div class="card">
+      <h2>今天该发什么
+        <span class="tag ${blocked.length ? 'bad' : (due.length ? 'warn' : 'ok')}">
+          ${due.length ? `未来 24 小时 ${due.length} 条` : '没有要发的'}</span>
+        ${overdue.length ? `<span class="tag bad">其中 ${overdue.length} 条过点还没发</span>` : ''}
+      </h2>
+      ${rows ? `<ul class="list">${rows}</ul>${more}` : '<p class="muted">未来 24 小时没有排期要发。</p>'}
+      ${blocked.length ? `<div class="note warn">有 ${blocked.length} 条片子还不能发（结论被撤回、片子缺失、或还没绑片子），点右侧标签能看到具体原因；我不替你判断"能不能发"。</div>` : ''}
+      <div class="row">
+        <a class="btn ghost" href="#/operations">去内容日历（发布要填链接）</a>
+        <a class="btn ghost" href="#/video">看片子</a>
+      </div>
+      <p class="muted">这里只读排期与底片就绪度，系统不会自己发布：标「已发布」必须填链接，没发就是没发。</p>
+    </div>`;
+}
+
 async function pageHome(view) {
-  const [status, tasks, costs, jobs, reports, daily] = await Promise.all([
+  const [status, tasks, costs, jobs, reports, daily, calendar] = await Promise.all([
     api('/system/status'),
     api('/research-tasks'),
     api('/system/costs'),
     loadJobs(),
     api('/research-reports'),
     api('/system/daily?days=7'),
+    api('/calendar?limit=100'),
   ]);
   const features = status.ok ? status.data.features : {};
   const blocked = Object.entries(features || {})
@@ -259,6 +329,7 @@ async function pageHome(view) {
         <span class="muted">${jobs.filter((job) => job.has_output).length} 个有成片</span></div>
     </div>
     ${daily.ok ? dailyCard(daily.data) : `<div class="card"><h2>今天的体检</h2><p class="muted">读不到体检数据：${esc(daily.error || '接口没返回')}</p></div>`}
+    ${publishQueueCard(calendar)}
     <div class="card">
       <h2>能力开关（真实状态，来自 config/settings.yaml）</h2>
       <div class="row">

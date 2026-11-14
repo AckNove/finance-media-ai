@@ -51,3 +51,23 @@ def test_render_finished_links_to_the_film(source: str) -> None:
     lines = [line for line in source.splitlines() if "去看成片" in line]
     assert lines, "渲染完成的提示里没有通往成片的链接"
     assert any("data.status === 'done'" in line for line in lines), lines[0].strip()[:120]
+
+
+def test_timestamps_are_read_as_utc_and_shown_in_local_time(source: str) -> None:
+    """后端存的是 naive UTC：直接 new Date(str) 会按本地解释，北京时间差 8 小时。"""
+    assert "function parseTs(value)" in source
+    assert "'Z'" in source, "缺时区的时间要补 Z 当 UTC 解析"
+    # when() 必须走 parseTs，而不是把原始字符串截断显示
+    when_block = source.split("function when(value) {", 1)[1].split("\n}", 1)[0]
+    assert "parseTs(value)" in when_block
+    assert "slice(0, 19)" not in when_block
+    # 排期相关的比较一律不许再拿原始字符串构造 Date
+    assert "new Date(row.scheduled_for)" not in source
+
+
+def test_home_shows_what_to_publish_today(source: str) -> None:
+    """工作台一打开就该知道今天欠哪几条，而不是去日历里翻。"""
+    assert "function publishQueueCard(result)" in source
+    assert "今天该发什么" in source
+    assert "api('/calendar?limit=100')" in source
+    assert "系统不会自己发布" in source
