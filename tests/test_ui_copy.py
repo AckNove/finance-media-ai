@@ -151,3 +151,22 @@ def test_the_calendar_form_has_its_own_tags_field(source: str) -> None:
     # 列表里要能看出这条排期有几个标签，没填要显眼
     assert "data-tags=" in source and "改标签" in source
     assert "平台建议：抖音 3~5 个、小红书 5~10 个" in source
+
+def test_the_storyboard_and_assets_pages_point_at_each_other(source: str) -> None:
+    """核对一张素材要来回翻两个页面：分镜表只写素材号，素材表只写镜头号，都不成链接。"""
+    # 分镜页：素材号要能点回素材页，并且带着"看哪一条"
+    assert "function assetLink(jobId, assetId)" in source
+    sb = source.split("async function pageStoryboard", 1)[1][:2000]
+    assert "assetLink(jobId" in sb
+    assert "focusFromQuery('shot')" in sb
+    # 素材页：镜头号要能点回分镜页，并且带着"看哪一镜"
+    assert "function shotLinks(jobId, usedInShots)" in source
+    assets = source.split("async function pageAssets", 1)[1][:2600]
+    assert "shotLinks(jobId, row.used_in_shots)" in assets
+    assert "focusFromQuery('asset')" in assets
+    # 跳过去要标出来，否则等于没跳
+    assert 'class="focus-row"' in source
+    styles = APP_JS.parent / "styles.css"
+    assert "tbody tr.focus-row" in styles.read_text(encoding="utf-8")
+    # 目标不在表里时不许假装找到了
+    assert "没有镜头" in sb and "素材清单里没有" in assets

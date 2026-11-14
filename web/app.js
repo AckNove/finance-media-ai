@@ -123,7 +123,7 @@ function statusTag(status) {
   return `<span class="tag ${cls}">${esc(status)}</span>`;
 }
 
-function table(columns, rows, emptyText) {
+function table(columns, rows, emptyText, rowAttrs) {
   if (!rows || !rows.length) {
     return `<div class="empty">${esc(emptyText || '没有记录')}</div>`;
   }
@@ -134,7 +134,8 @@ function table(columns, rows, emptyText) {
       const content = col.raw ? raw : esc(raw === undefined ? '' : raw);
       return `<td class="${col.num ? 'num' : ''}">${content}</td>`;
     }).join('');
-    return `<tr>${cells}</tr>`;
+    const attrs = rowAttrs ? rowAttrs(row) : '';
+    return `<tr${attrs}>${cells}</tr>`;
   }).join('');
   return `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
@@ -1353,6 +1354,29 @@ function jobFromQuery() {
   return query.get('job') || '';
 }
 
+// 分镜页与素材页互相跳转时带的那一个"焦点"（哪一镜 / 哪条素材）
+function focusFromQuery(name) {
+  const query = new URLSearchParams(location.hash.split('?')[1] || '');
+  return query.get(name) || '';
+}
+
+// 素材清单里的 used_in_shots 是逗号分隔的镜头号；逐个变成通往分镜页的链接，
+// 带 ?shot= 让分镜页把那一行标出来。空值不造假链接。
+function shotLinks(jobId, usedInShots) {
+  const shots = String(usedInShots || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (!shots.length) return '<span class="muted">没有镜头用它</span>';
+  return shots
+    .map((shot) => `<a href="#/storyboard?job=${encodeURIComponent(jobId)}&shot=${encodeURIComponent(shot)}">${esc(shot)}</a>`)
+    .join('、');
+}
+
+function assetLink(jobId, assetId) {
+  return `<a href="#/assets?job=${encodeURIComponent(jobId)}&asset=${encodeURIComponent(assetId)}">${esc(assetId)}</a>`;
+}
+
 // 脚本状态到这里才算"人工看过并放行"，只有这些状态能拿去开片子
 const FILM_READY_STATUSES = ['approved', 'storyboard_ready', 'produced'];
 
@@ -1537,17 +1561,42 @@ async function pageStoryboard(view) {
   const picker = await jobPicker(jobFromQuery());
   view.innerHTML = `<div class="card"><h2>分镜</h2>${picker.html}<div id="sb-box"></div></div>`;
   const box = document.getElementById('sb-box');
+  const focusShot = focusFromQuery('shot');
   const load = async (jobId) => {
     if (!jobId) { box.innerHTML = ''; return; }
     const result = await api(`/workspace/jobs/${jobId}`);
     if (!result.ok) { box.innerHTML = failure(result); return; }
     const data = result.data;
     if (!data.storyboard) { box.innerHTML = '<div class="empty">没有 storyboard/storyboard.csv</div>'; return; }
-    const columns = data.storyboard.columns.map((name) => ({
-      title: name,
-      value: (row) => String(row[name] || '').slice(0, 60),
-    }));
-    box.innerHTML = `<h3>${data.storyboard.total} 个镜头</h3>${table(columns, data.storyboard.rows)}
+    // 从素材页跳过来时只关心"哪一镜用了它"，别让人在一屏长表里自己找
+    const rows = data.storyboard.rows || [];
+    const hit = focusShot ? rows.filter((row) => String(row.shot_id || '') === focusShot) : [];
+    const banner = focusShot
+      ? (hit.length
+        ? `<div class="note info">从素材页跳过来：这一镜用到的素材在下面「素材」列，点素材号可以去素材页核对授权。 <a href="#/storyboard?job=${encodeURIComponent(jobId)}">看全部分镜</a></div>`
+        : `<div class="note warn">这份分镜里没有镜头 <span class="mono">${esc(focusShot)}</span>：可能改过分镜，也可能素材清单里的镜头号写错了。 <a href="#/storyboard?job=${encodeURIComponent(jobId)}">看全部分镜</a></div>`)
+      : '';
+    const columns = data.storyboard.columns.map((name) => {
+      if (name === 'asset_id') {
+        return {
+          title: name,
+          raw: true,
+          value: (row) => (String(row.asset_id || '').trim()
+            ? assetLink(jobId, String(row.asset_id).trim())
+            : '<span class="muted">纯色底</span>'),
+        };
+      }
+      return {
+        title: name,
+        value: (row) => String(row[name] || '').slice(0, 60),
+      };
+    });
+    const rowAttrs = (row) => {
+      const shot = String(row.shot_id || '');
+      const focused = focusShot && shot === focusShot;
+      return `${focused ? ' class="focus-row"' : ''} id="shot-${esc(shot)}"`;
+    };
+    box.innerHTML = `${banner}<h3>${data.storyboard.total} 个镜头</h3>${table(columns, data.storyboard.rows, '没有分镜行', rowAttrs)}
       ${data.storyboard.truncated ? '<p class="muted">表格已截断显示</p>' : ''}`;
   };
   const select = document.getElementById('job-select');
@@ -1561,11 +1610,21 @@ async function pageAssets(view) {
   const picker = await jobPicker(jobFromQuery());
   view.innerHTML = `<div class="card"><h2>素材授权与来源</h2>${picker.html}<div id="asset-box"></div></div>`;
   const box = document.getElementById('asset-box');
+  const focusAsset = focusFromQuery('asset');
   const load = async (jobId) => {
     if (!jobId) { box.innerHTML = ''; return; }
     const result = await api(`/workspace/jobs/${jobId}`);
     if (!result.ok) { box.innerHTML = failure(result); return; }
     const data = result.data;
+    const manifestRows = data.assets ? data.assets.rows : [];
+    const hit = focusAsset
+      ? manifestRows.filter((row) => String(row.asset_id || '') === focusAsset)
+      : [];
+    const banner = focusAsset
+      ? (hit.length
+        ? `<div class="note info">从分镜页跳过来：高亮的是 <span class="mono">${esc(focusAsset)}</span>（下面「用于镜头」可以再跳回去）。 <a href="#/assets?job=${encodeURIComponent(jobId)}">看全部素材</a></div>`
+        : `<div class="note warn">素材清单里没有 <span class="mono">${esc(focusAsset)}</span>：分镜可能引用了没登记的素材（渲染前预检会拦下来）。 <a href="#/assets?job=${encodeURIComponent(jobId)}">看全部素材</a></div>`)
+      : '';
     const manifest = data.assets ? table([
       { title: '素材', key: 'asset_id' },
       { title: '类别', key: 'asset_class' },
@@ -1573,8 +1632,11 @@ async function pageAssets(view) {
       { title: '许可', key: 'license' },
       { title: '可商用', value: (row) => statusTag(row.commercial_use === 'allowed' ? 'ok' : 'unclear'), raw: true },
       { title: '署名', value: (row) => esc((row.credit || '').slice(0, 70)) },
-      { title: '用于镜头', key: 'used_in_shots' },
-    ], data.assets.rows, '没有 assets_manifest.csv') : '<div class="empty">没有素材清单</div>';
+      { title: '用于镜头', raw: true, value: (row) => shotLinks(jobId, row.used_in_shots) },
+    ], data.assets.rows, '没有 assets_manifest.csv', (row) => {
+      const focused = focusAsset && String(row.asset_id || '') === focusAsset;
+      return `${focused ? ' class="focus-row"' : ''} id="asset-${esc(String(row.asset_id || ''))}"`;
+    }) : '<div class="empty">没有素材清单</div>';
     const sources = data.sources ? table([
       { title: 'ID', key: 'source_id' },
       { title: '名称', key: 'source_name' },
@@ -1582,7 +1644,7 @@ async function pageAssets(view) {
       { title: '许可', key: 'license' },
       { title: 'SHA-256', value: (row) => esc(String(row.original_file_hash || '').slice(0, 16)) },
     ], data.sources.rows) : '';
-    box.innerHTML = `${assetAuditCard(data.asset_audit)}<h3>素材清单</h3>${manifest}<h3>已批准来源登记</h3>${sources}`;
+    box.innerHTML = `${banner}${assetAuditCard(data.asset_audit)}<h3>素材清单</h3>${manifest}<h3>已批准来源登记</h3>${sources}`;
   };
   const select = document.getElementById('job-select');
   if (select) {

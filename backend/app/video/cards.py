@@ -27,6 +27,7 @@ __all__ = [
     "card_path",
     "register_cards",
     "resize_cards",
+    "shot_of_card",
     "write_card",
 ]
 
@@ -52,12 +53,18 @@ _ALLOWED_EASINGS = ("linear", "smooth", "step")
 
 @dataclass(frozen=True)
 class CardDocument:
-    """一张数据卡：文件名、文档本体、用它渲染出的帧数。"""
+    """一张数据卡：文件名、文档本体、用它渲染出的帧数。
+
+    `shot_id` 是"这张卡给哪个镜头用"，要写进素材清单的 `used_in_shots`。
+    以前那一列填的是 asset_id（`CARD_sh02`），于是素材页写"用于镜头 CARD_sh02"、
+    分镜页却找不到叫 `CARD_sh02` 的镜头——两边对不上，人一核对就懵。
+    """
 
     asset_id: str
     path: Path
     document: dict[str, Any]
     frames: int
+    shot_id: str = ""
 
     @property
     def relative_path(self) -> str:
@@ -192,6 +199,7 @@ def write_card(
     frames: int,
     width: int = 1080,
     height: int = 1920,
+    shot_id: str = "",
 ) -> CardDocument:
     """把数据卡写进任务目录（同内容重复写是幂等的）。"""
     root = Path(job_root).resolve()
@@ -208,7 +216,21 @@ def write_card(
     target.write_text(
         json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    return CardDocument(asset_id=asset_id, path=target, document=document, frames=frames)
+    return CardDocument(
+        asset_id=asset_id, path=target, document=document, frames=frames, shot_id=shot_id
+    )
+
+
+def shot_of_card(asset_id: str) -> str:
+    """从素材号猜镜头号（`CARD_sh02` → `sh02`）。
+
+    只在调用方没显式给 `shot_id` 时兜底用；猜不出来就返回空串，不硬编一个。
+    """
+    text = str(asset_id or "").strip()
+    for prefix in ("CARD_", "card_"):
+        if text.startswith(prefix):
+            return text[len(prefix):]
+    return ""
 
 
 def register_cards(job_root: Path | str, cards: Iterable[CardDocument],
@@ -226,7 +248,8 @@ def register_cards(job_root: Path | str, cards: Iterable[CardDocument],
             kind="composition",
             purpose=purpose,
             credit="本仓库按原文数据排版生成（纯色底数据卡）",
-            used_in_shots=card.asset_id,
+            # 这一列是"给哪个镜头用"，必须是镜头号而不是素材号，否则两边对不上
+            used_in_shots=card.shot_id or shot_of_card(card.asset_id),
             asset_id=card.asset_id,
         )
         registered.append(card.asset_id)

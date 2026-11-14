@@ -451,6 +451,7 @@ def build_outline(
                 frames=max(2, int(round(shot.seconds * fps))),
                 width=canvas[0],
                 height=canvas[1],
+                shot_id=shot.shot_id,
             )
             cards.append(card)
         rows.append(

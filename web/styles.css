@@ -107,6 +107,8 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { color: var(--dim); font-weight: 600; font-size: 12px; white-space: nowrap; }
 tbody tr:hover { background: var(--panel-2); }
+/* 从另一个页面跳过来时，把要找的那一行标出来（分镜 ↔ 素材 互跳） */
+tbody tr.focus-row { background: rgba(182, 255, 31, 0.08); box-shadow: inset 3px 0 0 var(--lime); }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .scroll { overflow-x: auto; }
 

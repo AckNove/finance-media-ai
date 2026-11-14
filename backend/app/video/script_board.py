@@ -200,6 +200,7 @@ def storyboard_from_draft(
                 frames=frames,
                 width=canvas[0],
                 height=canvas[1],
+                shot_id=str(shot.get("shot_id") or ""),
             )
             cards.append(card)
         rows.append(
