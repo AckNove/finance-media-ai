@@ -1744,3 +1744,81 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 
 **没做的事**：不自动发布、不自动标已发布、不抓平台页面去核对链接是否真存在（那需要
 账号或爬虫，属于 BLOCKED 的"云渲染与发布"）。这里只保证"人填进来的东西不像假的"。
+
+### 40 把台账当账本查：DONE 得站得住，数字得对得上
+
+#### 40.1 为什么查自己的文档
+
+需求追踪矩阵（`docs/research_hub/v6_0_requirements_matrix.md`）是这个项目"做完了什么"的唯一台账，
+89 行需求、87 行标 `DONE`，全靠手写。手写台账最大的风险不是写漏，而是**写着写着就飘了**：
+引用的文件后来被改名、状态写成六种以外的词、某行其实只有计划没有代码、表头的规模数字在加功能时忘了跟着改。
+
+这一轮把台账当账本查了一遍，**真查出两处漂移**：
+
+| 漂移 | 台账里写的 | 实际 | 后果 |
+| --- | --- | --- | --- |
+| API 操作数 | 73 个 | **74 个**（`len(ROUTE_CALLERS)` 与 `create_app().openapi()` 都是 74，路径 58 条） | 上一轮新加的 `GET /api/workspace/jobs/{job_id}/preflight` 没记进表头 |
+| 技术质检 | 「技术 QC 十项」，位置写 `video/qc.py` | **这个文件不存在**；技术质检是 `backend/app/video/render.py` 里的 `QC_THRESHOLDS` 与 `checks` 字典，**七项**（画布/帧率/时长/有无音轨/黑帧/冻结/静音） | 顺着台账去找代码的人会找不到，还会以为有十项 |
+
+两处都改了文档（台账是我的账，写错了就改账，不是改测试让它变绿）。另外把 7 处 `**DONE**` 的加粗状态
+统一成纯 `DONE`——语义一样，但账本要能机器读。
+
+#### 40.2 怎么查：`backend/app/services/matrix_lint.py`
+
+| 检查码 | 级别 | 判什么 |
+| --- | --- | --- |
+| `unknown_status` | error | 状态不在六种取值里 |
+| `missing_path` | error | 引用的仓库路径不存在 |
+| `done_without_evidence` | error | 标了 `DONE`，但这一行引用的东西一个都找不到 |
+| `bold_status` | info | 状态写成 `**DONE**`（能读，但不统一） |
+
+引用的东西分三类认：**文件路径**（含台账常用的简写 `core/config.py`、`execution/{runtime,worker}.py`、
+`config/*.yaml`）、**裸文件名**（`tokens.py`）、**源码里以字面量出现过的符号或接口**
+（`executor._skill_notes()`、`GET /api/system/daily`、`GET /api/system/{costs,providers,agents}`）。
+
+第一版只认"以仓库前缀开头的完整路径"，跑出 **53 个假错**——台账大量用简写，那种判法只会逼人忽略报警。
+补上简写解析降到 26，再补"文件名 / 源码字样"索引后归零。
+
+**一条防止自己骗自己的规矩**：含斜杠的引用只按"路径"与"整个字符串在源码里出现过"来判，**不许**退化成
+"里面某个单词出现过"——那样 `app` 这种片段到处都是，什么都能算证据，这个校验就白做了
+（反向测试里 `backend/app/编的模块.py` 必须报错，就是为了钉住这条）。
+
+#### 40.3 还有一条：表头数字必须与代码一致
+
+`tests/test_matrix_lint.py` 直接把表头的四项规模数字与代码实测比对：
+`len(Base.metadata.tables)`、`create_app().openapi()` 里的操作数、`web/app.js` 里的页面数、
+`len(TOOL_NAMES)`，并额外断言 `len(ROUTE_CALLERS) == operations`（权限清单不能漏端点）。
+只取**最后一次**出现的数字：矩阵开头留着一条"审计基准"，写的是当时的历史值（29 张表 / 58 个操作），
+对得上代码的应该是后面那条"最近一次刷新"。
+
+#### 40.4 一条命令 + 一个诚实边界
+
+```powershell
+.venv\Scripts\python.exe -m backend.scripts.matrix_lint          # 人看的版本
+.venv\Scripts\python.exe -m backend.scripts.matrix_lint --json   # 机器读的版本
+```
+
+实测输出（本轮结束态）：
+
+```
+矩阵：docs\research_hub\v6_0_requirements_matrix.md
+89 行需求，BLOCKED 1、DONE 87、NOT_IMPLEMENTED 1，引用文件 58 个（逐个核对 46 个），没有发现问题
+```
+
+退出码 `0` 没有硬问题 / `1` 有硬问题 / `2` 读不到矩阵。
+
+**它证明不了什么，写在模块 docstring 里，也写进操作手册**：它只验证"这东西确实在仓库里"，
+不验证功能真能用——那是 1300 多例测试与真机验收的事。把绿灯当验收通过，就会重演"报告比实际好看"。
+
+#### 40.5 改动清单与测试
+
+| 文件 | 内容 |
+| --- | --- |
+| `backend/app/services/matrix_lint.py`（新增） | 解析、状态归一、简写/文件名/符号索引、`lint()`、`render_text()` |
+| `backend/scripts/matrix_lint.py`（新增） | 命令行，`--matrix` / `--root` / `--json`，退出码 0/1/2 |
+| `tests/test_matrix_lint.py`（新增） | 13 例：解析、状态归一、占位符、简写解析、三类证据、整份矩阵 0 错、所有路径存在、加粗只剩提示、**反向测试**（伪造 DONE 报两错）、未知状态、表头数字与代码一致、命令行两个退出码 |
+| `docs/research_hub/v6_0_requirements_matrix.md` | 两处漂移改正（74 个操作、技术质检七项与正确位置）；7 处加粗状态统一 |
+| `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
+| `README.md` | 测试数与脚本清单 |
+
+全量 `pytest` **1302 passed, 2 skipped**。
