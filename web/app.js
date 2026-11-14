@@ -579,11 +579,54 @@ async function pageTasks(view) {
   });
 }
 
+function taskGateCard(gate, taskId) {
+  const label = gate.label ? `${gate.label}（${gate.gate_id}）` : gate.gate_id;
+  return `<div class="card">
+    <h2>卡在人工闸门：${esc(label)}</h2>
+    <div class="row">
+      <span class="tag warn">等你放行</span>
+      ${gate.after_sequence ? `<span class="tag">挡在第 ${gate.after_sequence} 步</span>` : ''}
+    </div>
+    <div class="note">${esc(gate.next_step || '')}</div>
+    <div class="row"><button class="btn" id="gate-pass">看完，放行并继续跑</button></div>
+    <div id="gate-feedback"></div>
+    <p class="muted">先看下面「这一步产出了什么」再决定放不放行。这个按钮只让流水线往下走，
+      花不花钱由预算闸门管。</p>
+  </div>`;
+}
+
+function taskArtifactsCard(bundle, taskId) {
+  const files = bundle.files || [];
+  const head = '<h2>这一步产出了什么</h2>';
+  if (!files.length) {
+    return `<div class="card">${head}<div class="note">${esc(bundle.note || '还没有产物')}</div></div>`;
+  }
+  const items = files.map((file) => {
+    const line = `<div class="row">
+        <span class="tag info">${esc(file.kind)}</span>
+        <span class="mono">${esc(file.relative_path)}</span>
+        <span class="tag">${bytes(file.byte_size)}</span>
+        ${file.truncated ? '<span class="tag warn">只显示了开头</span>' : ''}
+      </div>`;
+    if (!file.text) return `<li>${line}</li>`;
+    return `<li>${line}<details><summary>看一眼</summary>
+        <pre class="mono muted">${esc(file.text)}</pre></details></li>`;
+  }).join('');
+  const directory = (bundle.directories || [])[0] || '';
+  return `<div class="card">${head}
+    <div class="note">${esc(bundle.note || '')}</div>
+    <ul class="tight">${items}</ul>
+    <p class="muted">只读列举 <span class="mono">${esc(directory)}</span>；文本文件最多显示前面一段，
+      全文在磁盘上。这里只回答"做出来了什么"，不判断做得好不好。</p>
+  </div>`;
+}
+
 async function pageTaskDetail(view, params) {
   const id = params.id;
-  const [detail, events] = await Promise.all([
+  const [detail, events, artifacts] = await Promise.all([
     api(`/research-tasks/${id}`),
     api(`/research-tasks/${id}/events?limit=50`),
+    api(`/research-tasks/${id}/artifacts`),
   ]);
   if (!detail.ok) { view.innerHTML = failure(detail); return; }
   const task = detail.data;
@@ -591,6 +634,8 @@ async function pageTaskDetail(view, params) {
   const gates = plan.human_gates || [];
   const planning = task.planning || null;
   const byModel = Boolean(planning && planning.model_used);
+  const gate = task.gate || null;
+  const artifactsCard = artifacts.ok ? taskArtifactsCard(artifacts.data, id) : failure(artifacts);
   const planningCard = planning
     ? `<div class="card"><h2>研究规划</h2>
         <div class="row">
@@ -627,8 +672,10 @@ async function pageTaskDetail(view, params) {
         —— 走到闸门会暂停，等你确认后再继续。</div>` : ''}
       ${plan.skip_reason ? `<div class="note">本任务跳过了 ${esc((plan.skipped_stages || []).join('、'))}：${esc(plan.skip_reason)}</div>` : ''}
     </div>
+    ${gate ? taskGateCard(gate, id) : ''}
+    ${artifactsCard}
     ${planningCard}
-    <div class="card"><h2>阶段进度</h2>
+    <div class="card" id="progress-card"><h2>阶段进度</h2>
       ${table([
         { title: '#', key: 'sequence', num: true },
         { title: '阶段', key: 'task_type' },
@@ -638,7 +685,7 @@ async function pageTaskDetail(view, params) {
         { title: '说明', value: (row) => esc(row.failure_reason || '') },
       ], task.subtasks)}
     </div>
-    <div class="card"><h2>事件流</h2>
+    <div class="card" id="events-card"><h2>事件流</h2>
       ${events.ok ? table([
         { title: '#', key: 'event_seq', num: true },
         { title: '类型', key: 'event_type' },
@@ -660,10 +707,30 @@ async function pageTaskDetail(view, params) {
   document.getElementById('resume-task').onclick = () => act(`/research-tasks/${id}/resume`, '恢复');
   document.getElementById('cancel-task').onclick = () => act(`/research-tasks/${id}/cancel`, '取消');
 
+  // 闸门卡上的"看完，放行并继续跑"：先恢复（paused -> ready），再推三格。
+  const passButton = document.getElementById('gate-pass');
+  if (passButton) {
+    passButton.onclick = async () => {
+      const box = document.getElementById('gate-feedback');
+      box.innerHTML = '<div class="note">先恢复任务…</div>';
+      const resumed = await api(`/research-tasks/${id}/resume`, { method: 'POST', body: '{}' });
+      if (!resumed.ok) { box.innerHTML = failure(resumed); return; }
+      box.innerHTML = '<div class="note">放行了，正在往下跑（会真的联网检索）…</div>';
+      const ran = await api(`/research-tasks/${id}/run`, {
+        method: 'POST',
+        body: JSON.stringify({ max_iterations: 3 }),
+      });
+      if (!ran.ok) { box.innerHTML = failure(ran); return; }
+      box.innerHTML = `<div class="note ok">推进完成：任务 ${esc(ran.data.task?.status || '')}，
+        这一轮做完了 ${(ran.data.completed || []).length} 格</div>`;
+      setTimeout(() => route(), 800);
+    };
+  }
+
   // 任务在跑的时候自动刷新进度：只换两张卡的内容，不动按钮与输出区。
   if (['created', 'planning', 'running'].includes(String(task.status))) {
-    const progressCard = view.querySelectorAll('.card')[1];
-    const eventsCard = view.querySelectorAll('.card')[2];
+    const progressCard = view.querySelector('#progress-card');
+    const eventsCard = view.querySelector('#events-card');
     activePoll = setInterval(async () => {
       const [fresh, freshEvents] = await Promise.all([
         api(`/research-tasks/${id}`),

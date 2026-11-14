@@ -78,12 +78,53 @@ class PlanningOut(BaseModel):
     note: str = ""
 
 
+class GateOut(BaseModel):
+    """卡住任务的人工闸门：哪个门、挡在哪一步、看完点哪里。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    gate_id: str
+    label: str = ""
+    subtask_id: int | None = None
+    after_sequence: int | None = None
+    next_step: str = ""
+
+
+class ArtifactFileOut(BaseModel):
+    """产物目录里的一个文件。``text`` 只在文本类且未超预算时才有。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    relative_path: str
+    byte_size: int = 0
+    modified_at: datetime | None = None
+    kind: str = "binary"
+    text: str = ""
+    truncated: bool = False
+
+
+class ArtifactBundleOut(BaseModel):
+    """一个任务的产物清单（只列最新那份目录）。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    task_id: int
+    directories: list[str] = Field(default_factory=list)
+    files: list[ArtifactFileOut] = Field(default_factory=list)
+    skipped: int = 0
+    note: str = ""
+
+
 class ResearchTaskDetailOut(ResearchTaskOut):
     subtasks: list[SubtaskOut] = Field(default_factory=list)
     plan: dict[str, Any] | None = None
     counts: dict[str, int] = Field(default_factory=dict)
     planning: PlanningOut | None = Field(
         default=None, description="规划模式与降级原因（来自 research.plan 阶段的产出）"
+    )
+    gate: GateOut | None = Field(
+        default=None, description="当前挡住任务的人工闸门（没有闸门则为 null）"
     )
 
 

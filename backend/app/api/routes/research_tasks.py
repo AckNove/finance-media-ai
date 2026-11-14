@@ -27,6 +27,9 @@ from backend.app.execution.worker import Worker
 from backend.app.models.execution import ResearchSubtask, ResearchTask, TaskEvent
 from backend.app.schemas.common import Page
 from backend.app.schemas.research_task import (
+    ArtifactBundleOut,
+    ArtifactFileOut,
+    GateOut,
     PlanningOut,
     ResearchTaskCreate,
     ResearchTaskDetailOut,
@@ -36,6 +39,7 @@ from backend.app.schemas.research_task import (
     SubtaskOut,
     TaskEventOut,
 )
+from backend.app.services import task_artifacts, task_gate
 
 router = APIRouter(
     prefix="/research-tasks",
@@ -129,7 +133,13 @@ def _detail(db: DbSession, task_id: int) -> ResearchTaskDetailOut:
     payload["counts"] = snapshot.counts()
     payload["plan"] = _plan_of(db, task_id)
     payload["planning"] = _planning_of(db, task_id)
+    payload["gate"] = _gate_of(subtasks, task_status=snapshot.status)
     return ResearchTaskDetailOut.model_validate(payload)
+
+
+def _gate_of(subtasks, *, task_status: str = "") -> GateOut | None:
+    gate = task_gate.gate_of(subtasks, task_status=task_status)
+    return None if gate is None else GateOut(**gate.as_dict())
 
 
 @router.post(
@@ -189,6 +199,30 @@ def list_research_tasks(
 @router.get("/{task_id}", response_model=ResearchTaskDetailOut, summary="研究任务详情")
 def get_research_task(db: DbSession, task_id: int = Path(ge=1)) -> ResearchTaskDetailOut:
     return _detail(db, task_id)
+
+
+@router.get(
+    "/{task_id}/artifacts",
+    response_model=ArtifactBundleOut,
+    summary="这一步做出了什么（只读列举产物目录）",
+)
+def list_task_artifacts(db: DbSession, task_id: int = Path(ge=1)) -> ArtifactBundleOut:
+    """列 ``content/research/task-<id>*`` 里**最新那份**目录的产物，文本类读一段。
+
+    人工闸门要求"看完再放行"，所以闸门前必须能看见东西；这里只读，不触发任何执行。
+    """
+    try:
+        _runtime().task(task_id)
+    except TaskRuntimeError as error:
+        _http_error(error)
+    bundle = task_artifacts.collect_artifacts(task_id)
+    return ArtifactBundleOut(
+        task_id=bundle.task_id,
+        directories=list(bundle.directories),
+        files=[ArtifactFileOut(**item.as_dict()) for item in bundle.files],
+        skipped=bundle.skipped,
+        note=bundle.note,
+    )
 
 
 @router.get(

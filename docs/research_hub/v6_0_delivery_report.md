@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1323 passed, 2 skipped**。
+全量 `pytest` **1337 passed, 2 skipped**。
 
 ---
 
@@ -2019,3 +2019,89 @@ task: failed（failed=6/9）
   真抓取请用 `python -m backend.scripts.flow_check`；
 - 不验证模型调用（脚本明确不让它花钱），模型的真实链路看 `python -m backend.scripts.model_e2e_check`；
 - 用的是 `TestClient`（进程内真 HTTP），不是外网可达的 uvicorn；端口、TLS、反代这些不在这条路上。
+
+## §43 闸门之前，得先看得见东西
+
+### 43.1 问题：看不见的闸门等于盖章
+
+这条流水线的核心承诺是"人工确认之后才能进成稿"，为此在每个关键处设了人工闸门
+（`topic_approval` 人工立项、`fact_check_gate` 事实核查、`script_approval` 脚本审批）。
+但第 29 轮真跑一条研究任务时发现：
+
+- 任务在**做完两格 `topic.discover`** 之后停下（`paused`），界面上只有一行"任务 paused"；
+- 这一步的产物（选题拆解 `discovery.md` / `discovery.json`）**只落在磁盘上**
+  （`content/research/task-<id>-<指纹>/content/`），工作台里没有任何入口能看；
+- 于是"看完再放行"变成了"闭着眼睛点继续"。
+
+这正是我自己写过的纪律的反面：**程序只判技术指标，判断交人**——可人没有材料可判。
+
+### 43.2 补了什么
+
+**一、产物看得见**：新增 `GET /api/research-tasks/{task_id}/artifacts`
+
+- 只读列举该任务产物目录，**只列最新那一份**（同一 id 下可能有多份，用研究目标指纹区分；
+  混着列会把两次研究的输出摆在一起，看着像同一条任务做的）；
+- 文本类（`.md/.json/.csv/.txt/.yaml`）顺手读一段，**每个文件 8000 字符、整页 24000 字符封顶**，
+  超了就标 `truncated=true` 并在 `note` 里写"正文合计到 N 字符就停了"——不静默截断；
+- 二进制只报大小与类型；一次最多列 20 个，多出来的如实说"另有 N 个没列出"。
+
+**二、闸门说人话**：`GET /api/research-tasks/{task_id}` 新增 `gate` 字段
+
+```
+{"gate_id": "topic_approval", "label": "人工立项", "subtask_id": 2,
+ "after_sequence": 2, "next_step": "看完「这一步产出了什么」里的选题拆解，觉得题目立得住，就点「继续跑」……"}
+```
+
+判定口径（写错一次才定下来的）：闸门标记由编排器写在**被挡住的那一格**上——
+"做完这格 → 停下来等人"，不是写在下一格。所以取"已成功、带 `require_human_review`、
+序号最大"的那一格；任务状态不是 `paused` 时一律返回 `null`，免得拿一道早就过去的门当现状。
+
+**三、页面上真的能看**：任务详情页新增两张卡
+
+- 「卡在人工闸门：人工立项（topic_approval）」：`等你放行`、`挡在第 N 步`、下一步做什么，
+  以及一个「看完，放行并继续跑」按钮（先 `resume` 再 `run(3)`，两步分别报错）；
+- 「这一步产出了什么」：文件清单（类型/路径/大小/是否只显示开头），文本可展开看正文。
+
+顺手修一处会写错地方的旧代码：自动刷新原来按 `.card` **下标**取卡片
+（`querySelectorAll('.card')[1]`），前面多插一张卡就会把进度写进别的卡里——改成 `#progress-card` / `#events-card`。
+
+### 43.3 真机实测（临时库、零花费）
+
+真跑一条「商业银行净息差为什么一路往下」：
+
+```
+round 1: completed=[1] -> running
+round 2: completed=[2] -> paused
+gate: {"gate_id": "topic_approval", "label": "人工立项", "after_sequence": 2, ...}
+artifacts: 200，共 2 个产物文件
+  task-1/content/discovery.md     markdown   743 B  truncated=False
+  task-1/content/discovery.json   json      1655 B  truncated=False
+```
+
+`discovery.md` 开头就是可读内容（研究框架：行业研究 / 要回答的六个问题），
+人看完再点放行——这才叫"确认"。本次全程 **0 次模型调用、0 元**。
+
+### 43.4 测试
+
+`tests/test_task_artifacts.py` **11 例** + `tests/test_ui_copy.py` 加 2 例：
+
+- 只列最新目录（老目录不算）、文本带正文、二进制不带、超长截断且标记、总量封顶后不多读、
+  目录不存在只提示不抛错、目录按 mtime 排序；
+- 闸门指着"被挡住的那一格"、任务没 paused 时不报、多道门取最新、未知门回落通用话术；
+- 接口层：列表 200 带正文、新任务没有闸门、未知任务 404。
+
+**诚实边界**：这两样只解决"看不看得见"，不判断产物好坏；`gate` 只报"哪道门、看哪里"，
+不替人做决定——放行仍然要点按钮，且成稿闸门只认人工确认过的结论。
+
+### 43.5 改动清单
+
+| 文件 | 改动 |
+|---|---|
+| `backend/app/services/task_artifacts.py` | 新增：产物只读列举（最新目录、文本预算、截断标记） |
+| `backend/app/services/task_gate.py` | 新增：闸门判定与人话（`topic_approval`/`fact_check_gate`/`script_approval`…） |
+| `backend/app/schemas/research_task.py` | 新增 `GateOut` / `ArtifactFileOut` / `ArtifactBundleOut`，详情补 `gate` |
+| `backend/app/api/routes/research_tasks.py` | 新增 `/artifacts` 端点，详情补闸门 |
+| `backend/app/api/router.py` | `ROUTE_CALLERS` +1（75 个操作 / 59 条路径） |
+| `web/app.js` | 任务详情页两张新卡 + 刷新改用元素 id |
+| `tests/test_task_artifacts.py` | 新增 11 例 |
+| `tests/test_ui_copy.py` | +2 例（闸门卡与产物卡必须在、刷新不许按下标取卡） |

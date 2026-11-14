@@ -6,11 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 74 个 API 操作 / 20 个页面 / 11 个工具 / **1323 passed**。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 75 个 API 操作 / 20 个页面 / 11 个工具 / **1337 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
-> **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、74 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1323 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、75 个 API 操作、
+> 20 个前端页面、11 个已实现工具、`pytest` 1337 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -178,6 +178,7 @@
 | 备份能不能恢复 | A 基础设施 | DONE | `backend/app/services/backup_service.py` + `backend/scripts/backup_verify.py`：只读打开备份，查 sha256、完整性、外键、表数、revision，并与它的源库逐表比行数；`backup_db` 写完当场验收；每日体检提醒「有备份但没验过 / 验不过」。13 例测试 |
 | 手册里的命令真能跑（手册当合同） | A 基础设施 | DONE | `tests/test_operator_manual.py` 把操作手册当合同：解析出 12 个 `backend.scripts.*` 命令与 12 个 `/api/...` 引用，逐个用 `--help` 的真实输出、`create_app().openapi()` 的模板比对，另加反空转断言（少于 8 个脚本 / 20 个参数 / 10 个接口引用就算解析器坏了）。按手册真跑一遍又抓到一个真 bug：`-Database sqlite:///...` 被当成路径，建表报 `unable to open database file`（已修 `scripts/start.ps1`，两种写法都收）；顺手改掉 `stop.ps1` 对「隐藏窗口的控制台进程」空等 3 秒再强杀的假动作。全量 1289 passed |
 | 渲染前预检（缺素材 / 未登记 / 授权不明 / 画板坏 / 没旁白） | H 视频生产 | DONE | `backend/app/video/preflight.py`：开渲之前做一遍纯文件与 schema 检查（不连引擎、不开 ffmpeg、不写文件），15 个检查码分 error / warning 两级；`render_job(..., preflight=True)` 第一步就跑，CLI `--check` 三个退出码，`GET /api/workspace/jobs/{id}/preflight` + 视频页预检卡（有硬问题时渲染按钮禁用）。仓库 11 个真实任务目录实测：6 个成片任务全通过、4 个没有分镜表的如实报 missing_storyboard。28 例测试 |
+| 闸门之前看得见产物 | F 语义核查与人工审核 | DONE | `backend/app/services/task_artifacts.py` + `backend/app/services/task_gate.py` + `GET /api/research-tasks/{task_id}/artifacts`；任务详情页两张卡（闸门说明 + 产物清单，文本 8000 字符/文件、24000 字符封顶并标 `truncated`）；`tests/test_task_artifacts.py` 11 例 | 只解决"看得见"，不判断产物好坏 |
 | 台账自查（矩阵当账本查） | A 基础设施 | DONE | `backend/app/services/matrix_lint.py` + `backend/scripts/matrix_lint.py` + `tests/test_matrix_lint.py`（13 例）：状态只许六种取值、`DONE` 行引用的文件/函数/接口必须真的存在、表头规模数字必须与代码实测一致（31 张表 / 74 个操作 / 20 个页面 / 11 个工具）、仓库路径都得还在；本轮据此改正两处真漂移（73→74 个操作、「技术 QC 十项 `video/qc.py`」→ 实际七项在 `backend/app/video/render.py`）。**只验证存在性，不证明功能可用** |
 | 跨版本升级演练（带数据整库升到 head） | `backend/app/services/upgrade_drill.py`、`backend/scripts/upgrade_drill.py`（`python -m backend.scripts.upgrade_drill`）、迁移 `b7_topic_origin`、`tests/test_upgrade_drill.py` | DONE | 9 步（源库只读复制 / 起点版本 / 塞旧数据 / 升级 / 版本 / 完整性 / 结构一致 / 回填 / 数据逐字保留 / 降级往返），初版空库与工作库副本两条路都实测通过；本次演练查出 `topics.origin_type` 老行为 NULL 并补了 B7 迁移 |
 | 空库到能用（一条命令） | `backend/scripts/bootstrap_check.py`（`python -m backend.scripts.bootstrap_check`）、`tests/test_bootstrap_check.py` | DONE | 九步：迁移 → 栏目种子 → 启动自检 → 接口 → 建选题 → 建任务 → worker 推一格 → 检索开关关掉时如实停下 → `model_calls` 0 行；顺手修掉「开关关掉会把整个任务判死」，改成 `blocked: feature_disabled`（可恢复、不耗重试） |

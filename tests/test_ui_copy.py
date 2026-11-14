@@ -91,3 +91,21 @@ def test_publish_prompt_checks_the_link_before_sending(source: str) -> None:
     # 本地预检拦住时直接返回，不能继续 PATCH
     assert "if (complaint)" in publish_block
     assert "http:// 或 https://" in source
+
+
+def test_task_detail_shows_the_artifact_before_the_gate(source: str) -> None:
+    """闸门要求"看完再放行"，那页面上就得真有东西可看，而且要有一条放行路径。"""
+    assert "function taskGateCard(gate, taskId)" in source
+    assert "function taskArtifactsCard(bundle, taskId)" in source
+    assert "/artifacts`" in source
+    # 闸门卡上的按钮先把任务恢复再推进，不是只发一个 resume 就完事
+    gate_block = source.split("getElementById('gate-pass')", 1)[1][:1500]
+    assert "/resume" in gate_block and "/run" in gate_block
+
+
+def test_task_detail_polls_by_id_not_by_card_index(source: str) -> None:
+    """自动刷新曾经按 `.card` 下标取卡片——前面多插一张卡就会写错地方。"""
+    assert 'id="progress-card"' in source
+    assert 'id="events-card"' in source
+    assert "querySelectorAll('.card')[1]" not in source
+    assert "querySelectorAll('.card')[2]" not in source

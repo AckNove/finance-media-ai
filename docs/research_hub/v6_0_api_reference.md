@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：58
+- 路径数：59
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -52,6 +52,7 @@
 | GET | `/api/research-tasks` | 研究任务列表 | 人 | `status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchTaskOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks` | 建研究任务（按流水线拆解） | 人 | — | application/json → `ResearchTaskCreate` | 201 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-tasks/{task_id}` | 研究任务详情 | 人 | `task_id`（path，必填，integer） | — | 200 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/research-tasks/{task_id}/artifacts` | 这一步做出了什么（只读列举产物目录） | 人 | `task_id`（path，必填，integer） | — | 200 `ArtifactBundleOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks/{task_id}/cancel` | 取消任务 | 人 | `task_id`（path，必填，integer） | — | 200 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-tasks/{task_id}/events` | 任务事件流（审计） | 人 | `task_id`（path，必填，integer）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_TaskEventOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks/{task_id}/pause` | 暂停任务 | 人 | `task_id`（path，必填，integer） | — | 200 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
