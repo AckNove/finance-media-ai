@@ -1821,4 +1821,105 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1302 passed, 2 skipped**。
+全量 `pytest` **1312 passed, 2 skipped**。
+
+---
+
+## §41 跨版本升级演练：带数据整库升上来
+
+### 41.1 为什么以前没验过
+
+`tests/test_migrations.py` 有 14 条用例，覆盖表数、逐批可逆、部分索引、单表回填、`alembic check`——
+但它们**全部从空库起步**，每批只验自己那一摊。真实风险不在这儿：
+
+- 老库里**有数据**，新列要能吃到值（`server_default` 或迁移里显式 `UPDATE`）；
+- 老数据的枚举值要能被新约束接受；
+- 降级再升级，回填得**重做一遍**。
+
+`alembic check` 只比结构，这三件事它一句都不说。
+
+### 41.2 演练做了什么
+
+`backend/app/services/upgrade_drill.py` + `python -m backend.scripts.upgrade_drill`：
+
+| 步骤 | 查什么 |
+|---|---|
+| `copy_source` | 有源库时只读复制，**源库 sha256 前后必须一致** |
+| `source_revision` | 源库当前版本（决定从哪一级开始升） |
+| `prepare` | 没有源库时把空库升到起点版本 `de8148733a9b` |
+| `seed` | 塞 7 张老表的行（topic_columns / topics / sources / research_reports / evidence / scripts / agent_runs），**枚举值全部 import 自 enums 模块** |
+| `upgrade` | 升到 head |
+| `revision` | 入库版本 == 脚本 head |
+| `integrity` | `PRAGMA foreign_key_check` 为空、`integrity_check=ok`、业务表 31 张 |
+| `no_drift` | `alembic check` 没有待生成迁移 |
+| `backfill` | 老行的 `column_id` → `topic_collections(is_primary=1)`；`content_status=published` → `status=content_produced`；`origin_type` 有值 |
+| `data_preserved` | 7 张表行数不变 + 三个关键字段**逐字**比对（报告摘要、证据原文摘录、选题标题） |
+| `roundtrip` | 降回 `de8148733a9b` 验老表幸存 → 再升回来，数据与回填都还在 |
+
+### 41.3 查出来的真问题：`topics.origin_type` 在老行上是 NULL
+
+第一次跑通链路（不是"跑通"，是"跑到能报错"）时，9 步里 7 步 OK、2 步 FAIL：
+
+```
+[FAIL] backfill: 新列 origin_type 没有给已有行默认值，实际是 None
+[FAIL] roundtrip: 降级再升级之后回填没重做：新列 origin_type 没有给已有行默认值…
+```
+
+对照三处定义，是一个**三方不一致**：
+
+| 位置 | 原来写的 | 实际效果 |
+|---|---|---|
+| `docs/research_hub/database_design.md:837` | `Enum TopicOrigin` **NOT NULL default manual** | 设计要求非空 |
+| `backend/migrations/versions/20261110_1700_b1_topic_taxonomy.py:274-290` | `nullable=True`，无 `server_default` | 老行升级后是 `NULL` |
+| `backend/app/models/topic.py:105` | `Mapped[TopicOrigin \| None]`、`nullable=True` | 类型上"允许空"，没人会注意 |
+
+修法（新增迁移 `b7_topic_origin`，父版本 `b6_v6_operations`）：
+
+1. `UPDATE topics SET origin_type='manual' WHERE origin_type IS NULL OR origin_type=''`
+   —— 老选题都是人在界面上建的，标 `manual` 是当时的事实，不是随手挑的默认值；
+2. `batch_alter_table` 把该列收紧为 `NOT NULL` + `server_default='manual'`（SQLite 不支持
+   `ALTER COLUMN`，batch 模式重建表；重建会带上反射到的 CHECK 约束）；
+3. ORM 同步成 `Mapped[TopicOrigin]` + `default=TopicOrigin.MANUAL` + `server_default=TopicOrigin.MANUAL`。
+
+改完复跑：`de8148733a9b → head，共 9 步`，**9 步全 OK**，`revision=b7_topic_origin`。
+
+### 41.4 两个假失败（都是我自己的错，写下来免得重犯）
+
+1. **演练数据自己违反 CHECK 约束**：第一版 `_seed_rows()` 里手写了
+   `knowledge_domain="finance"`、`source_type="official"`、`license_status="public"`、
+   `support_type="direct"`、`claim_nature="quantitative"`、`template="ak-standard"`——
+   全是编的，直接 `sqlite3.IntegrityError: CHECK constraint failed: ck_topics_knowledge_domain`。
+   改成全部 `from backend.app.models.enums import …` 取真值后通过。
+   **教训：演练数据要么引用真枚举，要么别写。**
+2. **从"已经是新版本"的库演练时，回填检查在查一件不会发生的事**：拿
+   `data/finance_media.work.db`（已在 `b6_v6_operations`）复制演练，`from_revision` 就是 b6，
+   B1 的回填在源库里早发生过 → 硬查会报「column_id 没回填、status 还是 candidate」。
+   现在按情况分流：`--no-seed` 时跳过并写明；源库版本晚于起点版本时写明
+   「回填在源库里发生过，这一项由 roundtrip 覆盖」（roundtrip 会真的把回填重跑一遍）。
+
+### 41.5 实测（两条路都跑了）
+
+```
+# 从初版空库 + 塞数据（回填真的跑）
+升级演练通过：de8148733a9b → head，共 9 步
+[OK  ] backfill: column_id=1 → topic_collections(is_primary=1)；content_status=published → status=content_produced；新列 origin_type 默认 manual
+[OK  ] roundtrip: 降回 de8148733a9b 再升到 head，7 张老表的行数不变、回填重做成功
+
+# 拿工作库副本（已在 b6）演练，源库只读
+升级演练通过：b6_v6_operations → head，共 10 步
+[OK  ] copy_source: …\finance_media.work.db → …\drill_copy.db
+[OK  ] backfill: 跳过：源库已是 b6_v6_operations，回填在源库里发生过；这一项由 roundtrip 覆盖
+源库：…\finance_media.work.db（只读复制，源库 sha256 前后一致）
+```
+
+真实开发库 `data/finance_media.db` **全程没有被读过结构也没被复制**（它停在 `de8148733a9b`，
+是受保护对象；`is_protected()` 会认出它并在报告里标注"只读复制"）。
+
+### 41.6 诚实边界
+
+- 演练只用 **SQLite**（项目当前就是 SQLite）；换成别的数据库要重写 `_connect` 与 `PRAGMA` 那几处。
+- `data_preserved` 只比对 7 张表的行数和三个字段，**不是全表逐行 diff**——它的目标是"数据没丢、没被改写"，
+  不是"逐字节相同"。
+- `roundtrip` 只走到起点版本，不是"逐级回退到每一个历史版本"。
+- 演练证明的是"迁移能升、数据能活、回填会发生"，**不证明**新功能在旧数据上表现正确
+  （那要靠真实使用与验收）。

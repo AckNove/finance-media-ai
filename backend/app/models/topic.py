@@ -102,8 +102,14 @@ class Topic(Base, TimestampMixin):
         # ADD COLUMN ... NOT NULL 没有默认值会直接失败
         server_default=TopicStatus.CANDIDATE,
     )
-    origin_type: Mapped[TopicOrigin | None] = enum_column(
-        TopicOrigin, name="topic_origin", nullable=True, index=True
+    # 设计口径（docs/research_hub/database_design.md §topics）：NOT NULL，默认 manual。
+    # B1 加这一列时写成了 nullable=True 且没有默认值，老行升上来是 NULL——B7 迁移补回填与约束。
+    origin_type: Mapped[TopicOrigin] = enum_column(
+        TopicOrigin,
+        name="topic_origin",
+        default=TopicOrigin.MANUAL,
+        index=True,
+        server_default=TopicOrigin.MANUAL,
     )
     discovered_by: Mapped[str | None] = mapped_column(String(64))
     #: 去重键（标题归一化后的 hash），由服务层生成；不需要唯一（历史重复要先人工合并）

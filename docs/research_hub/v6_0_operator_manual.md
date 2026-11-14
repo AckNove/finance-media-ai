@@ -334,3 +334,15 @@ curl -s -X POST http://127.0.0.1:8000/api/calendar/1/metrics/import ^
 | `docs/research_hub/v5_1_semantic_and_planning_report.md` | 语义核查与模型规划的细节 |
 | `docs/research_hub/v5_0_model_integration_report.md` | 模型接入、价目核对、限流与脱敏 |
 | `README.md` | 项目全景与目录结构 |
+
+### 升级数据库之前，先演练一遍
+
+```powershell
+# 拿当前库（或指定库）只读复制一份来演练：源库一个字节都不会被写
+python -m backend.scripts.upgrade_drill --source-db data/finance_media.work.db
+```
+
+演练会自己复制、自己塞老数据、自己升、自己降、再升一次，最后逐步打印 OK/FAIL。
+退出码 0=能升，1=有失败步骤（别升），2=参数或源库有问题。
+真实开发库 `data/finance_media.db` 是受保护对象，演练只会**只读复制**它，不会就地升级。
+
