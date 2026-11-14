@@ -1285,7 +1285,7 @@ purpose="纯色/渐变底板 #xxxx", credit="本仓库程序生成的纯色底�
 
 **测试**：`tests/test_backup_verify.py` 9 例（真备份通过、截断文件、0 字节、文件不存在、备份缺表、
 行数差异只报不判失败、结论落盘、`latest_backup`、CLI 三个退出码）；`tests/test_daily_check.py` 新增
-2 例（没验过被提醒、验不过把原因带出来）。全量 **1213 passed, 2 skipped**。
+2 例（没验过被提醒、验不过把原因带出来）。全量 **1220 passed, 2 skipped**。
 
 ---
 
@@ -1373,10 +1373,100 @@ GET /api/system/status -> 200
 | `scripts/stop.ps1` | 无窗口的控制台进程不再空等 3 秒，如实说明后直接结束 |
 | `docs/research_hub/v6_0_operator_manual.md` | §1.3 写明两种写法与"库不存在会自动建表" |
 
-全量 `pytest -o addopts="" -q` → **1213 passed, 2 skipped, 1 warning**（唯一 warning 仍是
+全量 `pytest -o addopts="" -q` → **1220 passed, 2 skipped, 1 warning**（唯一 warning 仍是
 `agent_runs ↔ research_subtasks` 双向外键环，属设计内）。
 
 另外记一条操作纪律：`edit`/`write` 工具保存 `.ps1` **不会带 BOM**，而 PowerShell 5.1 会按 GBK
 解析无 BOM 的中文脚本 → 语法错误（这一轮就这么把 `start.ps1` 改坏过一次，报
 `字符串缺少终止符`）。改完必须用 `%TEMP%\fmai_restore_bom20.py` 补 BOM 并跑
 `tests/test_scripts_encoding.py`。
+
+---
+
+## §36 导出之前，先问一句"这片子还作数吗"（第 21 轮）
+
+### 36.1 一句话
+
+导出是"要把东西发出去"的动作，而**发出去就收不回来**。所以导出比别处更该严格：
+旧版 `export_entry` 只看"有没有脚本"，压根不看排期背后那条片子还作不作数。
+
+### 36.2 真实反例（仓库里就有）
+
+| 任务 | 片子 | 依据的结论 | 旧版导出会怎样 |
+| --- | --- | --- | --- |
+| `v6_accept_company_v2` | 5.34 MB / 29.3 秒 | 没被撤回 | 正常导出 ✅ |
+| `v6_accept_industry` | 9.04 MB / 37.8 秒 | **人工把核查记录 1 的确认撤回到 rejected** | **照样把文案写出来**，人拿着作废的片子去发 ❌ |
+
+### 36.3 改法：把"底片就绪度"变成导出的闸门
+
+`backend/app/services/export_service.py` 新增：
+
+```python
+BLOCKING_STATUSES = frozenset({"draft_invalid", "film_missing", "job_missing"})
+_WARN_STATUSES = frozenset({"no_gate"})
+```
+
+- 排期绑了 `video_job_id` → 调 `job_readiness(...)` 读磁盘事实；
+- 命中 `BLOCKING_STATUSES` → `raise ExportError(status, "这条排期背后的片子不能发（<人话>）：<下一步>")`
+  → 接口 422 + `details.reason = draft_invalid`（前端直接把这句话显示出来）；
+- 命中 `no_gate`（片子写了但查不到 `job.json`，成稿闸门机制之前产的）→ **允许导出**，
+  但清单里明写「查不到成稿闸门记录，需人工核对」——不能因为查不到就当没问题；
+- 没绑任务 → 照常导出，清单写「这条排期没绑视频任务：只有文案」。
+
+**什么都不写**这点很重要：拒绝时连导出目录都不创建（测试里断言 `entry-<id>/` 不存在），
+否则磁盘上留着半份文件，人以为导出成功过。
+
+### 36.4 新增 `publish_checklist.md`：照着做就能发
+
+导出的目录里现在有三样东西：`douyin.md`/`xiaohongshu.md`/`wechat.md`（纯文案，直接粘）、
+`meta.json`（机器读）、`publish_checklist.md`（人读）。清单长这样：
+
+```markdown
+# 发布清单 · 储能为什么打价格战
+
+## 一、片子
+- 文件：`content/jobs/v6_accept_company_v2/output/final.mp4`
+- 大小：5.34 MB（5600359 字节）
+- 规格：1080×1920 · 878 帧 · 29.3 秒
+- 技术质检：通过（黑帧/冻结/静音/分辨率/响度等）
+- 底片就绪度：**片子就绪**
+
+## 二、这几个平台的文案
+- `douyin.md` —— 直接复制到平台后台（标题、正文、标签都在里面）
+...
+
+## 三、发完回来要填的（不填等于没发）
+1. 排期表点「标已发布」，**链接必填**…
+2. 进度推到「已导出/已发布」，两个字段不会自己同步…
+3. 有数据了就回填：`POST /api/calendar/{id}/metrics`…
+```
+
+片子的事实（时长/分辨率/帧数/技术质检失败项）来自 `qc/render_run.json`；读不到就写
+「没找到渲染回执，请自己看一遍片子」——**不猜**。质检有失败项时写
+「技术质检：**未通过** —— audio_present」这种，而不是笼统一句"通过"。
+
+### 36.5 真机验证（真实任务目录，未渲染、未调模型、零费用）
+
+```
+[v6_accept_industry] 拒绝导出：draft_invalid —— 这条排期背后的片子不能发（结论确认被撤回，片子已失效）：
+                     有结论被撤回了确认：重新确认结论后重跑渲染，别拿旧片子发。
+[v6_accept_company_v2] 导出成功 readiness=ready 文件=['douyin.md','xiaohongshu.md','wechat.md']
+  - 文件：`...\content\jobs6_accept_company_v2\outputinal.mp4`
+  - 大小：5.34 MB（5600359 字节）
+  - 规格：1080×1920 · 878 帧 · 29.3 秒
+  - 技术质检：通过（黑帧/冻结/静音/分辨率/响度等）
+[（不绑任务）] 导出成功 readiness= 文件=['douyin.md','xiaohongshu.md','wechat.md']
+  - 这条排期**没绑视频任务**：只有文案，发什么由你决定。
+```
+
+探针用的是工作库的**副本**（`%TEMP%\fmai_export_probe\probe.db`），真实库未触碰。
+
+### 36.6 测试与改动清单
+
+| 文件 | 改动 |
+| --- | --- |
+| `backend/app/services/export_service.py` | 导出闸门（`BLOCKING_STATUSES`）、`_film_facts()`、`_checklist()`、返回值新增 `checklist_path`/`readiness`，`meta.json` 记 `video_job_id`/`readiness`/`film` |
+| `tests/test_export_gate.py`（新增） | 7 例：撤回的片子被拒且不写文件、没渲出来被拒、`no_gate` 允许但要写明、清单含片子路径/大小/规格/质检通过、质检失败项如实列出、没绑任务说明、接口层 422 带 `reason=draft_invalid` |
+| `web/app.js` | 导出成功提示里加上「先看目录里的 publish_checklist.md」 |
+
+全量 `pytest -o addopts="" -q` → **1220 passed, 2 skipped, 1 warning**。

@@ -2002,6 +2002,7 @@ async function pageOperations(view) {
         feedback,
         true,
         `已导出到 ${data.export_path}（${data.platforms.length} 个平台文件）` +
+          (data.checklist_path ? '；先看目录里的 publish_checklist.md（片子在哪、质检过没过、发完要填什么）' : '') +
           (warns ? `；${warns} 条提醒` : '') +
           '。导出不等于发布：发布后请回来填链接。',
       );

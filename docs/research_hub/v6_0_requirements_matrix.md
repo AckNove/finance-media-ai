@@ -6,11 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 73 个 API 操作 / 20 个页面 / 11 个工具 / **1213 passed**。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 73 个 API 操作 / 20 个页面 / 11 个工具 / **1220 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、73 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1213 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、11 个已实现工具、`pytest` 1220 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -159,6 +159,7 @@
 | 今天该发什么（首页提醒） | `web/app.js` 的 `publishQueueCard()`：首页只读拉 `GET /api/calendar?limit=100`，列未发布且落在未来 24 小时内（含已过点）的排期，带底片就绪度与「过点未发」计数 | DONE | 真机实测三条排期（就绪 / 失效 / 已发布）只列出该发的那条；顺带修掉 naive UTC 被当本地时间解析的 8 小时时差（`parseTs()` + `when()` 本地化，`tests/test_ui_copy.py` 两条护栏） |
 | 发布之后的账对不对得上 | `CalendarOut.consistency`（`metric_count` + `warnings`）：有快照却没标已发布、标了已发布但进度没跟上，都如实报出来；平台汇总的 `latest_*` 只算**已发布**排期 | DONE | 旧口径会让未发布排期的数据冒充平台表现；本次改动同时改了一条旧用例的口径（交付报告 §33 写明），并新增 `tests/test_calendar_consistency.py` 4 例 |
 | 导出记录 / 发布记录 / 多平台适配 | `POST /api/calendar/{id}/export` 真写文件（三平台 `.md` + `meta.json`）并把路径写进 `export_path`、状态转 `exported`；`publish_state`/`published_url`/`published_at` 记发布痕迹（**发布必须有链接**，撤回留痕）；文案三版见 `backend/app/content/platform_adapt.py` | DONE | 发布回执（平台侧的真实链接与数据）仍需人工回填；系统不调任何平台 API |
+| 导出前先过片子这一关 | K 自媒体运营 | **DONE** | `backend/app/services/export_service.py` 的 `BLOCKING_STATUSES = {draft_invalid, film_missing, job_missing}`：排期绑了视频任务就按磁盘事实核对，结论被撤回或压根没渲出来的**一律拒绝导出**（`ExportError` → 422 + `details.reason`），一个字都不写；`no_gate`（片子在但查不到闸门记录）允许导出但清单里明写「查不到，需人工核对」。同时新增 `publish_checklist.md`：片子路径/大小/规格/技术质检结论 + 三平台文案清单 + 发完必须回填的三件事；`meta.json` 里记 `readiness` 与 `film` 事实。7 例测试 + 真机探针（`v6_accept_industry` 被拒、`v6_accept_company_v2` 通过） |
 | 账号数据导入 / 播放量 / 互动分析 | `platform_metrics` + `POST /api/calendar/{id}/metrics` + `POST /api/calendar/{id}/metrics/import`（CSV 批量）+ `GET /api/calendar/analytics`（取最新快照，不累加） | DONE | CSV 认中英列名与千分位；撞时间戳的跳过、坏行带行号报错、平台不一致直接拒（`tests/test_metrics_import.py` 13 例） |
 | 素材清单与实际使用是否一致 | `backend/app/video/asset_audit.py` 的 `audit_job()`（清单 / 分镜表 / 时间轴 / 渲染回执四份对账）+ `render_job` 末尾写 `qc/asset_audit.{json,md}` + `GET /api/workspace/jobs/{id}` 的 `asset_audit` 字段（**请求时现算**）+ 素材页审计卡 + CLI `python -m backend.scripts.asset_audit` | DONE | 补登记纯色底板（`_register_plate`，以前底板只在回执里、不在清单上）；无音轨时不再让质检崩掉（`scan_media(has_audio=…)`）；`tests/test_asset_audit.py` 12 例 + `tests/test_asset_audit_api.py` 3 例 |
 
@@ -173,4 +174,4 @@
 
 > 每完成一项就在这里把状态改成 `DONE` 并补一节"证据"（命令 + 输出 + 文件路径）。
 | 备份能不能恢复 | A 基础设施 | **DONE** | `backend/app/services/backup_service.py` + `backend/scripts/backup_verify.py`：只读打开备份，查 sha256、完整性、外键、表数、revision，并与它的源库逐表比行数；`backup_db` 写完当场验收；每日体检提醒「有备份但没验过 / 验不过」。13 例测试 |
-| 手册里的命令真能跑（手册当合同） | A 基础设施 | **DONE** | `tests/test_operator_manual.py` 把操作手册当合同：解析出 12 个 `backend.scripts.*` 命令与 12 个 `/api/...` 引用，逐个用 `--help` 的真实输出、`create_app().openapi()` 的模板比对，另加反空转断言（少于 8 个脚本 / 20 个参数 / 10 个接口引用就算解析器坏了）。按手册真跑一遍又抓到一个真 bug：`-Database sqlite:///...` 被当成路径，建表报 `unable to open database file`（已修 `scripts/start.ps1`，两种写法都收）；顺手改掉 `stop.ps1` 对「隐藏窗口的控制台进程」空等 3 秒再强杀的假动作。全量 1213 passed |
+| 手册里的命令真能跑（手册当合同） | A 基础设施 | **DONE** | `tests/test_operator_manual.py` 把操作手册当合同：解析出 12 个 `backend.scripts.*` 命令与 12 个 `/api/...` 引用，逐个用 `--help` 的真实输出、`create_app().openapi()` 的模板比对，另加反空转断言（少于 8 个脚本 / 20 个参数 / 10 个接口引用就算解析器坏了）。按手册真跑一遍又抓到一个真 bug：`-Database sqlite:///...` 被当成路径，建表报 `unable to open database file`（已修 `scripts/start.ps1`，两种写法都收）；顺手改掉 `stop.ps1` 对「隐藏窗口的控制台进程」空等 3 秒再强杀的假动作。全量 1220 passed |
