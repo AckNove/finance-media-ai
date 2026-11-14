@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from backend.app.models.enums import (
     AudienceLevel,
@@ -142,4 +142,40 @@ class TopicSuggestionsOut(BaseModel):
     min_score: int
     scanned: int
     items: list[TopicSuggestionOut] = Field(default_factory=list)
+    note: str = ""
+
+
+class TopicFromSuggestionIn(BaseModel):
+    """采纳一条建议：客户端只交来源 id 与「当时页面上显示的分数/理由」。
+
+    来源的标题、发布方、链接一律由服务端按 id 回库读——页面传来的文本不可信
+    （它可能是旧的，也可能被改过）。
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=300)
+    source_ids: list[int] = Field(default_factory=list, max_length=40)
+    column_id: int | None = Field(default=None, ge=1)
+    score: int | None = Field(default=None, ge=0, le=1000)
+    reasons: list[str] = Field(default_factory=list, max_length=20)
+    note: str = Field(default="", max_length=500)
+
+
+class TopicIntakeSourceOut(BaseModel):
+    """采纳时带进选题的一条来源（服务端回库读到的真实内容）。"""
+
+    index: int
+    id: int
+    title: str
+    publisher: str = ""
+    url: str = ""
+    published_at: str = ""
+
+
+class TopicFromSuggestionOut(BaseModel):
+    topic: TopicOut
+    sources: list[TopicIntakeSourceOut] = Field(default_factory=list)
+    collections: list[str] = Field(default_factory=list)
+    description: str = ""
     note: str = ""

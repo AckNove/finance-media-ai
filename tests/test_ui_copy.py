@@ -240,3 +240,19 @@ def test_the_provider_page_says_where_to_put_the_key(source: str) -> None:
     providers = source.split("async function pageProviders", 1)[1][:900]
     assert "api('/system/provider-guide')" in providers
     assert "providerGuideCard(guide.data)" in providers
+
+
+def test_adopting_a_suggestion_keeps_its_sources(source: str) -> None:
+    """「采纳为选题」以前只发 {title}，把来源/分数/理由全丢了。"""
+
+    adopt = source.split("data-adopt", 1)[1][:1600]
+    assert "api('/topics/from-suggestion'" in adopt
+    assert "source_ids: item.source_ids" in adopt  # 来源要跟着走
+    assert "score: item.score" in adopt
+    assert "reasons: item.reasons" in adopt
+    # 失败时按原因码说话，别只甩一串 JSON
+    assert "function adoptFailure(result)" in source
+    assert "'duplicate_topic'" in source
+    # 采纳成功后只刷新列表，不整页重渲染（会把提示冲掉）
+    assert "function refreshTopicsList()" in source
+    assert "await refreshTopicsList()" in source

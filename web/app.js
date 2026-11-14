@@ -394,13 +394,13 @@ async function pageTopics(view) {
       <div id="topic-msg"></div>
     </div>
     <div class="card"><h2>选题列表</h2>
-      ${result.ok ? table([
+      <div id="topics-list">${result.ok ? table([
         { title: 'ID', key: 'id', num: true },
         { title: '标题', key: 'title' },
         { title: '状态', value: (row) => statusTag(row.status || 'candidate'), raw: true },
         { title: '评分', key: 'score_total', num: true },
         { title: '创建时间', value: (row) => when(row.created_at) },
-      ], result.data.items, '还没有选题') : failure(result)}
+      ], result.data.items, '还没有选题') : failure(result)}</div>
     </div>
     <div class="card" id="topic-suggest-box">
       <h2>选题建议 <span class="dim">（规则推荐，不联网、不花钱）</span></h2>
@@ -484,16 +484,55 @@ async function loadTopicSuggestions() {
     button.addEventListener('click', async () => {
       const item = data.items[Number(button.dataset.adopt)];
       button.disabled = true;
-      const created = await api('/topics', { method: 'POST', body: JSON.stringify({ title: item.title }) });
+      // 来源由服务端按 id 回库读；这里只交 id 与"当时页面上显示的分数/理由"
+      const created = await api('/topics/from-suggestion', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: item.title,
+          source_ids: item.source_ids || [],
+          score: item.score,
+          reasons: item.reasons || [],
+        }),
+      });
       if (created.ok) {
-        msg.innerHTML = `<div class="note ok">已采纳为选题 #${created.data.id}，可以到「研究任务」页为它建任务。</div>`;
-        route();
+        msg.innerHTML = `<div class="note ok">${esc(created.data.note)}。` +
+          `选题描述里已经写清来源，去「研究任务」页就能为它建任务。</div>` +
+          `<div class="note">${esc(created.data.description.split('\n')[0])}</div>`;
+        await refreshTopicsList();
+        button.textContent = '已采纳';
       } else {
-        msg.innerHTML = failure(created);
+        msg.innerHTML = adoptFailure(created);
         button.disabled = false;
       }
     });
   });
+}
+
+/** 采纳失败时按原因码说人话；重复选题直接告诉人去哪儿找。 */
+function adoptFailure(result) {
+  const reason = result.error?.details?.reason || '';
+  if (reason === 'duplicate_topic') {
+    return `<div class="alert bad">${esc(result.error.message)}</div>`;
+  }
+  if (reason === 'unknown_sources' || reason === 'no_sources') {
+    return `<div class="alert bad">${esc(result.error.message)}</div>` +
+      `<div class="note">这条建议的来源已经不在库里了：点上面「重新计算」再挑一条。</div>`;
+  }
+  return failure(result);
+}
+
+/** 采纳成功后只刷新列表那一块——整页重渲染会把刚出现的提示冲掉。 */
+async function refreshTopicsList() {
+  const box = document.getElementById('topics-list');
+  if (!box) return;
+  const result = await api('/topics?limit=50');
+  box.innerHTML = result.ok ? table([
+    { title: 'ID', key: 'id', num: true },
+    { title: '标题', key: 'title' },
+    { title: '状态', value: (row) => statusTag(row.status || 'candidate'), raw: true },
+    { title: '评分', key: 'score_total', num: true },
+    { title: '创建时间', value: (row) => when(row.created_at) },
+  ], result.data.items, '还没有选题') : failure(result);
 }
 
 async function pageTasks(view) {

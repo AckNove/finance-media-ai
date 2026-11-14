@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1464 passed, 2 skipped**。
+全量 `pytest` **1479 passed, 2 skipped**。
 
 ---
 
@@ -2441,7 +2441,7 @@ entry 2（不绑任务、不填标签）
   三组前缀回落参数化。
 - `tests/test_ui_copy.py` +1 例护栏：两个页面必须互相生成带 `?shot=` / `?asset=` 的链接，
   样式里必须有 `tbody tr.focus-row`，找不到目标时必须说「没有镜头」/「素材清单里没有」。
-- 全量 `pytest` 1464 passed / 2 skipped。
+- 全量 `pytest` 1479 passed / 2 skipped。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2511,7 +2511,7 @@ page errors: []
   （金额按数值比，因为列是 `NUMERIC(20,6)`）；没给预算时详情如实说「没设预算上限」。
 - `tests/test_ui_copy.py` +2 例护栏：预算卡必须显示"已用/上限/剩余"、没设的项写「不限」、
   撞线要亮原因码；`money()` 必须去掉后导零。
-- 全量 `pytest` **1464 passed / 2 skipped**。
+- 全量 `pytest` **1479 passed / 2 skipped**。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2574,7 +2574,7 @@ page errors: []
   五套分组共用同一种 bucket 形状。
 - `tests/test_ui_copy.py` +1 例护栏：两张卡的标题、`data.by_purpose` / `data.by_task`、
   页面上必须出现「未标用途」「未绑定任务」。
-- 全量 `pytest` **1464 passed / 2 skipped**。
+- 全量 `pytest` **1479 passed / 2 skipped**。
 
 ### 50.5 诚实边界
 
@@ -2635,7 +2635,7 @@ page errors: []
 - `tests/test_ui_copy.py` +1 例护栏：卡片标题、三种结论（能调 / 能调但上次失败 / 调不了）、
   页面写明"不发起任何外部请求"。
 - `tests/test_caller_permissions.py` 的绊线 77 → **78**（走查 78 → 79）。
-- 全量 `pytest` **1464 passed / 2 skipped**。
+- 全量 `pytest` **1479 passed / 2 skipped**。
 
 ### 51.5 诚实边界
 
@@ -2701,7 +2701,7 @@ providers     deepseek=None、openai=None、local=None   ← 唯一一条「注�
 - `tests/test_ui_copy.py` +1 例：设置页必须拉 `/system/environment` 并渲染这张卡，
   卡片必须写清「和 doctor 是同一份检查」，有问题必须带补救命令。
 - `tests/test_caller_permissions.py` 绊线 78 → 79（走查 79 → 80）。
-- 全量 `pytest -o addopts="" -q` → 1464 passed / 2 skipped。
+- 全量 `pytest -o addopts="" -q` → 1479 passed / 2 skipped。
 
 ### 52.5 诚实边界
 
@@ -2779,7 +2779,7 @@ local     provider_disabled  不需要密钥
 - `tests/test_ui_copy.py` +1 例：服务商页必须拉这个接口并渲染卡片，卡片要分开说两种来源、
   要写验证命令、要点明 `.gitignore`、要不显示变量值。
 - `tests/test_caller_permissions.py` 绊线 79 → 80（走查 80 → 81）。
-- 全量 `pytest -o addopts="" -q` → 1464 passed / 2 skipped。
+- 全量 `pytest -o addopts="" -q` → 1479 passed / 2 skipped。
 
 ### 53.5 诚实边界
 
@@ -2787,4 +2787,68 @@ local     provider_disabled  不需要密钥
 - 只读 `.env` 的**变量名**，不解析多行值、不展开变量引用；`.env` 里写 `KEY=${OTHER}` 这种
   花活会显示成「有这个名字」，但真正能不能用要看 provider 状态。
 - 页面不改任何配置：`models.yaml` 的 `enabled`、价目、`.`env` 的内容都得人自己动手。
+
+## §54 采纳一条选题建议，把它的来源一起带走
+
+### 54.1 问题
+
+选题页的「采纳为选题」原来只发一行 `{"title": ...}`。于是建议里的东西当场全丢：
+
+- **来源**（那条建议是从 12 条已入库来源里长出来的）——采纳之后一条都不剩；
+- **命中的合集**（建议卡片上写着「合集 industry_research」）——新选题的栏目是空的；
+- **分数与理由**（为什么它 62 分）——人过两天回来只看见一行标题，说不出当初凭什么做它。
+
+而研究任务是从选题起跑的。起点没有来路，后面整条链路（抓取→证据→核查）
+就只能重新摸一遍——而"重新摸"正是这套系统最费钱的一步。
+
+### 54.2 改法
+
+新增 `backend/app/services/topic_intake.py` + `POST /api/topics/from-suggestion`：
+
+| 规则 | 为什么 |
+|---|---|
+| 客户端只交 `source_ids`，标题/发布方/链接**由服务端回库读** | 页面上的文本可能是旧的，也可能是改过的；来源清单要能回原文核对，就不能信前端 |
+| 标题归一后与已有选题相似度 `>= 0.82` → **409 `duplicate_topic`**，并给出已有选题的 id 与标题 | 同一个故事被采纳三次是最常见的脏数据来源；三条分叉的研究任务各自都要花钱 |
+| 没有任何来源 → 422 `no_sources`，并指路「新建选题」 | 只想要个标题不该走这条路；走了就会得到一条"看起来有来路"的假记录 |
+| 来源查不到 → 422 `unknown_sources` 并列出缺失 id | 换过数据库/清过库时最常见的失败，得让人一眼看出是库不对 |
+| 分数与理由写进描述，并注明「采纳时页面显示」「不是事实判断」 | 它是页面上的规则打分，不是核实过的事实，不该混进选题正文 |
+| 标题命中合集 → 自动挂主合集；命中但库里没这个栏目 → **明说先跑 `seed_collections`** | 「没挂合集」有四种原因，含糊写成一种人就不知道下一步做什么 |
+
+采纳成功后页面**只刷新选题列表那一块**（`refreshTopicsList()`），不整页重渲染——
+否则刚出现的「已建选题 #N，带上 3 条来源」会被刷没。
+
+### 54.3 实测（工作库副本 + 造三条来源 + 真 uvicorn + 真浏览器）
+
+```
+采纳: 201
+  note: 已建选题 #1，带上 3 条来源，标题命中合集 company_teardown，
+        但库里还没有这个栏目：先跑一次 python -m backend.scripts.seed_collections，或到「选题」页手动建栏目
+  sources: ['S1 2025年组件价格跌破现金成本线', 'S2 光伏组件产能利用率降至六成', 'S3 多家组件厂上调报价']
+  description 前两行:
+    由「选题建议」采纳而来：这些是当时支撑它的已入库来源，研究时可直接回原文核对。
+    采纳时页面显示的建议分数：71 分（规则打分，不是事实判断）。
+
+重复采纳: 409 {'reason': 'duplicate_topic'}
+  已经有一个很像的选题了：#1《光伏组件为什么跌破现金成本还要出货-65591》
+
+回读选题: 200 描述里有来源: True
+页面：点「采纳为选题」→ 提示「已建选题 #2，带上 1 条来源…」→ 列表当场变成 2 行 → 按钮变「已采纳」
+page errors: []
+```
+
+### 54.4 测试
+
+新增 `tests/test_topic_intake.py` **14 例**：来源被写进描述（且是服务端读到的标题/发布方/日期）、
+分数与理由照抄并注明不是事实判断、相似标题被拒且**不留半截数据**、无关标题不误判重复、
+缺失来源与空来源各自的原因码、空白标题、自动挂合集、显式栏目优先、未知栏目、
+**命中合集但栏目不存在时说清 `seed_collections`**、接口 201/409/422 三种返回、
+以及 `extra="forbid"`（页面传来别的字段要报错，不能静默忽略）。
+另有 `tests/test_ui_copy.py` +1 例钉住前端必须发 `source_ids` 并只刷新列表那块。
+`tests/test_caller_permissions.py` 绊线 80 → 81（走查 81 → 82）。
+
+### 54.5 诚实边界
+
+- 来源清单只是**当时支撑那条建议的页面**，不等于"这条选题已被证实"；
+- 分数是规则打分，换一次窗口重算就会变——描述里写的是"采纳时页面显示"；
+- 采纳不创建研究任务、不发起抓取、不花一分钱；下一步要不要跑研究由人按。
 

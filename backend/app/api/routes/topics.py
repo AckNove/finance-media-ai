@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Path, Query, Response, status
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
+from backend.app.core.errors import ConflictError, DomainValidationError
 from backend.app.models.enums import TagNamespace
 from backend.app.models.taxonomy import TopicCollection, TopicTag
 from backend.app.research.topic_suggestions import suggest_from_db
@@ -15,6 +16,9 @@ from backend.app.schemas.topic import (
     TopicCollectionOut,
     TopicColumnOut,
     TopicCreate,
+    TopicFromSuggestionIn,
+    TopicFromSuggestionOut,
+    TopicIntakeSourceOut,
     TopicOut,
     TopicSuggestionOut,
     TopicSuggestionsOut,
@@ -22,6 +26,7 @@ from backend.app.schemas.topic import (
     TopicTagOut,
     TopicUpdate,
 )
+from backend.app.services.topic_intake import IntakeError, intake_suggestion
 from backend.app.services.topic_service import TopicService
 
 router = APIRouter(
@@ -103,6 +108,43 @@ def list_topic_suggestions(
         db, window_days=window_days, limit=limit, min_score=min_score
     )
     return TopicSuggestionsOut.model_validate(payload)
+
+
+@router.post(
+    "/from-suggestion",
+    response_model=TopicFromSuggestionOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="把选题建议采纳为选题（带上来源与合集）",
+)
+def create_topic_from_suggestion(
+    payload: TopicFromSuggestionIn, db: DbSession
+) -> TopicFromSuggestionOut:
+    """采纳一条建议：**来源由服务端回库读**，重复标题直接拒绝。
+
+    这条路径存在的意义是别让「建议」在采纳那一刻丢掉来路：来源清单会写进选题描述，
+    研究任务从它起跑时就能回原文核对。已经在库里的高度相似选题不会被重复创建。
+    """
+    try:
+        result = intake_suggestion(
+            db,
+            title=payload.title,
+            source_ids=payload.source_ids,
+            column_id=payload.column_id,
+            score=payload.score,
+            reasons=payload.reasons,
+            adopt_note=payload.note,
+        )
+    except IntakeError as error:
+        if error.reason == "duplicate_topic":
+            raise ConflictError(error.message, details={"reason": error.reason}) from error
+        raise DomainValidationError(error.message, details={"reason": error.reason}) from error
+    return TopicFromSuggestionOut(
+        topic=TopicOut.model_validate(result.topic),
+        sources=[TopicIntakeSourceOut(**item) for item in result.sources],
+        collections=list(result.collections),
+        description=result.description,
+        note=result.note,
+    )
 
 
 @router.get("/{topic_id}", response_model=TopicOut, summary="选题详情")
