@@ -284,3 +284,17 @@ def test_the_report_page_shows_the_whole_chain(source: str) -> None:
     assert "卡住" in source
     # "current 只给第一段没做完的"这条口径要写在页面上
     assert "只给第一段没做完的" in source
+
+
+def test_the_task_page_shows_where_the_time_went(source: str) -> None:
+    """只有钱和 token 的时候，人没法判断"卡在抓取还是卡在模型"。"""
+
+    assert "function timingCard(timing)" in source
+    # 三块必须分开写：模型耗时与"干活"重叠，混在一起会让人算错账
+    assert "模型调用" in source
+    assert "不参与加减" in source
+    # 耗时统一走一个口径，不把 3720.4 秒直接甩给用户
+    assert "function duration(seconds)" in source
+    assert "/research-tasks/${id}/timing`" in source
+    # 推进之后要原地刷新，否则耗时卡停在上一次的数字上
+    assert "const [fresh, freshEvents, freshTiming]" in source

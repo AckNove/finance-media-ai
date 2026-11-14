@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1479 passed, 2 skipped**。
+全量 `pytest` **1513 passed, 2 skipped**。
 
 ---
 
@@ -2441,7 +2441,7 @@ entry 2（不绑任务、不填标签）
   三组前缀回落参数化。
 - `tests/test_ui_copy.py` +1 例护栏：两个页面必须互相生成带 `?shot=` / `?asset=` 的链接，
   样式里必须有 `tbody tr.focus-row`，找不到目标时必须说「没有镜头」/「素材清单里没有」。
-- 全量 `pytest` 1479 passed / 2 skipped。
+- 全量 `pytest` 1513 passed / 2 skipped。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2511,7 +2511,7 @@ page errors: []
   （金额按数值比，因为列是 `NUMERIC(20,6)`）；没给预算时详情如实说「没设预算上限」。
 - `tests/test_ui_copy.py` +2 例护栏：预算卡必须显示"已用/上限/剩余"、没设的项写「不限」、
   撞线要亮原因码；`money()` 必须去掉后导零。
-- 全量 `pytest` **1479 passed / 2 skipped**。
+- 全量 `pytest` **1513 passed / 2 skipped**。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2574,7 +2574,7 @@ page errors: []
   五套分组共用同一种 bucket 形状。
 - `tests/test_ui_copy.py` +1 例护栏：两张卡的标题、`data.by_purpose` / `data.by_task`、
   页面上必须出现「未标用途」「未绑定任务」。
-- 全量 `pytest` **1479 passed / 2 skipped**。
+- 全量 `pytest` **1513 passed / 2 skipped**。
 
 ### 50.5 诚实边界
 
@@ -2635,7 +2635,7 @@ page errors: []
 - `tests/test_ui_copy.py` +1 例护栏：卡片标题、三种结论（能调 / 能调但上次失败 / 调不了）、
   页面写明"不发起任何外部请求"。
 - `tests/test_caller_permissions.py` 的绊线 77 → **78**（走查 78 → 79）。
-- 全量 `pytest` **1479 passed / 2 skipped**。
+- 全量 `pytest` **1513 passed / 2 skipped**。
 
 ### 51.5 诚实边界
 
@@ -2701,7 +2701,7 @@ providers     deepseek=None、openai=None、local=None   ← 唯一一条「注�
 - `tests/test_ui_copy.py` +1 例：设置页必须拉 `/system/environment` 并渲染这张卡，
   卡片必须写清「和 doctor 是同一份检查」，有问题必须带补救命令。
 - `tests/test_caller_permissions.py` 绊线 78 → 79（走查 79 → 80）。
-- 全量 `pytest -o addopts="" -q` → 1479 passed / 2 skipped。
+- 全量 `pytest -o addopts="" -q` → 1513 passed / 2 skipped。
 
 ### 52.5 诚实边界
 
@@ -2779,7 +2779,7 @@ local     provider_disabled  不需要密钥
 - `tests/test_ui_copy.py` +1 例：服务商页必须拉这个接口并渲染卡片，卡片要分开说两种来源、
   要写验证命令、要点明 `.gitignore`、要不显示变量值。
 - `tests/test_caller_permissions.py` 绊线 79 → 80（走查 80 → 81）。
-- 全量 `pytest -o addopts="" -q` → 1479 passed / 2 skipped。
+- 全量 `pytest -o addopts="" -q` → 1513 passed / 2 skipped。
 
 ### 53.5 诚实边界
 
@@ -2970,3 +2970,66 @@ current: research  finished: False
 - 成片那段依赖 `content/jobs/` 目录：目录被删、换机器，这一段会显示"还没有"（报告本身没事）。
 - 排期按 `research_report_id` 或成片任务号两路查（先按报告，再按任务号补），两条都断就查不到。
 - 只读：这个接口不写任何表、不触发任何模型或渲染。
+
+## §57 时间都花在哪：从事件流里把耗时推出来
+
+### 57.1 之前只有钱和 token
+
+`model_calls` 记了每次调用的 token 与金额，任务头上也有一行「花费 ¥0.16」。但**没有耗时**：
+一条任务跑了 40 分钟还是 4 分钟、卡在抓取还是卡在模型，只能去翻 worker 日志。
+
+### 57.2 数据从哪来
+
+`research_subtasks` 表只有 `created_at` / `updated_at`（`TimestampMixin`），没有 `started_at` / `finished_at`；
+唯一带时间的是 `task_events` 事件流（`subtask_started` / `subtask_succeeded` / `subtask_failed` / `paused` / `resumed`）。
+所以耗时是**推**出来的，不是记出来的：
+
+| 块 | 怎么算 |
+|---|---|
+| 干活 | 每格 `subtask_started` → 它自己的 `finished`；重试就再来一对，累加并记「跑了几次」 |
+| 等人 | `paused` → 下一次 `resumed`；还停着就记到「现在」并标 `ongoing` |
+| 模型调用 | `SUM(model_calls.duration_ms)`，**单独列、不参与加减**（它发生在「干活」里面，加进去会重复计算） |
+| 没算进任何一块 | 总时长 − 干活 − 等人；>1 秒就在卡片上写明「任务创建到第一格开始之间的空档」 |
+
+### 57.3 真机撞出的自相矛盾
+
+第一次跑真机探针，卡片同时显示：
+
+```
+总共 0.3 秒      等人 22 秒
+```
+
+原因是最初把「总时长」算成**最后一条事件减第一条**。任务停在人工闸门上时再没有新事件，
+总时长就冻在 0.3 秒，而「等人」那块是按「到现在」算的——两个数字当场打架。
+
+修法：任务还开着（`created/planning/running/paused`）时总时长算到**现在**；任务已结束才用最后一条事件。
+补了两条回归（`test_total_includes_the_time_you_are_still_waiting`、`test_a_finished_task_stops_counting_at_its_last_event`），
+其中一条专门钉住不变式：**等人时长不可能超过总时长**。
+
+### 57.4 实测（临时库 + 真 uvicorn + Playwright，零费用）
+
+任务推两格后停在 `topic_approval` 闸门上，**真等 22 秒**再取数：
+
+```
+total/work/wait/model/unpaired: 22.3  0.1  22.0  0.0  0.2
+每格: [(1, 'topic.discover', 1, 0.0), (2, 'topic.discover', 1, 0.0)]
+卡片: 时间都花在哪 总共 24 秒 · paused
+      干活 0 秒 / 等人 24 秒 / 模型调用 0 秒（与「干活」重叠，不参与加减）
+      等人的时间窗：2026-11-14 23:45:53 → 到现在（24 秒）
+```
+
+本地 worker 跑一格只要几十毫秒，所以「干活」显示 0 秒——**这是真实数字，不是占位**。
+
+### 57.5 测试
+
+`tests/test_task_timing.py` **12 例**：没有事件时说「算不出耗时（不是 0 秒）」、正常配对、
+重试累加（`runs=2`）、只有开始标 `running`、paused→resumed 窗口、还停着记到「现在」、
+空档如实报出、**模型耗时单独列不进加减**、仍开着时总时长算到现在、已结束停到最后事件、未知任务、
+接口 200 形状与 404。
+
+### 57.6 诚实边界
+
+- 耗时是**推断**的：靠事件流配对，不靠数据库列。所以"进程在 `subtask_started` 之后被杀"会显示成一格还在跑（备注已写明）。
+- 「等人」只认 `paused` / `resumed` 事件；如果某次暂停没写事件，那段等待就进了「没算进任何一块」。
+- 模型耗时来自 `model_calls.duration_ms`，是调用方传的测量值，不是我们自己掐表。
+- 没给 `research_subtasks` 加 `started_at` / `finished_at`：那要迁移 + 回填历史，而事件流已经够用。

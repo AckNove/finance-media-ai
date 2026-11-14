@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：67
+- 路径数：68
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -60,6 +60,7 @@
 | POST | `/api/research-tasks/{task_id}/pause` | 暂停任务 | 人 | `task_id`（path，必填，integer） | — | 200 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks/{task_id}/resume` | 恢复任务 | 人 | `task_id`（path，必填，integer） | — | 200 `ResearchTaskDetailOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-tasks/{task_id}/run` | 同步推进执行（最多几格） | 人 | `task_id`（path，必填，integer） | application/json → `RunRequest` | 200 `RunReportOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/research-tasks/{task_id}/timing` | 时间都花在哪了（按事件流算耗时） | 人 | `task_id`（path，必填，integer） | — | 200 `TaskTimingOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/reviews` | 审核流水 | 人 | `target_type`（query，可选，ReviewTargetType | null）、`target_id`（query，可选，integer | null）、`verdict`（query，可选，ReviewVerdict | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ReviewOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/reviews` | 记一次审核（结论回写到目标对象） | 人 | — | application/json → `ReviewCreate` | 201 `ReviewOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/reviews/{review_id}` | 审核记录详情 | 人 | `review_id`（path，必填，integer） | — | 200 `ReviewOut`；404 `object`；409 `object`；422 `object`；503 `object` |

@@ -79,6 +79,23 @@ function bytes(value) {
 }
 
 /**
+ * 耗时只有一处口径。秒数来自后端（任务事件流算出来的），这里只负责说得像人话：
+ * 42 秒、3 分 20 秒、1 小时 05 分。别写成 3720.4 秒让人自己算。
+ */
+function duration(seconds) {
+  const total = Math.max(0, Math.round(Number(seconds || 0)));
+  if (total < 60) return `${total} 秒`;
+  if (total < 3600) {
+    const minutes = Math.floor(total / 60);
+    const rest = total % 60;
+    return rest ? `${minutes} 分 ${rest} 秒` : `${minutes} 分`;
+  }
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.round((total % 3600) / 60);
+  return `${hours} 小时 ${String(minutes).padStart(2, '0')} 分`;
+}
+
+/**
  * 后端的时间都是"不带时区的 UTC"（DB 里存 naive UTC）。`new Date("2026-11-14T07:54:37")`
  * 会被浏览器按**本地时间**解释，于是北京时间的人看到的排期和创建时间整整差 8 小时。
  * 这里统一：没有 Z / 偏移的一律当 UTC 解析，显示时再转成本地。
@@ -770,6 +787,53 @@ function taskArtifactsCard(bundle, taskId) {
   </div>`;
 }
 
+/**
+ * 时间都花在哪：把事件流算出来的耗时摆成"干活 / 等人 / 模型调用"三块。
+ * 模型调用那块单独放——它发生在"干活"里面，加进加减法会重复计算。
+ */
+function timingCard(timing) {
+  if (!timing) return '';
+  const status = timing.schedule_status || timing.status || '';
+  const headline = timing.total_seconds
+    ? `<span class="tag info">总共 ${duration(timing.total_seconds)}</span>`
+    : '<span class="tag warn">算不出来</span>';
+  const blocks = [
+    ['干活', timing.work_seconds, '每一格实际执行的时间加起来'],
+    ['等人', timing.wait_seconds, '停在人工闸门上等你的时间'],
+    ['模型调用', timing.model_seconds, '与"干活"重叠，不参与加减'],
+  ];
+  const waits = (timing.waits || []).filter((item) => item.seconds > 0);
+  return `<div class="card" id="timing-card"><h2>时间都花在哪 ${headline}
+    ${status ? `<span class="tag">${esc(status)}</span>` : ''}</h2>
+    <div class="scroll"><table><thead><tr><th>块</th><th>耗时</th><th>说明</th></tr></thead><tbody>
+      ${blocks.map(([name, seconds, why]) => `<tr>
+        <td>${esc(name)}</td>
+        <td class="mono">${duration(seconds)}</td>
+        <td class="muted">${esc(why)}</td>
+      </tr>`).join('')}
+      ${timing.unpaired_seconds > 1 ? `<tr>
+        <td class="muted">没算进任何一块</td>
+        <td class="mono">${duration(timing.unpaired_seconds)}</td>
+        <td class="muted">任务创建到第一格开始之间的空档</td>
+      </tr>` : ''}
+    </tbody></table></div>
+    ${(timing.subtasks || []).length ? `<div class="scroll"><table><thead><tr>
+      <th>#</th><th>阶段</th><th>跑了几次</th><th>耗时</th><th>备注</th>
+    </tr></thead><tbody>
+      ${timing.subtasks.map((row) => `<tr>
+        <td class="num">${esc(row.sequence)}</td>
+        <td>${esc(row.task_type)}</td>
+        <td class="num">${esc(row.runs)}</td>
+        <td class="mono">${duration(row.seconds)}</td>
+        <td class="muted">${esc(row.note || (row.running ? '还在跑' : ''))}</td>
+      </tr>`).join('')}
+    </tbody></table></div>` : ''}
+    ${waits.length ? `<div class="note">等人的时间窗：${waits.map((item) =>
+      `${when(item.started_at)} → ${item.ongoing ? '到现在' : when(item.ended_at)}（${duration(item.seconds)}）`).join('；')}</div>` : ''}
+    ${timing.note ? `<div class="note">${esc(timing.note)}</div>` : ''}
+  </div>`;
+}
+
 function budgetCard(budget) {
   if (!budget) return '';
   const tag = budget.exhausted
@@ -835,10 +899,11 @@ function modelReadinessCard(data) {
 
 async function pageTaskDetail(view, params) {
   const id = params.id;
-  const [detail, events, artifacts] = await Promise.all([
+  const [detail, events, artifacts, timing] = await Promise.all([
     api(`/research-tasks/${id}`),
     api(`/research-tasks/${id}/events?limit=50`),
     api(`/research-tasks/${id}/artifacts`),
+    api(`/research-tasks/${id}/timing`),
   ]);
   if (!detail.ok) { view.innerHTML = failure(detail); return; }
   const task = detail.data;
@@ -886,6 +951,7 @@ async function pageTaskDetail(view, params) {
     </div>
     <div id="gate-slot">${gate ? taskGateCard(gate, id) : ''}</div>
     ${budgetCard(task.budget)}
+    <div id="timing-slot">${timing.ok ? timingCard(timing.data) : failure(timing)}</div>
     ${artifactsCard}
     ${planningCard}
     <div class="card" id="progress-card"><h2>阶段进度</h2>
@@ -912,15 +978,20 @@ async function pageTaskDetail(view, params) {
   // 推进/放行之后原地刷新三张卡（进度、事件、闸门），**不整页重渲染**——
   // 整页重来会把刚显示的推进总结冲掉，人还没读完就没了。
   const refreshTaskCards = async () => {
-    const [fresh, freshEvents] = await Promise.all([
+    const [fresh, freshEvents, freshTiming] = await Promise.all([
       api(`/research-tasks/${id}`),
       api(`/research-tasks/${id}/events?limit=50`),
+      api(`/research-tasks/${id}/timing`),
     ]);
     if (!fresh.ok) return;
     const next = fresh.data;
     const progressCard = view.querySelector('#progress-card');
     const eventsCard = view.querySelector('#events-card');
     const gateSlot = view.querySelector('#gate-slot');
+    const timingSlot = view.querySelector('#timing-slot');
+    if (timingSlot && freshTiming.ok) {
+      timingSlot.innerHTML = timingCard(freshTiming.data);
+    }
     if (progressCard) {
       progressCard.innerHTML = `<h2>阶段进度</h2><div class="row">${statusTag(next.status)}
         <span class="tag info">花费 ${money(next.cost_spent_cny)}</span></div>` + table([

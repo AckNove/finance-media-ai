@@ -43,7 +43,9 @@ from backend.app.schemas.research_task import (
     TaskEventOut,
 )
 from backend.app.services import task_artifacts, task_gate
+from backend.app.schemas.task_timing import TaskTimingOut
 from backend.app.services.run_summary import summarise_run
+from backend.app.services.task_timing import TimingError, timing_of
 from backend.app.services.task_budget import budget_of
 
 router = APIRouter(
@@ -222,6 +224,24 @@ def list_research_tasks(
 @router.get("/{task_id}", response_model=ResearchTaskDetailOut, summary="研究任务详情")
 def get_research_task(db: DbSession, task_id: int = Path(ge=1)) -> ResearchTaskDetailOut:
     return _detail(db, task_id)
+
+
+@router.get(
+    "/{task_id}/timing",
+    response_model=TaskTimingOut,
+    summary="时间都花在哪了（按事件流算耗时）",
+)
+def read_task_timing(db: DbSession, task_id: int = Path(ge=1)) -> TaskTimingOut:
+    """一条任务的墙钟时间怎么分的：干活 / 等人 / 模型调用。
+
+    全部按 `task_events` 的时间戳算，事件缺了就如实说缺了（不拿 `updated_at` 猜）。
+    """
+
+    try:
+        timing = timing_of(db, task_id)
+    except TimingError as error:
+        raise NotFoundError(error.message, details={"reason": error.reason}) from error
+    return TaskTimingOut(**timing.as_dict())
 
 
 @router.get(
