@@ -39,6 +39,26 @@ async function api(path, options) {
   return { ok: true, status: response.status, data: body };
 }
 
+/**
+ * 发布链接的前端预检：**只拦必然错的**（不是 http(s)、没有主机名），与后端
+ * `backend/app/services/publish_links.py` 同一套判断，先在本地拦一道，省一次往返。
+ * 域名像不像这个平台不做拦截——平台会改域名、会有短链，猜错了会把人挡在门外。
+ */
+function publishLinkComplaint(url) {
+  const text = String(url || '').trim();
+  if (!text) return '没填链接：没发就是没发，别为了让它显示「已发布」随便填一个';
+  if (/\s/.test(text)) return '链接里有空格：多半只复制了一半';
+  if (text.length > 1000) return '链接超过 1000 个字符，这不像一个发布页地址';
+  if (!/^https?:\/\//i.test(text)) {
+    return '链接要以 http:// 或 https:// 开头：这个字段会当成链接放到页面上，别的写法点不开';
+  }
+  const host = text.replace(/^https?:\/\//i, '').split(/[/?#]/)[0];
+  if (!host || !host.includes('.') && host !== 'localhost') {
+    return '链接里没有像样的主机名（形如 https://www.douyin.com/video/123）';
+  }
+  return '';
+}
+
 function money(value) {
   const number = Number(value || 0);
   return '¥' + number.toFixed(number !== 0 && Math.abs(number) < 1 ? 6 : 2);
@@ -2013,6 +2033,8 @@ async function pageOperations(view) {
       const id = button.getAttribute('data-publish');
       const url = window.prompt('发布链接（没发就别填，取消即可）');
       if (!url) return;
+      const complaint = publishLinkComplaint(url);
+      if (complaint) { say(feedback, false, complaint); return; }
       const result = await api(`/calendar/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ publish_state: 'published', published_url: url }),

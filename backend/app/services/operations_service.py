@@ -3,7 +3,9 @@
 三条纪律写在这里：
 
 1. **不自动发布**。``publish_state`` 改成 ``published`` 必须有 ``published_url``
-   与 ``published_at``，缺一个就 422 —— 不允许空口标记"发了"。
+   与 ``published_at``，缺一个就 422 —— 不允许空口标记"发了"。链接还要能点开
+   （必须 http/https 且有主机名，见 ``publish_links``）：这个字段会被当成链接放到
+   页面上，随手填个 ``abc`` 会让"已发布"这件事变成没人信的状态。
 2. **数字只能来自人给的回填**。这里不做任何推测：没有快照就是没有数据，
    分析接口会如实返回 0 并给出 ``note``。
 3. **同一条排期同一时刻只有一份快照**（由唯一约束兜底），重复回填同时间戳
@@ -28,6 +30,7 @@ from backend.app.schemas.operations import (
     MetricIn,
 )
 from backend.app.services.base import BaseService
+from backend.app.services.publish_links import PublishLinkError, normalise_url
 
 
 def _naive_utc(value: datetime) -> datetime:
@@ -93,6 +96,18 @@ class OperationsService(BaseService):
         total = int(self.db.execute(count_stmt).scalar_one())
         return items, total
 
+    @staticmethod
+    def _checked_url(value: str) -> str:
+        """链接必须能点开；不合格就 422，并把原因码带出去。"""
+
+        try:
+            return normalise_url(value)
+        except PublishLinkError as error:
+            raise DomainValidationError(
+                error.message,
+                details={"field": "published_url", "reason": error.reason},
+            ) from error
+
     def update(self, entry_id: int, payload: CalendarUpdate) -> ContentCalendar:
         entry = self.get(entry_id)
         data = payload.model_dump(exclude_unset=True)
@@ -114,7 +129,11 @@ class OperationsService(BaseService):
                     "标记为已发布必须给 published_url：没发就是没发",
                     details={"field": "published_url"},
                 )
+            data["published_url"] = self._checked_url(url)
             data.setdefault("published_at", datetime.now(UTC))
+        elif "published_url" in data and data["published_url"]:
+            # 还没标已发布、但先把链接存下来（比如先复制好了）也要能点开。
+            data["published_url"] = self._checked_url(data["published_url"])
         if "publish_state" in data and data["publish_state"] != "published":
             # 撤回发布时保留 url（留痕），但把发布时间清空，避免"未发布却有发布时间"。
             data["published_at"] = None

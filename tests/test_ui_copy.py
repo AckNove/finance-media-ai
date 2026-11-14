@@ -82,3 +82,12 @@ def test_video_page_runs_preflight_before_offering_a_render(source: str) -> None
     assert render_button, "找不到渲染按钮"
     assert any("preflightBlocked(preflight)" in line for line in render_button), render_button[0].strip()[:160]
     assert 'title="先解决预检里的硬问题"' in source
+
+def test_publish_prompt_checks_the_link_before_sending(source: str) -> None:
+    """标已发布前先在本地拦一道：`abc` 这种值不该发出去，更不该被存下来当链接。"""
+    assert "function publishLinkComplaint(url)" in source
+    publish_block = source.split("[data-publish]", 1)[1].split("});", 1)[0]
+    assert "publishLinkComplaint(url)" in publish_block, publish_block[:200]
+    # 本地预检拦住时直接返回，不能继续 PATCH
+    assert "if (complaint)" in publish_block
+    assert "http:// 或 https://" in source

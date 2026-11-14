@@ -102,6 +102,24 @@ class DailyDiskOut(BaseModel):
     error: str = ""
 
 
+class DailyPublishItemOut(BaseModel):
+    """一条"片子已经做好、但还没标已发布"的排期。"""
+
+    entry_id: int
+    title: str = ""
+    platform: str = ""
+    status: str = ""
+    scheduled_for: str = ""
+
+
+class DailyPublishOut(BaseModel):
+    """发布回填的欠账：片子做好了、人还没回来说"发了"。"""
+
+    count: int = 0
+    items: list[DailyPublishItemOut] = Field(default_factory=list)
+    note: str = ""
+
+
 class DailySummaryOut(BaseModel):
     """每日体检。字段全部来自真实记录，没有数据就是 0，不填示例值。"""
 
@@ -115,6 +133,7 @@ class DailySummaryOut(BaseModel):
     jobs: DailyJobsOut
     cost: dict[str, DailyCostOut] = Field(default_factory=dict)
     backup: DailyBackupOut
+    publish: DailyPublishOut = Field(default_factory=DailyPublishOut)
     disk: DailyDiskOut
     sections_unavailable: dict[str, str] = Field(
         default_factory=dict, description="查不了的模块（老库缺表时出现），值里写原因"

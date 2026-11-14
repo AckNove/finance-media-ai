@@ -1663,3 +1663,84 @@ video_engine_demo             missing_storyboard
 全量 `pytest -o addopts="" -q` → **1257 passed, 2 skipped, 1 warning**。
 
 **没做的事**：预检不判断内容对不对（那是内容质检），不猜路径，不替人补文件。
+
+### 39 发出去之后回来填链接：这一段以前是断的
+
+#### 39.1 断在哪
+
+一条片子从"确认结论"走到"导出文案"都能一步接一步，但**导出之后就断了**：系统不代发
+（V6.0 任务书第⑦条：发布不可逆，必须人来点），于是要靠人自己记得"发出去"、
+再回内容日历把链接填上。这段路有两个真实的坑：
+
+1. **链接随手填也能过**。旧规则只要求 `published_url` 非空，`abc`、`123`、
+   `javascript:alert(1)` 全都能存下来；而这个字段在页面上是直接塞进 `<a href>` 的，
+   等于"已发布"这件事随时可以被一个垃圾字符串冒充。
+2. **导出完没人提醒**。片子躺在 `output/` 里、进度停在「已导出」，人可以一直以为
+   "已经做完了"。平台数字回填、效果分析全都建立在"哪天真发了"之上，
+   这一格空着，后面的分析就是空的。
+
+#### 39.2 只拦必然错的，可疑的只提醒
+
+新增 `backend/app/services/publish_links.py`：
+
+| 判断 | 结果 | 为什么 |
+|---|---|---|
+| 空值 | 422 `empty_url` | 没发就是没发 |
+| 不是 `http` / `https` | 422 `bad_scheme` | 这个字段会被渲染成链接，`javascript:` 之类点不开还可能有害 |
+| 没有主机名（`https://`） | 422 `no_host` | 多半只贴了后半截 |
+| 内含空格 | 422 `has_space` | 同上，复制不完整 |
+| 超过 1000 字符 | 422 `too_long` | 这不像一个发布页地址 |
+| 域名不像这个平台 | **只提醒** | 平台会换域名、有短链（`v.douyin.com`、`b23.tv`）；猜错了会把人挡在门外 |
+
+域名表只覆盖已知平台（抖音/小红书/公众号/B 站/视频号/YouTube），`other` 不做比对——
+不知道就不猜。提醒写进 `consistency.warnings`，跟"数据回填了却没标已发布"放在一起：
+
+```
+已标已发布，但链接的主机名是「www.bilibili.com」，看着不像抖音：
+可能是复制错了，也可能发在了别的平台——确认一下再算这条账
+```
+
+校验在服务层的 `update()` 里，所以**接口、页面、脚本三条路都过同一道闸**；前端另外
+有一份同名判断（`publishLinkComplaint`），先在本地拦一道，省一次往返——两份判断的
+触发条件写在测试里，参数化用例把十个坏值逐个钉住。
+
+#### 39.3 导出之后有人提醒
+
+`backend/app/services/daily_service.py` 新增 `publish_section()`：统计
+`publish_state != 'published'` 且进度已经到 `rendered` / `exported` 的排期，
+进每日体检（CLI 与首页卡片共用同一份判断）与 `attention`：
+
+```
+1 条排期的片子已经做好了，但还没标已发布：发出去之后回内容日历填链接（系统不代发，也不会替你标）
+```
+
+老库（19 张表，没有 `content_calendar`）走 `_tolerant`，只记"这块查不了"，不炸。
+
+#### 39.4 真机验证（工作库副本，真实开发库未触碰）
+
+```
+junk url        -> 422 {'field': 'published_url', 'reason': 'bad_scheme'}
+wrong platform  -> 200 ['已标已发布，但链接的主机名是「www.bilibili.com」，看着不像抖音：…']
+daily publish   -> {"count": 1, "items": [{"entry_id": 2, "title": "另一条也还没发", "platform": "bilibili", "status": "rendered", …}]}
+attention       -> ['1 条排期的片子已经做好了，但还没标已发布：…']
+```
+
+页面（Playwright + 系统 Chrome，`#/operations`）：把 `window.prompt` 改成返回 `abc`
+后点「标已发布」→ 页面提示「链接要以 http:// 或 https:// 开头…」，**网络面板里 0 个
+PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住了，不会白跑一趟服务端。
+
+#### 39.5 改动清单
+
+| 文件 | 改了什么 |
+|---|---|
+| `backend/app/services/publish_links.py`（新增） | `normalise_url()` / `host_of()` / `looks_like_platform()` / `PLATFORM_HOSTS` |
+| `backend/app/services/operations_service.py` | `update()` 里 `_checked_url()`；未发布时先存的链接也要过闸 |
+| `backend/app/api/routes/operations.py` | `_consistency_of()` 增加域名不符提醒 |
+| `backend/app/services/daily_service.py` | 新增 `publish_section()`、`attention` 一条、文本体检多一节 |
+| `backend/app/schemas/monitoring.py` | `DailyPublishOut` / `DailyPublishItemOut`，`DailySummaryOut.publish` |
+| `web/app.js` | `publishLinkComplaint()`；标已发布前本地预检 |
+| `tests/test_publish_links.py`（新增） | 31 例（链接本身 10 个坏值、域名匹配 10 组、服务层与接口 4 例、体检 1 例） |
+| `tests/test_ui_copy.py` | +1 例（标已发布前必须本地预检、拦住就不再发请求） |
+
+**没做的事**：不自动发布、不自动标已发布、不抓平台页面去核对链接是否真存在（那需要
+账号或爬虫，属于 BLOCKED 的"云渲染与发布"）。这里只保证"人填进来的东西不像假的"。

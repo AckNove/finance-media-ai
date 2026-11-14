@@ -26,6 +26,7 @@ from backend.app.schemas.operations import (
 )
 from backend.app.services.calendar_readiness import job_readiness
 from backend.app.services.operations_service import OperationsService
+from backend.app.services.publish_links import host_of, looks_like_platform, platform_label
 
 router = APIRouter(
     prefix="/calendar",
@@ -52,6 +53,14 @@ def _consistency_of(entry, metric_count: int) -> CalendarConsistencyOut:
             f"已标已发布，但进度还停在「{entry.status}」：两个字段不会自己同步，"
             "建议把进度也标到「已渲染」或「已导出」，免得回头对不上账"
         )
+    if entry.publish_state == "published" and entry.published_url:
+        if not looks_like_platform(entry.published_url, entry.platform):
+            label = platform_label(entry.platform)
+            host = host_of(entry.published_url) or "（解析不出主机名）"
+            warnings.append(
+                f"已标已发布，但链接的主机名是「{host}」，看着不像{label}："
+                "可能是复制错了，也可能发在了别的平台——确认一下再算这条账"
+            )
     return CalendarConsistencyOut(metric_count=metric_count, warnings=warnings)
 
 

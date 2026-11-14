@@ -41,6 +41,7 @@ from sqlalchemy.orm import Session
 from backend.app.core.config import PROJECT_ROOT
 from backend.app.models.execution import ResearchSubtask, ResearchTask
 from backend.app.models.metering import ModelCall
+from backend.app.models.operations import ContentCalendar
 from backend.app.models.research import FindingCheck
 
 DEFAULT_JOBS_ROOT = PROJECT_ROOT / "content" / "jobs"
@@ -225,6 +226,57 @@ def backup_section(backups: Path, *, now: datetime) -> dict[str, Any]:
     }
 
 
+def publish_section(session: Session) -> dict[str, Any]:
+    """片子已经做好、但人还没回来说"发了"的那些排期。
+
+    导出不等于发布（V6.0 任务书第⑦条）：片子在 `output/` 里躺着、进度推到「已渲染」
+    或「已导出」，都不代表它发出去了。这条欠账没人提醒就会一直挂着——而平台的
+    数字回填、效果分析全都建立在「哪天真发了」之上。
+    """
+
+    rows = session.execute(
+        select(
+            ContentCalendar.id,
+            ContentCalendar.title,
+            ContentCalendar.platform,
+            ContentCalendar.status,
+            ContentCalendar.scheduled_for,
+        )
+        .where(
+            ContentCalendar.publish_state != "published",
+            ContentCalendar.status.in_(("rendered", "exported")),
+        )
+        .order_by(ContentCalendar.scheduled_for.asc().nulls_last(), ContentCalendar.id.asc())
+        .limit(ITEM_LIMIT)
+    ).all()
+    total = session.execute(
+        select(func.count(ContentCalendar.id)).where(
+            ContentCalendar.publish_state != "published",
+            ContentCalendar.status.in_(("rendered", "exported")),
+        )
+    ).scalar_one()
+    items = [
+        {
+            "entry_id": int(row[0]),
+            "title": row[1] or "",
+            "platform": str(_status_key(row[2])),
+            "status": str(_status_key(row[3])),
+            "scheduled_for": _iso(row[4]),
+        }
+        for row in rows
+    ]
+    return {
+        "count": int(total or 0),
+        "items": items,
+        "note": (
+            "这些排期的片子已经做好了，但还没标已发布：发出去之后回来填链接，"
+            "否则系统不知道它发没发，平台数字也没处对"
+        )
+        if total
+        else "",
+    }
+
+
 def disk_section() -> dict[str, Any]:
     try:
         usage = shutil.disk_usage(PROJECT_ROOT)
@@ -272,6 +324,12 @@ def attention_items(report: dict[str, Any]) -> list[str]:
         )
     if report["jobs"].get("invalidated_count"):
         items.append(f"{report['jobs']['invalidated_count']} 个视频任务的确认被撤回过（已标记失效）")
+    pending_publish = (report.get("publish") or {}).get("count") or 0
+    if pending_publish:
+        items.append(
+            f"{pending_publish} 条排期的片子已经做好了，但还没标已发布："
+            "发出去之后回内容日历填链接（系统不代发，也不会替你标）"
+        )
     age = report["backup"].get("age_days")
     if age is None:
         items.append("data/backups 里还没有任何备份")
@@ -313,6 +371,7 @@ def collect_daily(
     tasks = _tolerant("任务", task_section, session, since=since, register=unavailable)
     subtasks = _tolerant("子任务", subtask_section, session, since=since, register=unavailable)
     checks = _tolerant("语义核查", check_section, session, register=unavailable)
+    publish = _tolerant("发布回填", publish_section, session, register=unavailable)
     cost = _tolerant(
         "花费", cost_section, session, today=today, since=since, register=unavailable
     )
@@ -325,6 +384,7 @@ def collect_daily(
         "tasks": tasks,
         "subtasks": subtasks,
         "checks": checks,
+        "publish": publish,
         "jobs": job_section(Path(jobs_root)),
         "cost": cost,
         "backup": backup_section(Path(backups), now=moment),
@@ -381,6 +441,17 @@ def render_text(report: dict[str, Any]) -> str:
     lines.append(f"视频任务：{jobs['jobs']} 个，其中失效 {jobs['invalidated_count']} 个")
     for item in jobs["invalidated"]:
         lines.append(f"  · {item['job_id']}（{item['invalidated_at']}）｜{item['reason']}")
+
+    lines.append("")
+    publish = report.get("publish") or {}
+    if publish.get("unavailable"):
+        lines.append("发布回填：查不了（这个库没有 content_calendar 表）")
+    else:
+        lines.append(f"发布回填：{publish.get('count', 0)} 条片子做好了还没标已发布")
+        for item in publish.get("items", []):
+            lines.append(
+                f"  · #{item['entry_id']} {item['title']}（{item['platform']}｜{item['status']}）"
+            )
 
     lines.append("")
     cost = report["cost"]
