@@ -1285,4 +1285,98 @@ purpose="纯色/渐变底板 #xxxx", credit="本仓库程序生成的纯色底�
 
 **测试**：`tests/test_backup_verify.py` 9 例（真备份通过、截断文件、0 字节、文件不存在、备份缺表、
 行数差异只报不判失败、结论落盘、`latest_backup`、CLI 三个退出码）；`tests/test_daily_check.py` 新增
-2 例（没验过被提醒、验不过把原因带出来）。全量 **1207 passed, 2 skipped**。
+2 例（没验过被提醒、验不过把原因带出来）。全量 **1213 passed, 2 skipped**。
+
+---
+
+## §35 把操作手册当合同来验（第 20 轮）
+
+### 35.1 为什么做这件事
+
+前几轮的经验是：**文档写错一个参数名，人就会在第一步失败，而且会怀疑是系统坏了**。
+手册里的命令是给"第一次上手的人"看的，可它从来不参与任何测试——代码改了参数名、
+删了一个脚本，手册照旧写着旧名字，没人会发现。
+
+所以这一轮把手册当**合同**：手册里写了什么命令、什么接口，代码里就必须真有。
+
+### 35.2 怎么验的（不靠人眼）
+
+`tests/test_operator_manual.py` 解析 `v6_0_operator_manual.md` 里的两类引用：
+
+| 引用类型 | 正则 | 怎么验 |
+| --- | --- | --- |
+| 脚本命令 | `backend\.scripts\.([a-z_]+)` | 脚本文件必须存在；同一行写到的每个 `--flag` 必须出现在 `python -m backend.scripts.X --help` 的真实输出里 |
+| 接口路径 | `/api/[\w{}\-/]+` | 必须能匹配上 `create_app().openapi()` 的某条模板（`/api/research-tasks/1/resume` → `/api/research-tasks/{task_id}/resume`） |
+
+两个细节值得记：
+
+- **PowerShell 续行**是行尾反引号，多行命令很常见（`mix_bgm` 就是）。不先把续行接起来，
+  第二行写的 `--volume / --track / --out` 会被漏掉——漏掉就等于没验。
+- **反空转断言**：解析结果少于 8 个脚本、20 个参数、10 个接口引用时直接判失败。
+  否则哪天正则写坏了，用例还是"0 个问题所以通过"，比没有还危险。
+
+### 35.3 顺带抓到的真 bug（手册没错，代码错了）
+
+手册 §1.3 写着"想用别的数据库：`-Database sqlite:///C:/.../demo.db`"，而 `scripts/start.ps1`
+把 `-Database` 当**路径**用，于是拼出：
+
+```
+C:\Users\25803\finance-media-ai\sqlite:\\\C:\Users\25803\AppData\Local\Temp\fmai_clean_run\fresh.db
+```
+
+→ `alembic upgrade head` 报 `sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) unable to open database file`
+→ 脚本打印「建表失败，见上方 alembic 输出。」后 `exit 1`。**照手册敲的第一条命令就失败。**
+
+修法（`scripts/start.ps1` 第 3 段）：`-Database` 两种写法都收——以 `sqlite:///` 开头就按 URL 解析
+（去前缀、去掉 `sqlite:///C:/...` 里多出来的那个斜杠），否则按路径；`:memory:` 直接拒绝并说明
+"这个脚本要一个真的库文件"；路径分隔符统一成 `\` 再和受保护库比较（否则 `-Database sqlite:///.../finance_media.db`
+能绕过保护）。
+
+### 35.4 顺手改掉的另一处"假动作"
+
+`stop.ps1` 原来对每个进程都先 `CloseMainWindow()` 再等 3 秒，超时才强杀。但 `start.ps1`
+起的是**隐藏窗口的控制台进程**，`CloseMainWindow()` 对它永远无效——那 3 秒是空转，日志还会
+输出「3 秒内没有正常退出，强制结束」，让人以为服务卡住了。
+
+现在按 `$proc.MainWindowHandle` 分流：有窗口的照旧先礼后兵；没有窗口的直接如实说
+「控制台进程没有窗口，直接结束（SQLite 事务已提交，不会半写）」。
+
+### 35.5 真机验证（空环境首跑，两种写法各一次）
+
+```
+[start] 工作库不存在，创建并按迁移建表：C:\Users\25803\AppData\Local\Temp\fmai_clean_run\fresh.db
+[start] 按 -NoWorker 跳过后台执行器：任务会停在原地，需要手动跑 python -m backend.scripts.run_worker
+2026-11-14 14:31:22 | INFO | backend.app.main | starting finance-media-ai v0.1.0 (env=development, database=sqlite:///C:/Users/25803/AppData/Local/Temp/fmai_clean_run/fresh.db)
+2026-11-14 14:31:22 | INFO | backend.app.main | 启动自检：8/8 项通过，error=0，warning=0
+GET /health -> 200
+
+GET /api/system/status -> 200
+{"dialect":"sqlite","url":"sqlite:///fresh.db","reachable":true,"table_count":32,
+ "migration_revision":"b6_v6_operations","journal_mode":"delete","busy_timeout":"5000"}
+
+[stop] 控制台进程没有窗口，直接结束（SQLite 事务已提交，不会半写）
+[stop] 端口 8065 已释放
+[stop] 已停止 1 个服务进程；跳过 0 个非本项目进程。
+```
+
+- `-Database sqlite:///...`（URL 形式，端口 8064）：建库成功、32 张表、`b6_v6_operations`、状态 200。
+- `-Database C:\...\path_form.db`（路径形式，端口 8065）：同样成功，说明两种写法都通。
+- 两次 `stop.ps1` 后端口监听数均为 0，无残留进程。
+
+### 35.6 本轮改动清单与验证
+
+| 文件 | 改动 |
+| --- | --- |
+| `tests/test_operator_manual.py`（新增） | 4 例：脚本存在、参数被接受、接口存在、必备命令在手册里；解析出 12 脚本 / 31 参数 / 12 接口 |
+| `tests/test_scripts_encoding.py` | +2 例：`start.ps1` 必须认 `sqlite:///` 前缀且拒绝 `:memory:`；`stop.ps1` 必须按 `MainWindowHandle` 分流 |
+| `scripts/start.ps1` | `-Database` 收 URL 与路径两种写法；`:memory:` 拒绝；路径分隔符归一 |
+| `scripts/stop.ps1` | 无窗口的控制台进程不再空等 3 秒，如实说明后直接结束 |
+| `docs/research_hub/v6_0_operator_manual.md` | §1.3 写明两种写法与"库不存在会自动建表" |
+
+全量 `pytest -o addopts="" -q` → **1213 passed, 2 skipped, 1 warning**（唯一 warning 仍是
+`agent_runs ↔ research_subtasks` 双向外键环，属设计内）。
+
+另外记一条操作纪律：`edit`/`write` 工具保存 `.ps1` **不会带 BOM**，而 PowerShell 5.1 会按 GBK
+解析无 BOM 的中文脚本 → 语法错误（这一轮就这么把 `start.ps1` 改坏过一次，报
+`字符串缺少终止符`）。改完必须用 `%TEMP%\fmai_restore_bom20.py` 补 BOM 并跑
+`tests/test_scripts_encoding.py`。

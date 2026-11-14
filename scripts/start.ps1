@@ -73,7 +73,21 @@ if (Test-PortBusy $BindHost $Port) {
 if ([string]::IsNullOrWhiteSpace($Database)) {
     $Database = "data/finance_media.work.db"
 }
+# 手册与 .env 里都写 sqlite:///... 形式（那是 DATABASE_URL 的样子），所以这里两种都收：
+# 传路径也行、传 sqlite URL 也行，否则照着手册敲 -Database sqlite:///... 会在建表那步失败。
+if ($Database -match '^(?i)sqlite:/{2,3}') {
+    $rawPath = ($Database -replace '^(?i)sqlite:/+', '')
+    if ([string]::IsNullOrWhiteSpace($rawPath) -or $rawPath -eq ':memory:') {
+        Write-Host "[start] 这个脚本要一个真的库文件，不支持 $Database。" -ForegroundColor Red
+        Write-Host "[start] 用 -Database sqlite:///C:/path/to/work.db 或直接给路径。" -ForegroundColor Red
+        exit 2
+    }
+    # sqlite:///C:/x.db 去掉前缀后是 /C:/x.db（多一个斜杠）
+    if ($rawPath -match '^/[A-Za-z]:/') { $rawPath = $rawPath.Substring(1) }
+    $Database = $rawPath
+}
 $dbPath = if ([System.IO.Path]::IsPathRooted($Database)) { $Database } else { Join-Path $root $Database }
+$dbPath = $dbPath -replace '/', '\'
 $dbUrl = "sqlite:///" + ($dbPath -replace "\\", "/")
 
 $protected = (Resolve-Path -LiteralPath (Join-Path $root "data")).Path + "\finance_media.db"

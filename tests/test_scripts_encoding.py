@@ -111,3 +111,33 @@ def test_ops_scripts_parse_and_expose_main(relative):
 def test_backup_scripts_mention_the_protected_suffix(relative):
     text = (PROJECT_ROOT / relative).read_text(encoding="utf-8")
     assert "finance_media.db" in text, "备份/恢复都必须认得受保护库，不能一把梭覆盖"
+
+
+def _ps1_text(relative: str) -> str:
+    raw = (PROJECT_ROOT / relative).read_bytes()
+    return (raw[len(BOM) :] if raw.startswith(BOM) else raw).decode("utf-8")
+
+
+def test_start_script_accepts_a_sqlite_url_for_database():
+    r"""手册里写的是 `-Database sqlite:///...`（那是 DATABASE_URL 的样子）。
+
+    真故障：脚本只把它当路径，于是拼出 `项目根\sqlite:\\\C:...`，建表那步直接
+    `unable to open database file`，第一次上手的人第一步就卡死。
+    """
+
+    text = _ps1_text("scripts/start.ps1")
+    assert "sqlite:/{2,3}" in text, "start.ps1 必须认 sqlite:/// 前缀，否则照手册敲就失败"
+    assert ":memory:" in text, "内存库要明确拒绝并说清楚，不能悄悄当成路径"
+    assert "-replace '/', '\\'" in text or "-replace '/', '\\" in text, "路径分隔符要归一，否则受保护库比较会失效"
+
+
+def test_stop_script_does_not_pretend_a_console_process_has_a_window():
+    """start.ps1 起的是隐藏窗口的控制台进程，CloseMainWindow 对它永远无效。
+
+    以前这里先"礼貌等 3 秒"再强杀——那句"先礼后兵"是空转，日志还会误导人以为
+    "3 秒内没有正常退出"是异常。现在按 MainWindowHandle 分流，并如实说明。
+    """
+
+    text = _ps1_text("scripts/stop.ps1")
+    assert "MainWindowHandle" in text, "要先判断进程有没有窗口，再决定请它退出还是直接结束"
+    assert "控制台进程没有窗口" in text, "没有窗口时应当如实说明，而不是装作等了 3 秒"

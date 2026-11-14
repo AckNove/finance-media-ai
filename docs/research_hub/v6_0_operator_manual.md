@@ -66,6 +66,9 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 
 - 端口被占用：`scripts\start.ps1 -Port 8011`
 - 想用别的数据库：`-Database sqlite:///C:/Users/25803/AppData/Local/Temp/demo.db`
+  （`-Database` 两种写法都收：写 `sqlite:///...` 这种 URL，或者直接写 `data/other.db` 这种路径；
+  库文件不存在时脚本会先 `alembic upgrade head` 把表建好。**指向 `data/finance_media.db` 会被拒绝**，
+  那是只读的开发库）
 - 停服务：`powershell -ExecutionPolicy Bypass -File scripts\stop.ps1`（只杀"确实是本项目 uvicorn"的进程）
 - 崩了自动拉起 + 写日志：`scripts\watchdog.ps1`（默认最多重启 5 次，日志在 `logs\watchdog-<日期>.log`）
 

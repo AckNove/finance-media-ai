@@ -67,16 +67,26 @@ foreach ($current in $Port) {
         }
 
         Write-Step ("正在停止 {0} (pid {1})" -f $proc.ProcessName, $processId)
-        try {
-            $proc.CloseMainWindow() | Out-Null
-        } catch {
-            # 控制台进程没有主窗口，忽略
-        }
-        if (-not $proc.WaitForExit(3000)) {
+        if ($proc.MainWindowHandle -ne 0) {
+            # 有窗口的进程可以礼貌地请它关掉
+            try {
+                $proc.CloseMainWindow() | Out-Null
+            } catch {
+                # 关不掉就按下面的强制流程走
+            }
+            if ($proc.WaitForExit(3000)) {
+                $stopped++
+                continue
+            }
             Write-Warn "3 秒内没有正常退出，强制结束"
-            Stop-Process -Id $processId -Force
-            $proc.WaitForExit(3000) | Out-Null
+        } else {
+            # start.ps1 起的是隐藏窗口的控制台进程，CloseMainWindow 对它无效，
+            # 以前这里会先装等 3 秒再强杀——那句"先礼后兵"其实是空转。
+            # 直接结束：SQLite 每个事务都已提交，杀进程不会留下半写状态。
+            Write-Step "控制台进程没有窗口，直接结束（SQLite 事务已提交，不会半写）"
         }
+        Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+        $proc.WaitForExit(3000) | Out-Null
         if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
             Write-Warn "pid $processId 仍然存在，请手动检查"
         } else {
