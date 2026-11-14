@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1423 passed, 2 skipped**。
+全量 `pytest` **1437 passed, 2 skipped**。
 
 ---
 
@@ -2441,7 +2441,7 @@ entry 2（不绑任务、不填标签）
   三组前缀回落参数化。
 - `tests/test_ui_copy.py` +1 例护栏：两个页面必须互相生成带 `?shot=` / `?asset=` 的链接，
   样式里必须有 `tbody tr.focus-row`，找不到目标时必须说「没有镜头」/「素材清单里没有」。
-- 全量 `pytest` 1423 passed / 2 skipped。
+- 全量 `pytest` 1437 passed / 2 skipped。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2511,7 +2511,7 @@ page errors: []
   （金额按数值比，因为列是 `NUMERIC(20,6)`）；没给预算时详情如实说「没设预算上限」。
 - `tests/test_ui_copy.py` +2 例护栏：预算卡必须显示"已用/上限/剩余"、没设的项写「不限」、
   撞线要亮原因码；`money()` 必须去掉后导零。
-- 全量 `pytest` **1423 passed / 2 skipped**。
+- 全量 `pytest` **1437 passed / 2 skipped**。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2574,7 +2574,7 @@ page errors: []
   五套分组共用同一种 bucket 形状。
 - `tests/test_ui_copy.py` +1 例护栏：两张卡的标题、`data.by_purpose` / `data.by_task`、
   页面上必须出现「未标用途」「未绑定任务」。
-- 全量 `pytest` **1423 passed / 2 skipped**。
+- 全量 `pytest` **1437 passed / 2 skipped**。
 
 ### 50.5 诚实边界
 
@@ -2583,3 +2583,63 @@ page errors: []
 - 「按任务」最多 10 条，超过的只体现在总额里，页面上不假装全列。
 - 阶段名靠调用方标注。如果某次调用没标，会被归到「未标用途」——这既是提示，
   也说明那一处调用方该补字段。
+## 51. 模型设置页：从「列着价目」到「说清这个模型现在能不能用」
+
+### 51.1 问题
+
+一个模型调不动，有五个不同来源：总开关 `features.model` 关了、服务商没启用、
+缺密钥、缺接口地址、模型没启用、价目没配。这五处判断散在
+`features` 配置、`providers.resolve_provider`、`models.yaml` 三个地方，
+而模型设置页只列了价目表——**看不出结论**。
+
+配错价目的人看到的是"任务卡住了"，然后去查密钥；密钥其实好好的。
+部署时最常问的一句就是「为什么这个模型没用上」，答案得靠翻代码。
+
+### 51.2 改了什么
+
+- 新建 `backend/app/services/model_readiness.py`：把五处判断按**固定顺序**压成一行结论
+  （`feature_disabled` → `provider_disabled` → `missing_api_key` / `missing_base_url`
+  → `model_disabled` → `pricing_missing` → `ready`），每个原因码配一句能照做的下一步。
+  顺序是刻意的：总开关关掉时先说总开关，别让人先去折腾密钥。
+- 顺带带出**上一次真调用**（同一 provider/model 最新一条 `model_calls`）：价目配错、
+  密钥过期这类事，看历史比看配置快。`actionable` = 能用且上次没失败。
+- `GET /api/system/models`（只读，不发外部请求）返回上面这些；模型设置页顶部多一张卡：
+  每行写「可用 / 原因码 + 下一步 / 价目与核对日期 / 上次调用」。
+- 顺手修一处排版：`.tag` 加 `white-space: nowrap`——「调不了」在窄列里被折成
+  「调不」「了」两行，读起来像两个词。
+
+### 51.3 实测
+
+工作库副本 + 真空库（无密钥）、造一条 `error / 401 Unauthorized` 的历史调用：
+
+```
+note: 当前一个模型也用不了：按下面每一行的「下一步」处理，改完刷新本页即可。
+ready_count: 0 of 4
+ - deepseek deepseek-flash  ready=False reason=missing_api_key last_call=error  pricing=已核价 2026-11-12
+ - deepseek deepseek-v4-pro ready=False reason=missing_api_key last_call=-      pricing=已核价 2026-11-12
+ - deepseek deepseek-chat   ready=False reason=missing_api_key last_call=-      pricing=没记出处
+ - deepseek deepseek-reasoner ready=False reason=missing_api_key last_call=-    pricing=没记出处
+cards: ['每个模型现在能不能用 0 / 4 可用', '模型与价目', '预算']
+page errors: []
+```
+
+注意四条都是 `missing_api_key` 而不是 `pricing_missing`——因为判断顺序里服务商解析
+排在价目前面。这正是要的顺序：密钥都没有，谈价目没意义。
+
+### 51.4 测试
+
+- 新增 `tests/test_model_readiness.py` 13 例：齐备时 `ready`、**七个原因码逐个点名**
+  （且每个都必须有下一步的文字）、总开关压过一切、`last_calls` 只留最新一条、
+  `collect` 里能用的排前面、`actionable` 在"能用但上次失败"时为 false、
+  接口返回结构与「ready 的行不许有 blocked_reason」的不变量。
+- `tests/test_ui_copy.py` +1 例护栏：卡片标题、三种结论（能调 / 能调但上次失败 / 调不了）、
+  页面写明"不发起任何外部请求"。
+- `tests/test_caller_permissions.py` 的绊线 77 → **78**（走查 78 → 79）。
+- 全量 `pytest` **1437 passed / 2 skipped**。
+
+### 51.5 诚实边界
+
+- 这张卡只反映**配置与历史**，不探测远端：它不知道服务商此刻是不是挂了，
+  也验证不了密钥是否有效（那要花钱发一次请求）。
+- 「上次调用」是按 `created_at` 取的最新一条，不代表模型当前状态。
+- 密钥只显示环境变量名与"是否存在"，**不回显任何一位密钥内容**。

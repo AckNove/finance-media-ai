@@ -96,6 +96,7 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("GET", "/api/system/costs"): HUMAN_ONLY,
     ("GET", "/api/system/history"): HUMAN_ONLY,
     ("GET", "/api/system/daily"): HUMAN_ONLY,
+    ("GET", "/api/system/models"): HUMAN_ONLY,
     ("GET", "/api/system/providers"): HUMAN_ONLY,
     ("GET", "/api/system/agents"): HUMAN_ONLY,
     # M9：工作台（真实搜索、视频任务产物只读、配置快照）

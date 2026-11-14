@@ -133,6 +133,8 @@ label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color:
 .tag {
   display: inline-block; padding: 1px 8px; border-radius: 999px;
   font-size: 11px; border: 1px solid var(--line); color: var(--dim);
+  /* 标签是短词（"调不了"/"能调"），窄列里被拆成两行会读成两个词 */
+  white-space: nowrap;
 }
 .tag.ok { color: var(--lime); border-color: #46621a; }
 .tag.warn { color: var(--amber); border-color: #6b5320; }

@@ -459,3 +459,16 @@ curl.exe -X POST http://127.0.0.1:8000/api/scripts/3/video-job -H "Content-Type:
 - **按天 / 运行历史**：趋势与失败情况。
 
 两张明细表都按花费降序；「按任务」最多列 10 条。
+## 模型设置页：这个模型现在能不能用
+
+页面顶部那张卡把「调不动」的原因直接写出来，从上到下的判断顺序是：
+
+1. `feature_disabled` —— 总开关 `features.model` 关了（所有模型都停）；
+2. `provider_disabled` —— 服务商没启用；
+3. `missing_api_key` / `missing_base_url` —— 缺密钥或接口地址；
+4. `model_disabled` —— 这个模型没启用；
+5. `pricing_missing` —— 价目没配（未核价不许调用，也不按 0 元记账）；
+6. `ready` —— 能用。
+
+每行还带「上次调用」的状态。**这张卡不发任何外部请求**，所以它证明不了服务商此刻
+是否可用——只证明配置齐不齐。改完配置刷新本页即可。

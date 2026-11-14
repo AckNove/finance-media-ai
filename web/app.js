@@ -698,6 +698,47 @@ function budgetCard(budget) {
   </div>`;
 }
 
+/**
+ * 每个模型现在能不能用：把三处拒绝理由（总开关 / 服务商 / 价目）压成一行结论。
+ * 判断全在后端，页面只负责把"原因 + 下一步 + 上次调用"摆出来。
+ */
+function modelReadinessCard(data) {
+  if (!data) return '';
+  const items = data.items || [];
+  const readyCount = data.ready_count || 0;
+  const tone = readyCount === items.length ? 'ok' : (readyCount ? 'warn' : 'bad');
+  const lastCall = (call) => {
+    if (!call) return '<span class="muted">还没调用过</span>';
+    if (call.ok) return `<span class="tag ok">${esc(call.status)}</span>`;
+    const reason = call.error_message ? ` title="${esc(call.error_message)}"` : '';
+    return `<span class="tag bad"${reason}>${esc(call.status)}</span>`;
+  };
+  return `<div class="card" id="model-readiness"><h2>每个模型现在能不能用
+    <span class="tag ${tone}">${readyCount} / ${items.length} 可用</span></h2>
+    <div class="note">${esc(data.note || '')}
+      这里只看配置与历史调用记录，<b>不发起任何外部请求</b>，也不显示密钥内容。</div>
+    <div class="scroll"><table><thead><tr>
+      <th>模型</th><th>可用</th><th>原因 / 下一步</th><th>价目</th><th>上次调用</th>
+    </tr></thead><tbody>
+      ${items.map((row) => `<tr>
+        <td><span class="mono">${esc(row.model)}</span>
+          <div class="muted">${esc(row.display_name || '')}</div></td>
+        <td>${row.ready
+          ? (row.actionable ? '<span class="tag ok">能调</span>' : '<span class="tag warn">能调，但上次失败</span>')
+          : '<span class="tag bad">调不了</span>'}</td>
+        <td>${row.ready
+          ? '<span class="muted">—</span>'
+          : `<code>${esc(row.blocked_reason)}</code><div class="muted">${esc(row.next_step || '')}</div>`}</td>
+        <td>${row.has_price
+          ? `<span class="mono">${esc(row.input_price_per_1k_cny)} / ${esc(row.output_price_per_1k_cny)}</span>
+             <div class="muted">${esc(row.price_checked_at || '未标注核对日期')}</div>`
+          : '<span class="tag warn">未配价目</span>'}</td>
+        <td>${lastCall(row.last_call)}</td>
+      </tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+
 async function pageTaskDetail(view, params) {
   const id = params.id;
   const [detail, events, artifacts] = await Promise.all([
@@ -2039,10 +2080,11 @@ async function pageReview(view) {
 }
 
 async function pageModels(view) {
-  const config = await api('/workspace/config');
+  const [config, readiness] = await Promise.all([api('/workspace/config'), api('/system/models')]);
   if (!config.ok) { view.innerHTML = failure(config); return; }
   const models = config.data.models || [];
   view.innerHTML = `
+    ${readiness.ok ? modelReadinessCard(readiness.data) : failure(readiness)}
     <div class="card"><h2>模型与价目</h2>
       ${table([
         { title: '服务商', key: 'provider' },

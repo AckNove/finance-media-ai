@@ -21,6 +21,7 @@ from backend.app.core.config import get_agent_routing
 from backend.app.models.enums import ResearchTaskStatus, TaskEventType
 from backend.app.models.execution import ResearchTask, TaskEvent
 from backend.app.models.metering import ModelCall, ToolCall
+from backend.app.schemas.model_readiness import ModelsReadinessOut, to_out
 from backend.app.schemas.monitoring import (
     DailySummaryOut,
     HistoryDayOut,
@@ -29,6 +30,7 @@ from backend.app.schemas.monitoring import (
 from backend.app.schemas.research_task import CostBucket, CostSummaryOut, ProviderStatusOut
 from backend.app.services.agent_registry import load_roster
 from backend.app.services.daily_service import collect_daily
+from backend.app.services.model_readiness import collect
 
 router = APIRouter(
     prefix="/system",
@@ -185,6 +187,34 @@ def get_costs(db: DbSession) -> CostSummaryOut:
         by_task=by_task,
         pricing_unknown_calls=pricing_unknown,
         note=_cost_note(model_calls, pricing_unknown),
+    )
+
+
+@router.get(
+    "/models",
+    response_model=ModelsReadinessOut,
+    summary="每个模型现在能不能调（缺什么、上次调用怎么样）",
+)
+def get_models(db: DbSession) -> ModelsReadinessOut:
+    """把三处拒绝理由（功能开关 / 服务商解析 / 价目）压成一行结论。
+
+    页面只读；这里不发起任何外部请求，只看配置与历史调用记录。
+    """
+    items = collect(db)
+    ready = sum(1 for item in items if item.ready)
+    if not items:
+        note = "config/models.yaml 里还没有登记任何模型。"
+    elif ready == 0:
+        note = "当前一个模型也用不了：按下面每一行的「下一步」处理，改完刷新本页即可。"
+    elif ready < len(items):
+        note = f"{len(items)} 个模型里 {ready} 个能用；不能用的原因写在对应行里。"
+    else:
+        note = f"{ready} 个模型都能用（价目与密钥都齐）。"
+    return ModelsReadinessOut(
+        model_feature=any(item.ready for item in items) or not items,
+        items=to_out(items),
+        ready_count=ready,
+        note=note,
     )
 
 

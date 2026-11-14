@@ -201,3 +201,17 @@ def test_the_costs_page_says_where_the_money_went(source: str) -> None:
     # 没标用途的不许猜，未绑定任务的单独列——两条口径都得写在页面上
     assert "未标用途" in costs
     assert "未绑定任务" in costs
+
+
+def test_the_models_page_says_why_a_model_cannot_be_used(source: str) -> None:
+    """模型设置页以前只列价目，看不出"这个模型现在能不能调、缺什么"。"""
+    assert "function modelReadinessCard(data)" in source
+    card = source.split("function modelReadinessCard", 1)[1][:2600]
+    assert "每个模型现在能不能用" in card
+    # 三个结论都要有：能调 / 能调但上次失败 / 调不了
+    assert "能调" in card and "调不了" in card and "上次失败" in card
+    assert "blocked_reason" in card and "next_step" in card
+    assert "不发起任何外部请求" in card
+    models = source.split("async function pageModels", 1)[1][:1200]
+    assert "api('/system/models')" in models
+    assert "modelReadinessCard(readiness.data)" in models
