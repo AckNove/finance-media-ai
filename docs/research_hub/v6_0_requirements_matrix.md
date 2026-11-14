@@ -34,8 +34,8 @@
 | 迁移框架 | `backend/migrations/versions/` 7 个版本（到 `b6_v6_operations`） | DONE | — |
 | 日志与异常 | `core/logging.py` + `core/errors.py` + `api/middleware.py`（request_id） | DONE | — |
 | 任务队列 / 状态持久化 / 并发 | `execution/{runtime,worker,orchestrator}.py`（租约 + attempt_token + 事件序号） | DONE | — |
-| Windows 启动脚本 | `scripts/start.ps1`（BOM、端口检查、健康探测） | DONE | — |
-| Windows 停止脚本 | `scripts/stop.ps1`（只杀 `uvicorn backend.app.main`，`-Force` 才强杀） | DONE | 已实测杀掉真实监听 |
+| Windows 启动脚本 | `scripts/start.ps1`（BOM、端口检查、健康探测）+ **默认拉起后台执行器**（`run_worker --forever`，pid 与启动时间写 `logs\worker.pid`；`-NoWorker` 可关） | DONE | 真机两轮：8/8 自检、worker 起停干净、端口释放 |
+| Windows 停止脚本 | `scripts/stop.ps1`（只杀 `uvicorn backend.app.main` 与自己启动的 worker——靠启动时间而不是 pid 判身份；`-Force` 才强杀） | DONE | 已实测杀掉真实监听 |
 | 数据备份与恢复 | `backend/scripts/{backup_db,restore_db}.py`（在线备份 + sha256 说明 + 受保护库拒写 + 恢复前留副本） | DONE | `tests/test_backup_restore.py` 13 例 |
 | 环境诊断 | `backend/scripts/doctor.py`（22 项：依赖/FFmpeg/字体/浏览器/端口/磁盘/库版本/配置/Provider） | DONE | 仍保留更轻的 `preflight.py` |
 | 服务健康检查 | `GET /health`、`GET /api/system/status` | DONE | — |

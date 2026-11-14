@@ -51,6 +51,17 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 .venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 ```
 
+`start.ps1` **默认连后台执行器一起起**（`python -m backend.scripts.run_worker --forever`）。
+
+为什么默认带：没有执行器时，你在界面里建的研究任务会一直停在「已创建」——不是系统坏了，
+是没人去认领子任务。真实故障就发生过一次，所以现在一键启动把两件事都做了。
+
+- 只想看看页面、不想让它自动跑任务：`scripts\start.ps1 -NoWorker`
+- 执行器日志：`logs\worker.out.log`（错误 `logs\worker.err.log`）；进程号与启动时间：`logs\worker.pid`
+- `stop.ps1` 会连执行器一起停，并且**只停它自己启动的那个**（pid 会复用，所以 pid 文件里记了启动时间，
+  对不上就跳过，要强停加 `-Force`）
+- 执行器花钱仍受预算闸门约束（单次/任务/当日三道），不会因为"自动跑"就绕过成本控制
+
 打开 <http://127.0.0.1:8000/app/> 就是工作台（20 个页面，全部走真实接口）。
 
 - 端口被占用：`scripts\start.ps1 -Port 8011`

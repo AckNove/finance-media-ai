@@ -87,6 +87,51 @@ foreach ($current in $Port) {
 }
 
 Write-Step "已停止 $stopped 个服务进程；跳过 $refused 个非本项目进程。"
+
+# --- 后台执行器（worker） ------------------------------------------------------
+# start.ps1 会把 worker 的 pid 写进 logs\worker.pid。它不占端口，按端口找不到，
+# 必须单独收：否则服务停了，worker 还在后台调模型花钱。
+$pidFile = Join-Path $root "logs\worker.pid"
+if (Test-Path $pidFile) {
+    $lines = Get-Content $pidFile -ErrorAction SilentlyContinue
+    $workerId = ""
+    $workerStarted = ""
+    foreach ($line in $lines) {
+        if ($line -match '^\s*pid\s*=\s*(\d+)\s*$') { $workerId = $Matches[1] }
+        elseif ($line -match '^\s*started\s*=\s*(.+?)\s*$') { $workerStarted = $Matches[1] }
+        elseif ($line -match '^\s*(\d+)\s*$') { $workerId = $Matches[1] }
+    }
+    $workerProc = if ($workerId) { Get-Process -Id ([int]$workerId) -ErrorAction SilentlyContinue } else { $null }
+    if (-not $workerId) {
+        Write-Warn "logs\worker.pid 里没有进程号，忽略"
+    } elseif (-not $workerProc) {
+        Write-Step "后台执行器（pid $workerId）已经不在运行"
+    } else {
+        # 光凭 pid 不够：Windows 会复用进程号。核对启动时间，对不上就当它已经换了主人。
+        $ours = $true
+        if ($workerStarted) {
+            try {
+                $recorded = [datetime]::Parse($workerStarted).ToUniversalTime()
+                $actual = $workerProc.StartTime.ToUniversalTime()
+                if ([math]::Abs(($actual - $recorded).TotalSeconds) -gt 120) { $ours = $false }
+            } catch {
+                # 读不到启动时间就退回看命令行，两边都读不到才放过它
+                $cmd = Get-CommandLine ([int]$workerId)
+                if ($cmd -and $cmd -notmatch "run_worker") { $ours = $false }
+            }
+        }
+        if (-not $ours -and -not $Force) {
+            Write-Warn ("logs\worker.pid 指向 pid {0}，但它不像是这次启动的执行器，跳过（确认要停加 -Force）。" -f $workerId)
+        } elseif ($WhatIf) {
+            Write-Step "-WhatIf：会停止后台执行器 pid $workerId"
+        } else {
+            Stop-Process -Id ([int]$workerId) -Force -ErrorAction SilentlyContinue
+            Write-Step "后台执行器已停止（pid $workerId）"
+        }
+    }
+    if (-not $WhatIf) { Remove-Item $pidFile -Force -ErrorAction SilentlyContinue }
+}
+
 if ($stopped -eq 0 -and $refused -eq 0) {
     Write-Step "没有需要停止的进程。"
 }

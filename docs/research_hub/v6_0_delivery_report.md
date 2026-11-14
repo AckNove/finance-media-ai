@@ -910,3 +910,55 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
   那一步在渲染阶段（`render_job --narration`）才会按实测重排时间轴。
 * 脚本里的"钩子句"只作为开场镜的口播，没有单独做标题卡；要更强开场需要人工在分镜表里改。
 * 多镜头复用同一句话时会各排一镜（不去重），因为重复多半是脚本自身的问题，交给审核环节发现。
+
+---
+
+## §27 一键启动终于把执行器也带上了
+
+### §27.1 问题：界面建的任务永远停在「已创建」
+
+`scripts/start.ps1` 原来只起 `uvicorn`，`backend/scripts/run_worker.py` 要另外手工开一个窗口。
+第一次真机验收时踩到的就是这个：界面里建了研究任务，刷新十几次都是「已创建」，
+翻日志才发现没有任何进程去认领子任务。这不是"系统坏了"，是入场第一步就绊住。
+
+### §27.2 改法
+
+* `scripts/start.ps1` 新增「5. 后台执行器」段：起服务后用 `Start-Process` 拉起
+  `python -m backend.scripts.run_worker --forever`（隐藏窗口，日志写 `logs\worker.out.log`
+  与 `logs\worker.err.log`），并把 **pid 与启动时间** 写进 `logs\worker.pid`：
+  `pid=26608` / `started=2026-11-14T04:29:12.6145906Z`。
+* 参数 `-NoWorker` 给"只想看看页面"的场景；`finally` 里服务退出时会顺手停掉执行器。
+* `scripts/stop.ps1` 收尾时解析那个 pid 文件：**先比对启动时间**（Windows 会复用进程号，
+  只认 pid 早晚会杀错人），差超过 120 秒就判"不是这次启动的"并跳过，要强停加 `-Force`；
+  命令行读得到时才退回命令行匹配。
+
+### §27.3 为什么 pid 文件要记两行
+
+第一版只写了 pid，真机第一轮 `stop.ps1` 就报「pid 648 不像是本项目的执行器，跳过」——
+实测 `Get-CimInstance` 拿到的 `CommandLine` 偶尔是空串（进程刚被拉起或正在退出时），
+命令行判断就失效了。加一行启动时间之后，判断不依赖命令行也能做对。
+
+### §27.4 真机验证（两轮，端口 8099）
+
+| 步骤 | 实测 |
+| --- | --- |
+| `start.ps1 -Port 8099 -NoBrowser -SkipPreflight` | 「启动自检：8/8 项通过」、`GET /health -> 200`、worker 日志首行 `{"event": "start", "database_url": "…finance_media.work.db", "worker": "worker-daemon"}` |
+| `logs\worker.pid` | `pid=26608` / `started=2026-11-14T04:29:12.6145906Z` |
+| `stop.ps1 -Port 8099` | 「已停止 1 个服务进程；跳过 0 个」、「后台执行器已停止（pid 26608）」、「端口 8099 已释放」 |
+| 收尾核对 | 端口监听数 0、pid 文件已删、无残留 `run_worker` 进程 |
+
+用的是 `data/finance_media.work.db` 工作库，**受保护的真实开发库自始至终没碰**。
+
+### §27.5 顺手修掉的两个小坑
+
+* **BOM**：`edit`/`write` 工具保存 `.ps1` 不带 BOM，PowerShell 5.1 在中文机器上会按 GBK 解析 →
+  `tests/test_scripts_encoding.py` 立刻红。这次统一把三个脚本改回 **UTF-8 带 BOM + CRLF**。
+* **护栏太粗**：原来的断言是"stop.ps1 里不许出现 `Remove-Item`"，可删自己的 `logs\worker.pid`
+  是合理操作。改成**逐行检查**：含 `Remove-Item` 的行不得出现 `.db`、`data`、`-Recurse`。
+
+### §27.6 测试
+
+`tests/test_scripts_encoding.py` 新增 2 例：`test_start_script_runs_the_worker_by_default`
+（必须有 `-NoWorker`、`run_worker`、`worker.pid`、`started=`）与
+`test_stop_script_only_kills_the_worker_it_started`（必须读回启动时间、比对 `StartTime`、
+留 `-Force` 口子）。文件 15 例全过。

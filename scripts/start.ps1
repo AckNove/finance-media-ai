@@ -17,7 +17,10 @@ param(
     [string]$Database = "",
     [switch]$NoBrowser,
     [switch]$Reload,
-    [switch]$SkipPreflight
+    [switch]$SkipPreflight,
+    # 默认连后台执行器一起起：不跑 worker，界面上建的研究任务会一直停在"已创建"，
+    # 每天第一次用的人都会以为系统坏了。不想让它自动推进就加 -NoWorker。
+    [switch]$NoWorker
 )
 
 $ErrorActionPreference = "Stop"
@@ -102,7 +105,33 @@ if (-not $SkipPreflight) {
     }
 }
 
-# --- 5. 启动 ----------------------------------------------------------------
+# --- 5. 后台执行器 ------------------------------------------------------------
+# 没有 worker，任务只会停在 created/ready；配了模型也不会有人去推进。
+# 用独立进程而不是 Start-Job：Stop-Job 杀不掉它拉起的 python 子进程，
+# 结果就是"服务停了、worker 还在后台花钱"。pid 写进 logs\worker.pid 供 stop.ps1 收尾。
+$workerProcess = $null
+if (-not $NoWorker) {
+    $logDir = Join-Path $root "logs"
+    New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+    $workerOut = Join-Path $logDir "worker.out.log"
+    $workerErr = Join-Path $logDir "worker.err.log"
+    $workerProcess = Start-Process -FilePath $python `
+        -ArgumentList @("-m", "backend.scripts.run_worker", "--forever") `
+        -WorkingDirectory $root -WindowStyle Hidden -PassThru `
+        -RedirectStandardOutput $workerOut -RedirectStandardError $workerErr
+    # 记下 pid 和启动时间：Windows 会复用进程号，stop.ps1 靠"启动时间对得上"才敢动手，
+    # 也不能只靠命令行判断——实测 python 子进程的 CommandLine 偶尔读出来是空的。
+    $startedAt = ""
+    try { $startedAt = (Get-Process -Id $workerProcess.Id).StartTime.ToUniversalTime().ToString("o") } catch { }
+    Set-Content -Path (Join-Path $logDir "worker.pid") `
+        -Value @("pid=$($workerProcess.Id)", "started=$startedAt") -Encoding ascii
+    Write-Step "后台执行器已启动（pid $($workerProcess.Id)）：会自动推进你建的研究任务，"
+    Write-Step "  花钱仍受预算闸门约束；日志 logs\worker.out.log；不想自动跑就加 -NoWorker"
+} else {
+    Write-Warn "按 -NoWorker 跳过后台执行器：任务会停在原地，需要手动跑 python -m backend.scripts.run_worker"
+}
+
+# --- 6. 启动 ----------------------------------------------------------------
 $url = "http://${BindHost}:${Port}"
 Write-Step "工作台：$url/app/ ｜ 接口文档：$url/docs ｜ 健康检查：$url/api/system/status"
 
@@ -140,6 +169,13 @@ try {
     & $python @arguments
 } finally {
     if ($probe) { Remove-Job -Job $probe -Force -ErrorAction SilentlyContinue }
+    if ($workerProcess -and -not $workerProcess.HasExited) {
+        # 前台服务退出（Ctrl+C）时把 worker 一起收掉，别留在后台继续花钱。
+        Stop-Process -Id $workerProcess.Id -Force -ErrorAction SilentlyContinue
+        Write-Step "后台执行器已停止（pid $($workerProcess.Id)）"
+    }
+    $pidFile = Join-Path $root "logs\worker.pid"
+    if (Test-Path $pidFile) { Remove-Item $pidFile -Force -ErrorAction SilentlyContinue }
     Write-Step "服务已退出。"
 }
 exit $LASTEXITCODE

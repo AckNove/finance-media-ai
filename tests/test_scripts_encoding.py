@@ -33,8 +33,15 @@ def test_powershell_scripts_are_utf8_with_bom(relative):
 def test_powershell_scripts_refuse_the_protected_database(relative):
     text = (PROJECT_ROOT / relative).read_bytes()[len(BOM) :].decode("utf-8")
     if relative.endswith("stop.ps1"):
-        # 停止脚本不碰库，但也不能出现删库/迁移命令
-        assert "Remove-Item" not in text
+        # 停止脚本不碰库：允许删自己的 logs\worker.pid 这类运行时文件，
+        # 但不许在任何 Remove-Item 里出现库/data 目录/递归删除。
+        for line in text.splitlines():
+            if "Remove-Item" not in line:
+                continue
+            lowered = line.lower()
+            assert ".db" not in lowered, f"停止脚本不许删数据库文件：{line.strip()}"
+            assert "data" not in lowered, f"停止脚本不许动 data 目录：{line.strip()}"
+            assert "-recurse" not in lowered, f"停止脚本不许递归删除：{line.strip()}"
         return
     assert "exit 2" in text, "碰到真实开发库必须非零退出，而不是继续跑"
 
@@ -44,6 +51,28 @@ def test_start_and_stop_share_a_default_port():
     stop = (PROJECT_ROOT / "scripts/stop.ps1").read_bytes()[len(BOM) :].decode("utf-8")
     assert "[int]$Port = 8000" in start
     assert "[int[]]$Port = @(8000)" in stop
+
+
+def test_start_script_runs_the_worker_by_default():
+    """一键启动必须把后台执行器一起拉起来。
+
+    真实故障：脚本只起 uvicorn，界面上建的研究任务就永远停在「已创建」——
+    用户以为系统坏了，其实是没人去认领子任务。所以默认要起 worker，
+    同时留一个 -NoWorker 给"只想看看页面"的场景。
+    """
+    text = (PROJECT_ROOT / "scripts/start.ps1").read_bytes()[len(BOM) :].decode("utf-8")
+    assert "[switch]$NoWorker" in text, "要留一个明确的开关，而不是让人改脚本"
+    assert "backend.scripts.run_worker" in text
+    assert "worker.pid" in text, "pid 要落盘，否则 stop 脚本无从下手"
+    assert "started=" in text, "只记 pid 不够：Windows 会复用进程号，必须记启动时间"
+
+
+def test_stop_script_only_kills_the_worker_it_started():
+    text = (PROJECT_ROOT / "scripts/stop.ps1").read_bytes()[len(BOM) :].decode("utf-8")
+    assert "worker.pid" in text
+    assert "workerStarted" in text, "要把启动时间读回来；对不上就说明这号已经换了主人"
+    assert "StartTime" in text, "判断是不是自己启动的那个进程"
+    assert "$Force" in text, "拿不准时给一个人工确认的口子，而不是硬杀"
 
 
 def test_watchdog_has_backoff_and_restart_ceiling():
