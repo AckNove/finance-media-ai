@@ -321,6 +321,32 @@ def start_job_render(
     }
 
 
+@router.get(
+    "/jobs/{job_id}/preflight",
+    summary="渲染前预检（缺素材/未登记/授权不明/画板坏/没旁白）",
+)
+def get_job_preflight(
+    job_id: str = PathParam(min_length=1, max_length=80),
+    narration: bool = Query(default=False, description="按要配音的标准检查旁白列"),
+) -> dict[str, Any]:
+    """开渲之前能查出来的事，别等渲了两分钟再报错。
+
+    只读：不建工程、不起引擎、不开 ffmpeg、不写任何文件。
+    """
+    job_dir = _resolve_inside(JOBS_ROOT / job_id, JOBS_ROOT)
+    if not job_dir.is_dir():
+        raise NotFoundError(f"任务目录不存在：{job_id}", details={"reason": "unknown_job"})
+    from backend.app.video.preflight import PreflightError, preflight_job
+
+    try:
+        report = preflight_job(job_dir, narration=narration)
+    except PreflightError as error:
+        raise DomainValidationError(error.message, details={"reason": error.reason}) from error
+    # 这里只有一个 ok，含义就是「这个任务能不能开渲」——再套一层传输 ok 只会让
+    # ok=false 到底指接口失败还是任务不合格说不清（页面也因此更好读）。
+    return report.as_dict()
+
+
 @router.get("/jobs/{job_id}/render", summary="看后台渲染进度（读 qc/render_run.json）")
 def get_job_render(
     job_id: str = PathParam(min_length=1, max_length=80),

@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：57
+- 路径数：58
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -91,6 +91,7 @@
 | POST | `/api/workspace/jobs/{job_id}/content-qc` | 内容质检（数字出处 / 来源覆盖 / 字幕来源 / 素材授权） | 人 | `job_id`（path，必填，string） | — | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/workspace/jobs/{job_id}/file` | 读取任务产物文件（?path=output/xxx.mp4） | 人 | `job_id`（path，必填，string）、`path`（query，必填，string） | — | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/workspace/jobs/{job_id}/pipeline` | 分镜 → 时间轴（可选：真渲染 + 技术质检） | 人 | `job_id`（path，必填，string） | application/json → `object | null` | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/workspace/jobs/{job_id}/preflight` | 渲染前预检（缺素材/未登记/授权不明/画板坏/没旁白） | 人 | `job_id`（path，必填，string）、`narration`（query，可选，boolean） | — | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/workspace/jobs/{job_id}/render` | 看后台渲染进度（读 qc/render_run.json） | 人 | `job_id`（path，必填，string） | — | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/workspace/jobs/{job_id}/render` | 后台渲染成片（立刻返回，用 GET 看进度） | 人 | `job_id`（path，必填，string） | application/json → `object | null` | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/workspace/search` | 真实网络搜索（搜狗/360/bing 降级） | 人 | `q`（query，必填，string）、`site`（query，可选，string）、`limit`（query，可选，integer） | — | 200 `object`；404 `object`；409 `object`；422 `object`；503 `object` |

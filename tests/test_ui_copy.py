@@ -71,3 +71,14 @@ def test_home_shows_what_to_publish_today(source: str) -> None:
     assert "今天该发什么" in source
     assert "api('/calendar?limit=100')" in source
     assert "系统不会自己发布" in source
+
+
+def test_video_page_runs_preflight_before_offering_a_render(source: str) -> None:
+    """渲染要十几分钟，缺素材这种问题必须在点按钮之前就说——预检卡不能是摆设。"""
+    assert "function preflightCard(pf, jobId)" in source
+    assert "/preflight" in source
+    # 预检有硬问题时渲染按钮必须是禁用状态，而不是让人点下去再等失败
+    render_button = [line for line in source.splitlines() if 'id="render-film"' in line]
+    assert render_button, "找不到渲染按钮"
+    assert any("preflightBlocked(preflight)" in line for line in render_button), render_button[0].strip()[:160]
+    assert 'title="先解决预检里的硬问题"' in source

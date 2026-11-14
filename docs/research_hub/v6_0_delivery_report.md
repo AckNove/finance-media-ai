@@ -1285,7 +1285,7 @@ purpose="纯色/渐变底板 #xxxx", credit="本仓库程序生成的纯色底�
 
 **测试**：`tests/test_backup_verify.py` 9 例（真备份通过、截断文件、0 字节、文件不存在、备份缺表、
 行数差异只报不判失败、结论落盘、`latest_backup`、CLI 三个退出码）；`tests/test_daily_check.py` 新增
-2 例（没验过被提醒、验不过把原因带出来）。全量 **1229 passed, 2 skipped**。
+2 例（没验过被提醒、验不过把原因带出来）。全量 **1257 passed, 2 skipped**。
 
 ---
 
@@ -1373,7 +1373,7 @@ GET /api/system/status -> 200
 | `scripts/stop.ps1` | 无窗口的控制台进程不再空等 3 秒，如实说明后直接结束 |
 | `docs/research_hub/v6_0_operator_manual.md` | §1.3 写明两种写法与"库不存在会自动建表" |
 
-全量 `pytest -o addopts="" -q` → **1229 passed, 2 skipped, 1 warning**（唯一 warning 仍是
+全量 `pytest -o addopts="" -q` → **1257 passed, 2 skipped, 1 warning**（唯一 warning 仍是
 `agent_runs ↔ research_subtasks` 双向外键环，属设计内）。
 
 另外记一条操作纪律：`edit`/`write` 工具保存 `.ps1` **不会带 BOM**，而 PowerShell 5.1 会按 GBK
@@ -1469,7 +1469,7 @@ _WARN_STATUSES = frozenset({"no_gate"})
 | `tests/test_export_gate.py`（新增） | 7 例：撤回的片子被拒且不写文件、没渲出来被拒、`no_gate` 允许但要写明、清单含片子路径/大小/规格/质检通过、质检失败项如实列出、没绑任务说明、接口层 422 带 `reason=draft_invalid` |
 | `web/app.js` | 导出成功提示里加上「先看目录里的 publish_checklist.md」 |
 
-全量 `pytest -o addopts="" -q` → **1229 passed, 2 skipped, 1 warning**。
+全量 `pytest -o addopts="" -q` → **1257 passed, 2 skipped, 1 warning**。
 
 ---
 
@@ -1571,4 +1571,95 @@ GET /api/research-reports → items[0].progress
 | `web/app.js` | 新增「往下走到哪一步」列 + `progressCell()` + `videoButtonLabel()` |
 | `tests/test_report_progress.py`（新增） | 9 例 |
 
-全量 `pytest -o addopts="" -q` → **1229 passed, 2 skipped, 1 warning**。
+全量 `pytest -o addopts="" -q` → **1257 passed, 2 skipped, 1 warning**。
+
+### 38 渲染前预检：别让人白等十几分钟
+
+#### 38.1 为什么加这一层
+
+渲染一条 40 秒的竖屏要十几分钟。可失败的原因里，**大多数根本不需要引擎**：素材清单没写、
+分镜引用的素材没登记、文件被删了、组合画板 JSON 坏了、要配音但一句旁白都没有。
+这些原来都要等引擎起来、`prepare_clips` 跑到那一条时才炸，而且报错位置离真正的原因很远
+（典型：报 `empty_clip`，实际是画板 JSON 少了 `canvas`）。
+
+现在开渲之前先做一遍**纯文件与 schema 的检查**：不连引擎、不开 ffmpeg、不联网、不写文件。
+
+#### 38.2 查什么
+
+| 级别 | 检查码 | 含义 |
+| --- | --- | --- |
+| error | `missing_storyboard` | 还没有分镜文件 |
+| error | `invalid_storyboard` | 分镜不合法（帧对齐、字段、枚举），带校验器的原因码 |
+| error | `missing_manifest` | 有非纯色素材，但没有素材清单（这一条会**吞掉**逐条的 `unknown_asset`，不制造噪音） |
+| error | `unknown_asset` | 分镜用了清单里没有的素材（允许 `S03A → S03` 这一种退回，别的不猜） |
+| error | `missing_asset_file` | 清单里写的文件不存在 / 没写路径 |
+| error | `empty_asset_file` | 文件是 0 字节 |
+| error | `asset_outside_job` | 路径跑到任务目录之外 |
+| error | `bad_composition` | 画板不是合法 JSON / 缺 `canvas.w`·`canvas.h` |
+| error | `license_denied` | 清单写的是「不可商用」之类的值 |
+| error | `license_unclear` | A 类真实素材没写商用授权（授权不明一律不渲） |
+| error | `no_narration_text` | 要配音，但一句旁白都没有 |
+| warning | `composition_canvas_mismatch` | 画板画布与分镜不一致，会被缩放 |
+| warning | `bad_solid_colour` | 纯色底颜色不是 `#rrggbb`，会退回默认深色 |
+| warning | `missing_narration_text` | 部分镜头没旁白，那些镜头会是静音画面 |
+| warning | `license_unclear` | 自绘素材没写商用授权（能渲，发之前补上） |
+
+分级原则：**现在开渲必然失败的算 error，结果可能不是你想要的算 warning**。
+预检的 error 一出现，`render_job` 直接拒绝，并沿用渲染器自己的原因码
+（`RenderError(reason=..., ...)`），所以排查时看到的码与以前一致，只是提前了十几分钟。
+
+#### 38.3 接了哪三个地方
+
+1. `render_job(..., preflight=True)`：开渲第一步就跑，有 error 立刻抛；warning 进 `notes`，
+   回执里多一个 `preflight` 段（`qc/render_run.json` 里能看到）。
+2. `python -m backend.scripts.render_job --job <id> --check`：只预检，不渲、不写状态文件；
+   退出码 `0` 能渲 / `1` 有硬问题 / `2` 任务目录不存在。
+3. `GET /api/workspace/jobs/{job_id}/preflight?narration=false`，视频页多一张「渲染前预检」卡：
+   硬问题与提醒逐条列出（带镜头号），有硬问题时**渲染按钮直接禁用**，标题写「先解决预检里的硬问题」；
+   卡片上有一个「按要配音的标准再查一遍」按钮，用 `?narration=true` 重查（配音要求更严）。
+
+接口返回里**只有一个 `ok`**，含义就是「这个任务能不能开渲」——再套一层传输状态会让
+`ok=false` 到底指接口失败还是任务不合格说不清。
+
+#### 38.4 拿仓库里 11 个真实任务目录跑一遍
+
+```
+20261110_jgb_gold_repricing   missing_storyboard  （历史手工作品，没有分镜表）
+gate_demo_after_confirm       通过  4 镜头 / 18.0 秒 / 素材 2 个
+media_toolchain_check         missing_storyboard
+phase2_media_engine_demo      通过  7 镜头 / 42.5 秒 / 素材 7 个
+ui_acceptance                 missing_storyboard
+v5_flow_acceptance_v2         通过  8 镜头 / 89.3 秒 / 素材 2 个
+v5_research_film              通过  8 镜头 / 71.67 秒 / 素材 5 个
+v6_accept_chain_11131719      通过  3 镜头 / 27.87 秒 / 素材 1 个
+v6_accept_company_v2          通过  4 镜头 / 29.27 秒 / 素材 2 个
+v6_accept_industry            通过  3 镜头 / 37.83 秒 / 素材 1 个
+video_engine_demo             missing_storyboard
+```
+
+六个成片任务全部通过（说明预检没有误报），四个没有分镜表的目录如实报 `missing_storyboard`。
+
+页面（Playwright + 系统 Chrome，探针库是工作库副本、真实开发库未触碰）：
+`#/video?job=v6_accept_company_v2` 显示「渲染前预检 能开渲 · 4 个镜头 · 29.266667 秒 · 1080×1920 @ 30fps ·
+非纯色素材 2 个」，渲染按钮可用；点「按要配音的标准再查一遍」后卡片原地重查，`page errors: []`。
+另把一份"有硬问题"的载荷喂给同一段模板渲染，确认列表可读：
+`missing_asset_file CARD_sh02：文件不存在 …（镜头 sh02）` /
+`license_denied CARD_sh03：清单里写的是「editorial_only」…（镜头 sh03）`。
+
+#### 38.5 改动清单与测试
+
+| 文件 | 改动 |
+| --- | --- |
+| `backend/app/video/preflight.py`（新增） | `preflight_job` / `PreflightReport` / `PreflightFinding` / `to_markdown` / `PreflightError` |
+| `backend/app/video/render.py` | `render_job(..., preflight=True)`；`RenderReport.preflight` 进回执 |
+| `backend/scripts/render_job.py` | 新增 `--check`（只预检，三个退出码） |
+| `backend/app/api/routes/workspace.py` | 新增 `GET /jobs/{job_id}/preflight` |
+| `backend/app/api/router.py` | 权限清单加一行（操作数 73 → 74） |
+| `web/app.js` | 新增 `preflightCard()` / `preflightBlocked()`、预检卡、渲染按钮按预检禁用、重查按钮 |
+| `tests/test_video_preflight.py`（新增） | 23 例（含 CLI 三个退出码、"关掉预检就会走到起引擎那一步"） |
+| `tests/test_workspace_api.py` | +4 例（未知任务 404、没分镜、文件消失、就绪任务带 narration） |
+| `tests/test_ui_copy.py` | +1 例（视频页必须先预检、有硬问题时按钮禁用） |
+
+全量 `pytest -o addopts="" -q` → **1257 passed, 2 skipped, 1 warning**。
+
+**没做的事**：预检不判断内容对不对（那是内容质检），不猜路径，不替人补文件。

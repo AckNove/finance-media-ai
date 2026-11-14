@@ -1401,6 +1401,41 @@ function assetAuditCard(audit) {
   </div>`;
 }
 
+/** 预检没过就别让人白等十几分钟：硬问题一条条列出来，提醒也摆着。 */
+function preflightBlocked(result) {
+  return !(result && result.ok);
+}
+
+function preflightCard(pf, jobId) {
+  if (!pf) {
+    return '<h2>渲染前预检</h2><div class="note bad">预检接口没返回结果，先别开渲。</div>';
+  }
+  const errors = pf.errors || [];
+  const warnings = pf.warnings || [];
+  const tone = errors.length ? 'bad' : (warnings.length ? 'warn' : 'ok');
+  const title = errors.length ? `${errors.length} 个硬问题` : (warnings.length ? `${warnings.length} 条提醒` : '能开渲');
+  const line = (item) => {
+    const where = (item.shot_ids && item.shot_ids.length) ? `（镜头 ${item.shot_ids.join('、')}）` : '';
+    return `<li><code>${esc(item.check)}</code> ${esc(item.detail)}${esc(where)}</li>`;
+  };
+  const facts = pf.facts || {};
+  return `
+    <h2>渲染前预检 <span class="tag ${tone}">${esc(title)}</span></h2>
+    <p class="muted">
+      ${pf.storyboard_present
+        ? `${pf.shot_count} 个镜头 · ${pf.duration_seconds} 秒 · ${facts.width || '?'}×${facts.height || '?'} @ ${facts.fps || '?'}fps · 非纯色素材 ${pf.asset_count} 个`
+        : '这个任务还没有分镜文件'}
+    </p>
+    ${errors.length ? `<ul class="tight">${errors.map(line).join('')}</ul>` : ''}
+    ${warnings.length ? `<ul class="tight">${warnings.map(line).join('')}</ul>` : ''}
+    <div class="row">
+      <button class="btn ghost" id="preflight-recheck" data-job="${esc(jobId)}">按要配音的标准再查一遍</button>
+    </div>
+    <div class="note">这份检查只回答「文件齐不齐、登记对不对、授权清不清楚」，不判断内容好不好看。
+      它是开渲之前能查到的全部问题；渲完还有一次技术质检和一次内容质检。</div>
+    <div id="preflight-out"></div>`;
+}
+
 async function pageVideo(view) {
   const jobs = await loadJobs(true);
   const withOutput = jobs.filter((job) => job.has_output);
@@ -1412,6 +1447,7 @@ async function pageVideo(view) {
   const job = withOutput.find((item) => item.job_id === chosen) || withOutput[0];
   const file = job.outputs && job.outputs[0] ? job.outputs[0] : null;
   const detail = await api(`/workspace/jobs/${job.job_id}`);
+  const preflight = await api(`/workspace/jobs/${encodeURIComponent(job.job_id)}/preflight`);
   const qc = detail.ok && detail.data.qc_report ? detail.data.qc_report : '';
   const report = (detail.ok && detail.data.summary && detail.data.summary.report) || {};
   const calendar = await api('/calendar?limit=100');
@@ -1458,12 +1494,13 @@ async function pageVideo(view) {
     <div class="card"><h2>质检报告</h2>
       ${qc ? `<pre>${esc(qc)}</pre>` : '<div class="empty">没有 qc/qc_report.md</div>'}
     </div>
+    <div class="card" id="preflight-card">${preflightCard(preflight.ok ? preflight.data : null, job.job_id)}</div>
     <div class="card"><h2>流水线</h2>
       <p class="muted">读取该任务的 storyboard/storyboard.csv 与素材清单，交给引擎产出时间轴；
         「渲染成片」会真的调用引擎渲染整条片子，一条 40 秒的竖屏要十几分钟，期间不要关页面。</p>
       <div class="row">
         <button class="btn" id="build-timeline">只生成时间轴</button>
-        <button class="btn ghost" id="render-film">渲染成片（十几分钟）</button>
+        <button class="btn ghost" id="render-film" ${preflightBlocked(preflight) ? 'disabled title="先解决预检里的硬问题"' : ''}>渲染成片（十几分钟）</button>
         <button class="btn ghost" id="content-qc">内容质检（数字/来源/字幕）</button>
       </div>
       <div class="row">
@@ -1544,6 +1581,25 @@ async function pageVideo(view) {
       say(box, true, `已排期 #${entry.id}：${(entry.readiness && entry.readiness.label) || '就绪度未知'}`
         + `${entry.readiness && entry.readiness.next_step ? ' —— ' + entry.readiness.next_step : ''}${reportNote}`);
       setTimeout(() => route(), 900);
+    };
+  }
+
+  const recheck = document.getElementById('preflight-recheck');
+  if (recheck) {
+    recheck.onclick = async () => {
+      const card = document.getElementById('preflight-card');
+      const out = document.getElementById('preflight-out');
+      out.innerHTML = '<div class="note">正在按「要配音」的标准重查…</div>';
+      const result = await api(`/workspace/jobs/${encodeURIComponent(recheck.dataset.job)}/preflight?narration=true`);
+      if (!result.ok) { out.innerHTML = failure(result); return; }
+      card.innerHTML = preflightCard(result.data, recheck.dataset.job);
+      const button = document.getElementById('render-film');
+      if (button && result.data.errors && result.data.errors.length) {
+        button.disabled = true;
+        button.title = '先解决预检里的硬问题';
+      }
+      const again = document.getElementById('preflight-recheck');
+      if (again) again.onclick = recheck.onclick;
     };
   }
 

@@ -102,6 +102,7 @@ class RenderReport:
     notes: tuple[str, ...] = field(default=())
     narration: dict[str, Any] = field(default_factory=dict)
     asset_audit: dict[str, Any] = field(default_factory=dict)
+    preflight: dict[str, Any] = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -128,6 +129,7 @@ class RenderReport:
             "notes": list(self.notes),
             "narration": self.narration,
             "asset_audit": self.asset_audit,
+            "preflight": self.preflight,
             "ok": self.ok,
         }
 
@@ -692,6 +694,7 @@ def render_job(
     synthesize_narration_fn: Callable[..., Any] | None = None,
     fit_narration: bool = True,
     animate_plates: bool = True,
+    preflight: bool = True,
 ) -> RenderReport:
     """分镜 → 时间轴 → 成片 → 质检。任何一步缺东西都如实报 blocked，不伪造产物。"""
     root = Path(job_root).resolve()
@@ -708,6 +711,20 @@ def render_job(
         storyboard = load_storyboard(storyboard_path, fps=fps)
     except StoryboardError as error:
         raise RenderError("invalid_storyboard", f"{job_id}: 分镜不合法（{error.code}）：{error}") from error
+
+    # 开渲之前先做一遍纯文件检查：缺素材、清单没登记、画板 JSON 坏了、要配音却没词……
+    # 这些都等到 prepare_clips 或更后面才炸，白等两三分钟还看不见真正原因。
+    preflight_payload: dict[str, Any] = {}
+    preflight_notes: list[str] = []
+    if preflight:
+        from backend.app.video.preflight import preflight_job
+
+        report_check = preflight_job(root, narration=narration)
+        preflight_payload = report_check.as_dict()
+        if not report_check.ok:
+            first = report_check.errors[0]
+            raise RenderError(first.check, f"{job_id}: {first.detail}")
+        preflight_notes = [f"预检提醒：{item.detail}" for item in report_check.warnings]
 
     if engine is None:
         from backend.app.capabilities.media.engine import MediaEngineError as _EngineError
@@ -755,7 +772,7 @@ def render_job(
 
     narration_payload: dict[str, Any] = {}
     narration_audio: dict[str, Any] | None = None
-    notes: list[str] = []
+    notes: list[str] = list(preflight_notes)
     if narration:
         from backend.app.video.narration import narration_notes, synthesize_narration
 
@@ -899,6 +916,7 @@ def render_job(
         "engine_calls": tuple(calls),
         "notes": tuple(notes),
         "narration": narration_payload,
+        "preflight": preflight_payload,
     }
 
     if not do_render:

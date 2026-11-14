@@ -290,3 +290,54 @@ def test_render_status_of_unknown_job_is_404(client: Any, monkeypatch: pytest.Mo
     response = client.get("/api/workspace/jobs/nope/render")
     assert response.status_code == 404
     assert response.json()["error"]["details"]["reason"] == "unknown_job"
+
+
+# ------------------------------------------------------------------ 渲染前预检
+
+
+def test_preflight_of_unknown_job_is_404(client: Any, monkeypatch: pytest.MonkeyPatch,
+                                         tmp_path: Path) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    response = client.get("/api/workspace/jobs/nope/preflight")
+    assert response.status_code == 404
+    assert response.json()["error"]["details"]["reason"] == "unknown_job"
+
+
+def test_preflight_says_the_storyboard_is_missing(client: Any, monkeypatch: pytest.MonkeyPatch,
+                                                  tmp_path: Path) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    _make_job(tmp_path, "empty_job", with_storyboard=False)
+    body = client.get("/api/workspace/jobs/empty_job/preflight").json()
+    assert body["ok"] is False  # 只有一个 ok：这个任务能不能渲
+    assert body["storyboard_present"] is False
+    assert body["errors"][0]["check"] == "missing_storyboard"
+
+
+def test_preflight_flags_a_file_that_vanished(client: Any, monkeypatch: pytest.MonkeyPatch,
+                                              tmp_path: Path) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    job = _make_job(tmp_path, "gone_job", with_storyboard=True)
+    (job / "assets" / "chart.png").unlink()
+    body = client.get("/api/workspace/jobs/gone_job/preflight").json()
+    assert body["ok"] is False
+    assert body["errors"][0]["check"] == "missing_asset_file"
+    assert body["errors"][0]["shot_ids"] == ["sh02"]
+
+
+def test_preflight_passes_a_job_that_is_ready(client: Any, monkeypatch: pytest.MonkeyPatch,
+                                              tmp_path: Path) -> None:
+    from backend.app.api.routes import workspace as workspace_routes
+
+    monkeypatch.setattr(workspace_routes, "JOBS_ROOT", tmp_path)
+    _make_job(tmp_path, "demo_job", with_storyboard=True)
+    body = client.get("/api/workspace/jobs/demo_job/preflight?narration=true").json()
+    assert body["ok"] is True
+    assert body["shot_count"] == 2
+    assert body["facts"]["narration_shots"] == 2
+

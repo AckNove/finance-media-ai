@@ -73,6 +73,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--narration-provider", default="auto", choices=["auto", "edge", "sapi"])
     parser.add_argument("--narration-voice", default=None)
     parser.add_argument("--jobs-root", default=None, help="默认 content/jobs")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="只做渲染前预检（缺素材/未登记/授权不明/画板坏/没旁白），不渲也不写状态文件",
+    )
     args = parser.parse_args(argv)
 
     jobs_root = Path(args.jobs_root) if args.jobs_root else JOBS_ROOT
@@ -80,6 +85,17 @@ def main(argv: list[str] | None = None) -> int:
     if not job_dir.is_dir():
         print(json.dumps({"error": "unknown_job", "job": args.job}, ensure_ascii=False))
         return 2
+
+    if args.check:
+        from backend.app.video.preflight import PreflightError, preflight_job
+
+        try:
+            report = preflight_job(job_dir, narration=bool(args.narration))
+        except PreflightError as error:
+            print(json.dumps({"error": error.reason, "message": error.message}, ensure_ascii=False))
+            return 2
+        print(json.dumps(report.as_dict(), ensure_ascii=False, indent=1))
+        return 0 if report.ok else 1
 
     payload = {
         "job_id": args.job,
