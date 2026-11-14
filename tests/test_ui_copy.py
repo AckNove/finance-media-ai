@@ -270,3 +270,17 @@ def test_a_topic_can_start_a_research_task_from_the_list(source: str) -> None:
     assert "'task_in_progress'" in source
     # 列表每次重渲染都要重新绑按钮，否则新行点了没反应
     assert source.count("bindResearchButtons();") >= 2
+
+
+def test_the_report_page_shows_the_whole_chain(source: str) -> None:
+    """报告 → 脚本 → 成片 → 排期 → 导出散在四个页面里，缺一条从头到尾看得见的线。"""
+
+    assert 'data-chain="${row.id}"' in source
+    assert "const chainCard = (chain)" in source
+    assert "/chain`" in source
+    # 四种状态都要有中文说法，不能把 done/current/blocked/missing 直接甩给用户
+    assert "const CHAIN_TEXT = { done:" in source
+    assert "轮到这一步" in source
+    assert "卡住" in source
+    # "current 只给第一段没做完的"这条口径要写在页面上
+    assert "只给第一段没做完的" in source

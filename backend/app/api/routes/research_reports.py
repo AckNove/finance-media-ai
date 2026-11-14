@@ -24,6 +24,7 @@ from backend.app.research.draft_gate import (
 )
 from backend.app.research.persistence import HUMAN_REVIEW_STATUSES, set_human_review
 from backend.app.schemas.common import Page
+from backend.app.schemas.content_chain import ContentChainOut
 from backend.app.schemas.draft_gate import DraftReadinessOut
 from backend.app.schemas.finding_check import (
     FindingCheckOut,
@@ -38,6 +39,7 @@ from backend.app.schemas.research import (
 )
 from backend.app.schemas.video import VideoJobIn, VideoJobOut
 from backend.app.services.report_progress import progress_map
+from backend.app.services.content_chain import ChainError, chain_of
 from backend.app.services.research_service import ResearchReportService
 from backend.app.services.script_service import ScriptService
 from backend.app.video.handoff import VideoHandoffError, create_video_job
@@ -214,6 +216,24 @@ def list_report_checks(
         limit=page.limit,
         offset=page.offset,
     )
+
+
+@router.get(
+    "/{report_id}/chain",
+    response_model=ContentChainOut,
+    summary="整条链路：研究 → 报告 → 核查 → 脚本 → 成片 → 排期 → 导出",
+)
+def read_report_chain(db: DbSession, report_id: int = Path(ge=1)) -> ContentChainOut:
+    """这份报告现在走到哪一步、卡在哪。
+
+    七段各查各的表/目录，页面不用再算一遍；`current` 只指出**第一段没做完的**。
+    """
+
+    try:
+        chain = chain_of(db, report_id)
+    except ChainError as error:
+        raise NotFoundError(error.message, details={"reason": error.reason}) from error
+    return ContentChainOut(**chain.as_dict())
 
 
 @router.get(

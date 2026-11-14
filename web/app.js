@@ -1354,6 +1354,28 @@ async function pageReports(view) {
     if (state && state.job_count && !(state.jobs || []).some((job) => job.usable)) return '重开视频任务';
     return state && state.script_count ? '用脚本建视频任务' : '建视频任务';
   };
+  // 整条链路：研究 → 报告 → 核查 → 脚本 → 成片 → 排期 → 导出。
+  // 七段各查各的表/目录（后端 GET /research-reports/{id}/chain），这里只负责"把哪一段卡住"说清楚。
+  const CHAIN_TONE = { done: 'ok', current: 'info', blocked: 'bad', missing: '' };
+  const CHAIN_TEXT = { done: '做完了', current: '轮到这一步', blocked: '卡住', missing: '还没有' };
+  const chainCard = (chain) => {
+    const rows = (chain.stages || []).map((stage) => `
+      <tr>
+        <td><strong>${esc(stage.label)}</strong></td>
+        <td><span class="tag ${CHAIN_TONE[stage.status] || ''}">${CHAIN_TEXT[stage.status] || stage.status}</span></td>
+        <td>${esc(stage.detail || '')}${stage.next_step ? `<div class="muted">下一步：${esc(stage.next_step)}</div>` : ''}</td>
+        <td>${stage.link ? `<a href="${esc(stage.link)}">去这一步</a>` : '<span class="muted">—</span>'}</td>
+      </tr>`).join('');
+    return `<div class="card">
+      <h2>整条链路：${esc(chain.title || '')}</h2>
+      <div class="note ${chain.finished ? 'ok' : 'warn'}">${chain.finished
+        ? '七步都走完了：研究、核查、脚本、成片、排期、导出这套流程在这份报告上已经跑通。'
+        : `现在轮到「${esc((chain.stages.find((s) => s.key === chain.current) || {}).label || chain.current)}」这一步。下面每一行都是它自己那张表/那个目录里的事实，不是推断。`}</div>
+      <table class="data"><thead><tr><th>步骤</th><th>状态</th><th>实际情况</th><th>入口</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+      <p class="muted">口径：<code>current</code> 只给第一段没做完的；「卡住」表示有人在等（人工确认/闸门）或有硬问题；「还没有」表示这一步根本没开始。</p>
+    </div>`;
+  };
   view.innerHTML = `
     <div class="card"><h2>研究报告</h2>
       <p class="muted">口径：语义核查的判定只是模型意见，<strong>必须人工确认（confirmed）之后才允许进入成稿</strong>。</p>
@@ -1366,6 +1388,7 @@ async function pageReports(view) {
         { title: '创建时间', value: (row) => when(row.created_at) },
         { title: '操作', value: (row) => `<a href="#/planning?report=${row.id}">用它做内容策划</a>
           · <a href="#/checks?report=${row.id}">看语义核查</a>
+          · <button class="btn ghost" data-chain="${row.id}">整条链路</button>
           <button class="btn ghost" data-video="${row.id}">${videoButtonLabel(row)}</button>`, raw: true },
       ], items, '还没有报告：跑一个研究任务') : failure(result)}
     </div>
@@ -1374,6 +1397,16 @@ async function pageReports(view) {
 
   if (!items.length) return;
   const output = document.getElementById('video-job-result');
+  view.querySelectorAll('button[data-chain]').forEach((button) => {
+    button.onclick = async () => {
+      const detail = document.getElementById('report-detail');
+      detail.innerHTML = '<div class="note">正在汇总这条链路的七段…</div>';
+      const answer = await api(`/research-reports/${button.dataset.chain}/chain`);
+      if (!answer.ok) { detail.innerHTML = failure(answer); return; }
+      detail.innerHTML = chainCard(answer.data);
+      detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+  });
   view.querySelectorAll('button[data-video]').forEach((button) => {
     button.onclick = async () => {
       const reportId = button.dataset.video;

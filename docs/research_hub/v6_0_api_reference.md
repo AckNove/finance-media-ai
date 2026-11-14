@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：66
+- 路径数：67
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -44,6 +44,7 @@
 | GET | `/api/research-reports` | 研究报告列表 | 人 | `topic_id`（query，可选，integer | null）、`verification_status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchReportListItemOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-reports` | 创建研究报告 | 人 | — | application/json → `ResearchReportCreate` | 201 `ResearchReportOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}` | 研究报告详情 | 人 | `report_id`（path，必填，integer） | — | 200 `ResearchReportOut`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/research-reports/{report_id}/chain` | 整条链路：研究 → 报告 → 核查 → 脚本 → 成片 → 排期 → 导出 | 人 | `report_id`（path，必填，integer） | — | 200 `ContentChainOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}/checks` | 结论核查明细（模型判定 + 人工复核，两条状态线） | 人 | `report_id`（path，必填，integer）、`verdict`（query，可选，string | null）、`human_review_status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_FindingCheckOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}/checks/summary` | 核查覆盖情况（按判定与人工状态分组） | 人 | `report_id`（path，必填，integer） | — | 200 `FindingCheckSummaryOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-reports/{report_id}/checks/{check_id}/review` | 人工复核一条核查（只能人写） | 人 | `report_id`（path，必填，integer）、`check_id`（path，必填，integer） | application/json → `FindingCheckReviewIn` | 200 `FindingCheckOut`；404 `object`；409 `object`；422 `object`；503 `object` |
