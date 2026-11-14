@@ -40,6 +40,15 @@ router = APIRouter(
 #: 历史曲线最多看 90 天（再多也没什么信息量，只会把页面拉得很长）
 MAX_HISTORY_DAYS = 90
 
+#: 「钱花在哪条研究上」最多列 10 条（长尾任务看总额就够了）
+MAX_TASK_BUCKETS = 10
+
+#: 调用方没标用途时显示的名字（不猜成某个阶段）
+UNLABELLED_PURPOSE = "未标用途"
+
+#: 没有绑定研究任务的调用（脚本探针、单次冒烟）单独成一条
+UNBOUND_TASK = "未绑定任务（脚本 / 单次调用）"
+
 
 def _cost_note(model_calls: int, pricing_unknown: int) -> str:
     if model_calls == 0:
@@ -114,6 +123,52 @@ def get_costs(db: DbSession) -> CostSummaryOut:
         ).all()
     ]
 
+    # 「钱花在哪个阶段」：purpose 是网关注入的阶段名（research.analyze 这类），
+    # 空串说明调用方没标用途——如实叫「未标用途」，不猜。
+    by_purpose = [
+        CostBucket(
+            key=(row[0] or "") or UNLABELLED_PURPOSE,
+            calls=row[1],
+            tokens=row[2],
+            cost_cny=row[3],
+        )
+        for row in db.execute(
+            select(
+                ModelCall.purpose,
+                func.count(ModelCall.id),
+                func.coalesce(func.sum(ModelCall.total_tokens), 0),
+                func.coalesce(func.sum(ModelCall.cost_estimate), 0),
+            )
+            .group_by(ModelCall.purpose)
+            .order_by(func.coalesce(func.sum(ModelCall.cost_estimate), 0).desc())
+        ).all()
+    ]
+
+    # 「钱花在哪条研究上」：model_calls.research_task_id 允许为空（脚本探针、单次冒烟
+    # 都不绑任务）。这些调用单独成一条，否则总额与各任务之和对不上，人会以为漏账。
+    task_rows = db.execute(
+        select(
+            ModelCall.research_task_id,
+            ResearchTask.title,
+            func.count(ModelCall.id),
+            func.coalesce(func.sum(ModelCall.total_tokens), 0),
+            func.coalesce(func.sum(ModelCall.cost_estimate), 0),
+        )
+        .outerjoin(ResearchTask, ResearchTask.id == ModelCall.research_task_id)
+        .group_by(ModelCall.research_task_id, ResearchTask.title)
+        .order_by(func.coalesce(func.sum(ModelCall.cost_estimate), 0).desc())
+        .limit(MAX_TASK_BUCKETS)
+    ).all()
+    by_task = [
+        CostBucket(
+            key=f"#{row[0]} {row[1] or ''}".strip() if row[0] is not None else UNBOUND_TASK,
+            calls=row[2],
+            tokens=row[3],
+            cost_cny=row[4],
+        )
+        for row in task_rows
+    ]
+
     model_calls = int(model_row[0] or 0)
     pricing_unknown = int(model_row[3] or 0)
     return CostSummaryOut(
@@ -126,6 +181,8 @@ def get_costs(db: DbSession) -> CostSummaryOut:
         by_model=by_model,
         by_tool=by_tool,
         by_day=by_day,
+        by_purpose=by_purpose,
+        by_task=by_task,
         pricing_unknown_calls=pricing_unknown,
         note=_cost_note(model_calls, pricing_unknown),
     )

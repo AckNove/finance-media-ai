@@ -190,3 +190,14 @@ def test_money_does_not_print_six_useless_zeros(source: str) -> None:
     """0.5 元曾显示成「¥0.500000」；分以下的零头要留，多余的后导零要砍。"""
     block = source.split("function money", 1)[1][:420]
     assert "toFixed(6)" in block and "replace(/0+$/, '')" in block
+
+
+def test_the_costs_page_says_where_the_money_went(source: str) -> None:
+    """成本页以前只说"花了多少"，不说"花在哪"——想省钱的人需要后者。"""
+    assert "按阶段（钱花在哪一步）" in source
+    assert "按任务（钱花在哪条研究上）" in source
+    costs = source.split("async function pageCosts", 1)[1][:6000]
+    assert "data.by_purpose" in costs and "data.by_task" in costs
+    # 没标用途的不许猜，未绑定任务的单独列——两条口径都得写在页面上
+    assert "未标用途" in costs
+    assert "未绑定任务" in costs

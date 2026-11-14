@@ -2111,6 +2111,26 @@ async function pageCosts(view) {
         { title: '成本', value: (row) => money(row.cost_cny), num: true },
       ], data.by_tool, '还没有工具调用')}
     </div>
+    <div class="card"><h2>按阶段（钱花在哪一步）</h2>
+      ${table([
+        { title: '阶段', key: 'key' },
+        { title: '调用', key: 'calls', num: true },
+        { title: 'tokens', key: 'tokens', num: true },
+        { title: '成本', value: (row) => money(row.cost_cny), num: true },
+      ], data.by_purpose, '还没有模型调用')}
+      <div class="note">阶段名由调用方标注（<span class="mono">research.analyze</span> 这类）；
+        没标用途的如实写成「未标用途」，不猜成某个阶段。</div>
+    </div>
+    <div class="card"><h2>按任务（钱花在哪条研究上）</h2>
+      ${table([
+        { title: '任务', key: 'key' },
+        { title: '调用', key: 'calls', num: true },
+        { title: 'tokens', key: 'tokens', num: true },
+        { title: '成本', value: (row) => money(row.cost_cny), num: true },
+      ], data.by_task, '还没有模型调用')}
+      <div class="note">只列花得最多的前 10 条；<b>未绑定任务的调用</b>（脚本探针、单次冒烟）
+        单独一条——不单列的话，各任务之和会小于总额，看着像漏账。</div>
+    </div>
     <div class="card"><h2>按天</h2>
       ${table([
         { title: '日期', key: 'key' },

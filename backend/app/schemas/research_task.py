@@ -223,6 +223,12 @@ class CostSummaryOut(BaseModel):
     by_model: list[CostBucket] = Field(default_factory=list)
     by_tool: list[CostBucket] = Field(default_factory=list)
     by_day: list[CostBucket] = Field(default_factory=list)
+    by_purpose: list[CostBucket] = Field(
+        default_factory=list, description="按调用用途（research.analyze 这类阶段名）"
+    )
+    by_task: list[CostBucket] = Field(
+        default_factory=list, description="按研究任务；没有绑任务的调用单列一条"
+    )
     pricing_unknown_calls: int = 0
     note: str = ""
 
