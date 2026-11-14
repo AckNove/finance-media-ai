@@ -21,6 +21,7 @@ from backend.app.core.config import get_agent_routing
 from backend.app.models.enums import ResearchTaskStatus, TaskEventType
 from backend.app.models.execution import ResearchTask, TaskEvent
 from backend.app.models.metering import ModelCall, ToolCall
+from backend.app.schemas.environment import EnvironmentOut
 from backend.app.schemas.model_readiness import ModelsReadinessOut, to_out
 from backend.app.schemas.monitoring import (
     DailySummaryOut,
@@ -30,6 +31,7 @@ from backend.app.schemas.monitoring import (
 from backend.app.schemas.research_task import CostBucket, CostSummaryOut, ProviderStatusOut
 from backend.app.services.agent_registry import load_roster
 from backend.app.services.daily_service import collect_daily
+from backend.app.services.environment import collect_environment
 from backend.app.services.model_readiness import collect
 
 router = APIRouter(
@@ -216,6 +218,23 @@ def get_models(db: DbSession) -> ModelsReadinessOut:
         ready_count=ready,
         note=note,
     )
+
+
+@router.get(
+    "/environment",
+    response_model=EnvironmentOut,
+    summary="本机环境体检（这台机器缺什么）",
+)
+def get_environment(db: DbSession, probe_network: bool = Query(default=False)) -> EnvironmentOut:
+    """与 `python -m backend.scripts.doctor` 是同一份实现，只是入口不同。
+
+    只读：不建库、不迁移、不改配置；`probe_network` 也只读服务商配置，不发请求。
+    不查端口占用——接口服务自己就占着那个端口，查出来必然是"已占用"，反而像故障。
+    """
+    bind = db.get_bind()
+    url = str(getattr(bind, "url", "") or "")
+    report = collect_environment(database_url=url, probe_network=probe_network, port=None)
+    return EnvironmentOut(**report)
 
 
 @router.get("/providers", response_model=list[ProviderStatusOut], summary="模型服务商状态")

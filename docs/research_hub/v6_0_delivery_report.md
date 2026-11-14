@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1437 passed, 2 skipped**。
+全量 `pytest` **1452 passed, 2 skipped**。
 
 ---
 
@@ -2441,7 +2441,7 @@ entry 2（不绑任务、不填标签）
   三组前缀回落参数化。
 - `tests/test_ui_copy.py` +1 例护栏：两个页面必须互相生成带 `?shot=` / `?asset=` 的链接，
   样式里必须有 `tbody tr.focus-row`，找不到目标时必须说「没有镜头」/「素材清单里没有」。
-- 全量 `pytest` 1437 passed / 2 skipped。
+- 全量 `pytest` 1452 passed / 2 skipped。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2511,7 +2511,7 @@ page errors: []
   （金额按数值比，因为列是 `NUMERIC(20,6)`）；没给预算时详情如实说「没设预算上限」。
 - `tests/test_ui_copy.py` +2 例护栏：预算卡必须显示"已用/上限/剩余"、没设的项写「不限」、
   撞线要亮原因码；`money()` 必须去掉后导零。
-- 全量 `pytest` **1437 passed / 2 skipped**。
+- 全量 `pytest` **1452 passed / 2 skipped**。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2574,7 +2574,7 @@ page errors: []
   五套分组共用同一种 bucket 形状。
 - `tests/test_ui_copy.py` +1 例护栏：两张卡的标题、`data.by_purpose` / `data.by_task`、
   页面上必须出现「未标用途」「未绑定任务」。
-- 全量 `pytest` **1437 passed / 2 skipped**。
+- 全量 `pytest` **1452 passed / 2 skipped**。
 
 ### 50.5 诚实边界
 
@@ -2635,7 +2635,7 @@ page errors: []
 - `tests/test_ui_copy.py` +1 例护栏：卡片标题、三种结论（能调 / 能调但上次失败 / 调不了）、
   页面写明"不发起任何外部请求"。
 - `tests/test_caller_permissions.py` 的绊线 77 → **78**（走查 78 → 79）。
-- 全量 `pytest` **1437 passed / 2 skipped**。
+- 全量 `pytest` **1452 passed / 2 skipped**。
 
 ### 51.5 诚实边界
 
@@ -2643,3 +2643,70 @@ page errors: []
   也验证不了密钥是否有效（那要花钱发一次请求）。
 - 「上次调用」是按 `created_at` 取的最新一条，不代表模型当前状态。
 - 密钥只显示环境变量名与"是否存在"，**不回显任何一位密钥内容**。
+
+## §52 系统设置页：这台机器够不够用
+
+### 52.1 问题
+
+系统设置页只有四张卡：版本、执行参数、Agent 名册、运行状态（表数、迁移版本、journal_mode）。
+它回答的是「软件是什么版本」，不回答「**这台机器缺什么**」。
+
+换一台机器部署时，第一眼看不出：Python 版本够不够、依赖装齐没有、FFmpeg 在不在、
+中文字体有没有、Chrome 在不在、库里是什么结构、磁盘还剩多少、配置段是否都读得出来、
+服务商配没配。这些检查**早就写好了**——`backend/scripts/doctor.py`，23 项，每项带补救命令，
+但只有敲命令行才看得到。
+
+### 52.2 改法：一份实现，两个出口
+
+新增 `backend/app/services/environment.py`，把 doctor 的检查**搬进去**；
+`backend/scripts/doctor.py` 改成薄 CLI（参数解析 + 文本渲染 + 退出码），
+两者共用同一份判断。理由是这个仓库已经吃过一次亏：文档写「技术 QC 十项」、
+代码里其实是七项——判断写两遍，迟早互相矛盾。
+
+新增 `GET /api/system/environment`（只读）：
+
+| 项 | 说明 |
+|---|---|
+| 检查项 | 23 项：解释器、8 个依赖、ffmpeg/ffprobe（PATH 与项目内各一条）、中文字体、浏览器、磁盘、tools/、库（表数/revision/journal_mode/integrity）、5 个配置段、服务商状态 |
+| 每项字段 | `name` / `status`（ok / warn / bad）/ `detail` / `fix`（可直接执行的补救命令） |
+| 不查端口 | 接口服务自己就占着端口，查出来必然是「已占用」，看着像故障 |
+| 不发请求 | `probe_network` 也只读服务商配置，不发任何外部请求；页面照抄这句话 |
+| counts | 与实际条目一致（页面上的「N 项有问题」不许和列表对不上） |
+
+系统设置页把这张卡放在最上面，一行一项：结论标签 / 检查项名 / 详情 + `→ 补救命令`。
+
+### 52.3 实测（工作库副本 + 真空迁移库 env.db，uvicorn 随机端口 + Playwright）
+
+```
+GET /api/system/environment -> 200
+ok True  counts {'ok': 22, 'warn': 1, 'bad': 0}  checks 23
+database  envdb: 32 张表、revision=b8_calendar_tags、journal_mode=delete、integrity=ok
+disk      剩余 7.6 GB
+bin:ffmpeg    ffmpeg version 4.2.2（miniconda 的 PATH 版）
+ffmpeg:project  tools/ffmpeg/bin/ffmpeg.exe（项目内的 8.1.2）
+config:features model=on, search=on, execution=on
+providers     deepseek=None、openai=None、local=None   ← 唯一一条「注意」
+```
+
+页面上四张卡按序渲染：`这台机器够不够用 1 项要注意` / `运行状态` / `执行参数` / `Agent 名册（9）`，
+`page errors` 为空。
+
+### 52.4 测试
+
+- 新增 `tests/test_environment.py` 14 例：报告形状与 note 文案、counts 与实际条目一致、
+  `port=None` 时不查端口、端口忙/闲两态、空 root 下 ffmpeg 与 tools 如实报缺、
+  库检查读出表数与 revision、库文件不存在给 `alembic upgrade head`、磁盘检查接受 root、
+  未传 `database_url` 时从设置读、`check()` 保留 fix 字段（参数化三态）、
+  接口 200 且结构与 counts 一致、接口口径不含端口检查、`probe_network=maybe` → 422。
+- `tests/test_ui_copy.py` +1 例：设置页必须拉 `/system/environment` 并渲染这张卡，
+  卡片必须写清「和 doctor 是同一份检查」，有问题必须带补救命令。
+- `tests/test_caller_permissions.py` 绊线 78 → 79（走查 79 → 80）。
+- 全量 `pytest -o addopts="" -q` → 1452 passed / 2 skipped。
+
+### 52.5 诚实边界
+
+- 这 23 项只回答「装没装、读得出读不出」，**不回答「能不能用」**：ffmpeg 在 PATH 上不等于
+  版本够用（真正的门是 `min_version` 检查）；服务商配了密钥不等于密钥有效。
+- 库检查读的是**当前连接**的那个库（接口用 `db.get_bind()` 的 URL），不是写死的路径。
+- 不联网、不探测远端；`probe_network` 也只是一个开关名，实际不发请求。
+

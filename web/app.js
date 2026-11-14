@@ -2528,13 +2528,15 @@ async function pageOperations(view) {
 }
 
 async function pageSettings(view) {
-  const [status, config, agents] = await Promise.all([
+  const [status, config, agents, env] = await Promise.all([
     api('/system/status'),
     api('/workspace/config'),
     api('/system/agents'),
+    api('/system/environment'),
   ]);
   const database = status.ok ? status.data.database || {} : {};
   view.innerHTML = `
+    ${env.ok ? environmentCard(env.data) : `<div class="card"><h2>这台机器够不够用</h2>${failure(env)}</div>`}
     <div class="card"><h2>运行状态</h2>
       ${status.ok ? `<div class="grid">
         <div class="kpi"><span class="k">版本</span><span class="v small">${esc(status.data.version)}</span></div>
@@ -2564,8 +2566,29 @@ async function pageSettings(view) {
     </div>`;
 }
 
-/* ------------------------------------------------------------------ 启动 */
+const ENV_TONE = { ok: 'ok', warn: 'warn', bad: 'bad' };
+const ENV_TEXT = { ok: '正常', warn: '注意', bad: '有问题' };
 
+function environmentCard(env) {
+  const counts = env.counts || {};
+  const bad = counts.bad || 0;
+  const warn = counts.warn || 0;
+  const label = bad ? `${bad} 项有问题` : warn ? `${warn} 项要注意` : '没发现问题';
+  const rows = (env.checks || []).map((item) => `
+    <tr class="${ENV_TONE[item.status] === 'bad' ? 'focus-row' : ''}">
+      <td><span class="tag ${ENV_TONE[item.status] || 'info'}">${ENV_TEXT[item.status] || item.status}</span></td>
+      <td class="mono">${esc(item.name)}</td>
+      <td>${esc(item.detail || '')}${item.fix ? `<br><span class="muted">→ ${esc(item.fix)}</span>` : ''}</td>
+    </tr>`).join('');
+  return `<div class="card"><h2>这台机器够不够用 <span class="tag ${bad ? 'bad' : warn ? 'warn' : 'ok'}">${esc(label)}</span></h2>
+    <p class="muted">和 <span class="mono">python -m backend.scripts.doctor</span> 是同一份检查（${env.checks ? env.checks.length : 0} 项）。${esc(env.note || '')}</p>
+    <div class="scroll"><table><thead><tr><th>结论</th><th>检查项</th><th>详情与补救</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="3" class="muted">没有检查项</td></tr>'}</tbody></table></div>
+    <p class="muted">库：<span class="mono">${esc(env.database_url || '—')}</span>｜目录：<span class="mono">${esc(env.project_root || '—')}</span></p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------ 启动 */
 async function route() {
   if (activePoll) {
     clearInterval(activePoll);

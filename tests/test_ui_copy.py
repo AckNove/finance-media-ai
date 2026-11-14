@@ -215,3 +215,15 @@ def test_the_models_page_says_why_a_model_cannot_be_used(source: str) -> None:
     models = source.split("async function pageModels", 1)[1][:1200]
     assert "api('/system/models')" in models
     assert "modelReadinessCard(readiness.data)" in models
+
+
+def test_the_settings_page_shows_what_this_machine_is_missing(source: str) -> None:
+    """系统设置页以前只有版本号；换机器部署时第一眼看不出版本之外缺什么。"""
+    assert "function environmentCard(env)" in source
+    card = source.split("function environmentCard", 1)[1][:1800]
+    assert "这台机器够不够用" in card
+    assert "backend.scripts.doctor" in card  # 同一份检查，别写成两套
+    assert "item.fix" in card  # 有问题必须给补救命令
+    settings = source.split("async function pageSettings", 1)[1][:900]
+    assert "api('/system/environment')" in settings
+    assert "environmentCard(env.data)" in settings
