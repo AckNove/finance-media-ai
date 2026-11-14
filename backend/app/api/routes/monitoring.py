@@ -23,6 +23,7 @@ from backend.app.models.execution import ResearchTask, TaskEvent
 from backend.app.models.metering import ModelCall, ToolCall
 from backend.app.schemas.environment import EnvironmentOut
 from backend.app.schemas.model_readiness import ModelsReadinessOut, to_out
+from backend.app.schemas.provider_guide import ProvidersGuideOut
 from backend.app.schemas.monitoring import (
     DailySummaryOut,
     HistoryDayOut,
@@ -33,6 +34,7 @@ from backend.app.services.agent_registry import load_roster
 from backend.app.services.daily_service import collect_daily
 from backend.app.services.environment import collect_environment
 from backend.app.services.model_readiness import collect
+from backend.app.services.provider_guide import guide_of, summary_of
 
 router = APIRouter(
     prefix="/system",
@@ -248,13 +250,24 @@ def get_providers() -> list[ProviderStatusOut]:
                 name=name,
                 display_name=str(entry.get("display_name", "")),
                 status=str(entry.get("status", "unknown_provider")),
-                key_env=str(entry.get("api_key_env", "")),
-                base_url=str(entry.get("base_url", "")),
+                key_env=str(entry.get("api_key_env") or ""),
+                base_url=str(entry.get("base_url") or ""),
                 enabled=bool(entry.get("enabled", False)),
                 note=str(entry.get("message", "")),
             )
         )
     return items
+
+
+@router.get(
+    "/provider-guide",
+    response_model=ProvidersGuideOut,
+    summary="服务商怎么配（缺哪个变量、写在哪、写完怎么验）",
+)
+def get_provider_guide() -> ProvidersGuideOut:
+    """只报存在性，不回显任何密钥内容；页面自己不发请求。"""
+    payload = summary_of(guide_of(provider_status()))
+    return ProvidersGuideOut(**payload)
 
 
 @router.get("/agents", summary="Agent 名册（agents/roster.yaml + 路由表）")

@@ -2108,9 +2108,11 @@ async function pageModels(view) {
 }
 
 async function pageProviders(view) {
-  const result = await api('/system/providers');
+  const [result, guide] = await Promise.all([api('/system/providers'), api('/system/provider-guide')]);
   if (!result.ok) { view.innerHTML = failure(result); return; }
-  view.innerHTML = `<div class="card"><h2>模型服务商</h2>
+  view.innerHTML = `
+    ${guide.ok ? providerGuideCard(guide.data) : `<div class="card"><h2>怎么配</h2>${failure(guide)}</div>`}
+    <div class="card"><h2>模型服务商</h2>
     ${table([
       { title: '服务商', key: 'name' },
       { title: '状态', value: (row) => statusTag(row.status), raw: true },
@@ -2121,6 +2123,40 @@ async function pageProviders(view) {
     ], result.data)}
     <div class="note">这里只显示"密钥是否存在"，不显示密钥内容。缺密钥时模型阶段会 blocked，
       不会自动切到假数据。</div>
+  </div>`;
+}
+
+function providerGuideCard(data) {
+  const ready = (data.items || []).filter((item) => item.ready).length;
+  const rows = (data.items || []).map((item) => {
+    const where = !item.key_env
+      ? '<span class="muted">不需要密钥</span>'
+      : `${item.key_in_process ? '<span class="tag ok">进程里有</span>' : item.key_in_env_file ? '<span class="tag warn">.env 里有，但没生效</span>' : '<span class="tag bad">还没配</span>'}
+         <span class="mono">${esc(item.key_env)}</span>`;
+    const steps = (item.steps || []).map((line) => `<li>${esc(line)}</li>`).join('');
+    return `<tr>
+      <td><b>${esc(item.display_name || item.name)}</b><br><span class="muted mono">${esc(item.name)}</span></td>
+      <td>${statusTag(item.status)}</td>
+      <td>${where}</td>
+      <td>
+        <ol class="tight steps">${steps}</ol>
+        ${item.verify_command ? `<div class="mono muted">验证：${esc(item.verify_command)}</div>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+  return `<div class="card"><h2>怎么配 <span class="tag ${ready ? 'ok' : 'warn'}">${ready} / ${(data.items || []).length} 可用</span></h2>
+    <p class="muted">${esc(data.note || '')}</p>
+    <div class="scroll"><table style="min-width:980px"><thead><tr>
+      <th>服务商</th><th>状态</th><th>密钥放哪了</th><th>缺什么就按顺序做</th>
+    </tr></thead><tbody>${rows || '<tr><td colspan="4" class="muted">还没有登记服务商</td></tr>'}</tbody></table></div>
+    <div class="note">
+      改的是仓库根的 <span class="mono">${esc((data.env_file || '.env').split('\\').pop())}</span>
+      （模板：<span class="mono">${esc((data.example_file || '.env.example').split('\\').pop())}</span>，已被
+      <span class="mono">.gitignore</span> 排除，不会进仓库）；
+      模型与价目在 <span class="mono">${esc(data.models_file || 'config/models.yaml')}</span>。
+      <br>${esc(data.restart_hint || '')}
+      <br>这一页只显示「变量在不在」，不显示变量值，也不会替你发任何请求。
+    </div>
   </div>`;
 }
 

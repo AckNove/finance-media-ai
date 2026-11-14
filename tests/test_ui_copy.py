@@ -227,3 +227,16 @@ def test_the_settings_page_shows_what_this_machine_is_missing(source: str) -> No
     settings = source.split("async function pageSettings", 1)[1][:900]
     assert "api('/system/environment')" in settings
     assert "environmentCard(env.data)" in settings
+
+def test_the_provider_page_says_where_to_put_the_key(source: str) -> None:
+    """服务商页以前只列「密钥环境变量」，不说写在哪个文件、改完怎么验。"""
+    assert "function providerGuideCard(data)" in source
+    card = source.split("function providerGuideCard", 1)[1][:2600]
+    assert "怎么配" in card
+    assert "key_in_process" in card and "key_in_env_file" in card  # 两种来源要分开说
+    assert "verify_command" in card  # 写完怎么验
+    assert ".gitignore" in card  # 为什么写 .env 是安全的
+    assert "不显示变量值" in card or "不显示变量" in card
+    providers = source.split("async function pageProviders", 1)[1][:900]
+    assert "api('/system/provider-guide')" in providers
+    assert "providerGuideCard(guide.data)" in providers

