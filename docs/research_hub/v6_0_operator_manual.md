@@ -415,3 +415,19 @@ python -m backend.scripts.research_task run --task-id 1 --max-iterations 3
 # 按脚本开任务（接口形式，需已启动服务）
 curl.exe -X POST http://127.0.0.1:8000/api/scripts/3/video-job -H "Content-Type: application/json" -d "{}"
 ```
+
+### 导出之后，包里有什么？
+
+导出目录（`content/exports/entry-<id>/<时间戳>/`）里应该能"一眼拿全"：
+
+| 文件 | 干什么用 |
+|---|---|
+| `README.md` | 一页纸：发什么、复制哪几份文案、标签几个、发完填什么 |
+| `douyin.md` / `xiaohongshu.md` / `wechat.md` | 各平台成稿（标题、正文、标签） |
+| `tags.txt` | 话题标签速查，每平台一行，复制即用 |
+| `film/final.mp4` | 片子本身（同盘是硬链接，不额外占空间；跨盘会复制） |
+| `publish_checklist.md` | 片子规格、技术质检结论、发完必须回填的三件事 |
+| `meta.json` | 这次导出的机器可读记录 |
+
+标签要**单独填**（内容日历的「标签」列，或表单里的输入框）：以前是从备注里按空格切的，
+中文备注没有空格，整段会变成一个标签。标签为空时导出不会替你编，只会在清单里提醒你补。

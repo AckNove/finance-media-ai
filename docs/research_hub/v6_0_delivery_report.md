@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1366 passed, 2 skipped**。
+全量 `pytest` **1386 passed, 2 skipped**。
 
 ---
 
@@ -2322,3 +2322,64 @@ page errors: []
 - 脚本没有报告（人工写的稿子）时可以开任务，`job.json` 里 `report` 为 `null`、
   `draft_gate.check_ids` 为空——**它没有研究依据，只有人工批准**，这一点写进了 `job.json` 与 `HANDOFF.md`。
 - 从脚本开的任务不会自动排进内容日历，仍由人在视频页或日历页决定。
+
+---
+
+## 47. 一稿三版 → 一个能直接拿去发的交付包
+
+### 47.1 三个问题（都是"真用起来才发现"）
+
+1. **标签是拿备注切出来的**。导出时写着 `tags=(entry.notes or "").split()`——
+   备注框是给人写"这条为什么排在这一天"的，可中文没有空格，于是「研究储能行业，重点看电芯价格」
+   整句变成一个标签，写一段笔记就变成十几个莫名其妙的标签。人完全看不出这件事，
+   而导出稿已经带着这些标签准备发出去了。
+2. **包不齐**。导出目录里只有三份平台文案 + `meta.json` + `publish_checklist.md`；
+   片子还在 `content/jobs/<任务号>/output/final.mp4`。人在手机上上传时，
+   得在两个目录之间来回找。
+3. **标签散**。抖音要 3~5 个、小红书要 5~10 个，而标签藏在每份文案末尾，
+   要发三个平台就得翻三个文件各抄一遍。
+
+### 47.2 改法
+
+| 改动 | 位置 |
+|---|---|
+| 标签有正经字段 | 迁移 `b8_calendar_tags`：`content_calendar.tags TEXT NOT NULL DEFAULT ''`；模型/接口/表单/列表列都加上 |
+| 清洗只写一处 | `backend/app/services/content_tags.py`：认空格/中英文逗号/顿号/分号，去 `#`、去重保序、单标签 ≤24 字、最多 12 个，返回同一种"空格分隔"形态 |
+| 不再拿备注当标签 | `export_service` 改读 `entry.tags`；**标签为空时给 warning，不编标签**（编出来的会把人带进错误的流量池） |
+| 片子进包 | 交付目录里多一个 `film/`：同盘**硬链接**（不占空间、删临时目录不影响原件），跨盘/无权限自动退回复制，并把方式写进回执 |
+| 一页纸首页 | `README.md`：发什么、复制哪几个文件、标签几个、发完填什么 |
+| 标签速查 | `tags.txt`：每个平台一行，复制即用 |
+
+### 47.3 实测（工作库副本 + 真实任务目录，零花费）
+
+```
+migrate rc: 0            # 副本先升到 head（b8），真实库不动
+entry 1（绑 v6_accept_company_v2，标签「储能 电芯价格 产能过剩」）
+  tags: ['储能', '电芯价格', '产能过剩']
+  film_file: {'status': 'copied', 'method': 'hardlink', 'relative': 'film/final.mp4'}
+  目录: README.md  douyin.md  film/  meta.json  publish_checklist.md  tags.txt  wechat.md  xiaohongshu.md
+entry 2（不绑任务、不填标签）
+  film_file: {'status': 'none'}        # 如实说"只有文案"
+  warnings: 3                          # 其中一条是"没有标签，请手工补"
+```
+
+硬链接核对：包内 `film/final.mp4` 与原片 **同一 inode**（`st_ino` 相同、`nlink=2`、5,600,359 字节），
+即多出来的是一个目录项，不是多一份 5.6 MB。
+
+### 47.4 测试
+
+`tests/test_export_pack.py` 17 例：标签清洗（六组分隔符/去重/限量/超长截断/`format_hashtags`/`tag_note`）、
+**标签来自 `tags` 而不是 `notes`**、空标签只告警不编造、交付包含 README/`tags.txt`/`film/`、
+`meta.json` 记下标签与片子方式、没绑任务时如实写"只有文案"、片子文件消失时 `_attach_film` 报 `missing`、
+硬链接失败自动退回复制、**标签齐全也不能绕过片子闸门**（`draft_invalid` 仍拒绝且不建目录）。
+另加 `tests/test_ui_copy.py` 一条护栏：表单必须有独立的标签输入框、列表要显示"几个标签"、没填要显眼。
+
+### 47.5 诚实边界
+
+- **不做封面**：README 里明写"这个包里没有封面"。封面要在平台后台上传或自己做一个，
+  导出只负责把文案、标签、片子凑到一处。
+- **发布仍人工**：导出不改 `publish_state`，标已发布仍必须填能点开的链接。
+- **硬链接依赖同盘**：跨盘、或文件系统不支持硬链接（例如某些网络盘）时会退回复制，
+  回执里 `method` 会写 `copy`，别把它当成"没占空间"。
+- 历史排期没有标签回填——把"整段备注"固化成标签是把坑挖深，不是填坑；
+  这些排期导出时会被提醒"没有标签"。

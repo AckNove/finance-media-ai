@@ -56,6 +56,10 @@ class ContentCalendar(Base, TimestampMixin):
     published_url: Mapped[str | None] = mapped_column(String(600), nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     notes: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    #: 话题标签：空格分隔、已清洗（见 `services/content_tags.py`）。
+    #: B8 之前标签是从 `notes` 里按空格切出来的——中文备注没有空格，
+    #: 于是整段备注会变成一个标签。这里给它一个正经字段。
+    tags: Mapped[str] = mapped_column(Text, default="", server_default="", nullable=False)
 
     metrics: Mapped[list["PlatformMetric"]] = relationship(
         back_populates="calendar", cascade="all, delete-orphan"

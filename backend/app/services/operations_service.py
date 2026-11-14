@@ -30,6 +30,7 @@ from backend.app.schemas.operations import (
     MetricIn,
 )
 from backend.app.services.base import BaseService
+from backend.app.services.content_tags import normalise_tags
 from backend.app.services.publish_links import PublishLinkError, normalise_url
 
 
@@ -59,6 +60,7 @@ class OperationsService(BaseService):
             video_job_id=payload.video_job_id,
             export_path=payload.export_path,
             notes=payload.notes,
+            tags=normalise_tags(payload.tags),
         )
         self.db.add(entry)
         return self._commit(entry, "这条排期写不进去：可能撞了唯一约束")
@@ -137,6 +139,10 @@ class OperationsService(BaseService):
         if "publish_state" in data and data["publish_state"] != "published":
             # 撤回发布时保留 url（留痕），但把发布时间清空，避免"未发布却有发布时间"。
             data["published_at"] = None
+
+        if "tags" in data:
+            # 标签只在这里清洗一次：去 `#`、去重保序、限量。空值存空串。
+            data["tags"] = normalise_tags(data["tags"])
 
         for key, value in data.items():
             setattr(entry, key, value)

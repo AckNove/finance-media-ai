@@ -46,6 +46,9 @@ class CalendarCreate(BaseModel):
     video_job_id: str | None = Field(default=None, max_length=80)
     export_path: str | None = Field(default=None, max_length=400)
     notes: str = ""
+    #: 话题标签：空格/逗号分隔，`#` 会被去掉，入库前统一清洗（`services/content_tags.py`）。
+    #: 以前标签是从 `notes` 里按空格切的——中文备注没有空格，整段会变成一个标签。
+    tags: str = Field(default="", max_length=400)
 
     @field_validator("video_job_id")
     @classmethod
@@ -80,6 +83,7 @@ class CalendarUpdate(BaseModel):
     published_url: str | None = Field(default=None, max_length=600)
     published_at: datetime | None = None
     notes: str | None = None
+    tags: str | None = Field(default=None, max_length=400)
 
 
 class MetricIn(BaseModel):
@@ -175,6 +179,7 @@ class CalendarOut(BaseModel):
     published_url: str | None
     published_at: datetime | None
     notes: str
+    tags: str = ""
     created_at: datetime
     updated_at: datetime
     readiness: CalendarReadinessOut | None = None

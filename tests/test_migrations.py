@@ -171,6 +171,8 @@ def test_offline_sql_stops_at_initial_revision_by_design(tmp_path: Path):
         ("b6_v6_operations", TABLES_AFTER_B6),
         # B7 只补回填与约束，不加表：业务表数仍应是 B6 的数
         ("b7_topic_origin", TABLES_AFTER_B6),
+        # B8 只给 content_calendar 加一列 tags，同样不加表
+        ("b8_calendar_tags", TABLES_AFTER_B6),
     ],
 )
 def test_each_batch_lands_on_expected_table_count(
@@ -203,6 +205,7 @@ def test_batches_are_individually_reversible(tmp_path: Path):
         ("b5_finding_checks", "b4_cost_precision"),
         ("b6_v6_operations", "b5_finding_checks"),
         ("b7_topic_origin", "b6_v6_operations"),
+        ("b8_calendar_tags", "b7_topic_origin"),
     ):
         command.upgrade(config, target)
         command.downgrade(config, "-1")

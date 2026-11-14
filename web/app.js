@@ -2152,11 +2152,13 @@ async function pageOperations(view) {
         </select>
         <input id="cal-when" type="datetime-local" value="${defaultWhen}">
         <input id="cal-job" placeholder="视频任务号（可留空）" style="width:200px">
+        <input id="cal-tags" placeholder="话题标签（空格或逗号分隔）" style="width:240px">
         <button id="cal-create">加进日历</button>
       </div>
       <div class="note">系统不会自己发布：标「已发布」必须填链接，没发就是没发。
         填了视频任务号之后，「底片就绪度」会去 <code>content/jobs/&lt;任务号&gt;/</code> 里核对片子有没有渲染出来、
-        它依据的结论还作不作数。</div>
+        它依据的结论还作不作数。<br>
+        标签要单独填：以前是从「备注」里按空格切出来的，中文备注没有空格，整段会变成一个标签。</div>
       <div id="cal-feedback"></div>
     </div>
     <div class="card"><h2>排期（${rows.length} 条）</h2>
@@ -2180,12 +2182,18 @@ async function pageOperations(view) {
         { title: '发布', value: (row) => `<span class="tag ${row.publish_state === 'published' ? 'ok' : ''}">${esc(PUBLISH_LABEL[row.publish_state] || row.publish_state)}</span>`, raw: true },
         { title: '链接', value: (row) => row.published_url
             ? `<a href="${esc(row.published_url)}" target="_blank" rel="noreferrer">打开</a>` : '—', raw: true },
+        { title: '标签', value: (row) => {
+            const list = String(row.tags || '').split(/\s+/).filter(Boolean);
+            if (!list.length) return '<span class="tag warn" title="平台建议：抖音 3~5 个、小红书 5~10 个">没填</span>';
+            return `<span class="tag ok" title="${esc(list.map((t) => '#' + t).join(' '))}">${list.length} 个</span>`;
+          }, raw: true },
         { title: '操作', value: (row) => `
             <button data-advance="${row.id}" data-status="rendered">标已渲染</button>
             <button data-publish="${row.id}">标已发布</button>
             <button data-metric="${row.id}">回填数据</button>
             <button data-import="${row.id}">导入 CSV</button>
             <button data-export="${row.id}">导出</button>
+            <button data-tags="${row.id}" data-current="${esc(row.tags || '')}">改标签</button>
             <button data-bind-job="${row.id}" data-job="${row.video_job_id || ''}">绑任务号</button>`, raw: true },
       ], rows, '还没有排期：先在上面加一条')}
       <div id="cal-row-feedback"></div>
@@ -2199,10 +2207,12 @@ async function pageOperations(view) {
   view.querySelector('#cal-create').addEventListener('click', async () => {
     const title = view.querySelector('#cal-title').value.trim();
     const jobId = view.querySelector('#cal-job').value.trim();
+    const tags = view.querySelector('#cal-tags').value.trim();
     const payload = {
       title,
       platform: view.querySelector('#cal-platform').value,
       scheduled_for: view.querySelector('#cal-when').value || null,
+      tags,
     };
     if (jobId) payload.video_job_id = jobId;
     const result = await api('/calendar', { method: 'POST', body: JSON.stringify(payload) });
@@ -2295,15 +2305,48 @@ async function pageOperations(view) {
       }
       const data = result.data;
       const warns = (data.warnings || []).length;
+      const tagCount = (data.tags || []).length;
+      const film = data.film || {};
       say(
         feedback,
         true,
         `已导出到 ${data.export_path}（${data.platforms.length} 个平台文件）` +
-          (data.checklist_path ? '；先看目录里的 publish_checklist.md（片子在哪、质检过没过、发完要填什么）' : '') +
+          `；先看目录里的 README.md：` +
+          (film.status === 'copied' ? `片子在 ${film.relative}（${film.method === 'hardlink' ? '硬链接' : '复制'}）` : '这条没绑片子，包里只有文案') +
+          `、标签 ${tagCount} 个（tags.txt）、发完要填什么（publish_checklist.md）` +
           (warns ? `；${warns} 条提醒` : '') +
           '。导出不等于发布：发布后请回来填链接。',
       );
       setTimeout(route, 1200);
+    });
+  });
+  view.querySelectorAll('[data-tags]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-tags');
+      const current = button.getAttribute('data-current') || '';
+      const answer = window.prompt(
+        '话题标签（空格或逗号分隔，# 会被去掉；留空表示清空）：',
+        current,
+      );
+      if (answer === null) return;
+      const result = await api(`/calendar/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ tags: answer.trim() }),
+      });
+      if (!result.ok) {
+        const reason = result.error?.details?.reason ? `（${result.error.details.reason}）` : '';
+        say(feedback, false, `${result.status} ${result.error.message}${reason}`);
+        return;
+      }
+      const saved = String(result.data.tags || '').split(/\s+/).filter(Boolean);
+      say(
+        feedback,
+        true,
+        saved.length
+          ? `已存 ${saved.length} 个标签：${saved.map((t) => '#' + t).join(' ')}`
+          : '标签已清空：平台建议抖音 3~5 个、小红书 5~10 个，导出时不会替你编。',
+      );
+      setTimeout(route, 900);
     });
   });
   view.querySelectorAll('[data-bind-job]').forEach((button) => {

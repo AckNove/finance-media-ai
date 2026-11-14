@@ -141,3 +141,13 @@ def test_the_scripts_page_only_offers_a_film_for_approved_scripts(source: str) -
     handler = source.split("button[data-film]", 1)[1][:700]
     assert "/video-job" in handler
     assert "blocked_reason" in handler
+
+
+def test_the_calendar_form_has_its_own_tags_field(source: str) -> None:
+    """标签曾经是从「备注」里按空格切出来的：中文备注没空格，整段会变成一个标签。"""
+    assert 'id="cal-tags"' in source
+    create_block = source.split("view.querySelector('#cal-create')", 1)[1][:900]
+    assert "tags" in create_block and "cal-tags" in create_block
+    # 列表里要能看出这条排期有几个标签，没填要显眼
+    assert "data-tags=" in source and "改标签" in source
+    assert "平台建议：抖音 3~5 个、小红书 5~10 个" in source
