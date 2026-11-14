@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -178,4 +179,30 @@ class TopicFromSuggestionOut(BaseModel):
     sources: list[TopicIntakeSourceOut] = Field(default_factory=list)
     collections: list[str] = Field(default_factory=list)
     description: str = ""
+    note: str = ""
+
+
+class TopicResearchTaskIn(BaseModel):
+    """从选题建研究任务：默认只做研究（不逼着写脚本），标题与目标可覆盖。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pipeline: str = Field(default="research_only", max_length=64)
+    title: str | None = Field(default=None, max_length=200)
+    objective: str = Field(default="", max_length=2000)
+    queries: list[str] = Field(default_factory=list, max_length=20)
+    budget_max_calls: int | None = Field(default=None, ge=1)
+    budget_max_cost_cny: Decimal | None = Field(default=None, ge=0)
+    max_attempts: int = Field(default=2, ge=1, le=5)
+    start: bool = True
+
+
+class TopicResearchTaskOut(BaseModel):
+    task_id: int
+    title: str
+    objective: str
+    pipeline: str
+    queries: list[str] = Field(default_factory=list)
+    source_ids: list[int] = Field(default_factory=list)
+    subtask_count: int = 0
     note: str = ""

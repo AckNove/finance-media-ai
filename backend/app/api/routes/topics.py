@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Path, Query, Response, status
+from sqlalchemy import select
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
 from backend.app.core.errors import ConflictError, DomainValidationError
+from backend.app.database.session import get_session_factory
+from backend.app.execution.runtime import TaskRuntime
 from backend.app.models.enums import TagNamespace
+from backend.app.models.execution import ResearchSubtask
 from backend.app.models.taxonomy import TopicCollection, TopicTag
 from backend.app.research.topic_suggestions import suggest_from_db
 from backend.app.schemas.common import Page
@@ -20,6 +24,8 @@ from backend.app.schemas.topic import (
     TopicFromSuggestionOut,
     TopicIntakeSourceOut,
     TopicOut,
+    TopicResearchTaskIn,
+    TopicResearchTaskOut,
     TopicSuggestionOut,
     TopicSuggestionsOut,
     TopicTagCreate,
@@ -27,6 +33,12 @@ from backend.app.schemas.topic import (
     TopicUpdate,
 )
 from backend.app.services.topic_intake import IntakeError, intake_suggestion
+from backend.app.services.topic_research import (
+    TopicResearchError,
+    plan_for_topic,
+    source_ids_from_description,
+    start_research,
+)
 from backend.app.services.topic_service import TopicService
 
 router = APIRouter(
@@ -144,6 +156,67 @@ def create_topic_from_suggestion(
         collections=list(result.collections),
         description=result.description,
         note=result.note,
+    )
+
+
+@router.post(
+    "/{topic_id}/research-task",
+    response_model=TopicResearchTaskOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="从选题建研究任务",
+)
+def create_research_task_for_topic(
+    payload: TopicResearchTaskIn, db: DbSession, topic_id: int = Path(ge=1)
+) -> TopicResearchTaskOut:
+    """把选题的标题与起点来源带进研究任务，不必到「研究任务」页重敲一遍。
+
+    默认产线是 ``research_only``（先拿报告，要不要写稿再决定）；同一条选题下
+    已有没结束的任务时返回 409，并指向那条任务。
+    """
+    topic = TopicService(db).get(topic_id)
+    source_ids = source_ids_from_description(topic.description)
+    plan = plan_for_topic(
+        topic,
+        source_ids=source_ids,
+        pipeline=payload.pipeline,
+        title=payload.title,
+        objective=payload.objective,
+        queries=payload.queries,
+    )
+    runtime = TaskRuntime(get_session_factory())
+    try:
+        result = start_research(
+            db,
+            runtime,
+            topic,
+            plan=plan,
+            budget_max_calls=payload.budget_max_calls,
+            budget_max_cost_cny=payload.budget_max_cost_cny,
+            max_attempts=payload.max_attempts,
+            start=payload.start,
+        )
+    except TopicResearchError as error:
+        if error.reason == "task_in_progress":
+            raise ConflictError(error.message, details={"reason": error.reason, **error.details}) from error
+        raise DomainValidationError(
+            error.message, details={"reason": error.reason, **error.details}
+        ) from error
+
+    subtasks = db.execute(
+        select(ResearchSubtask).where(ResearchSubtask.research_task_id == result.task.id)
+    ).scalars().all()
+    note = plan.note
+    if source_ids and not plan.source_ids:
+        note += "；没从选题描述里认出源编号"
+    return TopicResearchTaskOut(
+        task_id=result.task.id,
+        title=plan.title,
+        objective=plan.objective,
+        pipeline=plan.pipeline,
+        queries=list(plan.queries),
+        source_ids=list(plan.source_ids),
+        subtask_count=len(subtasks),
+        note=note,
     )
 
 

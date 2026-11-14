@@ -256,3 +256,17 @@ def test_adopting_a_suggestion_keeps_its_sources(source: str) -> None:
     # 采纳成功后只刷新列表，不整页重渲染（会把提示冲掉）
     assert "function refreshTopicsList()" in source
     assert "await refreshTopicsList()" in source
+
+
+def test_a_topic_can_start_a_research_task_from_the_list(source: str) -> None:
+    """以前采纳完还得去「研究任务」页重敲标题与目标，抄错一个字就断了 topic_id。"""
+
+    assert 'data-research="${row.id}"' in source
+    assert "function bindResearchButtons()" in source
+    assert "api(`/topics/${topicId}/research-task`" in source
+    # 成功要指回任务详情；失败要按原因码说话（已有任务就指向那条）
+    assert "看任务详情" in source
+    assert "function researchFailure(result)" in source
+    assert "'task_in_progress'" in source
+    # 列表每次重渲染都要重新绑按钮，否则新行点了没反应
+    assert source.count("bindResearchButtons();") >= 2

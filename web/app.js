@@ -400,6 +400,12 @@ async function pageTopics(view) {
         { title: '状态', value: (row) => statusTag(row.status || 'candidate'), raw: true },
         { title: '评分', key: 'score_total', num: true },
         { title: '创建时间', value: (row) => when(row.created_at) },
+        {
+          title: '操作',
+          value: (row) =>
+            `<button class="btn ghost" data-research="${row.id}">建研究任务</button>`,
+          raw: true,
+        },
       ], result.data.items, '还没有选题') : failure(result)}</div>
     </div>
     <div class="card" id="topic-suggest-box">
@@ -444,6 +450,7 @@ async function pageTopics(view) {
     if (created.ok) route();
   });
 
+  bindResearchButtons();
   loadTopicSuggestions();
 
   document.getElementById('suggest-refresh').addEventListener('click', () => loadTopicSuggestions());
@@ -480,7 +487,7 @@ async function loadTopicSuggestions() {
         ${item.urls?.length ? `<a class="dim" href="${esc(item.urls[0])}" target="_blank" rel="noreferrer">看来源（${item.urls.length}）</a>` : ''}
       </div>
     </div>`).join('');
-  box.querySelectorAll('[data-adopt]').forEach((button) => {
+  document.querySelectorAll('[data-adopt]').forEach((button) => {
     button.addEventListener('click', async () => {
       const item = data.items[Number(button.dataset.adopt)];
       button.disabled = true;
@@ -521,6 +528,47 @@ function adoptFailure(result) {
   return failure(result);
 }
 
+function researchFailure(result) {
+  const reason = result.error?.details?.reason || '';
+  if (reason === 'task_in_progress') {
+    const taskId = result.error?.details?.task_id;
+    return `<div class="alert bad">${esc(result.error.message)}</div>` +
+      (taskId ? `<div class="note"><a href="#/tasks/${taskId}">去看任务 #${taskId}</a></div>` : '');
+  }
+  if (reason === 'unknown_pipeline') {
+    const available = result.error?.details?.available || [];
+    return `<div class="alert bad">${esc(result.error.message)}</div>` +
+      `<div class="note">可选产线：${available.map((name) => esc(name)).join('、')}</div>`;
+  }
+  return failure(result);
+}
+
+/** 选题列表里每行一个「建研究任务」：列表重渲染过就要重新绑。 */
+function bindResearchButtons() {
+  document.querySelectorAll('[data-research]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const topicId = button.dataset.research;
+      const msg = document.getElementById('topic-msg');
+      button.disabled = true;
+      const created = await api(`/topics/${topicId}/research-task`, {
+        method: 'POST',
+        body: JSON.stringify({ start: true }),
+      });
+      if (created.ok) {
+        const data = created.data;
+        msg.innerHTML =
+          `<div class="note ok">已建研究任务 #${data.task_id}（${esc(data.pipeline)}，${data.subtask_count} 格）` +
+          `${data.source_ids.length ? `，带上 ${data.source_ids.length} 条起点来源` : ''}。` +
+          `<a href="#/tasks/${data.task_id}">看任务详情</a></div>` +
+          `<div class="note">${esc(data.note)}</div>`;
+      } else {
+        msg.innerHTML = researchFailure(created);
+        button.disabled = false;
+      }
+    });
+  });
+}
+
 /** 采纳成功后只刷新列表那一块——整页重渲染会把刚出现的提示冲掉。 */
 async function refreshTopicsList() {
   const box = document.getElementById('topics-list');
@@ -532,7 +580,14 @@ async function refreshTopicsList() {
     { title: '状态', value: (row) => statusTag(row.status || 'candidate'), raw: true },
     { title: '评分', key: 'score_total', num: true },
     { title: '创建时间', value: (row) => when(row.created_at) },
+    {
+      title: '操作',
+      value: (row) =>
+        `<button class="btn ghost" data-research="${row.id}">建研究任务</button>`,
+      raw: true,
+    },
   ], result.data.items, '还没有选题') : failure(result);
+  bindResearchButtons();
 }
 
 async function pageTasks(view) {

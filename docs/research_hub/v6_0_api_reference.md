@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：65
+- 路径数：66
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -89,6 +89,7 @@
 | GET | `/api/topics/{topic_id}/collections` | 选题所在的合集 | 人 | `topic_id`（path，必填，integer） | — | 200 `TopicCollectionOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/topics/{topic_id}/collections` | 把选题挂进一个合集 | 人 | `topic_id`（path，必填，integer） | application/json → `TopicCollectionCreate` | 201 `TopicCollectionOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | DELETE | `/api/topics/{topic_id}/collections/{column_id}` | 把选题从合集里摘下来 | 人 | `topic_id`（path，必填，integer）、`column_id`（path，必填，integer） | — | 204 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
+| POST | `/api/topics/{topic_id}/research-task` | 从选题建研究任务 | 人 | `topic_id`（path，必填，integer） | application/json → `TopicResearchTaskIn` | 201 `TopicResearchTaskOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/topics/{topic_id}/tags` | 选题上的标签 | 人 | `topic_id`（path，必填，integer） | — | 200 `TopicTagOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/topics/{topic_id}/tags` | 给选题打标签（标签不存在则按名字新建） | 人 | `topic_id`（path，必填，integer） | application/json → `TopicTagCreate` | 201 `TopicTagOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | DELETE | `/api/topics/{topic_id}/tags/{tag_id}` | 摘掉选题上的标签 | 人 | `topic_id`（path，必填，integer）、`tag_id`（path，必填，integer） | — | 204 `object`；404 `object`；409 `object`；422 `object`；503 `object` |
