@@ -6,11 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 73 个 API 操作 / 20 个页面 / 11 个工具 / **1143 passed**。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 73 个 API 操作 / 20 个页面 / 11 个工具 / **1175 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、73 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1143 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、11 个已实现工具、`pytest` 1175 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -158,6 +158,7 @@
 | 排期背后的片子能不能发 | `backend/app/services/calendar_readiness.py` 的 `job_readiness()`（读 `content/jobs/<job_id>/`，五档：`no_job`/`job_missing`/`film_missing`/`draft_invalid`/`ready`，只有 `ready` 可发）+ 四个日历接口返回里的 `readiness` 字段 + 页面「底片就绪度」列与「绑任务号」按钮 | DONE | 判定顺序是"先闸门后文件"：片子还在但结论被撤回确认时报 `draft_invalid`（`tests/test_calendar_readiness.py` 9 例） |
 | 导出记录 / 发布记录 / 多平台适配 | `POST /api/calendar/{id}/export` 真写文件（三平台 `.md` + `meta.json`）并把路径写进 `export_path`、状态转 `exported`；`publish_state`/`published_url`/`published_at` 记发布痕迹（**发布必须有链接**，撤回留痕）；文案三版见 `backend/app/content/platform_adapt.py` | DONE | 发布回执（平台侧的真实链接与数据）仍需人工回填；系统不调任何平台 API |
 | 账号数据导入 / 播放量 / 互动分析 | `platform_metrics` + `POST /api/calendar/{id}/metrics` + `POST /api/calendar/{id}/metrics/import`（CSV 批量）+ `GET /api/calendar/analytics`（取最新快照，不累加） | DONE | CSV 认中英列名与千分位；撞时间戳的跳过、坏行带行号报错、平台不一致直接拒（`tests/test_metrics_import.py` 13 例） |
+| 素材清单与实际使用是否一致 | `backend/app/video/asset_audit.py` 的 `audit_job()`（清单 / 分镜表 / 时间轴 / 渲染回执四份对账）+ `render_job` 末尾写 `qc/asset_audit.{json,md}` + CLI `python -m backend.scripts.asset_audit` | DONE | 补登记纯色底板（`_register_plate`，以前底板只在回执里、不在清单上）；无音轨时不再让质检崩掉（`scan_media(has_audio=…)`）；`tests/test_asset_audit.py` 12 例 |
 
 ## 优先级与执行顺序（自主决定，不等确认）
 

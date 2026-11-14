@@ -459,6 +459,30 @@ def test_scan_media_sums_segment_durations(tmp_path: Path) -> None:
     assert scan["freeze_segments"] == 0
 
 
+def test_scan_media_skips_silence_detection_when_the_film_has_no_audio(tmp_path: Path) -> None:
+    """没有音轨的片子不能拿去跑 silencedetect——ffmpeg 会直接以 -22 退出，把整份质检带崩。"""
+
+    media = tmp_path / "x.mp4"
+    media.write_bytes(b"x")
+    seen: list[str] = []
+
+    def fake_ffmpeg(args: list[str]) -> str:
+        text = " ".join(args)
+        seen.append(text)
+        if "blackdetect" in text:
+            return "black_start:0.2 black_end:0.5 black_duration:0.3"
+        return ""
+
+    scan = scan_media(media, run_ffmpeg=fake_ffmpeg, has_audio=False)
+
+    assert not any("silencedetect" in args for args in seen), "没有音轨就不该调静音检测"
+    assert scan["silence_seconds"] == 0.0
+    assert scan["silence_longest"] == 0.0
+    assert "没有音轨" in scan["silence_note"]
+    # 黑帧照常检测，不能因为没声音就整段跳过
+    assert scan["black_seconds"] == pytest.approx(0.3)
+
+
 def test_solid_shots_use_a_moving_plate_not_a_still_frame(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

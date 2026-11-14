@@ -1012,3 +1012,81 @@ checks={by_status:{confirmed:1,pending:5}, pending:5, pending_reports:[1]}
 影片存在但闸门失效时**仍要如实报出片子路径**（不能因为失效就说"没有片子"）、
 渲染回执会带出来、接口层列表/详情/新建/改排期四处都带 `readiness`。
 与既有的 `tests/test_operations.py` 合跑 23 例全过。
+
+## §29 素材清单审计：清单说的和片子里有的，是不是一回事
+
+`assets_manifest.csv` 上写着"这份片子的每一个画面和声音都登记在案"。这句话以前没人验过。
+
+### §29.1 先发现清单本身是缺的
+
+把 `content/jobs/` 下三个成片任务的清单、分镜表、`project/timeline.json` 摆在一起看：
+
+| 任务 | 清单 | 时间轴里的 clip | 缺的那条 |
+| --- | --- | --- | --- |
+| `v6_accept_company_v2` | `CARD_sh02`、`CARD_sh03` | `solid_1d2a44`、`CARD_sh02`、`CARD_sh03` | `solid_1d2a44` |
+| `v6_accept_industry` | `CARD_sh02` | `solid_1d2a44`、`CARD_sh02` | `solid_1d2a44` |
+| `v5_flow_acceptance_v2` | `CARD_sh02`、`CARD_sh03` | `solid_1d2a44`、`CARD_sh02`、`CARD_sh03` | `solid_1d2a44` |
+
+`solid_1d2a44` 是开场/收尾那种纯色渐变底板。`backend/app/video/render.py` 的 `prepare_clips()`
+会把它渲染出来、写进渲染回执的 `asset_rows`，**但没有写进 `assets_manifest.csv`**——
+于是"登记在案"这句话对底板是不成立的。
+
+修法：新增 `_register_plate()`，底板也走 `register_generated_asset(kind="plate",
+purpose="纯色/渐变底板 #xxxx", credit="本仓库程序生成的纯色底板（无外部素材）")`。
+登记失败（`GeneratedAssetError`/`OSError`/`ValueError`）**不让渲染失败**——底板没有版权问题，
+渲染没必要陪葬——但要在回执里写 `registered: False` 与 `register_error`，交给审计去发现。
+
+### §29.2 审计模块：四份来源两两对账
+
+`backend/app/video/asset_audit.py` 的 `audit_job(job_dir)` 只读本地文件，把四份来源拉齐：
+
+1. **清单** `assets_manifest.csv`——我们说用了什么、授权是什么；
+2. **分镜表** `storyboard/storyboard.csv`——打算用哪个素材；
+3. **时间轴** `project/timeline.json`（或 `timeline.render.json`）——真正进成片的 clip；
+4. **渲染回执** `qc/render_run.json` 的 `report.assets`——这一次实际导入过什么。
+
+检查项与级别：
+
+| 检查 | 级别 | 什么时候报 |
+| --- | --- | --- |
+| `manifest_missing` | error / info | 用了素材却没有清单（error）；没素材又没清单（info） |
+| `timeline_missing` | warning | 时间轴和回执都拿不到——只能核对清单与分镜 |
+| `asset_not_registered` | error | 成片里用了清单上没有的东西（来路不明） |
+| `asset_unused` | warning | 清单登记了但这一版没用（可能白登记） |
+| `asset_file_blank` / `asset_file_missing` | error | 清单那一条没写路径 / 文件已经不在了 |
+| `asset_hash_mismatch` | error | 文件哈希与登记不符（登记之后被改过） |
+| `license_not_allowed` | error | 商用授权不是 `allowed` 却进了成片 |
+| `storyboard_asset_not_registered` | error | 分镜写了清单上没有的素材 |
+| `all_registered` | info | 全部对得上，写出来是为了让人看到"确实查过" |
+
+`ok` 只看有没有 error；`to_markdown()` 按 硬问题 / 提醒 / 说明 三段输出。
+命令行：`python -m backend.scripts.asset_audit --job <任务号> [--root content/jobs] [--json]`，
+退出码 `0` 无硬问题、`1` 有硬问题、`2` 任务目录不存在。
+
+### §29.3 接进渲染闭环
+
+`render_job()` 渲染并质检完成后调用 `_write_asset_audit()`，把结果写进
+`qc/asset_audit.json` 与 `qc/asset_audit.md`，同时让渲染回执多一个 `asset_audit` 字段。
+审计自身出错（读文件失败等）只记 warning，不让已经渲染好的片子报失败。
+
+### §29.4 顺带修掉一个真 bug：没有音轨的片子会让质检崩掉
+
+验证底板登记时先渲了一版**不带旁白**的片子（`narration=False`），`scan_media()` 里
+`-af silencedetect` 直接让 ffmpeg 以 `返回码 4294967274`（即 -22，EINVAL）退出，
+整个质检崩掉——真正的问题（这片子根本没有音轨）反而没被报出来。
+
+修法：`scan_media(path, *, run_ffmpeg=None, has_audio=None)`——先探有没有音轨，
+没有就**跳过静音检测**并在结果里留一句 `silence_note`；有音轨但检测本身失败，
+也只把 `silence_note` 写上、不让质检整体失败。"没有声音"这件事由 `has_audio_stream` 那一项
+如实判红，不靠静音检测代劳。
+
+### §29.5 实测与测试
+
+- 重渲 `v6_accept_company_v2`（临时副本）后，清单从 2 条变 3 条，
+  多出来的正是 `solid_1d2a44,B,plate,assets/plates/solid_1d2a44.mp4`，
+  审计输出「素材审计通过：清单 3 条，分镜用到 2 个，时间轴 3 个 clip；0 条提醒」。
+- 对**改之前**渲好的三个任务跑审计，三个都如实报 `asset_not_registered: solid_1d2a44`——
+  这正是补登记之前的状态，说明审计确实查得出这个问题。
+- `tests/test_asset_audit.py` 12 例：干净任务通过、成片用了清单没有的东西、清单整个缺失、
+  空目录只给说明、清单多登记、文件丢失、文件被改（哈希不符）、授权不允许、分镜引用未登记素材、
+  没有时间轴只给提醒、只有渲染回执也能查出未登记、markdown 分段、命令行三个退出码。

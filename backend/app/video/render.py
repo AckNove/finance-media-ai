@@ -28,10 +28,12 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
 from backend.app.capabilities.media.engine import MediaEngineError, VideoEngine
+from backend.app.capabilities.media.ffmpeg import MediaToolError
 from backend.app.media.manifest import read_manifest
 from backend.app.media.storyboard import Storyboard, StoryboardError, load_storyboard
 from backend.app.video import textfit
 from backend.app.video.cards import INK as CARD_INK
+from backend.app.video.generated import GeneratedAssetError, register_generated_asset
 from backend.app.media.timeline import (
     TimelineError,
     audio_mix,
@@ -99,6 +101,7 @@ class RenderReport:
     qc: dict[str, Any] = field(default_factory=dict)
     notes: tuple[str, ...] = field(default=())
     narration: dict[str, Any] = field(default_factory=dict)
+    asset_audit: dict[str, Any] = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -124,6 +127,7 @@ class RenderReport:
             "qc": self.qc,
             "notes": list(self.notes),
             "narration": self.narration,
+            "asset_audit": self.asset_audit,
             "ok": self.ok,
         }
 
@@ -342,6 +346,41 @@ def _solid_gradient(
     return target if target.is_file() and target.stat().st_size > 0 else None
 
 
+def _register_plate(
+    *,
+    job_root: Path,
+    plate: Path,
+    asset_id: str,
+    colour: str,
+    shots: list[str],
+) -> dict[str, Any]:
+    """把纯色/渐变底板也登记进 ``assets_manifest.csv``。
+
+    底板是我们自己程序生成的画面，也算"片子里的一张图"。以前它只出现在渲染回执里，
+    清单上没有——于是"清单列出了成片的每一个素材"这句话是假的。这里补上；
+    登记失败不让渲染失败（底板没有版权问题），但要在回执里如实写出来，
+    好让素材审计发现清单不全。
+    """
+    try:
+        register_generated_asset(
+            job_root,
+            plate,
+            kind="plate",
+            purpose=f"纯色/渐变底板 {colour}",
+            credit="本仓库程序生成的纯色底板（无外部素材）",
+            used_in_shots=",".join(shots),
+            asset_id=asset_id,
+        )
+    except (GeneratedAssetError, OSError, ValueError) as error:
+        logger.warning("底板登记失败（清单会缺这一条）：%s", error)
+        return {
+            "call": f"register_plate_failed:{asset_id}",
+            "registered": False,
+            "register_error": f"{type(error).__name__}: {error}",
+        }
+    return {"call": f"register_plate:{asset_id}", "registered": True}
+
+
 def prepare_clips(
     storyboard: Storyboard,
     *,
@@ -405,6 +444,15 @@ def prepare_clips(
         if not clip:
             raise RenderError("empty_clip", f"{key}: 引擎没有返回帧序列")
         clips[key] = clip
+        plate_outcome = _register_plate(
+            job_root=job_root,
+            plate=plate,
+            asset_id=key,
+            colour=colour,
+            shots=[shot.shot_id for shot in storyboard.shots if shot.asset_type == "solid"
+                   and solid_clip_id(shot.asset_source or "#0b1220") == key],
+        )
+        calls.append(plate_outcome.pop("call"))
         asset_rows.append(
             {
                 "asset_id": key,
@@ -416,6 +464,7 @@ def prepare_clips(
                 "commercial_use": "allowed",
                 "source_start": 0.0,
                 "frames": int(clip.get("n") or 1),
+                **plate_outcome,
             }
         )
 
@@ -517,11 +566,20 @@ def probe_media(path: Path, *, run_ffprobe: Callable[[list[str]], str] | None = 
     }
 
 
-def scan_media(path: Path, *, run_ffmpeg: Callable[[list[str]], str] | None = None) -> dict[str, Any]:
+def scan_media(
+    path: Path,
+    *,
+    run_ffmpeg: Callable[[list[str]], str] | None = None,
+    has_audio: bool | None = None,
+) -> dict[str, Any]:
     """黑帧 / 冻结 / 静音检测。
 
     三个滤镜都会把命中区间打到 stderr，这里把每段时长加起来看是否超过阈值。
     注意：**转场压黑是正常的**，所以阈值给到 0.45 秒而不是要求零黑帧。
+
+    ``has_audio`` 为假时**不做静音检测**：给一个没有音轨的文件加 ``-af silencedetect``
+    会让 ffmpeg 直接以 -22（EINVAL）退出——那会让整份质检崩掉，掩盖掉真正的问题
+    （"这片子根本没有声音"由 ``has_audio_stream`` 那一项如实报出来）。
     """
     if run_ffmpeg is None:
         from backend.app.capabilities.media.ffmpeg import resolve_toolchain
@@ -543,16 +601,33 @@ def scan_media(path: Path, *, run_ffmpeg: Callable[[list[str]], str] | None = No
         ["-hide_banner", "-nostats", "-i", str(path),
          "-vf", "freezedetect=n=0.001:d=0.5", "-an", "-f", "null", "-"]
     )
-    silence_out = run_ffmpeg(
-        ["-hide_banner", "-nostats", "-i", str(path),
-         "-af", "silencedetect=n=-50dB:d=1.0", "-vn", "-f", "null", "-"]
-    )
     black = _segments(black_out, "black")
     freeze = _segments(freeze_out, "freeze")
-    silence = _segments(silence_out, "silence")
+
+    if has_audio is None:
+        try:
+            has_audio = bool(probe_media(path).get("has_audio"))
+        except (MediaToolError, ValueError, KeyError, OSError):
+            # 探不出来就照常试一次，失败了再按下面那条路兜住
+            has_audio = True
+
+    silence: list[float] = []
+    silence_note = ""
+    if has_audio:
+        try:
+            silence_out = run_ffmpeg(
+                ["-hide_banner", "-nostats", "-i", str(path),
+                 "-af", "silencedetect=n=-50dB:d=1.0", "-vn", "-f", "null", "-"]
+            )
+            silence = _segments(silence_out, "silence")
+        except MediaToolError as error:
+            silence_note = f"静音检测没跑成（{error}），这一段不作数"
+    else:
+        silence_note = "成片里没有音轨，未做静音检测（有没有声音由 has_audio_stream 那一项判）"
+
     # 阈值名字叫 max_*_seconds，就该按"最长的一段"判，而不是把整片所有短段加总。
     # 71 秒的片子里有 6 段各 0.6 秒的短暂停顿并不算"画面冻住"，加总判会冤枉它。
-    return {
+    result = {
         "black_segments": len(black),
         "black_seconds": round(sum(black), 3),
         "black_longest": round(max(black, default=0.0), 3),
@@ -563,6 +638,9 @@ def scan_media(path: Path, *, run_ffmpeg: Callable[[list[str]], str] | None = No
         "silence_seconds": round(sum(silence), 3),
         "silence_longest": round(max(silence, default=0.0), 3),
     }
+    if silence_note:
+        result["silence_note"] = silence_note
+    return result
 
 
 # ------------------------------------------------------------------ 主流程
@@ -858,7 +936,7 @@ def render_job(
     qc: dict[str, Any] = {}
     if do_qc:
         media = probe_media(target, run_ffprobe=ffprobe)
-        scan = scan_media(target, run_ffmpeg=ffmpeg)
+        scan = scan_media(target, run_ffmpeg=ffmpeg, has_audio=bool(media.get("has_audio")))
         checks = {
             "canvas_matches_storyboard": (media["width"], media["height"])
             == (storyboard.width, storyboard.height),
@@ -890,4 +968,27 @@ def render_job(
         "output_byte_size": target.stat().st_size,
         "qc": qc,
     }
+
+    # 素材审计：成片里出现的每一样东西，清单上有没有、文件是不是当初那个。
+    # 审计自身出错不能让渲染失败（片子已经渲染好了），但要在回执里写清楚。
+    final["asset_audit"] = _write_asset_audit(root, job_id=job_id)
     return RenderReport(**final)
+
+
+def _write_asset_audit(job_root: Path, *, job_id: str) -> dict[str, Any]:
+    """跑一遍素材审计并把结果写到 ``qc/asset_audit.{json,md}``。"""
+    from backend.app.video.asset_audit import audit_job, to_markdown
+
+    try:
+        audit = audit_job(job_root, job_id=job_id)
+    except (OSError, ValueError) as error:
+        logger.warning("素材审计没跑成：%s", error)
+        return {"ok": False, "error": f"{type(error).__name__}: {error}"}
+    qc_dir = job_root / "qc"
+    qc_dir.mkdir(parents=True, exist_ok=True)
+    payload = audit.as_dict()
+    (qc_dir / "asset_audit.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8"
+    )
+    (qc_dir / "asset_audit.md").write_text(to_markdown(audit), encoding="utf-8")
+    return payload
