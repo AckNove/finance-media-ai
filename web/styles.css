@@ -163,3 +163,6 @@ video { width: 100%; max-height: 620px; border-radius: 10px; background: #000; }
 .alert.ok { border-color: #46621a; }
 .alert.danger { border-color: #6b2a2a; }
 .empty { color: var(--dim); padding: 18px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }
+
+ul.tight { margin: 8px 0 0; padding-left: 20px; }
+ul.tight li { margin: 6px 0; line-height: 1.6; }

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import csv
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -42,6 +43,8 @@ JOBS_ROOT = PROJECT_ROOT / "content" / "jobs"
 VIDEO_SUFFIXES = {".mp4", ".mov", ".m4a", ".wav", ".png", ".jpg", ".csv", ".md", ".json"}
 MAX_PREVIEW_ROWS = 200
 
+logger = logging.getLogger(__name__)
+
 
 def _resolve_inside(candidate: Path, root: Path) -> Path:
     resolved = candidate.resolve()
@@ -60,6 +63,23 @@ def _read_csv(path: Path, limit: int = MAX_PREVIEW_ROWS) -> dict[str, Any]:
         "total": len(rows),
         "truncated": len(rows) > limit,
     }
+
+
+def _asset_audit_of(job_dir: Path) -> dict[str, Any]:
+    """现算一遍素材审计（清单 / 分镜 / 时间轴 / 磁盘四份对账）。
+
+    接口里现算而不是只读 `qc/asset_audit.json`：那份是渲染那一刻的快照，
+    事后有人手动换过素材文件就得重新看。审计自身出错只回一条 error 说明，
+    不让"看素材页"变成 500。
+    """
+
+    from backend.app.video.asset_audit import audit_job
+
+    try:
+        return audit_job(job_dir).as_dict()
+    except (OSError, ValueError) as error:
+        logger.warning("素材审计没跑成：%s", error)
+        return {"ok": False, "error": f"{type(error).__name__}: {error}"}
 
 
 def _draft_gate_of(job_dir: Path) -> dict[str, Any]:
@@ -156,6 +176,7 @@ def get_job(job_id: str = PathParam(min_length=1, max_length=80)) -> dict[str, A
     timeline = job_dir / "project" / "timeline.json"
     if timeline.is_file():
         payload["timeline_bytes"] = timeline.stat().st_size
+    payload["asset_audit"] = _asset_audit_of(job_dir)
     return payload
 
 

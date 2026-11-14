@@ -1241,13 +1241,37 @@ async function pageAssets(view) {
       { title: '许可', key: 'license' },
       { title: 'SHA-256', value: (row) => esc(String(row.original_file_hash || '').slice(0, 16)) },
     ], data.sources.rows) : '';
-    box.innerHTML = `<h3>素材清单</h3>${manifest}<h3>已批准来源登记</h3>${sources}`;
+    box.innerHTML = `${assetAuditCard(data.asset_audit)}<h3>素材清单</h3>${manifest}<h3>已批准来源登记</h3>${sources}`;
   };
   const select = document.getElementById('job-select');
   if (select) {
     select.onchange = () => { location.hash = `#/assets?job=${select.value}`; };
     load(select.value);
   }
+}
+
+const AUDIT_TONE = { error: 'bad', warning: 'warn', info: 'info' };
+
+function assetAuditCard(audit) {
+  if (!audit) return '';
+  if (audit.error) {
+    return `<div class="card"><h2>素材审计</h2><div class="empty">审计没跑成：${esc(audit.error)}</div></div>`;
+  }
+  const errors = audit.errors || 0;
+  const warnings = audit.warnings || 0;
+  const tone = errors ? 'bad' : (warnings ? 'warn' : 'ok');
+  const label = errors ? `${errors} 个硬问题` : (warnings ? `${warnings} 条提醒` : '对得上');
+  const interesting = (audit.findings || []).filter((item) => item.severity !== 'info');
+  const infoLine = (audit.findings || []).find((item) => item.severity === 'info');
+  const rows = interesting.length
+    ? `<ul class="tight">${interesting.slice(0, 20).map((item) => `<li><span class="tag ${AUDIT_TONE[item.severity] || 'info'}">${esc(item.severity)}</span> ${item.asset_id ? `<code>${esc(item.asset_id)}</code>：` : ''}${esc(item.detail)}</li>`).join('')}</ul>`
+    : `<p class="muted">${esc(infoLine ? infoLine.detail : '没有需要报告的问题。')}</p>`;
+  return `<div class="card">
+    <h2>素材审计 <span class="tag ${tone}">${esc(label)}</span></h2>
+    <p class="muted">清单 ${audit.manifest_assets || 0} 条 · 分镜打算用 ${audit.storyboard_assets || 0} 个 · 时间轴实际用了 ${audit.timeline_assets || 0} 个 clip。
+      这份审计只核对「清单说了什么」与「片子里实际有什么」是否一致，不判断素材好不好看。</p>
+    ${rows}
+  </div>`;
 }
 
 async function pageVideo(view) {
