@@ -30,6 +30,7 @@ from backend.app.schemas.common import Page
 from backend.app.schemas.research_task import (
     ArtifactBundleOut,
     ArtifactFileOut,
+    BudgetOut,
     GateOut,
     PlanningOut,
     ResearchTaskCreate,
@@ -43,6 +44,7 @@ from backend.app.schemas.research_task import (
 )
 from backend.app.services import task_artifacts, task_gate
 from backend.app.services.run_summary import summarise_run
+from backend.app.services.task_budget import budget_of
 
 router = APIRouter(
     prefix="/research-tasks",
@@ -137,7 +139,16 @@ def _detail(db: DbSession, task_id: int) -> ResearchTaskDetailOut:
     payload["plan"] = _plan_of(db, task_id)
     payload["planning"] = _planning_of(db, task_id)
     payload["gate"] = _gate_of(subtasks, task_status=snapshot.status)
+    payload["budget"] = _budget_of(db, task_id)
     return ResearchTaskDetailOut.model_validate(payload)
+
+
+def _budget_of(db: DbSession, task_id: int) -> BudgetOut | None:
+    """预算要看任务行本身（快照里没有 tokens 上限），所以这里回库取一次。"""
+    task = db.get(ResearchTask, task_id)
+    if task is None:
+        return None
+    return BudgetOut(**budget_of(task).as_dict())
 
 
 def _gate_of(subtasks, *, task_status: str = "") -> GateOut | None:

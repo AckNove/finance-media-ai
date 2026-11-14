@@ -170,3 +170,23 @@ def test_the_storyboard_and_assets_pages_point_at_each_other(source: str) -> Non
     assert "tbody tr.focus-row" in styles.read_text(encoding="utf-8")
     # 目标不在表里时不许假装找到了
     assert "没有镜头" in sb and "素材清单里没有" in assets
+
+
+def test_the_task_page_shows_the_budget_before_it_blocks_anything(source: str) -> None:
+    """预算闸门只在被拒时留一条事件；人得先看见上限、已用、剩余。"""
+    assert "function budgetCard(budget)" in source
+    card = source.split("function budgetCard", 1)[1][:1800]
+    assert "budget.exhausted" in card and "已经撞线" in card and "没设上限" in card
+    assert "budget.calls_remaining" in card and "budget.cost_remaining_cny" in card
+    # 没设上限的项不许编一个数出来（token 那行要写"不限"）
+    assert "不限" in card
+    # 撞线时要把原因码亮出来，别只说"不能用了"
+    assert "budget.blocked_reason" in card
+    detail = source.split("async function pageTaskDetail", 1)[1][:4000]
+    assert "budgetCard(task.budget)" in detail
+
+
+def test_money_does_not_print_six_useless_zeros(source: str) -> None:
+    """0.5 元曾显示成「¥0.500000」；分以下的零头要留，多余的后导零要砍。"""
+    block = source.split("function money", 1)[1][:420]
+    assert "toFixed(6)" in block and "replace(/0+$/, '')" in block

@@ -116,6 +116,26 @@ class ArtifactBundleOut(BaseModel):
     note: str = ""
 
 
+class BudgetOut(BaseModel):
+    """这条任务的预算：上限、已用、剩余、以及下一次调用会不会被拦。"""
+
+    model_config = ConfigDict(extra="ignore")
+
+    calls_limit: int | None = None
+    tokens_limit: int | None = None
+    cost_limit_cny: Decimal | None = None
+    calls_used: int = 0
+    tokens_used: int = 0
+    cost_used_cny: Decimal = Decimal("0")
+    calls_remaining: int | None = None
+    tokens_remaining: int | None = None
+    cost_remaining_cny: Decimal | None = None
+    exhausted: bool = False
+    blocked_reason: str = ""
+    has_limit: bool = False
+    note: str = ""
+
+
 class ResearchTaskDetailOut(ResearchTaskOut):
     subtasks: list[SubtaskOut] = Field(default_factory=list)
     plan: dict[str, Any] | None = None
@@ -125,6 +145,9 @@ class ResearchTaskDetailOut(ResearchTaskOut):
     )
     gate: GateOut | None = Field(
         default=None, description="当前挡住任务的人工闸门（没有闸门则为 null）"
+    )
+    budget: BudgetOut | None = Field(
+        default=None, description="预算上限/已用/剩余；下一次调用会不会被拦"
     )
 
 

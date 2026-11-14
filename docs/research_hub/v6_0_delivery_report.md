@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1393 passed, 2 skipped**。
+全量 `pytest` **1412 passed, 2 skipped**。
 
 ---
 
@@ -2441,7 +2441,7 @@ entry 2（不绑任务、不填标签）
   三组前缀回落参数化。
 - `tests/test_ui_copy.py` +1 例护栏：两个页面必须互相生成带 `?shot=` / `?asset=` 的链接，
   样式里必须有 `tbody tr.focus-row`，找不到目标时必须说「没有镜头」/「素材清单里没有」。
-- 全量 `pytest` 1393 passed / 2 skipped。
+- 全量 `pytest` 1412 passed / 2 skipped。
 - 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
   `journal_mode=delete`、无 `-wal`/`-shm`。
 
@@ -2452,3 +2452,72 @@ entry 2（不绑任务、不填标签）
   修复脚本是一次性的，不入库（下次真要重跑，做法写在本节 48.2 的第三行）。
 - 修复后 `content/jobs/*/assets_manifest.csv` 有 6 个文件 13 行变化，已在同一提交里入库——
   这是**数据订正**，不是重新渲染，视频文件一个都没重做。
+## 49. 这条任务还能花多少：预算从"被拒之后才知道"变成"点进去就看见"
+
+### 49.1 问题
+
+预算闸门一直在（`backend/app/capabilities/budget.py`：单次上限、任务上限、当日额度三道），
+但它只在**拦下调用之后**留下一条事件。人真正想问的是三件更朴素的事：
+
+- 这条任务上限是多少？
+- 现在已经花了多少？
+- 还剩多少，下一次调用会不会被拒？
+
+这些数字在任务详情里全都看不到——只有顶部一行「花费 ¥x」，没有上限作对照，
+所以"花了 0.16 元"到底是花超了还是刚开始，读者自己判断不了。
+
+### 49.2 改了什么
+
+- 新建 `backend/app/services/task_budget.py`：`BudgetStatus` + `budget_of(task)` 纯函数，
+  只读 `budget_max_calls / budget_max_tokens / budget_max_cost` 与
+  `calls_spent / tokens_spent / cost_spent` 六个字段，算出剩余与"下一次会不会被拦"。
+  原因码用预算闸门那一套（`task_calls_exceeded` / `task_cost_exceeded` / …），
+  模块里带一张**原因码 → 人话**的对照表，页面不再自己编词。
+- 三条口径写死在函数里：**没设上限就说没设**（并告诉人用哪个字段卡住它）；
+  **超了不显示负数**（`calls_remaining` 最多到 0，负号会让人以为还能花）；
+  **没设的那一项不编数**（token 上限为 None 时页面写「不限」，不换算成 0）。
+- `BudgetOut` 进 `ResearchTaskDetailOut`；任务详情路由回库取一次任务行（快照里没有
+  `budget_max_tokens`），`payload["budget"] = _budget_of(db, task_id)`。
+- 前端任务详情多一张「这条任务的预算」卡：三行（调用次数 / token / 金额）各写
+  「已用 / 上限」与「还剩多少」，撞线时标签变红、亮出原因码，并写明
+  「预算闸门不发请求、不记账」。
+- 顺手修一处显示口径：`money()` 原来在金额小于 1 元时补 6 位，
+  于是 0.5 元显示成「¥0.500000」。现在补到 6 位后**去掉多余的后导零**
+  （`0.5` → `¥0.5`，`0.001433` → `¥0.001433`，`0` → `¥0.00`）——
+  精度留着，噪音去掉。
+
+### 49.3 真机实测
+
+服务指向工作库副本，建两条任务（一条 `budget_max_calls=5, budget_max_cost_cny=0.5`，
+一条 `budget_max_calls=2` 并把 `calls_spent` 调到上限），浏览器真看：
+
+```
+roomy budget: calls_limit=5 cost_limit=0.500000 calls_remaining=5 exhausted=false
+  卡片: 这条任务的预算 还有余量 / 调用次数 0 / 5 还剩 5 次 / token 0（不限） / 金额 ¥0.00 / ¥0.5 还剩 ¥0.5
+tight budget: calls_limit=2 calls_used=2 calls_remaining=0 exhausted=true
+              blocked_reason=task_calls_exceeded
+  卡片: 这条任务的预算 已经撞线 / 调用次数 2 / 2 还剩 0 次
+        调用次数到上限了：这条任务的下一次模型调用会被预算闸门拒绝（返回 budget_blocked，不发请求、不花钱）
+        原因码: task_calls_exceeded（预算闸门不发请求、不记账）
+page errors: []
+```
+
+### 49.4 测试
+
+- 新增 `tests/test_task_budget.py` 15 例：没设上限要说出来并给字段名、每一项剩余各自计算、
+  撞次数与撞钱是两个原因码、**超支不出现负数**、token 上限出现时才算、`as_dict` 可序列化、
+  字段缺失不炸、七个原因码都必须有人话。
+- `tests/test_research_task_api.py` +2 例：建任务时给的预算能在详情里读回来
+  （金额按数值比，因为列是 `NUMERIC(20,6)`）；没给预算时详情如实说「没设预算上限」。
+- `tests/test_ui_copy.py` +2 例护栏：预算卡必须显示"已用/上限/剩余"、没设的项写「不限」、
+  撞线要亮原因码；`money()` 必须去掉后导零。
+- 全量 `pytest` **1412 passed / 2 skipped**。
+- 真实开发库未改动：`sha256 2df764e5…8203`、19 表、`revision de8148733a9b`、
+  `journal_mode=delete`、无 `-wal`/`-shm`。
+
+### 49.5 诚实边界
+
+- 这张卡只读**已经落账**的数字；`calls_reserved` / `cost_reserved`（调用路上的占位）
+  不显示——它们随调用结束就会退回 0，摆出来只会让人以为钱被扣了两次。
+- 「还剩多少」不等于「还能跑多少格」：一格要花多少取决于走到哪个阶段、模型输出多长。
+- 页面不替人做「要不要继续」的判断，只把三道闸门的状态摆出来。

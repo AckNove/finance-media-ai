@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from decimal import Decimal
 from typing import Any
 
 import pytest
@@ -231,3 +232,33 @@ def test_agent_roster_comes_from_the_real_config(client: Any) -> None:
     assert "orchestrator" in keys and "fact_checker" in keys
     for item in body["agents"]:
         assert item["prompt"].endswith("PROMPT.md")
+
+
+def test_task_detail_reports_the_budget_it_was_created_with(
+    client: Any, clean_db: None
+) -> None:
+    """预算闸门拦下人之前，得先让人看见上限、已用与剩余。"""
+    created = _create_task(client, budget_max_calls=5, budget_max_cost_cny="0.5")
+    assert created.status_code == 201, created.text
+    task_id = created.json()["id"]
+
+    body = client.get(f"/api/research-tasks/{task_id}").json()
+    budget = body["budget"]
+    assert budget["calls_limit"] == 5
+    # 金额列是 NUMERIC(20,6)，比的是数值不是字符串写法
+    assert Decimal(budget["cost_limit_cny"]) == Decimal("0.5")
+    assert Decimal(budget["cost_used_cny"]) == Decimal("0")
+    assert budget["calls_used"] == 0
+    assert budget["calls_remaining"] == 5
+    assert budget["exhausted"] is False
+    assert budget["has_limit"] is True
+    # 没有 token 上限就别编一个数出来
+    assert budget["tokens_limit"] is None
+
+
+def test_task_without_a_budget_says_so(client: Any, clean_db: None) -> None:
+    created = _create_task(client)
+    task_id = created.json()["id"]
+    budget = client.get(f"/api/research-tasks/{task_id}").json()["budget"]
+    assert budget["has_limit"] is False
+    assert "没设预算上限" in budget["note"]

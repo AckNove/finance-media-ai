@@ -61,7 +61,12 @@ function publishLinkComplaint(url) {
 
 function money(value) {
   const number = Number(value || 0);
-  return '¥' + number.toFixed(number !== 0 && Math.abs(number) < 1 ? 6 : 2);
+  // 小于 1 元时要看到分以下的零头（单次调用可能只花 0.0014 元），但不能把
+  // 0.5 元写成「¥0.500000」——补到 6 位只为精度，多余的后导零去掉。
+  if (number !== 0 && Math.abs(number) < 1) {
+    return '¥' + number.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  return '¥' + number.toFixed(2);
 }
 
 /** 文件大小只有一处口径：日历、视频页、渲染回执都用它，免得同一个文件一会 9259 KB 一会 9.04 MB。 */
@@ -671,6 +676,28 @@ function taskArtifactsCard(bundle, taskId) {
   </div>`;
 }
 
+function budgetCard(budget) {
+  if (!budget) return '';
+  const tag = budget.exhausted
+    ? '<span class="tag bad">已经撞线</span>'
+    : (budget.has_limit ? '<span class="tag ok">还有余量</span>' : '<span class="tag warn">没设上限</span>');
+  const rows = [
+    ['调用次数', budget.calls_limit === null ? '不限' : `${budget.calls_used} / ${budget.calls_limit}`,
+      budget.calls_remaining === null ? '' : `还剩 ${budget.calls_remaining} 次`],
+    ['token', budget.tokens_limit === null ? `${budget.tokens_used}（不限）` : `${budget.tokens_used} / ${budget.tokens_limit}`,
+      budget.tokens_remaining === null ? '' : `还剩 ${budget.tokens_remaining}`],
+    ['金额', budget.cost_limit_cny === null ? `${money(budget.cost_used_cny)}（不限）` : `${money(budget.cost_used_cny)} / ${money(budget.cost_limit_cny)}`,
+      budget.cost_remaining_cny === null ? '' : `还剩 ${money(budget.cost_remaining_cny)}`],
+  ];
+  return `<div class="card" id="budget-card"><h2>这条任务的预算 ${tag}</h2>
+    <div class="scroll"><table><thead><tr><th>项</th><th>已用 / 上限</th><th>剩余</th></tr></thead><tbody>
+    ${rows.map(([name, used, left]) => `<tr><td>${esc(name)}</td><td>${esc(used)}</td><td class="muted">${esc(left)}</td></tr>`).join('')}
+    </tbody></table></div>
+    ${budget.note ? `<div class="note ${budget.exhausted ? 'bad' : ''}">${esc(budget.note)}</div>` : ''}
+    ${budget.exhausted ? `<div class="note">原因码：<code>${esc(budget.blocked_reason)}</code>（预算闸门不发请求、不记账）</div>` : ''}
+  </div>`;
+}
+
 async function pageTaskDetail(view, params) {
   const id = params.id;
   const [detail, events, artifacts] = await Promise.all([
@@ -723,6 +750,7 @@ async function pageTaskDetail(view, params) {
       ${plan.skip_reason ? `<div class="note">本任务跳过了 ${esc((plan.skipped_stages || []).join('、'))}：${esc(plan.skip_reason)}</div>` : ''}
     </div>
     <div id="gate-slot">${gate ? taskGateCard(gate, id) : ''}</div>
+    ${budgetCard(task.budget)}
     ${artifactsCard}
     ${planningCard}
     <div class="card" id="progress-card"><h2>阶段进度</h2>

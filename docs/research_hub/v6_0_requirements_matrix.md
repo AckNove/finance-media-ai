@@ -6,11 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 77 个 API 操作 / 20 个页面 / 11 个工具 / **1393 passed**。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 77 个 API 操作 / 20 个页面 / 11 个工具 / **1412 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、77 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1393 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、11 个已实现工具、`pytest` 1412 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -184,6 +184,7 @@
 | 已批准脚本直接出片（不必重走研究） | G 内容策划 / H 视频生产 | DONE | `backend/app/video/script_film.py` + `POST /api/scripts/{script_id}/video-job` + `tests/test_script_film.py`（9 例）：只认 `approved`/`storyboard_ready`/`produced` 的脚本；脚本挂着的报告必须仍有生效的人工确认（`readiness_of`），撤回即拒（`draft_not_confirmed`）；`job.json` 写 `draft_gate.check_ids` 以便撤回后由 `invalidate_jobs()` 标失效；分镜排不出来只记 `blocked_reason`，不拿规则模板顶替；产出 `script/SCRIPT.md`、`script/script.json`、`storyboard/storyboard.csv`、`job.json`、`HANDOFF.md`。**只到分镜**，出片仍要跑 `render_job` |
 | 各平台交付包（文案 + 标签 + 片子一处拿全） | K 自媒体运营 / G 内容策划 | DONE | `backend/app/services/content_tags.py`（标签唯一口径：去 `#`、去重保序、单标签 ≤24 字、最多 12 个）+ 迁移 `b8_calendar_tags`（`content_calendar.tags`）+ `export_service` 交付包（`README.md`、`tags.txt`、`film/` 硬链接优先/复制兜底、`publish_checklist.md`、`meta.json`）；**标签不再从「备注」按空格切**，为空只告警不编造；不做封面、不代发布 |
 | 分镜与素材互相指得准 | `web/app.js` 的 `pageStoryboard`/`pageAssets`（`?shot=`/`?asset=` 深链 + `tr.focus-row` 高亮）、`backend/app/video/cards.py` 的 `shot_of_card`/`CardDocument.shot_id` | DONE | 历史清单里「用于镜头」曾填成素材号，已按分镜表校验后订正 13 行；两页找不到目标时如实说明 |
+| 任务详情的预算看板 | `backend/app/services/task_budget.py`（`budget_of`）、`backend/app/schemas/research_task.py` 的 `BudgetOut`、`backend/app/api/routes/research_tasks.py` 的 `_budget_of`、`web/app.js` 的 `budgetCard` | DONE | 显示上限/已用/剩余与「下一次会不会被拦」；没设上限如实说，超支不显示负数 |
 | 台账自查（矩阵当账本查） | A 基础设施 | DONE | `backend/app/services/matrix_lint.py` + `backend/scripts/matrix_lint.py` + `tests/test_matrix_lint.py`（13 例）：状态只许六种取值、`DONE` 行引用的文件/函数/接口必须真的存在、表头规模数字必须与代码实测一致（31 张表 / 74 个操作 / 20 个页面 / 11 个工具）、仓库路径都得还在；本轮据此改正两处真漂移（73→74 个操作、「技术 QC 十项 `video/qc.py`」→ 实际七项在 `backend/app/video/render.py`）。**只验证存在性，不证明功能可用** |
 | 跨版本升级演练（带数据整库升到 head） | `backend/app/services/upgrade_drill.py`、`backend/scripts/upgrade_drill.py`（`python -m backend.scripts.upgrade_drill`）、迁移 `b7_topic_origin`、`tests/test_upgrade_drill.py` | DONE | 9 步（源库只读复制 / 起点版本 / 塞旧数据 / 升级 / 版本 / 完整性 / 结构一致 / 回填 / 数据逐字保留 / 降级往返），初版空库与工作库副本两条路都实测通过；本次演练查出 `topics.origin_type` 老行为 NULL 并补了 B7 迁移 |
 | 空库到能用（一条命令） | `backend/scripts/bootstrap_check.py`（`python -m backend.scripts.bootstrap_check`）、`tests/test_bootstrap_check.py` | DONE | 九步：迁移 → 栏目种子 → 启动自检 → 接口 → 建选题 → 建任务 → worker 推一格 → 检索开关关掉时如实停下 → `model_calls` 0 行；顺手修掉「开关关掉会把整个任务判死」，改成 `blocked: feature_disabled`（可恢复、不耗重试） |
