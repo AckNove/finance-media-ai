@@ -385,3 +385,18 @@ python -m backend.scripts.research_task run --task-id 1 --max-iterations 3
 
 输出里的 `summary` 与页面上是同一段文字（`stopped_at` 为 `max_iterations` 表示
 到本轮上限、不是出错）。
+
+### 只想要一份研究报告？选 `research_only`
+
+「研究任务」页建任务时有一栏「产线」，下拉来自 `config/pipelines.yaml`：
+
+| 产线 | 跑到哪里停 | 适合谁 |
+|---|---|---|
+| `research_only` | 事实核查（9 步） | 只要报告，不打算马上做视频 |
+| `research_to_script` | 人工脚本审批（11 步） | 报告之后直接接着写稿 |
+| `script_to_video` | 人工发布（5 步） | 已有脚本，只做片子 |
+
+清单接口：`GET /api/pipelines`（每条的阶段数、闸门位置、最后一格）。
+
+> 注意「跳过的阶段」默认填了 `topic_candidate,topic_scoring,research_plan`——那是给
+> 没配模型密钥的人用的。想连选题拆解一起跑，把这一栏清空。

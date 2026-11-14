@@ -1,7 +1,7 @@
 # finance-media-ai API 参考
 
 - 版本：0.1.0
-- 路径数：59
+- 路径数：60
 
 > 这份文档由 `python -m backend.scripts.dump_api_doc --out <文件>` 从 `create_app().openapi()` 现取生成，
 > 不要手改——改了下次生成会被覆盖。权限列来自 `backend/app/api/router.py` 的 `ROUTE_CALLERS`。
@@ -40,6 +40,7 @@
 | GET | `/api/knowledge/{item_id}` | 知识条目详情 | 人 | `item_id`（path，必填，integer） | — | 200 `KnowledgeItemOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | PATCH | `/api/knowledge/{item_id}` | 更新知识条目 | 人 | `item_id`（path，必填，integer） | application/json → `KnowledgeItemUpdate` | 200 `KnowledgeItemOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/knowledge/{item_id}/relations` | 知识条目的关联列表 | 人 | `item_id`（path，必填，integer） | — | 200 `KnowledgeRelationOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/pipelines` | 流水线目录（可选产线） | 人 | — | — | 200 `PipelinesOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports` | 研究报告列表 | 人 | `topic_id`（query，可选，integer | null）、`verification_status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchReportListItemOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-reports` | 创建研究报告 | 人 | — | application/json → `ResearchReportCreate` | 201 `ResearchReportOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}` | 研究报告详情 | 人 | `report_id`（path，必填，integer） | — | 200 `ResearchReportOut`；404 `object`；409 `object`；422 `object`；503 `object` |

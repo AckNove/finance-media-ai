@@ -498,6 +498,23 @@ async function pageTasks(view) {
   const limit = 20;
   const suffix = `limit=${limit}&offset=${offset}${status ? `&status=${encodeURIComponent(status)}` : ''}`;
   const result = await api(`/research-tasks?${suffix}`);
+  const pipelines = await api('/pipelines');
+  const pipelineItems = (pipelines.ok && pipelines.data.items) || [];
+  const defaultPipeline =
+    (pipelines.ok && pipelines.data.default) || 'research_to_script';
+  const pipelineOptions = pipelineItems.length
+    ? pipelineItems
+        .map(
+          (item) =>
+            `<option value="${esc(item.name)}"${item.name === defaultPipeline ? ' selected' : ''}>${esc(item.display_name)}（${item.stage_count} 步）</option>`,
+        )
+        .join('')
+    : `<option value="research_to_script">research_to_script</option>`;
+  const pipelineNote = pipelineItems.length
+    ? pipelineItems
+        .map((item) => `${esc(item.name)}：${esc(item.description || item.display_name)}`)
+        .join('<br />')
+    : '拿不到产线目录（接口没通），只能按 research_to_script 建。';
   const total = result.ok ? Number(result.data.total || 0) : 0;
   const shown = result.ok ? result.data.items.length : 0;
   const from = shown === 0 ? 0 : offset + 1;
@@ -531,6 +548,9 @@ async function pageTasks(view) {
       <h2>建研究任务</h2>
       <form id="task-form" class="form-grid">
         <label>标题<input name="title" required maxlength="200" placeholder="研究主题" /></label>
+        <label>产线
+          <select name="pipeline">${pipelineOptions}</select>
+        </label>
         <label>研究目标<textarea name="objective" rows="2" placeholder="要回答的具体问题（越具体，检索词越准）"></textarea></label>
         <label>检索词（每行一个，留空则按关键词规则拆分）
           <textarea name="queries" rows="2" placeholder="商业银行 净息差"></textarea></label>
@@ -538,6 +558,7 @@ async function pageTasks(view) {
           <input name="skip" value="topic_candidate,topic_scoring,research_plan" /></label>
         <div class="row" style="align-items:flex-end"><button class="btn" type="submit">创建并启动</button></div>
       </form>
+      <p class="muted">产线来自 <code>config/pipelines.yaml</code>（唯一真源）：<br />${pipelineNote}</p>
       <div id="task-msg"></div>
     </div>
     <div class="card"><h2>任务列表</h2>
@@ -545,6 +566,7 @@ async function pageTasks(view) {
       ${result.ok ? table([
         { title: 'ID', key: 'id', num: true },
         { title: '标题', value: (row) => `<a href="#/tasks/${row.id}">${esc(row.title)}</a>`, raw: true },
+        { title: '产线', value: (row) => esc(String(row.planner || '').replace(/^pipeline:/, '') || '—') },
         { title: '状态', value: (row) => statusTag(row.status), raw: true },
         { title: '花费', value: (row) => money(row.cost_spent_cny), num: true },
         { title: '原因', value: (row) => esc(row.failure_reason || '—') },
@@ -565,6 +587,7 @@ async function pageTasks(view) {
     const form = new FormData(event.target);
     const payload = {
       title: form.get('title'),
+      pipeline: form.get('pipeline') || 'research_to_script',
       objective: form.get('objective') || '',
       queries: String(form.get('queries') || '').split('\n').map((item) => item.trim()).filter(Boolean),
       skip: String(form.get('skip') || '').split(',').map((item) => item.trim()).filter(Boolean),
@@ -573,8 +596,8 @@ async function pageTasks(view) {
     };
     const created = await api('/research-tasks', { method: 'POST', body: JSON.stringify(payload) });
     document.getElementById('task-msg').innerHTML = created.ok
-      ? `<div class="note ok">已创建任务 #${created.data.id}，共 ${created.data.subtasks.length} 个阶段</div>`
-      : failure(created);
+      ? `<div class="note ok">已创建任务 #${created.data.id}（产线 ${esc(payload.pipeline)}），共 ${created.data.subtasks.length} 个阶段</div>`
+      : pipelineFailure(created, payload.pipeline);
     if (created.ok) location.hash = '#/tasks/' + created.data.id;
   });
 }
@@ -591,6 +614,18 @@ function runSummaryBlock(summary) {
   return `<div class="row"><span class="tag ${tone}">${esc(summary.headline)}</span></div>
     ${list}
     <div class="note">下一步：${esc(summary.next_step)}</div>`;
+}
+
+function pipelineFailure(result, pipeline) {
+  // 422 unknown_pipeline 时后端会把可选产线放在 details.available 里，直接照它改就对了。
+  const details = result && result.error && result.error.details;
+  const available = (details && details.available) || [];
+  if (available.length) {
+    return `<div class="note bad">产线「${esc(pipeline)}」不存在。可选：${available
+      .map((name) => esc(name))
+      .join('、')}</div>`;
+  }
+  return failure(result);
 }
 
 function taskGateCard(gate, taskId) {

@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1350 passed, 2 skipped**。
+全量 `pytest` **1356 passed, 2 skipped**。
 
 ---
 
@@ -2190,3 +2190,81 @@ $ python -m backend.scripts.research_task run --task-id 1 --max-iterations 2
 
 **诚实边界**：这段总结只描述"发生了什么"，不评价产物质量；`next_step` 是建议不是承诺，
 再点一次也可能停在同一道门上。
+
+## §45 只要一份研究报告，就别再逼它写脚本
+
+### 45.1 问题：产线在界面上是写死的
+
+`config/pipelines.yaml` 里一直有两条产线（`research_to_script`、`script_to_video`），
+但界面上新建任务时产线是**写死**的 `research_to_script`，也没有任何接口能问"现在有哪些产线"。
+
+真跑过才知道后果：只想拿一份研究报告的人，任务会一路走到 `content.script`，
+然后停在「结论还没人工确认」上——那一步既不合用户意图，又白占一道人工闸门，
+还让人以为"系统出问题了"。飞轮的代价是多点两次、多花两次人工确认；
+更糟的是**看不懂的人会以为任务失败了**。
+
+### 45.2 补了三处
+
+**一、多一条产线：`research_only`（9 个阶段，到事实核查为止）**
+
+```
+选题候选 → 选题评分 → 人工立项(gate) → 研究计划 → 资料采集 → 证据提取
+        → 分析 → 结论整合 → 事实核查（task + human_gate）
+```
+
+它和 `research_to_script` 的前 9 步一模一样，只是**到这里就收**，不带 `script_draft` /
+`script_approval`。想接着做内容，从报告页另建视频任务即可。
+
+**二、产线目录接口：`GET /api/pipelines`**
+
+只读 `config/pipelines.yaml`，逐条返回 `stage_count` / `gates`（两种"等人"写法都算：
+`kind: gate` 与 task 上挂 `human_gate: true`）/ `ends_with` / 完整阶段表。
+界面拿它渲染下拉框，不再需要人去翻 YAML。
+
+**三、报错要能直接照做**
+
+以前写错产线名只回一句"流水线 X 未登记"，人还得自己去翻配置。现在：
+
+```
+422 {"error": {"code": "domain_validation_error",
+      "message": "流水线 research_everything 未在 config/pipelines.yaml 中登记；
+                  可选：research_only、research_to_script、script_to_video",
+      "details": {"reason": "unknown_pipeline",
+                  "available": ["research_only", "research_to_script", "script_to_video"]}}}
+```
+
+界面上也照它说话（`pipelineFailure()` 读 `details.available`），不是一个 JSON 坨。
+
+### 45.3 顺带修掉一处"产线谁都不知道"
+
+`ResearchTask.planner` 这一列一直有值（`pipeline:research_to_script`），但 `TaskSnapshot`
+里**没有这个字段**，所以列表接口与详情接口都回 `null`——界面上根本看不出这条任务跑的是哪条产线。
+现在 `TaskSnapshot` 带上 `planner`，任务列表多一列「产线」。
+
+### 45.4 实测（临时库、真 uvicorn、真浏览器）
+
+```
+pipeline options:
+  research_to_script | 选题 → 研究报告 → 脚本（11 步）
+  script_to_video    | 脚本 → 分镜 → 成片（5 步）
+  research_only      | 选题 → 研究报告（只研究，不写脚本）（9 步）
+
+选中 research_only → 提交 → 跳转 #/tasks/1
+list planners: [(1, 'pipeline:research_only', 'running')]
+detail subtasks: research.collect / research.extract / research.analyze /
+                 research.synthesize / verify.claims      ← 没有 content.script
+page errors: []
+```
+
+注意表单的「跳过的阶段」默认是 `topic_candidate,topic_scoring,research_plan`
+（给没有模型密钥的人用的），所以这次只落了 5 格；想连选题那两格一起跑，把这一栏清空即可。
+
+### 45.5 测试与诚实边界
+
+`tests/test_pipelines.py` 5 例（目录与配置一致、`research_only` 收在事实核查且不含
+`content.script`、`research_to_script` 仍跑到脚本闸门、按 `research_only` 真的能建出任务、
+写错产线时 422 带回可选清单）；`tests/test_ui_copy.py` +2 例（表单下拉与提交带上产线、
+报错按 `details.available` 说话）。
+
+**诚实边界**：换产线要**新建**任务，已建任务的阶段不会跟着变（计划是落库的可审计数据）；
+`script_to_video` 目前只登记了阶段，还没有"拿着已有脚本单独跑这一条"的入口。

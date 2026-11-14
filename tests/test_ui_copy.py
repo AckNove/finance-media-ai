@@ -109,3 +109,23 @@ def test_task_detail_polls_by_id_not_by_card_index(source: str) -> None:
     assert 'id="events-card"' in source
     assert "querySelectorAll('.card')[1]" not in source
     assert "querySelectorAll('.card')[2]" not in source
+
+def test_task_form_offers_the_pipeline_catalogue(source: str) -> None:
+    """产线曾经在界面上写死 research_to_script，想"只研究不写脚本"没有入口。"""
+    assert "api('/pipelines')" in source
+    assert '<select name="pipeline">' in source
+    form_block = source.split('id="task-form"', 1)[1][:1200]
+    assert 'name="pipeline"' in form_block
+    # 提交时必须把选中的产线带上，否则后端还是走默认那条
+    submit_block = source.split("document.getElementById('task-form')", 1)[1][:1500]
+    assert "pipeline: form.get('pipeline')" in submit_block
+    # 列表上要能看出这一条跑的是哪条产线（planner = pipeline:<name>）
+    assert ".replace(/^pipeline:/, '')" in source
+
+
+def test_unknown_pipeline_error_is_actionable(source: str) -> None:
+    """422 时后端把可选产线放在 details.available，界面要照着它说，而不是丢一坨 JSON。"""
+    assert "function pipelineFailure(result, pipeline)" in source
+    error_block = source.split("function pipelineFailure", 1)[1][:900]
+    assert "available" in error_block
+    assert "可选" in error_block

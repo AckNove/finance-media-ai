@@ -212,6 +212,7 @@ class TaskSnapshot:
     claimed_by: str | None
     lease_until: datetime | None
     failure_reason: str | None
+    planner: str | None = None
     subtasks: tuple[SubtaskSnapshot, ...] = ()
 
     @property
@@ -240,6 +241,7 @@ class TaskSnapshot:
             "claimed_by": self.claimed_by,
             "lease_until": self.lease_until.isoformat() if self.lease_until else None,
             "failure_reason": self.failure_reason,
+            "planner": self.planner,
             "counts": self.counts(),
             "subtasks": [subtask.as_dict() for subtask in self.subtasks],
         }
@@ -1256,6 +1258,7 @@ class TaskRuntime:
             claimed_by=task.claimed_by,
             lease_until=task.lease_until,
             failure_reason=task.failure_reason,
+            planner=task.planner,
             subtasks=tuple(self._subtask_snapshot(subtask) for subtask in subtasks),
         )
 

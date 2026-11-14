@@ -118,3 +118,65 @@ pipelines:
         kind: gate
         human_gate: true
         produces: [publications]
+
+  # 只要一份研究报告、不写脚本时用这条。以前只有 research_to_script 一条产线，
+  # 想"只做研究"也得让它一路走到 content.script，然后在"还没确认结论"上停下——
+  # 那一步既不合用户意图，也会白占一次人工闸门。
+  research_only:
+    display_name: 选题 → 研究报告（只研究，不写脚本）
+    description: 到事实核查为止；想接着做内容时，从报告页另建视频任务或换用 research_to_script
+    stages:
+      - id: topic_candidate
+        name: 选题候选
+        kind: task
+        task_type: topic.discover
+        agent: orchestrator
+        produces: [topics]
+      - id: topic_scoring
+        name: 选题评分
+        kind: task
+        task_type: topic.discover
+        agent: orchestrator
+        produces: [topic_score_snapshots]
+      - id: topic_approval
+        name: 人工立项
+        kind: gate
+        human_gate: true
+        produces: [topics.status=approved]
+      - id: research_plan
+        name: 研究计划
+        kind: task
+        task_type: research.plan
+        agent: orchestrator
+        produces: [research_subtasks, research_subtask_dependencies]
+      - id: research_collect
+        name: 资料采集
+        kind: task
+        task_type: research.collect
+        agent: financial_researcher
+        produces: [sources, source_snapshots]
+      - id: research_extract
+        name: 证据提取
+        kind: task
+        task_type: research.extract
+        agent: financial_researcher
+        produces: [source_extractions, evidence]
+      - id: research_analyze
+        name: 分析
+        kind: task
+        task_type: research.analyze
+        agent: financial_researcher
+        produces: []
+      - id: research_synthesize
+        name: 结论整合
+        kind: task
+        task_type: research.synthesize
+        agent: orchestrator
+        produces: [report_findings, research_reports]
+      - id: fact_check
+        name: 事实核查（强制闸门）
+        kind: task
+        task_type: verify.claims
+        agent: fact_checker
+        produces: [review_records]
+        human_gate: true

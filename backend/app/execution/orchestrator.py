@@ -106,9 +106,11 @@ class Orchestrator:
     def pipeline_stages(self, pipeline: str) -> list[Any]:
         spec = self.pipelines.pipelines.get(pipeline)
         if spec is None:
+            # 把可选产线一起报出来：只写"未登记"会让人去翻 YAML，而正确答案就在手边。
+            available = "、".join(sorted(self.pipelines.pipelines)) or "（配置里一条都没有）"
             raise TaskRuntimeError(
                 "unknown_pipeline",
-                f"流水线 {pipeline} 未在 config/pipelines.yaml 中登记",
+                f"流水线 {pipeline} 未在 config/pipelines.yaml 中登记；可选：{available}",
             )
         return list(spec.stages)
 

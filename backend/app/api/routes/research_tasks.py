@@ -17,6 +17,7 @@ from sqlalchemy import select
 
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.core.caller import CallerKind
+from backend.app.core.config import get_pipelines_config
 from backend.app.core.errors import ConflictError, DomainValidationError, NotFoundError
 from backend.app.database.session import get_session_factory
 from backend.app.execution.executor import AgentExecutor
@@ -170,6 +171,15 @@ def create_research_task(payload: ResearchTaskCreate, db: DbSession) -> Research
             requested_by="human",
         )
     except TaskRuntimeError as error:
+        if error.reason == "unknown_pipeline":
+            # 报错要能直接照做：把可选产线放进 details，界面/脚本不用再去翻 YAML。
+            raise DomainValidationError(
+                error.message,
+                details={
+                    "reason": error.reason,
+                    "available": sorted(get_pipelines_config().pipelines),
+                },
+            ) from error
         _http_error(error)
     return _detail(db, result.task.id)
 

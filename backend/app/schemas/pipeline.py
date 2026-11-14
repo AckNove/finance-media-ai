@@ -1,7 +1,12 @@
-"""报告"卡在哪、下一步做什么"的接口模型（`GET /api/research-reports/{id}/pipeline`）。
+"""流水线相关的接口模型。
 
-用途：人在「语义核查」页确认完结论之后，页面要能立刻告诉他"现在可以去点继续跑了"，
-而不是让他自己去「研究任务」页翻是哪一条任务、卡在哪个阶段。
+这里有两个用途不同的东西，都叫"pipeline"，但一个是"报告卡在哪"，另一个是"有哪些产线可选"：
+
+1. ``ReportPipelineOut``：`GET /api/research-reports/{id}/pipeline`，告诉页面
+   "这份报告现在能不能继续跑、卡在哪一格"。人在「语义核查」页确认完结论之后，
+   页面要能立刻告诉他"现在可以去点继续跑了"，而不是让他自己去「研究任务」页翻。
+2. ``PipelinesOut``：`GET /api/pipelines`，列出 `config/pipelines.yaml` 里登记的全部产线，
+   供新建研究任务时选择（以前产线在界面上是写死的，想"只研究不写脚本"没有入口）。
 """
 
 from __future__ import annotations
@@ -38,4 +43,45 @@ class ReportPipelineOut(BaseModel):
     note: str = Field("", description="为什么还不能继续（不能继续时才有）")
 
 
-__all__ = ["PipelineSubtaskOut", "ReportPipelineOut"]
+class PipelineStageOut(BaseModel):
+    """流水线里的一格。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    name: str
+    kind: str = Field(description="task（要干活）或 gate（等人）")
+    task_type: str = Field(default="", description="task 阶段对应的 task_type；gate 阶段为空")
+    agent: str = Field(default="", description="由谁执行；gate 阶段为空")
+    human_gate: bool = Field(default=False, description="这一格是否需要人（含 task 上挂 human_gate 的情况）")
+
+
+class PipelineSummaryOut(BaseModel):
+    """一条产线的概览 + 完整阶段表。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    display_name: str
+    description: str = ""
+    stage_count: int
+    gates: list[str] = Field(default_factory=list, description="需要人的格 id，按顺序")
+    ends_with: str = Field(default="", description="最后一格 id：跑到哪里就停")
+    stages: list[PipelineStageOut] = Field(default_factory=list)
+
+
+class PipelinesOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    default: str = Field(default="", description="界面新建任务时默认选的产线")
+    items: list[PipelineSummaryOut] = Field(default_factory=list)
+    note: str = ""
+
+
+__all__ = [
+    "PipelineStageOut",
+    "PipelineSubtaskOut",
+    "PipelineSummaryOut",
+    "PipelinesOut",
+    "ReportPipelineOut",
+]
