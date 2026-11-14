@@ -68,15 +68,37 @@ def _script_flags(manual: str) -> dict[str, set[str]]:
     return found
 
 
-def _help_text(name: str) -> str:
+# `usage: research_task.py [-h] {plan,run,status,events,stats} ...`
+_SUBCOMMANDS = re.compile(r"\{([a-z][a-z0-9_,-]*)\}", re.IGNORECASE)
+
+
+def _run_help(name: str, *extra: str) -> str:
     done = subprocess.run(
-        [sys.executable, "-X", "utf8", "-m", f"backend.scripts.{name}", "--help"],
+        [sys.executable, "-X", "utf8", "-m", f"backend.scripts.{name}", *extra, "--help"],
         cwd=str(ROOT),
         capture_output=True,
         text=True,
         encoding="utf-8",
     )
     return (done.stdout or "") + (done.stderr or "")
+
+
+def _help_text(name: str) -> str:
+    """脚本认哪些参数。
+
+    有子命令的脚本（`research_task run --task-id 1`）把参数写在子命令上，顶层 `--help` 里只有
+    `{plan,run,status,events,stats}` 这种占位，直接比对会把手册里正确的子命令参数判成"不认"。
+    所以顶层帮助里出现子命令列表时，逐个再问一遍——多跑几次 `--help`，换来的是一条真合同。
+    """
+
+    top = _run_help(name)
+    parts = [top]
+    for group in _SUBCOMMANDS.findall(top):
+        for sub in group.split(","):
+            sub = sub.strip()
+            if sub:
+                parts.append(_run_help(name, sub))
+    return "\n".join(parts)
 
 
 def test_every_script_mentioned_in_the_manual_exists(manual: str) -> None:

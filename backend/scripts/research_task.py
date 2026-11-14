@@ -18,10 +18,16 @@ import json
 import sys
 from typing import Any
 
+from sqlalchemy import select
+
+from backend.app.database.session import get_session_factory
 from backend.app.execution.executor import AgentExecutor
 from backend.app.execution.orchestrator import Orchestrator
 from backend.app.execution.runtime import TaskRuntime, TaskRuntimeError
 from backend.app.execution.worker import Worker
+from backend.app.models.execution import ResearchSubtask
+from backend.app.services import task_gate
+from backend.app.services.run_summary import summarise_run
 
 
 def _print(payload: Any) -> None:
@@ -57,10 +63,45 @@ def _run(args: argparse.Namespace) -> int:
     except TaskRuntimeError as error:
         _print({"error": error.reason, "message": str(error)})
         return 2
-    _print(report.as_dict())
+    payload = report.as_dict()
+    if args.task_id is not None:
+        # 和页面上是同一段话：做完哪几格、停在哪、下一步干什么。
+        # 闸门标记存在子任务的 input_payload 里，快照不带它，所以这里直接读库。
+        snapshot = runtime.task(args.task_id)
+        status = _status_of(snapshot)
+        rows = _subtask_rows(args.task_id)
+        payload["summary"] = summarise_run(
+            report,
+            subtasks=rows,
+            task_status=status,
+            gate=task_gate.gate_of(rows, task_status=status),
+        ).as_dict()
+    _print(payload)
     if args.show_task and args.task_id is not None:
         _print(runtime.task(args.task_id).as_dict())
     return 0
+
+
+def _subtask_rows(task_id: int) -> list[Any]:
+    """读子任务原始行：闸门的 ``human_gate`` 记在 ``input_payload`` 上，快照不含。"""
+    session = get_session_factory()()
+    try:
+        return list(
+            session.execute(
+                select(ResearchSubtask)
+                .where(ResearchSubtask.research_task_id == task_id)
+                .order_by(ResearchSubtask.sequence)
+            )
+            .scalars()
+            .all()
+        )
+    finally:
+        session.close()
+
+
+def _status_of(snapshot: Any) -> str:
+    status = getattr(snapshot, "status", "")
+    return str(getattr(status, "value", status) or "")
 
 
 def _status(args: argparse.Namespace) -> int:

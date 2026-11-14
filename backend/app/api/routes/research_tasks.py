@@ -36,10 +36,12 @@ from backend.app.schemas.research_task import (
     ResearchTaskOut,
     RunReportOut,
     RunRequest,
+    RunSummaryOut,
     SubtaskOut,
     TaskEventOut,
 )
 from backend.app.services import task_artifacts, task_gate
+from backend.app.services.run_summary import summarise_run
 
 router = APIRouter(
     prefix="/research-tasks",
@@ -212,10 +214,13 @@ def list_task_artifacts(db: DbSession, task_id: int = Path(ge=1)) -> ArtifactBun
     人工闸门要求"看完再放行"，所以闸门前必须能看见东西；这里只读，不触发任何执行。
     """
     try:
-        _runtime().task(task_id)
+        snapshot = _runtime().task(task_id)
     except TaskRuntimeError as error:
         _http_error(error)
-    bundle = task_artifacts.collect_artifacts(task_id)
+    # 带上研究目标：同一个 id 在别的库里可能是另一条研究，产物目录会同名。
+    bundle = task_artifacts.collect_artifacts(
+        task_id, objective=str(getattr(snapshot, "objective", "") or "")
+    )
     return ArtifactBundleOut(
         task_id=bundle.task_id,
         directories=list(bundle.directories),
@@ -273,6 +278,13 @@ def run_research_task(
         )
     except TaskRuntimeError as error:
         _http_error(error)
+    detail = _detail(db, task_id)
+    summary = summarise_run(
+        report,
+        subtasks=detail.subtasks,
+        task_status=detail.status,
+        gate=detail.gate,
+    )
     return RunReportOut(
         worker=report.worker,
         iterations=report.iterations,
@@ -284,7 +296,8 @@ def run_research_task(
         added_subtasks=list(report.added_subtasks),
         idle=report.idle,
         stopped_reason=report.stopped_reason,
-        task=_detail(db, task_id),
+        summary=RunSummaryOut(**summary.as_dict()),
+        task=detail,
     )
 
 

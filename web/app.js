@@ -579,6 +579,20 @@ async function pageTasks(view) {
   });
 }
 
+function runSummaryBlock(summary) {
+  if (!summary) {
+    return '<div class="note">推进完成，但接口没给总结——去下面阶段表看每一格的状态。</div>';
+  }
+  const tone = { gate: 'warn', failed: 'bad', completed: 'ok' }[summary.stopped_at] || 'info';
+  const lines = summary.lines || [];
+  const list = lines.length
+    ? `<ul class="tight">${lines.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>`
+    : '<div class="note">这一轮没有推进任何格子。</div>';
+  return `<div class="row"><span class="tag ${tone}">${esc(summary.headline)}</span></div>
+    ${list}
+    <div class="note">下一步：${esc(summary.next_step)}</div>`;
+}
+
 function taskGateCard(gate, taskId) {
   const label = gate.label ? `${gate.label}（${gate.gate_id}）` : gate.gate_id;
   return `<div class="card">
@@ -654,7 +668,7 @@ async function pageTaskDetail(view, params) {
   view.innerHTML = `
     <div class="card">
       <h2>${esc(task.title)}</h2>
-      <div class="row">
+      <div class="row" id="task-status-row">
         ${statusTag(task.status)}
         <span class="tag info">阶段 ${task.subtasks.length}</span>
         <span class="tag">花费 ${money(task.cost_spent_cny)}</span>
@@ -672,7 +686,7 @@ async function pageTaskDetail(view, params) {
         —— 走到闸门会暂停，等你确认后再继续。</div>` : ''}
       ${plan.skip_reason ? `<div class="note">本任务跳过了 ${esc((plan.skipped_stages || []).join('、'))}：${esc(plan.skip_reason)}</div>` : ''}
     </div>
-    ${gate ? taskGateCard(gate, id) : ''}
+    <div id="gate-slot">${gate ? taskGateCard(gate, id) : ''}</div>
     ${artifactsCard}
     ${planningCard}
     <div class="card" id="progress-card"><h2>阶段进度</h2>
@@ -695,12 +709,78 @@ async function pageTaskDetail(view, params) {
     </div>`;
 
   const output = document.getElementById('task-action');
+
+  // 推进/放行之后原地刷新三张卡（进度、事件、闸门），**不整页重渲染**——
+  // 整页重来会把刚显示的推进总结冲掉，人还没读完就没了。
+  const refreshTaskCards = async () => {
+    const [fresh, freshEvents] = await Promise.all([
+      api(`/research-tasks/${id}`),
+      api(`/research-tasks/${id}/events?limit=50`),
+    ]);
+    if (!fresh.ok) return;
+    const next = fresh.data;
+    const progressCard = view.querySelector('#progress-card');
+    const eventsCard = view.querySelector('#events-card');
+    const gateSlot = view.querySelector('#gate-slot');
+    if (progressCard) {
+      progressCard.innerHTML = `<h2>阶段进度</h2><div class="row">${statusTag(next.status)}
+        <span class="tag info">花费 ${money(next.cost_spent_cny)}</span></div>` + table([
+        { title: '#', key: 'sequence', num: true },
+        { title: '阶段', key: 'task_type' },
+        { title: '执行者', value: (row) => esc(row.assignee || '—') },
+        { title: '状态', value: (row) => statusTag(row.status), raw: true },
+        { title: '尝试', value: (row) => `${row.attempts}/${row.max_attempts}`, num: true },
+        { title: '说明', value: (row) => esc(row.failure_reason || '') },
+      ], next.subtasks);
+    }
+    if (eventsCard && freshEvents.ok) {
+      eventsCard.innerHTML = `<h2>事件流</h2>` + table([
+        { title: '#', key: 'event_seq', num: true },
+        { title: '类型', key: 'event_type' },
+        { title: '执行者', value: (row) => esc(row.actor || '—') },
+        { title: '时间', value: (row) => when(row.created_at) },
+      ], freshEvents.data.items);
+    }
+    if (gateSlot) {
+      gateSlot.innerHTML = next.gate ? taskGateCard(next.gate, id) : '';
+      const nextPass = document.getElementById('gate-pass');
+      if (nextPass) nextPass.onclick = () => passGate();
+    }
+    const statusRow = view.querySelector('#task-status-row');
+    if (statusRow) {
+      statusRow.innerHTML = `${statusTag(next.status)}
+        <span class="tag info">阶段 ${next.subtasks.length}</span>
+        <span class="tag">花费 ${money(next.cost_spent_cny)}</span>
+        ${next.failure_reason ? `<span class="tag warn">${esc(next.failure_reason)}</span>` : ''}`;
+    }
+  };
+
+  const passGate = async () => {
+    const box = document.getElementById('gate-feedback');
+    if (!box) return;
+    box.innerHTML = '<div class="note">先恢复任务…</div>';
+    const resumed = await api(`/research-tasks/${id}/resume`, { method: 'POST', body: '{}' });
+    if (!resumed.ok) { box.innerHTML = failure(resumed); return; }
+    box.innerHTML = '<div class="note">放行了，正在往下跑（会真的联网检索）…</div>';
+    const ran = await api(`/research-tasks/${id}/run`, {
+      method: 'POST',
+      body: JSON.stringify({ max_iterations: 3 }),
+    });
+    if (!ran.ok) { box.innerHTML = failure(ran); return; }
+    box.innerHTML = runSummaryBlock(ran.data.summary);
+    await refreshTaskCards();
+  };
+
   const act = async (path, label) => {
     output.innerHTML = `<div class="note">${esc(label)}…</div>`;
     const result = await api(path, { method: 'POST', body: JSON.stringify(path.endsWith('/run') ? { max_iterations: 3 } : {}) });
     if (!result.ok) { output.innerHTML = failure(result); return; }
-    output.innerHTML = `<div class="note ok">${esc(label)}完成：${esc(result.data.status || result.data.task?.status || '')}</div>`;
-    setTimeout(() => route(), 600);
+    if (result.data.summary) {
+      output.innerHTML = runSummaryBlock(result.data.summary);
+    } else {
+      output.innerHTML = `<div class="note ok">${esc(label)}完成：${esc(result.data.status || result.data.task?.status || '')}</div>`;
+    }
+    await refreshTaskCards();
   };
   document.getElementById('run-task').onclick = () => act(`/research-tasks/${id}/run`, '推进执行（真实搜索与抓取）');
   document.getElementById('pause-task').onclick = () => act(`/research-tasks/${id}/pause`, '暂停');
@@ -710,21 +790,7 @@ async function pageTaskDetail(view, params) {
   // 闸门卡上的"看完，放行并继续跑"：先恢复（paused -> ready），再推三格。
   const passButton = document.getElementById('gate-pass');
   if (passButton) {
-    passButton.onclick = async () => {
-      const box = document.getElementById('gate-feedback');
-      box.innerHTML = '<div class="note">先恢复任务…</div>';
-      const resumed = await api(`/research-tasks/${id}/resume`, { method: 'POST', body: '{}' });
-      if (!resumed.ok) { box.innerHTML = failure(resumed); return; }
-      box.innerHTML = '<div class="note">放行了，正在往下跑（会真的联网检索）…</div>';
-      const ran = await api(`/research-tasks/${id}/run`, {
-        method: 'POST',
-        body: JSON.stringify({ max_iterations: 3 }),
-      });
-      if (!ran.ok) { box.innerHTML = failure(ran); return; }
-      box.innerHTML = `<div class="note ok">推进完成：任务 ${esc(ran.data.task?.status || '')}，
-        这一轮做完了 ${(ran.data.completed || []).length} 格</div>`;
-      setTimeout(() => route(), 800);
-    };
+    passButton.onclick = () => passGate();
   }
 
   // 任务在跑的时候自动刷新进度：只换两张卡的内容，不动按钮与输出区。

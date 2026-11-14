@@ -143,6 +143,21 @@ class RunRequest(BaseModel):
     poll_seconds: float = Field(default=0.0, ge=0, le=30)
 
 
+class RunSummaryOut(BaseModel):
+    """一次推进的人话总结：做了哪几格、停在哪、下一步干什么。
+
+    ``stopped_at`` 的取值：``gate``（停在人工闸门）/``completed``/``failed``/
+    ``paused``/``max_iterations``（到本轮上限，不是出错）/``idle``（没活可干）。
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    headline: str
+    lines: list[str] = Field(default_factory=list)
+    stopped_at: str = ""
+    next_step: str = ""
+
+
 class RunReportOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -158,6 +173,9 @@ class RunReportOut(BaseModel):
     )
     idle: bool = False
     stopped_reason: str = ""
+    summary: "RunSummaryOut | None" = Field(
+        default=None, description="这一轮的人话总结（做完哪几格、停在哪、下一步）"
+    )
     task: ResearchTaskDetailOut | None = None
 
 

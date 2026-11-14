@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1337 passed, 2 skipped**。
+全量 `pytest` **1350 passed, 2 skipped**。
 
 ---
 
@@ -2105,3 +2105,88 @@ artifacts: 200，共 2 个产物文件
 | `web/app.js` | 任务详情页两张新卡 + 刷新改用元素 id |
 | `tests/test_task_artifacts.py` | 新增 11 例 |
 | `tests/test_ui_copy.py` | +2 例（闸门卡与产物卡必须在、刷新不许按下标取卡） |
+
+## §44 点完「推进执行」，这一轮到底发生了什么
+
+### 44.1 问题：接口回了，但等于没说
+
+`POST /api/research-tasks/{id}/run` 一直回得很详细（`completed=[1,2]`、`stopped_reason`、
+`idle`、`task`），但界面上只剩一句"这一轮做完了 2 格"。于是：
+
+- 推进了**哪几个阶段**？看不出来；
+- 是不是**又停在另一道门**上？看不出来；
+- 现在**该干什么**？看不出来。
+
+回执里全是子任务号，人得自己去阶段表里对。而且推进完 1.4 秒后页面整页重渲染，
+刚出现的总结会被冲掉——**还没读完就没了**。
+
+### 44.2 补了什么
+
+**一、一份人话总结（服务端算，界面/命令行共用）**
+
+`RunReportOut` 新增 `summary`：
+
+```
+{"headline": "推进 2 格：又停在人工闸门「人工立项」，这一步的产物在下面，看完再决定放不放",
+ "lines": ["做完了 第 1 格 topic.discover（succeeded）",
+           "做完了 第 2 格 topic.discover（succeeded）"],
+ "stopped_at": "gate",
+ "next_step": "看完「这一步产出了什么」里的选题拆解……"}
+```
+
+`stopped_at` 只有六种取值：`gate` / `completed` / `failed` / `paused` / `max_iterations`
+（到本轮上限，**不是出错**）/ `idle`（没活可干）。措辞只写一遍，
+`backend/app/services/run_summary.py` 同时被 API 与 `python -m backend.scripts.research_task run` 使用。
+
+**二、已经在门上时不许说"又停在"**
+
+第一版连"推进 0 格"也写成"又停在人工闸门"——人以为自己推进过。现在只有真推进了才用"又"，
+零推进时写"任务还停在人工闸门「X」：这一轮没有可推进的格子（先放行，或者换个任务）"。
+
+**三、刷新不冲掉总结**
+
+推进/放行之后改成**原地刷新**（阶段进度、事件流、闸门卡、状态标签四处），不再整页重渲染。
+顺带给状态行加了 `#task-status-row`、闸门卡加了 `#gate-slot`——否则刷新之后标签还是旧的
+`running`，明明已经 `paused` 了。
+
+### 44.3 顺带查出的一处"张冠李戴"
+
+产物目录名是 `task-<id>` 与 `task-<id>-<指纹>`，而 **id 只在一个数据库里唯一**：
+演示库的 `task-3` 和工作库的 `task-3` 会落到同一个 `content/research/` 下。
+原来的规则是"按修改时间取最新那份"，于是真机截图里，一条刚建的任务下面显示的是
+**另一次研究**的 `digest.json` / `analysis.md`——比"看不到"更糟。
+
+改法：`collect_artifacts(..., objective=...)` 带上研究目标，优先挑 `digest.json` 里目标一致的那份；
+还没有 digest 的（早期阶段只写了 `discovery.md`）算"未标注"次选；全都不匹配才退回最新那份，
+**并在 `note` 里明写"可能来自另一个数据库、不一定是这条任务产出的"**。
+
+### 44.4 实测（临时库、真搜索、零模型调用）
+
+```
+task_id: 3
+task-action 渲染出来：
+  推进 2 格：又停在人工闸门「人工立项」，这一步的产物在下面，看完再决定放不放
+  做完了 第 1 格 topic.discover（succeeded）
+  做完了 第 2 格 topic.discover（succeeded）
+  下一步：看完「这一步产出了什么」里的选题拆解，觉得题目立得住，就点「继续跑」……
+状态标签同步成 paused；闸门卡与产物卡同屏可见；page errors: []
+```
+
+命令行同一条路：
+
+```
+$ python -m backend.scripts.research_task run --task-id 1 --max-iterations 2
+{ "iterations": 0, "idle": true, "stopped_reason": "no_ready_subtask",
+  "summary": {"headline": "任务还停在人工闸门「人工立项」：这一轮没有可推进的格子（先放行，或者换个任务）", ...}}
+```
+
+### 44.5 测试
+
+`tests/test_run_summary.py` **10 例**（停闸门点名、逐格命名带状态、阻塞原因原样带出、
+失败不与阻塞混为一谈、重试单列、跑完指路报告、未知子任务号不崩、零推进不谎报、
+`as_dict` 可序列化、接口真跑两格返回 `gate` 总结）；
+`tests/test_task_artifacts.py` **+3 例**（别的库的同名目录不被当成这条任务、目标一致压过时间更新、
+全不匹配时 note 里说清）。
+
+**诚实边界**：这段总结只描述"发生了什么"，不评价产物质量；`next_step` 是建议不是承诺，
+再点一次也可能停在同一道门上。

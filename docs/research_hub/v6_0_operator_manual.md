@@ -370,3 +370,18 @@ curl.exe -s "http://127.0.0.1:8000/api/research-tasks/1/artifacts"
 ```
 
 它只读列举 `content/research/task-<id>*` 里最新那份目录，文本类最多显示前面一段。
+
+### 点完「推进执行」之后看什么
+
+任务详情页的按钮下方会出现一段总结，三句话：这一轮做完了哪几格、停在什么地方、
+下一步干什么。如果又停在另一道人工闸门，下面的「卡在人工闸门」卡会同步换掉，
+产物卡也跟着刷新。
+
+命令行同一份口径：
+
+```powershell
+python -m backend.scripts.research_task run --task-id 1 --max-iterations 3
+```
+
+输出里的 `summary` 与页面上是同一段文字（`stopped_at` 为 `max_iterations` 表示
+到本轮上限、不是出错）。

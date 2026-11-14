@@ -213,3 +213,66 @@ def test_unknown_task_has_no_artifacts(client) -> None:
 
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "not_found"
+
+def test_directory_from_another_database_is_not_shown_as_this_task(
+    tmp_path: Path,
+) -> None:
+    """同一个 id 在别的库里可能是另一条研究：产物目录同名，按目标挑，不按时间挑。"""
+
+    mine = tmp_path / "task-4"
+    mine.mkdir()
+    (mine / "discovery.md").write_text("# 我这条的选题拆解", encoding="utf-8")
+    foreign = tmp_path / "task-4-deadbeef"
+    foreign.mkdir()
+    (foreign / "analysis.md").write_text("# 别人的分析", encoding="utf-8")
+    (foreign / "digest.json").write_text(
+        json.dumps({"objective": "另一条完全不同的研究"}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    import os
+
+    # 让"别人的那份"更新，证明挑的是目标而不是时间
+    os.utime(mine / "discovery.md", (1_700_000_000, 1_700_000_000))
+
+    bundle = task_artifacts.collect_artifacts(4, root=tmp_path, objective="我这条的研究目标")
+
+    # 列出来的是"我这条"的产物，不是时间更新的那份别人的
+    assert [item.name for item in bundle.files] == ["discovery.md"]
+    assert bundle.files[0].relative_path == "task-4/discovery.md"
+
+
+def test_matching_objective_wins_over_a_newer_foreign_directory(tmp_path: Path) -> None:
+    mine = tmp_path / "task-5-aabbccdd"
+    mine.mkdir()
+    (mine / "digest.json").write_text(
+        json.dumps({"objective": "商业银行净息差"}, ensure_ascii=False), encoding="utf-8"
+    )
+    (mine / "digest.md").write_text("# 我的底稿", encoding="utf-8")
+    foreign = tmp_path / "task-5"
+    foreign.mkdir()
+    (foreign / "old.md").write_text("# 更晚但属于别人的", encoding="utf-8")
+    (foreign / "digest.json").write_text(
+        json.dumps({"objective": "光伏产业链"}, ensure_ascii=False), encoding="utf-8"
+    )
+
+    bundle = task_artifacts.collect_artifacts(5, root=tmp_path, objective="商业银行净息差")
+
+    listed = {item.relative_path for item in bundle.files}
+    assert listed == {"task-5-aabbccdd/digest.json", "task-5-aabbccdd/digest.md"}
+    assert "研究目标对得上" in bundle.note
+
+
+def test_foreign_only_directory_says_so_in_the_note(tmp_path: Path) -> None:
+    """全都不匹配时仍然列出（总比看不到强），但必须在 note 里说清可能是别的库的。"""
+
+    foreign = tmp_path / "task-6"
+    foreign.mkdir()
+    (foreign / "analysis.md").write_text("# 别人的", encoding="utf-8")
+    (foreign / "digest.json").write_text(
+        json.dumps({"objective": "光伏产业链"}, ensure_ascii=False), encoding="utf-8"
+    )
+
+    bundle = task_artifacts.collect_artifacts(6, root=tmp_path, objective="商业银行净息差")
+
+    assert [item.name for item in bundle.files]
+    assert "另一个数据库" in bundle.note

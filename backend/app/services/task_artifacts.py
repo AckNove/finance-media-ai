@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -134,15 +135,62 @@ def _read_text(path: Path, *, budget: int) -> tuple[str, bool]:
     return text[:budget], True
 
 
+def _objective_of(directory: Path) -> str:
+    """从 ``digest.json`` 读这次研究的目标；读不出来返回空串（早期阶段还没写）。"""
+
+    digest = directory / "digest.json"
+    if not digest.is_file():
+        return ""
+    try:
+        payload = json.loads(digest.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    if isinstance(payload, dict):
+        return str(payload.get("objective") or "")
+    return ""
+
+
+def _pick_directory(
+    directories: list[Path], objective: str
+) -> tuple[Path, str]:
+    """在可能来自别的库/别次研究的同名目录里，挑最像"这一条任务"的那份。
+
+    为什么需要挑：产物目录名是 ``task-<id>`` 与 ``task-<id>-<指纹>``，**id 只在
+    一个数据库里唯一**——演示库的 task-3 和工作库的 task-3 会落到同一个根下。
+    按 mtime 取最新会把别的研究的产物摆到这条任务下面，比"看不到"更糟。
+
+    返回 ``(目录, 匹配级别)``，级别：``match``（digest 目标一致）/``unknown``
+    （还没写 digest，早期阶段）/``foreign``（明确是别的研究目标）。
+    """
+
+    if not objective:
+        return directories[0], "unknown"
+    unknown: list[Path] = []
+    for directory in directories:
+        stated = _objective_of(directory)
+        if not stated:
+            unknown.append(directory)
+            continue
+        if stated.strip() == objective.strip():
+            return directory, "match"
+    if unknown:
+        return unknown[0], "unknown"
+    return directories[0], "foreign"
+
+
 def collect_artifacts(
     task_id: int,
     *,
     root: Path | None = None,
+    objective: str = "",
     max_files: int = MAX_FILES,
     max_text_chars: int = MAX_TEXT_CHARS,
     max_total_chars: int = MAX_TOTAL_CHARS,
 ) -> ArtifactBundle:
-    """列出这个任务的产物；文本类顺手读一段（有上限）。"""
+    """列出这个任务的产物；文本类顺手读一段（有上限）。
+
+    ``objective`` 给定时用它把"别的研究留下的同名目录"挑出去，见 ``_pick_directory``。
+    """
 
     directories = candidate_dirs(task_id, root=root)
     if not directories:
@@ -156,7 +204,7 @@ def collect_artifacts(
 
     # 同一个 id 下可能有多份目录（不同研究目标各一份，用指纹区分）。
     # 只列**最新那份**——混着列会把两次研究的产物摆在一起，看着像同一条任务的输出。
-    current = directories[0]
+    current, matched = _pick_directory(directories, objective)
     entries: list[Path] = [item for item in current.rglob("*") if item.is_file()]
     entries.sort(key=lambda item: item.stat().st_mtime, reverse=True)
 
@@ -194,10 +242,22 @@ def collect_artifacts(
         )
 
     notes = [f"共 {len(entries)} 个产物文件，列了 {len(files)} 个"]
-    if len(directories) > 1:
+    if matched == "foreign":
         notes.append(
-            f"同一个 id 下还有 {len(directories) - 1} 个别的产物目录（不同研究目标各一份），这里只列最新的那份"
+            "这个任务的产物目录里只有别的研究目标留下的 digest："
+            "可能来自另一个数据库（同一个 id 不跨库唯一），这里的内容不一定是这条任务产出的"
         )
+    if len(directories) > 1:
+        if objective:
+            notes.append(
+                f"同一个 id 下还有 {len(directories) - 1} 个别的产物目录，"
+                "这里列的是研究目标对得上的那一份"
+            )
+        else:
+            notes.append(
+                f"同一个 id 下还有 {len(directories) - 1} 个别的产物目录"
+                "（不同研究目标各一份），这里只列最新的那份"
+            )
     if skipped:
         notes.append(f"另有 {skipped} 个没列出（一次最多 {max_files} 个）")
     if used_chars >= max_total_chars:
