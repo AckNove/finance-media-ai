@@ -386,6 +386,8 @@ def test_two_sources_are_enough_for_a_rule_made_storyboard(
     manifest = json.loads((job / "job.json").read_text(encoding="utf-8"))
     assert manifest["outline"]["ok"] is True
     assert manifest["outline"]["generated_by"] == "rules"
+    # 页面要据此说清楚"这份分镜是按什么排的"，规则分镜也得自己报出来
+    assert manifest["outline"]["source"] == "rules"
     assert manifest["outline"]["shot_count"] >= 3
     # 正式脚本仍然没有：规则分镜里的口播稿是原文摘引，不是成稿
     assert list((job / "script").iterdir()) == []

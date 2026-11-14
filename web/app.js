@@ -44,6 +44,15 @@ function money(value) {
   return '¥' + number.toFixed(number !== 0 && Math.abs(number) < 1 ? 6 : 2);
 }
 
+/** 文件大小只有一处口径：日历、视频页、渲染回执都用它，免得同一个文件一会 9259 KB 一会 9.04 MB。 */
+function bytes(value) {
+  const size = Number(value || 0);
+  if (!size) return '0 B';
+  if (size < 1024) return `${size} B`;
+  if (size < 1048576) return `${Math.round(size / 1024)} KB`;
+  return `${(size / 1048576).toFixed(2)} MB`;
+}
+
 function when(value) {
   if (!value) return '—';
   return String(value).replace('T', ' ').slice(0, 19);
@@ -936,6 +945,7 @@ async function pageReports(view) {
       const job = response.data;
       const outline = job.outline || {};
       const storyboardReady = Boolean(outline.ok);
+      const scriptDriven = outline.source === 'script';
       output.innerHTML = `<div class="card">
         <h2>视频任务目录已建好</h2>
         <p><code>${esc(job.path)}</code></p>
@@ -944,18 +954,21 @@ async function pageReports(view) {
           <span class="tag">证据 ${job.evidence_count} 条</span>
           <span class="tag">来源 ${job.source_count} 条</span>
           ${storyboardReady
-            ? `<span class="tag ok">分镜 ${outline.shot_count} 镜 · ${outline.total_seconds} 秒</span>`
+            ? `<span class="tag ok">分镜 ${outline.shot_count} 镜 · ${outline.total_seconds} 秒</span>
+               <span class="tag">${scriptDriven ? `按脚本排（脚本 #${esc(String(outline.script_id || ''))}）` : '按规则排'}</span>`
             : `<span class="tag warn">分镜未排出：${esc(outline.reason || job.blocked_reason)}</span>`}
         </div>
         <div class="note ${job.blocked ? 'warn' : 'ok'}">${esc(job.next_step || '')}</div>
-        <p class="muted">分镜是**纯规则**排的草稿：口播稿是原文摘引、逐镜标来源，没有任何模型结论；
-          正式脚本仍需模型或人工写（<code>script/</code> 故意留空）。</p>
+        <p class="muted">${scriptDriven
+          ? '这份分镜是按你确认过的那版脚本排的：每句都是脚本原句、逐镜标着来源，屏幕上出现的数字也只在脚本写过的地方出现。'
+          : '分镜是按规则排的草稿：口播用原文摘引、逐镜标来源，没有任何模型结论；想要像人写的稿子，先让 content.script 生成脚本再重新交接。'}</p>
         <div class="row">
           <label><input type="checkbox" id="job-narration" /> 合成旁白（需要能连 TTS）</label>
           <button class="btn" id="job-render" ${storyboardReady ? '' : 'disabled'}>后台渲染成片</button>
         </div>
         <div id="job-render-out"></div>
-        <a href="#/video">去视频预览页看已有成片</a>
+        <a href="#/video?job=${encodeURIComponent(job.job_id)}">去视频预览页看这条</a>
+        · <a href="#/video">看全部成片</a>
       </div>`;
 
       const renderButton = document.getElementById('job-render');
@@ -983,6 +996,7 @@ async function pageReports(view) {
               状态 ${esc(data.status)} · 阶段 ${esc(data.stage || '')}
               ${data.report && data.report.output_path ? `<br/>产物 <code>${esc(data.report.output_path)}</code>` : ''}
               ${data.error ? `<br/>错误 ${esc(data.error)}` : ''}
+              ${data.status === 'done' ? `<br/><a href="#/video?job=${encodeURIComponent(job.job_id)}">去看成片</a>` : ''}
             </div>`;
           };
           setTimeout(poll, 3000);
@@ -1318,7 +1332,7 @@ async function pageVideo(view) {
       <div class="row">
         ${withOutput.map((item) => `<a class="btn ${item.job_id === job.job_id ? '' : 'ghost'}" href="#/video?job=${item.job_id}">${esc(item.job_id)}</a>`).join('')}
       </div>
-      ${file ? `<p class="muted">${esc(file.name)} · ${(file.byte_size / 1048576).toFixed(2)} MB</p>
+      ${file ? `<p class="muted">${esc(file.name)} · ${bytes(file.byte_size)}</p>
       <video controls preload="metadata" src="${API}/workspace/jobs/${encodeURIComponent(job.job_id)}/file?path=${encodeURIComponent('output/' + file.name)}"></video>` : '<div class="empty">没有 MP4</div>'}
     </div>
     <div class="card"><h2>排进内容日历</h2>
@@ -1387,7 +1401,7 @@ async function pageVideo(view) {
       ? `<pre>${esc(data.qc.checks.map((item) => `${item.ok ? '✓' : '✗'} ${item.name}: ${item.detail}`).join('\n'))}</pre>`
       : '';
     out.innerHTML = `<div class="note ok">${esc(data.stage)}：${data.storyboard_shots} 个镜头 · ${data.frames} 帧 · ${data.canvas.w}×${data.canvas.h}
-        ${data.output_path ? `· 成片 ${esc(data.output_path)}（${(data.output_byte_size / 1048576).toFixed(2)} MB）` : `· 时间轴 ${esc(data.timeline_path || '')}`}</div>
+        ${data.output_path ? `· 成片 ${esc(data.output_path)}（${bytes(data.output_byte_size)}）` : `· 时间轴 ${esc(data.timeline_path || '')}`}</div>
       ${qc}
       <pre>${esc((data.engine_calls || []).join('\n'))}</pre>
       ${data.notes && data.notes.length ? `<p class="muted">${data.notes.map(esc).join(' ')}</p>` : ''}`;
@@ -1791,7 +1805,7 @@ async function pageOperations(view) {
             const cls = ready.status === 'ready' ? 'ok'
               : (ready.status === 'draft_invalid' || ready.status === 'film_missing' ? 'bad' : '');
             const film = ready.film && ready.film.relative_path
-              ? ` <span class="muted">${Math.round((ready.film.byte_size || 0) / 1024)} KB</span>` : '';
+              ? ` <span class="muted">${bytes(ready.film.byte_size)}</span>` : '';
             return `<span class="tag ${cls}" title="${esc(ready.next_step || '')}">${esc(ready.label || '未知')}</span>${film}`;
           }, raw: true },
         { title: '发布', value: (row) => `<span class="tag ${row.publish_state === 'published' ? 'ok' : ''}">${esc(PUBLISH_LABEL[row.publish_state] || row.publish_state)}</span>`, raw: true },

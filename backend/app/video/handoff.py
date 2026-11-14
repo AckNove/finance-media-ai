@@ -234,6 +234,9 @@ def _try_outline(report: Any, evidence_rows: list[Any], source_rows: list[Any],
         return {"ok": False, "reason": "outline_failed", "message": f"{type(error).__name__}: {error}"}
     payload = result.as_dict()
     payload["ok"] = True
+    # 与脚本分镜那边对称：页面要据此说清楚"这份分镜是按什么排的"，
+    # 少一个字就得让前端去猜有没有 script_id。
+    payload["source"] = "rules"
     payload["chain"] = _try_chain_shot(report, directory)
     return payload
 
