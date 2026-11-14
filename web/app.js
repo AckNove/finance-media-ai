@@ -978,6 +978,30 @@ async function pageReports(view) {
     const label = state.reason === 'no_checks' ? '未做语义核查' : `待人工确认 ${state.total_checks} 条`;
     return `<span class="tag warn">${label}</span>`;
   };
+  // 「往下走到哪一步」：脚本几条、建过几个视频任务、最近那条片子还能不能发。
+  // 这些数据由 GET /research-reports 一次带回来（后端只做一次脚本分组查询 + 一次目录扫描）。
+  const progressCell = (row) => {
+    const state = row.progress;
+    if (!state) return '<span class="tag">未知</span>';
+    const tags = [];
+    if (state.script_count) {
+      const version = state.latest_script_version ? ` v${state.latest_script_version}` : '';
+      tags.push(`<span class="tag ok">脚本${version}</span>`);
+    } else {
+      tags.push('<span class="tag">无脚本</span>');
+    }
+    if (state.job_count) {
+      const usable = (state.jobs || []).filter((job) => job.usable);
+      const label = usable.length ? `能发 ${usable[usable.length - 1].job_id}` : `${state.job_count} 个任务都不能发`;
+      tags.push(`<span class="tag ${usable.length ? 'ok' : 'warn'}">${esc(label)}</span>`);
+    }
+    return `<span title="${esc(state.next_step || '')}">${tags.join(' ')}</span>`;
+  };
+  const videoButtonLabel = (row) => {
+    const state = row.progress;
+    if (state && state.job_count && !(state.jobs || []).some((job) => job.usable)) return '重开视频任务';
+    return state && state.script_count ? '用脚本建视频任务' : '建视频任务';
+  };
   view.innerHTML = `
     <div class="card"><h2>研究报告</h2>
       <p class="muted">口径：语义核查的判定只是模型意见，<strong>必须人工确认（confirmed）之后才允许进入成稿</strong>。</p>
@@ -986,10 +1010,11 @@ async function pageReports(view) {
         { title: '标题', key: 'title' },
         { title: '核验状态', value: (row) => statusTag((row.verification_status || 'unverified').toLowerCase()), raw: true },
         { title: '成稿闸门', value: (row) => gateTag(row), raw: true },
+        { title: '往下走到哪一步', value: (row) => progressCell(row), raw: true },
         { title: '创建时间', value: (row) => when(row.created_at) },
         { title: '操作', value: (row) => `<a href="#/planning?report=${row.id}">用它做内容策划</a>
           · <a href="#/checks?report=${row.id}">看语义核查</a>
-          <button class="btn ghost" data-video="${row.id}">建视频任务</button>`, raw: true },
+          <button class="btn ghost" data-video="${row.id}">${videoButtonLabel(row)}</button>`, raw: true },
       ], items, '还没有报告：跑一个研究任务') : failure(result)}
     </div>
     <div id="video-job-result"></div>

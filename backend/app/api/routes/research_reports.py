@@ -31,8 +31,13 @@ from backend.app.schemas.finding_check import (
     FindingCheckSummaryOut,
 )
 from backend.app.schemas.pipeline import PipelineSubtaskOut, ReportPipelineOut
-from backend.app.schemas.research import ResearchReportCreate, ResearchReportOut
+from backend.app.schemas.research import (
+    ResearchReportCreate,
+    ResearchReportListItemOut,
+    ResearchReportOut,
+)
 from backend.app.schemas.video import VideoJobIn, VideoJobOut
+from backend.app.services.report_progress import progress_map
 from backend.app.services.research_service import ResearchReportService
 from backend.app.services.script_service import ScriptService
 from backend.app.video.handoff import VideoHandoffError, create_video_job
@@ -58,21 +63,31 @@ def create_research_report(payload: ResearchReportCreate, db: DbSession) -> Rese
     return ResearchReportOut.model_validate(report)
 
 
-@router.get("", response_model=Page[ResearchReportOut], summary="研究报告列表")
+@router.get("", response_model=Page[ResearchReportListItemOut], summary="研究报告列表")
 def list_research_reports(
     db: DbSession,
     page: Pagination,
     topic_id: int | None = None,
     verification_status: str | None = None,
-) -> Page[ResearchReportOut]:
+) -> Page[ResearchReportListItemOut]:
     items, total = ResearchReportService(db).list(
         topic_id=topic_id,
         verification_status=verification_status,
         limit=page.limit,
         offset=page.offset,
     )
-    return Page[ResearchReportOut](
-        items=[ResearchReportOut.model_validate(item) for item in items],
+    # 整页只做一次脚本分组查询 + 一次任务目录扫描：不做 N+1，
+    # 也不因为某个任务的 job.json 坏了就让整页打不开。
+    report_ids = [item.id for item in items]
+    progress = progress_map(db, report_ids) if report_ids else {}
+    return Page[ResearchReportListItemOut](
+        items=[
+            ResearchReportListItemOut(
+                **ResearchReportOut.model_validate(item).model_dump(),
+                progress=progress.get(item.id),
+            )
+            for item in items
+        ],
         total=total,
         limit=page.limit,
         offset=page.offset,
@@ -89,12 +104,15 @@ def get_research_report(db: DbSession, report_id: int = Path(ge=1)) -> ResearchR
     status_code=status.HTTP_201_CREATED,
     summary="从报告开一个视频任务目录",
     description=(
-        "把报告正文、证据行与来源清单搬进 `content/jobs/<job_id>/research/`，"
-        "只要证据里有两个以上来源，就用**纯规则**排一份分镜草稿"
-        "（`storyboard/storyboard.csv` + `OUTLINE.md`，口播稿是原文摘引、逐镜标来源）；"
-        "`script/` 仍然留空——正式脚本必须由模型或人写。资料不够或没有可用模型时返回 "
-        "`blocked=true` 与稳定原因码（`insufficient_sources` / `no_data_points` / "
-        "`model_not_configured`），绝不生成模板脚本冒充。"
+        "把报告正文、证据行与来源清单搬进 `content/jobs/<job_id>/research/`，然后排一份分镜草稿，"
+        "分镜来自哪一边由 `outline.source` 如实标明："
+        "**`script`** = 这份报告已经有脚本（`scripts` 表里最新那版），分镜按脚本逐句排、"
+        "逐镜标来源，屏幕上出现的数字只在脚本写过的地方出现；"
+        "**`rules`** = 还没有脚本，按报告里的数据点排规则草稿（口播是原文摘引、逐镜标来源），"
+        "`script/` 留空——正式脚本必须由模型或人写，系统不生成模板脚本冒充。"
+        "脚本排不出来（句子太少 / 分镜校验不过）时只记 `outline.reason`，"
+        "**不会悄悄换成规则分镜**。资料不够时返回 `blocked=true` 与稳定原因码"
+        "（`insufficient_sources` / `no_data_points`）。"
     ),
 )
 def create_video_job_for_report(

@@ -1285,7 +1285,7 @@ purpose="纯色/渐变底板 #xxxx", credit="本仓库程序生成的纯色底�
 
 **测试**：`tests/test_backup_verify.py` 9 例（真备份通过、截断文件、0 字节、文件不存在、备份缺表、
 行数差异只报不判失败、结论落盘、`latest_backup`、CLI 三个退出码）；`tests/test_daily_check.py` 新增
-2 例（没验过被提醒、验不过把原因带出来）。全量 **1220 passed, 2 skipped**。
+2 例（没验过被提醒、验不过把原因带出来）。全量 **1229 passed, 2 skipped**。
 
 ---
 
@@ -1373,7 +1373,7 @@ GET /api/system/status -> 200
 | `scripts/stop.ps1` | 无窗口的控制台进程不再空等 3 秒，如实说明后直接结束 |
 | `docs/research_hub/v6_0_operator_manual.md` | §1.3 写明两种写法与"库不存在会自动建表" |
 
-全量 `pytest -o addopts="" -q` → **1220 passed, 2 skipped, 1 warning**（唯一 warning 仍是
+全量 `pytest -o addopts="" -q` → **1229 passed, 2 skipped, 1 warning**（唯一 warning 仍是
 `agent_runs ↔ research_subtasks` 双向外键环，属设计内）。
 
 另外记一条操作纪律：`edit`/`write` 工具保存 `.ps1` **不会带 BOM**，而 PowerShell 5.1 会按 GBK
@@ -1469,4 +1469,106 @@ _WARN_STATUSES = frozenset({"no_gate"})
 | `tests/test_export_gate.py`（新增） | 7 例：撤回的片子被拒且不写文件、没渲出来被拒、`no_gate` 允许但要写明、清单含片子路径/大小/规格/质检通过、质检失败项如实列出、没绑任务说明、接口层 422 带 `reason=draft_invalid` |
 | `web/app.js` | 导出成功提示里加上「先看目录里的 publish_checklist.md」 |
 
-全量 `pytest -o addopts="" -q` → **1220 passed, 2 skipped, 1 warning**。
+全量 `pytest -o addopts="" -q` → **1229 passed, 2 skipped, 1 warning**。
+
+---
+
+## §37 报告列表看不出"往下走到哪一步"（第 23 轮）
+
+### 37.1 问题：两个真实的浪费
+
+报告列表页原来只有「核验状态」和「成稿闸门」两列，看不出这份报告**已经走到哪**：
+
+1. 脚本早就写好了（`scripts` 表里 v2），又去点一次「建视频任务」——
+   这次点下去拿到的是**按规则排**的分镜，而不是按脚本排的；人点之前无从判断；
+2. 反过来，片子早就渲好了、已经排进日历，人还在想"这份报告下一步做什么"。
+
+一句话：**页面不告诉你它走到哪一步，你就只能靠记忆。**
+
+### 37.2 做法：把三项事实摆到列表上
+
+`backend/app/services/report_progress.py`：
+
+| 事实 | 来源 |
+| --- | --- |
+| 脚本几条、最新版本 | `scripts` 表按 `research_report_id` 分组（一次 `group_by`） |
+| 视频任务几个、成不成 | 磁盘 `content/jobs/*/job.json` 的 `report.report_id` |
+| 能不能发 | 直接问 `calendar_readiness.job_readiness()`，**不另写一套判定** |
+
+`GET /api/research-reports` 的每一项多一个 `progress`：
+
+```json
+"progress": {
+  "report_id": 1,
+  "script_count": 1,
+  "latest_script_version": 1,
+  "latest_script_id": 1,
+  "job_count": 5,
+  "jobs": [{"job_id": "v6_accept_company_v2", "readiness_status": "ready",
+            "usable": true, "film_path": "output/final.mp4", ...}, ...],
+  "next_step": "已有能发的成片（v6_accept_company_v2）：去「视频预览」看片，然后排进内容日历。"
+}
+```
+
+三条纪律：
+
+1. **不做 N+1**：整页一次脚本分组查询 + 一次目录扫描。有计数器用例
+   （`test_the_list_route_scans_the_jobs_directory_once_per_page`）钉住，
+   以后谁把它改成"每份报告扫一次"都会红。
+2. **判定只写一遍**：`progress_of()` 就是 `progress_map()` 的单元素版本，
+   有 `test_progress_of_uses_the_same_judgement_as_the_page` 比对两者输出完全相同。
+3. **读坏的文件不拖垮整页**：某个 `job.json` 是坏 JSON 只记 warning 跳过
+   （`test_broken_job_json_does_not_break_the_whole_page`），
+   没有 `job.json` 的历史任务不出现在统计里——宁可少数，不编造。
+
+### 37.3 顺手改掉一处"文档在说谎"
+
+`POST /api/research-reports/{id}/video-job` 的 OpenAPI 描述原写"**用纯规则**排一份分镜草稿、
+`script/` 仍然留空"。脚本驱动分镜上线（§26）之后这句就不对了。现在改成如实说明
+`outline.source` 的两种取值（`script` / `rules`），并写明脚本排不出来时**不会悄悄换成规则分镜**。
+`backend/app/video/handoff.py` 的模块 docstring 同步改掉。
+API 参考文档因此重新生成（`Page_ResearchReportOut_` → `Page_ResearchReportListItemOut_`）。
+
+### 37.4 前端
+
+报告列表新增「往下走到哪一步」列：`脚本 v1` / `无脚本` + `能发 <任务号>` / `N 个任务都不能发`
+（鼠标悬停显示 `next_step`）。按钮按事实换字：
+
+| 情况 | 按钮 |
+| --- | --- |
+| 有脚本、没建过任务 | 用脚本建视频任务 |
+| 建过任务但都不能发 | 重开视频任务 |
+| 其它 | 建视频任务 |
+
+### 37.5 真机验证（探针库 + 仓库里真实的 5 个任务目录）
+
+```
+GET /api/research-reports → items[0].progress
+  script_count=1  latest_script_version=1  job_count=5
+  jobs: gate_demo_after_confirm       film_missing    不能发
+        v5_flow_acceptance_v2         ready           能发
+        v6_accept_chain_11131719      ready           能发
+        v6_accept_company_v2          ready           能发
+        v6_accept_industry            draft_invalid   不能发（结论确认被撤回）
+  next_step: 已有能发的成片（v6_accept_company_v2）：去「视频预览」看片，然后排进内容日历。
+```
+
+页面（Playwright 无头 + 系统 Chrome）：表头出现「往下走到哪一步」，
+首行标签 `['unverified', '未做语义核查', '脚本 v1', '能发 v6_accept_company_v2']`，
+按钮文字 `用脚本建视频任务`，`page errors: []`。
+
+探针库是用**真实迁移**建的临时库（`alembic upgrade head`），真实开发库与工作库都只读。
+
+### 37.6 改动清单与测试
+
+| 文件 | 改动 |
+| --- | --- |
+| `backend/app/services/report_progress.py`（新增） | `progress_map` / `progress_of` / `_script_facts` / `_job_index` / `_next_step` |
+| `backend/app/schemas/report_progress.py`（新增） | `JobProgressOut` / `ReportProgressOut` |
+| `backend/app/schemas/research.py` | 新增 `ResearchReportListItemOut(ResearchReportOut)`，多一个 `progress` |
+| `backend/app/api/routes/research_reports.py` | 列表返回 `Page[ResearchReportListItemOut]`；video-job 描述改写 |
+| `backend/app/video/handoff.py` | 模块 docstring 改掉"纯规则"的旧说法 |
+| `web/app.js` | 新增「往下走到哪一步」列 + `progressCell()` + `videoButtonLabel()` |
+| `tests/test_report_progress.py`（新增） | 9 例 |
+
+全量 `pytest -o addopts="" -q` → **1229 passed, 2 skipped, 1 warning**。

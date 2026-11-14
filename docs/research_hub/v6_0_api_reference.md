@@ -40,7 +40,7 @@
 | GET | `/api/knowledge/{item_id}` | 知识条目详情 | 人 | `item_id`（path，必填，integer） | — | 200 `KnowledgeItemOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | PATCH | `/api/knowledge/{item_id}` | 更新知识条目 | 人 | `item_id`（path，必填，integer） | application/json → `KnowledgeItemUpdate` | 200 `KnowledgeItemOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/knowledge/{item_id}/relations` | 知识条目的关联列表 | 人 | `item_id`（path，必填，integer） | — | 200 `KnowledgeRelationOut[]`；404 `object`；409 `object`；422 `object`；503 `object` |
-| GET | `/api/research-reports` | 研究报告列表 | 人 | `topic_id`（query，可选，integer | null）、`verification_status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchReportOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
+| GET | `/api/research-reports` | 研究报告列表 | 人 | `topic_id`（query，可选，integer | null）、`verification_status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_ResearchReportListItemOut_`；404 `object`；409 `object`；422 `object`；503 `object` |
 | POST | `/api/research-reports` | 创建研究报告 | 人 | — | application/json → `ResearchReportCreate` | 201 `ResearchReportOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}` | 研究报告详情 | 人 | `report_id`（path，必填，integer） | — | 200 `ResearchReportOut`；404 `object`；409 `object`；422 `object`；503 `object` |
 | GET | `/api/research-reports/{report_id}/checks` | 结论核查明细（模型判定 + 人工复核，两条状态线） | 人 | `report_id`（path，必填，integer）、`verdict`（query，可选，string | null）、`human_review_status`（query，可选，string | null）、`limit`（query，可选，integer）、`offset`（query，可选，integer） | — | 200 `Page_FindingCheckOut_`；404 `object`；409 `object`；422 `object`；503 `object` |

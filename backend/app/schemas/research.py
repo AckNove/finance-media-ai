@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from backend.app.models.enums import StatementNature, VerificationStatus
 from backend.app.schemas.common import ORMBase
+from backend.app.schemas.report_progress import ReportProgressOut
 
 
 class Finding(BaseModel):
@@ -61,3 +62,13 @@ class ResearchReportOut(ORMBase):
     reading_time_minutes: int | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class ResearchReportListItemOut(ResearchReportOut):
+    """列表项：在报告本体上多一个「往下走到哪一步」。
+
+    详情接口保持 `ResearchReportOut`（不重复算脚本数与目录扫描）；
+    列表页才需要一眼看出"有没有脚本、建过几个任务、能不能发"。
+    """
+
+    progress: ReportProgressOut | None = None
