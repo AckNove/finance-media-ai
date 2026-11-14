@@ -6,6 +6,7 @@ import json
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from sqlalchemy.orm import sessionmaker
@@ -15,6 +16,7 @@ from backend.app.database.session import build_engine
 from backend.app.models.execution import ResearchSubtask, ResearchTask
 from backend.app.models.metering import ModelCall
 from backend.app.models.research import FindingCheck, ResearchReport
+from backend.app.services import daily_service
 from backend.scripts import daily_check
 
 NOW = datetime(2026, 5, 20, 12, 0, tzinfo=UTC)
@@ -302,11 +304,20 @@ def test_main_returns_one_when_attention_needed(tmp_path: Path, db_url: str, cap
     assert code == 1
 
 
-def test_main_returns_zero_when_everything_is_fine(tmp_path: Path, db_url: str, capsys) -> None:
+def test_main_returns_zero_when_everything_is_fine(
+    tmp_path: Path, db_url: str, capsys, monkeypatch
+) -> None:
     backups = tmp_path / "backups"
     backups.mkdir()
     fresh = backups / "finance-20260520-100000-000.db"
     fresh.write_bytes(b"z")
+    # 磁盘余量是**机器状态**，不是这条用例要验的东西：跑测试的机器真的只剩 4.9 GB
+    # 时，这条"一切都好"的用例会红（实测踩到过一次）。这里把余量固定住。
+    monkeypatch.setattr(
+        daily_service.shutil,
+        "disk_usage",
+        lambda _path: SimpleNamespace(total=500 * 1024**3, used=100 * 1024**3, free=400 * 1024**3),
+    )
 
     code = daily_check.main(
         [
