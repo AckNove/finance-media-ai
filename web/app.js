@@ -1877,7 +1877,10 @@ async function pageOperations(view) {
               : (ready.status === 'draft_invalid' || ready.status === 'film_missing' ? 'bad' : '');
             const film = ready.film && ready.film.relative_path
               ? ` <span class="muted">${bytes(ready.film.byte_size)}</span>` : '';
-            return `<span class="tag ${cls}" title="${esc(ready.next_step || '')}">${esc(ready.label || '未知')}</span>${film}`;
+            const issues = (row.consistency && row.consistency.warnings) || [];
+            const flag = issues.length
+              ? ` <span class="tag warn" title="${esc(issues.join('；'))}">账目对不上</span>` : '';
+            return `<span class="tag ${cls}" title="${esc(ready.next_step || '')}">${esc(ready.label || '未知')}</span>${film}${flag}`;
           }, raw: true },
         { title: '发布', value: (row) => `<span class="tag ${row.publish_state === 'published' ? 'ok' : ''}">${esc(PUBLISH_LABEL[row.publish_state] || row.publish_state)}</span>`, raw: true },
         { title: '链接', value: (row) => row.published_url

@@ -14,6 +14,7 @@ from backend.app.core.errors import DomainValidationError, NotFoundError
 from backend.app.schemas.common import Page
 from backend.app.schemas.operations import (
     CalendarAnalyticsOut,
+    CalendarConsistencyOut,
     CalendarCreate,
     CalendarExportIn,
     CalendarOut,
@@ -34,7 +35,27 @@ router = APIRouter(
 )
 
 
-def _to_out(entry) -> CalendarOut:
+def _consistency_of(entry, metric_count: int) -> CalendarConsistencyOut:
+    """一条排期自己的账对不对得上——只报矛盾，不替人改。
+
+    ``status``（进度）与 ``publish_state``（发布）是两条独立状态线，谁也不会自动
+    跟着谁走，所以很容易出现"数据都回填了却忘了标已发布"这种账。
+    """
+    warnings: list[str] = []
+    if metric_count and entry.publish_state != "published":
+        warnings.append(
+            f"有 {metric_count} 份平台数据快照，但这条还没标已发布："
+            "平台汇总只算已发布的排期，这些数字不会计入"
+        )
+    if entry.publish_state == "published" and entry.status in ("planned", "scripted"):
+        warnings.append(
+            f"已标已发布，但进度还停在「{entry.status}」：两个字段不会自己同步，"
+            "建议把进度也标到「已渲染」或「已导出」，免得回头对不上账"
+        )
+    return CalendarConsistencyOut(metric_count=metric_count, warnings=warnings)
+
+
+def _to_out(entry, metric_count: int = 0) -> CalendarOut:
     """把排期行连"那片子在磁盘上的真实状态"一起返回。
 
     状态读的是 ``content/jobs/<job_id>/`` 里的文件，不是数据库字段——
@@ -42,7 +63,12 @@ def _to_out(entry) -> CalendarOut:
     """
     payload = CalendarOut.model_validate(entry)
     readiness = CalendarReadinessOut(**job_readiness(entry.video_job_id))
-    return payload.model_copy(update={"readiness": readiness})
+    return payload.model_copy(
+        update={
+            "readiness": readiness,
+            "consistency": _consistency_of(entry, metric_count),
+        }
+    )
 
 
 @router.post("", response_model=CalendarOut, status_code=status.HTTP_201_CREATED, summary="新建排期")
@@ -65,8 +91,9 @@ def list_entries(
         limit=page.limit,
         offset=page.offset,
     )
+    counts = OperationsService(db).metric_counts([int(item.id) for item in items])
     return Page[CalendarOut](
-        items=[_to_out(item) for item in items],
+        items=[_to_out(item, counts.get(int(item.id), 0)) for item in items],
         total=total,
         limit=page.limit,
         offset=page.offset,
@@ -80,7 +107,10 @@ def analytics(db: DbSession) -> list[CalendarAnalyticsOut]:
 
 @router.get("/{entry_id}", response_model=CalendarOut, summary="排期详情")
 def get_entry(db: DbSession, entry_id: int = Path(ge=1)) -> CalendarOut:
-    return _to_out(OperationsService(db).get(entry_id))
+    service = OperationsService(db)
+    entry = service.get(entry_id)
+    counts = service.metric_counts([int(entry.id)])
+    return _to_out(entry, counts.get(int(entry.id), 0))
 
 
 @router.patch("/{entry_id}", response_model=CalendarOut, summary="改排期")
@@ -88,7 +118,10 @@ def update_entry(
     payload: CalendarUpdate, db: DbSession, entry_id: int = Path(ge=1)
 ) -> CalendarOut:
     """改状态/发布时间。标记为已发布必须带 `published_url`，否则 422。"""
-    return _to_out(OperationsService(db).update(entry_id, payload))
+    service = OperationsService(db)
+    entry = service.update(entry_id, payload)
+    counts = service.metric_counts([int(entry.id)])
+    return _to_out(entry, counts.get(int(entry.id), 0))
 
 
 @router.post(

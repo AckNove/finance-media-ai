@@ -146,6 +146,18 @@ class CalendarReadinessOut(BaseModel):
     invalidated_reason: str = ""
 
 
+class CalendarConsistencyOut(BaseModel):
+    """一条排期自己的账对不对得上。
+
+    这里只报"两个字段互相矛盾"的事实，不替人做决定：数据库里 ``status``（进度）和
+    ``publish_state``（发布）是两条独立的状态线，谁也不会自动跟着谁走，所以很容易出现
+    "数据都回填了、却忘了标已发布"这种账——那种情况下平台汇总里不会算它。
+    """
+
+    metric_count: int = 0
+    warnings: list[str] = Field(default_factory=list)
+
+
 class CalendarOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -166,6 +178,7 @@ class CalendarOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     readiness: CalendarReadinessOut | None = None
+    consistency: CalendarConsistencyOut | None = None
 
 
 class CalendarAnalyticsOut(BaseModel):
@@ -195,6 +208,7 @@ __all__ = [
     "PLATFORMS",
     "PUBLISH_STATES",
     "CalendarAnalyticsOut",
+    "CalendarConsistencyOut",
     "CalendarCreate",
     "CalendarExportIn",
     "CalendarOut",

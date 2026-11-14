@@ -202,6 +202,13 @@ def test_analytics_says_zero_means_no_data(client: Any) -> None:
 
 def test_analytics_uses_the_latest_snapshot_not_a_sum(client: Any) -> None:
     entry = _create(client, platform="bilibili")
+    # 汇总只统计**已发布**的排期：没标已发布就不该冒充"这个平台现在的表现"
+    published = client.patch(
+        f"/api/calendar/{entry['id']}",
+        json={"publish_state": "published", "published_url": "https://www.bilibili.com/video/BV1xx"},
+    )
+    assert published.status_code == 200, published.text
+
     base = datetime(2026, 11, 21, 10, 0, tzinfo=UTC)
     for index, views in enumerate((100, 500, 900)):
         response = client.post(
@@ -218,7 +225,28 @@ def test_analytics_uses_the_latest_snapshot_not_a_sum(client: Any) -> None:
     bili = next(row for row in rows if row["platform"] == "bilibili")
     assert bili["snapshots"] == 3
     assert bili["latest_views"] == 900  # 最新一次，不是 1500 的累计
-    assert "最新一次" in bili["note"]
+    assert "已发布" in bili["note"]
+
+
+def test_analytics_ignores_data_from_entries_that_are_not_published(client: Any) -> None:
+    """没标已发布的排期也会有人先录数据；那些数字不许变成平台的"最新表现"。"""
+    entry = _create(client, platform="wechat", title="还没发的微信稿")
+    recorded = client.post(
+        f"/api/calendar/{entry['id']}/metrics",
+        json={"captured_at": "2026-11-21T10:00:00", "views": 4321, "likes": 321},
+    )
+    assert recorded.status_code == 201, recorded.text
+
+    rows = client.get("/api/calendar/analytics").json()
+    wechat = next(row for row in rows if row["platform"] == "wechat")
+    assert wechat["snapshots"] == 0
+    assert wechat["latest_views"] == 0
+    assert "没有" in wechat["note"]
+
+    # 但这一条自己会被告知"账不对"——数据录了、发布没标
+    detail = client.get(f"/api/calendar/{entry['id']}").json()
+    assert detail["consistency"]["metric_count"] == 1
+    assert any("还没标已发布" in warning for warning in detail["consistency"]["warnings"])
 
 
 def test_from_script_and_report_links_are_kept(client: Any) -> None:

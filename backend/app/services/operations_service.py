@@ -207,6 +207,17 @@ class OperationsService(BaseService):
         self.db.commit()
         return parsed.as_dict()
 
+    def metric_counts(self, entry_ids: list[int]) -> dict[int, int]:
+        """一次查完这一页排期各有几份快照（避免每行一次查询）。"""
+        if not entry_ids:
+            return {}
+        rows = self.db.execute(
+            select(PlatformMetric.calendar_id, func.count())
+            .where(PlatformMetric.calendar_id.in_(entry_ids))
+            .group_by(PlatformMetric.calendar_id)
+        ).all()
+        return {int(calendar_id): int(count) for calendar_id, count in rows}
+
     def analytics(self) -> list[dict]:
         """按平台汇总：每条取**最新**快照的绝对值，不给"累计"这种假数。"""
         rows: list[dict] = []
@@ -233,7 +244,11 @@ class OperationsService(BaseService):
                 self.db.execute(
                     select(func.count())
                     .select_from(PlatformMetric)
-                    .where(PlatformMetric.platform == platform)
+                    .join(ContentCalendar, ContentCalendar.id == PlatformMetric.calendar_id)
+                    .where(
+                        PlatformMetric.platform == platform,
+                        ContentCalendar.publish_state == "published",
+                    )
                 ).scalar_one()
             )
             latest = self._latest_snapshot(platform)
@@ -250,16 +265,25 @@ class OperationsService(BaseService):
                     "note": (
                         "还没有任何数据回填：这里显示 0 是因为确实没数据，不是没人看"
                         if latest is None
-                        else f"取最新一次回填（{latest.captured_at:%Y-%m-%d %H:%M}）的绝对值"
+                        else f"取已发布排期里最新一次回填（{latest.captured_at:%Y-%m-%d %H:%M}）的绝对值"
                     ),
                 }
             )
         return rows
 
     def _latest_snapshot(self, platform: str) -> PlatformMetric | None:
+        """平台最新一次回填——**只算已发布的那几条**。
+
+        没标已发布的排期也可能被人回填了数据（比如先录后发），那种数字不该冒充
+        "这个平台现在的表现"。谁想让它进汇总，就去把那条标成已发布并填链接。
+        """
         stmt = (
             select(PlatformMetric)
-            .where(PlatformMetric.platform == platform)
+            .join(ContentCalendar, ContentCalendar.id == PlatformMetric.calendar_id)
+            .where(
+                PlatformMetric.platform == platform,
+                ContentCalendar.publish_state == "published",
+            )
             .order_by(PlatformMetric.captured_at.desc(), PlatformMetric.id.desc())
             .limit(1)
         )
