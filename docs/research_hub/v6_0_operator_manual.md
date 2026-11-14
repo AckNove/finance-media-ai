@@ -400,3 +400,18 @@ python -m backend.scripts.research_task run --task-id 1 --max-iterations 3
 
 > 注意「跳过的阶段」默认填了 `topic_candidate,topic_scoring,research_plan`——那是给
 > 没配模型密钥的人用的。想连选题拆解一起跑，把这一栏清空。
+
+### 已经批准过脚本，只想做片子？
+
+不用再从报告重走一遍研究：打开「脚本编辑」，在脚本那一行点**「按这份脚本做片子」**。
+它会用这份脚本排分镜（一句一镜、带单位的量做数据卡），开出的任务目录在 `content/jobs/` 下，
+随后按提示跑 `python -m backend.scripts.render_job --job <任务号> --narration` 出片。
+
+三道闸门照旧：脚本必须**已批准**；脚本挂着的报告必须有**仍生效**的人工确认；分镜排不出来
+只会告出原因，不会拿规则模板顶替。命令行走同一条路：
+
+```powershell
+.venv\Scripts\python.exe -m backend.scripts.research_task --help   # 研究侧参考
+# 按脚本开任务（接口形式，需已启动服务）
+curl.exe -X POST http://127.0.0.1:8000/api/scripts/3/video-job -H "Content-Type: application/json" -d "{}"
+```

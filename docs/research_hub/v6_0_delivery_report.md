@@ -1821,7 +1821,7 @@ PATCH 请求**，`page errors` 为空。也就是说坏值在本地就被挡住�
 | `docs/research_hub/v6_0_operator_manual.md` | §6.1 每周一次的账本自查（含"别把绿灯当验收"） |
 | `README.md` | 测试数与脚本清单 |
 
-全量 `pytest` **1356 passed, 2 skipped**。
+全量 `pytest` **1366 passed, 2 skipped**。
 
 ---
 
@@ -2268,3 +2268,57 @@ page errors: []
 
 **诚实边界**：换产线要**新建**任务，已建任务的阶段不会跟着变（计划是落库的可审计数据）；
 `script_to_video` 目前只登记了阶段，还没有"拿着已有脚本单独跑这一条"的入口。
+
+---
+
+## 46. 从一份已批准的脚本直接出片
+
+### 46.1 以前只有一条路
+
+想给一条片子做视频，只能「研究报告 → 建视频任务」。走那条路意味着把研究与核查重走一遍，
+哪怕脚本早就写好了、也早就人工批准了。而 `script_to_video` 这条产线在 `config/pipelines.yaml`
+里登记了 5 个阶段，却没有"拿着已有脚本单独跑这一条"的入口——**登记了但走不进去**。
+
+### 46.2 补的入口
+
+`POST /api/scripts/{script_id}/video-job`（`backend/app/video/script_film.py`）：
+
+| 闸门 | 判据 | 拒绝时的原因码 |
+|---|---|---|
+| 脚本得批准过 | 状态 ∈ `approved` / `storyboard_ready` / `produced` | `script_not_approved` |
+| 依据得还成立 | 脚本挂着的报告必须有**仍生效**的人工确认（`readiness_of`） | `draft_not_confirmed` |
+| 报告得还在 | `research_report_id` 指向的报告行存在 | `unknown_report` |
+| 不许覆盖 | 同名目录已存在就拒绝 | `job_exists` |
+
+开出来的目录里放：`script/SCRIPT.md`（脚本原文快照）、`script/script.json`（逐句结构）、
+`storyboard/storyboard.csv`（按脚本排的分镜，一句一镜、带单位的量做数据卡）、
+`job.json`、`HANDOFF.md`。**研究材料不搬进来**——这条片子只依据这份脚本，要查依据回脚本页或来源报告。
+
+### 46.3 三处不许含糊的地方
+
+1. **失效链路照样接得上**：`job.json` 的 `draft_gate.check_ids` 记下这份脚本依据的核查记录，
+   之后人工撤回确认时 `handoff.invalidate_jobs()` 会把这条任务标成失效（测试里用
+   `jobs_using_checks` 验过）。
+2. **不悄悄换分镜**：脚本排不出来（句子太少之类）就 `blocked=true` + 原因码，目录仍然留着，
+   脚本快照与说明都在，改完稿重开一条即可——**不拿"按报告数据点套规则模板"那套顶替**。
+3. **草稿不出片**：`draft` / `in_review` / `rejected` 一律拒绝。审核是道关，不是装饰。
+
+### 46.4 实测
+
+`tests/test_script_film.py` 9 例：草稿被拒且**不创建目录**、无报告的已批准脚本能开任务
+（`shot_count ≥ 2`、`SCRIPT.md` 里有脚本原句）、撤回确认后被拒
+（`draft_not_confirmed` 且目录没建）、`check_ids` 落进 `job.json` 且能被 `jobs_using_checks` 找到、
+同名目录被拒、单句脚本记 `blocked` 且目录保留、未知脚本报 `unknown_script`、
+接口层 422 带 `details.reason` 与 404、接口能真的开出 201 且分镜文件在。
+
+脚本页（`#/scripts`）为已批准的脚本多一个**「按这份脚本做片子」**按钮，点完直接给出
+"N 镜 / N 秒"与通往「视频预览」的深链；分镜没排出来时显示原因码与下一步。
+`tests/test_ui_copy.py` 加了护栏：`FILM_READY_STATUSES` 白名单必须存在、按钮必须挂在白名单判断上。
+
+### 46.5 诚实边界
+
+- 这条产线**只到分镜**：出片仍要跑 `python -m backend.scripts.render_job --job <id> --narration`
+  （或工作台视频页的渲染按钮），渲染前的预检照样生效。
+- 脚本没有报告（人工写的稿子）时可以开任务，`job.json` 里 `report` 为 `null`、
+  `draft_gate.check_ids` 为空——**它没有研究依据，只有人工批准**，这一点写进了 `job.json` 与 `HANDOFF.md`。
+- 从脚本开的任务不会自动排进内容日历，仍由人在视频页或日历页决定。

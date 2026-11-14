@@ -1353,6 +1353,9 @@ function jobFromQuery() {
   return query.get('job') || '';
 }
 
+// 脚本状态到这里才算"人工看过并放行"，只有这些状态能拿去开片子
+const FILM_READY_STATUSES = ['approved', 'storyboard_ready', 'produced'];
+
 const SCRIPT_NEXT = {
   draft: [['送审', 'in_review']],
   in_review: [['通过', 'approved'], ['驳回', 'rejected']],
@@ -1410,12 +1413,35 @@ async function pageScripts(view) {
         { title: '操作', raw: true, value: (row) => {
           const moves = SCRIPT_NEXT[row.status] || [];
           const adaptButton = `<button class="btn ghost" data-adapt="${row.id}">一稿三版</button>`;
+          // 已批准的脚本才给"做片子"：审核是道关，不能拿草稿去出片
+          const filmButton = FILM_READY_STATUSES.includes(row.status)
+            ? ` <button class="btn" data-film="${row.id}">按这份脚本做片子</button>`
+            : '';
           return (moves.map(([label, next]) =>
             `<button class="btn ghost" data-script="${row.id}" data-next="${next}">${esc(label)}</button>`
-          ).join(' ') || '<span class="muted">终态</span>') + ' ' + adaptButton;
+          ).join(' ') || '<span class="muted">终态</span>') + ' ' + adaptButton + filmButton;
         } },
       ], rows, '还没有脚本版本')}
-      <div id="adapt-box"></div>`;
+      <div id="adapt-box"></div>
+      <div id="film-box"></div>`;
+    listBox.querySelectorAll('button[data-film]').forEach((button) => {
+      button.onclick = async () => {
+        button.disabled = true;
+        const box = document.getElementById('film-box');
+        box.innerHTML = '<div class="note">正在按脚本排分镜…</div>';
+        const made = await api(`/scripts/${button.dataset.film}/video-job`, {
+          method: 'POST',
+          body: JSON.stringify({}),
+        });
+        button.disabled = false;
+        if (!made.ok) { box.innerHTML = failure(made); return; }
+        const data = made.data;
+        box.innerHTML = data.blocked
+          ? `<div class="alert warn">分镜没排出来（原因 <code>${esc(data.blocked_reason)}</code>）：${esc(data.next_step)}</div>`
+          : `<div class="note ok">已按脚本排好分镜：${data.shot_count} 镜 / ${data.total_seconds.toFixed(1)} 秒。
+              任务目录 <code>${esc(data.job_id)}</code>。<a href="#/video?job=${encodeURIComponent(data.job_id)}">去视频预览看分镜与出片</a></div>`;
+      };
+    });
     listBox.querySelectorAll('button[data-script]').forEach((button) => {
       button.onclick = async () => {
         button.disabled = true;

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Path, status
 from backend.app.api.deps import COMMON_RESPONSES, DbSession, Pagination, require_caller
 from backend.app.content import PLATFORMS, adapt_payload
 from backend.app.core.caller import CallerKind
+from backend.app.core.errors import DomainValidationError, NotFoundError
 from backend.app.models.enums import ScriptStatus
 from backend.app.schemas.common import Page
 from backend.app.schemas.script import (
@@ -17,7 +18,9 @@ from backend.app.schemas.script import (
     ScriptOut,
     ScriptStatusUpdate,
 )
+from backend.app.schemas.video import ScriptFilmIn, ScriptFilmOut
 from backend.app.services.script_service import ScriptService
+from backend.app.video.script_film import ScriptFilmError, create_job_from_script
 
 router = APIRouter(
     prefix="/scripts",
@@ -107,3 +110,32 @@ def adapt_script(
         variants=[AdaptedVariantOut.model_validate(item) for item in envelope["variants"]],
         note=envelope["note"],
     )
+
+
+@router.post(
+    "/{script_id}/video-job",
+    response_model=ScriptFilmOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="按这份脚本开一条视频任务",
+)
+def create_video_job_for_script(
+    db: DbSession,
+    payload: ScriptFilmIn | None = None,
+    script_id: int = Path(ge=1),
+) -> ScriptFilmOut:
+    """拿**已批准的脚本**直接开片子，不必把研究与核查重走一遍。
+
+    三道闸门照旧：脚本必须已批准；脚本挂着的报告必须有仍生效的人工确认；
+    分镜排不出来只如实记原因，不换成规则模板。
+    """
+    body = payload or ScriptFilmIn()
+    try:
+        film = create_job_from_script(db, script_id, job_id=body.job_id)
+    except ScriptFilmError as error:
+        if error.reason == "unknown_script":
+            raise NotFoundError(error.message, details={"script_id": script_id}) from error
+        raise DomainValidationError(
+            error.message,
+            details={"reason": error.reason, "script_id": script_id},
+        ) from error
+    return ScriptFilmOut(**film.as_dict())

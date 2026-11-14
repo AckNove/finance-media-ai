@@ -129,3 +129,15 @@ def test_unknown_pipeline_error_is_actionable(source: str) -> None:
     error_block = source.split("function pipelineFailure", 1)[1][:900]
     assert "available" in error_block
     assert "可选" in error_block
+
+
+def test_the_scripts_page_only_offers_a_film_for_approved_scripts(source: str) -> None:
+    """审核是道关：草稿/被驳回的脚本不该出现「做片子」按钮。"""
+    assert "const FILM_READY_STATUSES = ['approved', 'storyboard_ready', 'produced'];" in source
+    guard = source.split("const filmButton", 1)[1][:220]
+    assert "FILM_READY_STATUSES.includes(row.status)" in guard
+    assert "按这份脚本做片子" in guard
+    # 点了要真去开任务，并且把"分镜没排出来"的原因显示出来
+    handler = source.split("button[data-film]", 1)[1][:700]
+    assert "/video-job" in handler
+    assert "blocked_reason" in handler
