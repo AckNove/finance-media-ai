@@ -103,6 +103,29 @@ def _draft_gate_of(job_dir: Path) -> dict[str, Any]:
     }
 
 
+def _report_of(job_dir: Path) -> dict[str, Any]:
+    """读 `job.json` 里的来源报告（没有就返回空，不猜）。
+
+    视频任务是从某份研究报告交接出来的，排期时要能指回去——所以标题与报告 id
+    都从这里取，而不是让运维自己去数据库里翻。
+    """
+
+    job_json = job_dir / "job.json"
+    try:
+        payload = json.loads(job_json.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    report = payload.get("report") if isinstance(payload, dict) else None
+    if not isinstance(report, dict):
+        return {}
+    return {
+        "report_id": report.get("report_id"),
+        "research_task_id": report.get("research_task_id"),
+        "title": str(report.get("title") or ""),
+        "verification_status": str(report.get("verification_status") or ""),
+    }
+
+
 def _job_summary(job_dir: Path) -> dict[str, Any]:
     output_dir = job_dir / "output"
     videos = (
@@ -118,6 +141,7 @@ def _job_summary(job_dir: Path) -> dict[str, Any]:
         "job_id": job_dir.name,
         "has_output": bool(videos),
         "draft_gate": _draft_gate_of(job_dir),
+        "report": _report_of(job_dir),
         "outputs": [
             {"name": item.name, "byte_size": item.stat().st_size} for item in videos
         ],

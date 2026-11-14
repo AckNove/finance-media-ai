@@ -49,6 +49,23 @@ function when(value) {
   return String(value).replace('T', ' ').slice(0, 19);
 }
 
+/**
+ * `<input type="datetime-local">` 要的是**本地**时间字符串。
+ * 以前两处都写 `new Date(...).toISOString().slice(0, 16)`，那是 UTC ——
+ * 在北京时间下午打开页面，默认会变成"第二天凌晨 5 点"。
+ */
+function localInputValue(date) {
+  const pad = (value) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+    + `T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function tomorrowEvening() {
+  const date = new Date(Date.now() + 86400000);
+  date.setHours(20, 0, 0, 0);
+  return localInputValue(date);
+}
+
 function statusTag(status) {
   const map = {
     running: 'info', completed: 'ok', succeeded: 'ok', verified: 'ok', ready: 'ok',
@@ -1286,16 +1303,47 @@ async function pageVideo(view) {
   const file = job.outputs && job.outputs[0] ? job.outputs[0] : null;
   const detail = await api(`/workspace/jobs/${job.job_id}`);
   const qc = detail.ok && detail.data.qc_report ? detail.data.qc_report : '';
+  const report = (detail.ok && detail.data.summary && detail.data.summary.report) || {};
+  const calendar = await api('/calendar?limit=100');
+  const scheduled = (calendar.ok ? calendar.data.items || [] : [])
+    .find((row) => row.video_job_id === job.job_id) || null;
+  const defaultWhen = tomorrowEvening();
+  const suggestTitle = (report.title || job.job_id).slice(0, 40);
 
   view.innerHTML = `
     <div class="card">
       <h2>${esc(job.job_id)}</h2>
       ${gateBanner(job.draft_gate)}
+      ${report.report_id ? `<p class="muted">来源报告 #${report.report_id}${report.research_task_id ? `（研究任务 #${report.research_task_id}）` : ''}：${esc((report.title || '').slice(0, 80))}</p>` : ''}
       <div class="row">
         ${withOutput.map((item) => `<a class="btn ${item.job_id === job.job_id ? '' : 'ghost'}" href="#/video?job=${item.job_id}">${esc(item.job_id)}</a>`).join('')}
       </div>
       ${file ? `<p class="muted">${esc(file.name)} · ${(file.byte_size / 1048576).toFixed(2)} MB</p>
       <video controls preload="metadata" src="${API}/workspace/jobs/${encodeURIComponent(job.job_id)}/file?path=${encodeURIComponent('output/' + file.name)}"></video>` : '<div class="empty">没有 MP4</div>'}
+    </div>
+    <div class="card"><h2>排进内容日历</h2>
+      ${scheduled
+        ? `<div class="note ok">已排期 #${scheduled.id} · ${esc(scheduled.platform)} · ${scheduled.scheduled_for ? esc(when(scheduled.scheduled_for)) : '未定时间'}
+            · 就绪度 <strong>${esc((scheduled.readiness && scheduled.readiness.label) || '未知')}</strong>
+            <a href="#/operations">去内容日历</a></div>`
+        : `<div class="row">
+            <input id="cal-job-title" value="${esc(suggestTitle)}" style="flex:1;min-width:260px">
+            <select id="cal-job-platform">
+              <option value="douyin">抖音</option>
+              <option value="bilibili">B 站</option>
+              <option value="xiaohongshu">小红书</option>
+              <option value="wechat">公众号</option>
+              <option value="video_account">视频号</option>
+              <option value="youtube">YouTube</option>
+              <option value="other">其他</option>
+            </select>
+            <input id="cal-job-when" type="datetime-local" value="${defaultWhen}">
+            <button id="cal-job-create">排进日历</button>
+          </div>
+          <div class="note">排期只记"打算哪天发什么"，系统不会自己发布；这条排期会自动绑上本任务的成片与来源报告
+            #${report.report_id || '（无）'}，之后在内容日历里能看到它的底片就绪度。</div>`
+      }
+      <div id="cal-job-feedback"></div>
     </div>
     <div class="card"><h2>质检报告</h2>
       ${qc ? `<pre>${esc(qc)}</pre>` : '<div class="empty">没有 qc/qc_report.md</div>'}
@@ -1347,6 +1395,47 @@ async function pageVideo(view) {
 
   document.getElementById('build-timeline').onclick = () => runPipeline(false);
   document.getElementById('render-film').onclick = () => runPipeline(true);
+
+  const say = (target, ok, text) => {
+    target.innerHTML = `<div class="note ${ok ? 'ok' : 'bad'}">${esc(text)}</div>`;
+  };
+
+  const calButton = document.getElementById('cal-job-create');
+  if (calButton) {
+    calButton.onclick = async () => {
+      const box = document.getElementById('cal-job-feedback');
+      const title = document.getElementById('cal-job-title').value.trim();
+      if (title.length < 2) { say(box, false, '标题至少要两个字'); return; }
+      const payload = {
+        title,
+        platform: document.getElementById('cal-job-platform').value,
+        scheduled_for: document.getElementById('cal-job-when').value || null,
+        status: 'rendered',
+        video_job_id: job.job_id,
+      };
+      if (report.report_id) payload.research_report_id = report.report_id;
+      calButton.disabled = true;
+      let result = await api('/calendar', { method: 'POST', body: JSON.stringify(payload) });
+      let reportNote = '';
+      if (!result.ok && payload.research_report_id && result.status === 422) {
+        // job.json 里的报告 id 属于"跑这条片子时那个库"。换了一个库（比如演示库、
+        // 工作库）之后就查不到它——这时不该整条排期都失败，退回"不绑报告"再试一次，
+        // 并把这件事如实写出来，别让人以为已经绑上了。
+        const detail = (result.error && result.error.details) || {};
+        if (String(detail.message || result.error.message || '').includes('research_report_id')) {
+          delete payload.research_report_id;
+          result = await api('/calendar', { method: 'POST', body: JSON.stringify(payload) });
+          reportNote = `（报告 #${report.report_id} 在当前库里查不到，这条排期没绑报告）`;
+        }
+      }
+      calButton.disabled = false;
+      if (!result.ok) { say(box, false, `${result.status} ${result.error.message}`); return; }
+      const entry = result.data;
+      say(box, true, `已排期 #${entry.id}：${(entry.readiness && entry.readiness.label) || '就绪度未知'}`
+        + `${entry.readiness && entry.readiness.next_step ? ' —— ' + entry.readiness.next_step : ''}${reportNote}`);
+      setTimeout(() => route(), 900);
+    };
+  }
 
   const qcButton = document.getElementById('content-qc');
   if (qcButton) {
@@ -1657,7 +1746,7 @@ async function pageOperations(view) {
   const rows = list.data.items || [];
   const stats = analytics.ok ? analytics.data : [];
   const today = new Date();
-  const defaultWhen = new Date(today.getTime() + 86400000).toISOString().slice(0, 16);
+  const defaultWhen = tomorrowEvening();
 
   view.innerHTML = `
     <div class="grid">

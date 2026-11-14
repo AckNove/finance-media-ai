@@ -34,6 +34,7 @@ DEFAULT_JOBS_ROOT = PROJECT_ROOT / "content" / "jobs"
 READINESS_LABELS: dict[str, str] = {
     "no_job": "还没排视频",
     "job_missing": "任务目录不在了",
+    "no_gate": "片子在，但查不到成稿闸门记录",
     "film_missing": "还没渲染出片子",
     "draft_invalid": "结论确认被撤回，片子已失效",
     "ready": "片子就绪",
@@ -42,6 +43,8 @@ READINESS_LABELS: dict[str, str] = {
 _NEXT_STEP: dict[str, str] = {
     "no_job": "先给它建一个视频任务（研究任务页 → 从报告创建），渲染完再回来填任务号。",
     "job_missing": "这个 job_id 在 content/jobs 下找不到：确认是不是换了机器或删过目录。",
+    "no_gate": "这个任务目录里没有 job.json：查不到它依据的结论当时是否被人工确认过。"
+               "要么翻记录人工核对一遍，要么重新交接、重新渲染一次。",
     "film_missing": "到视频任务里跑一次渲染（render_job），出片后再回来看这条。",
     "draft_invalid": "有结论被撤回了确认：重新确认结论后重跑渲染，别拿旧片子发。",
     "ready": "可以导出或去平台发布；发完回来填链接，事实由你登记。",
@@ -98,18 +101,9 @@ def job_readiness(video_job_id: str | None, *, jobs_root: Path | None = None) ->
 
     job_dir = root / cleaned
     config = job_dir / "job.json"
-    if not job_dir.is_dir() or not config.is_file():
+    if not job_dir.is_dir():
         return _result("job_missing", job_id=cleaned, path=str(job_dir))
 
-    try:
-        payload = json.loads(config.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        payload = {}
-    if not isinstance(payload, dict):
-        payload = {}
-
-    gate = payload.get("draft_gate") or {}
-    gate_usable = gate.get("usable")
     film = _film_of(job_dir)
     film_info: dict[str, Any] = {}
     if film is not None:
@@ -120,6 +114,22 @@ def job_readiness(video_job_id: str | None, *, jobs_root: Path | None = None) ->
             "byte_size": stat.st_size,
             "modified_at": datetime.fromtimestamp(stat.st_mtime, UTC).isoformat(),
         }
+
+    # 目录在、片子也在，却没有 job.json：说明它是在成稿闸门机制之前产的，或者
+    # 交接记录被删过。这时**查不到它引用的结论当时是否被确认**——不能当成就绪，
+    # 也不能说成"任务目录不在了"（那是另一回事，会把人引到错的地方去找）。
+    if not config.is_file():
+        return _result("no_gate", job_id=cleaned, path=str(job_dir), film=film_info)
+
+    try:
+        payload = json.loads(config.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    gate = payload.get("draft_gate") or {}
+    gate_usable = gate.get("usable")
 
     # 顺序有讲究：先看结论还作不作数，再看片子。片子存在但结论被撤回，
     # 是**最该拦住**的那种状态，不能因为文件在就说"就绪"。

@@ -48,6 +48,25 @@ def test_unknown_job_directory_is_reported_not_guessed(tmp_path):
     assert result["usable"] is False
 
 
+def test_a_film_without_a_job_json_is_not_called_ready(tmp_path):
+    """目录和片子都在、却没有 job.json：查不到结论当时是否被确认，不能说成就绪。
+
+    真事：``content/jobs/v5_research_film`` 就是这样——片子（final.mp4）在，
+    但没有交接记录。以前这里会报"任务目录不在了"，把人引到错误的方向。
+    """
+
+    job_dir = tmp_path / "legacy"
+    (job_dir / "output").mkdir(parents=True)
+    (job_dir / "output" / "final.mp4").write_bytes(b"\x00" * 1024)
+
+    result = job_readiness("legacy", jobs_root=tmp_path)
+
+    assert result["status"] == "no_gate"
+    assert result["usable"] is False
+    assert result["film"]["relative_path"] == "output/final.mp4", "要如实说明片子还在"
+    assert "job.json" in result["next_step"]
+
+
 def test_traversal_is_refused(tmp_path):
     _make_job(tmp_path, "real", gate=None, film=True)
     result = job_readiness("../real", jobs_root=tmp_path)
