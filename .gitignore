@@ -75,6 +75,10 @@ content/assets/**
 !content/assets/bgm/README.md
 !content/assets/bgm/library.yaml
 video_engine/render_tmp/**
+# 导出包（content/exports/<排期号>/<时间戳>/）是交付物：文案、README、清单都是生成的，
+# 里面还有 film/final.mp4——硬链接在 git 眼里同样是完整 blob，一次 git add -A 就能把
+# 几 MB 视频提交进去。它们在磁盘上照旧存在，要发的时候直接打开目录拿。
+content/exports/
 !**/.gitkeep
 
 # --- 数据目录内容（保留目录占位） ---
