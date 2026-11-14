@@ -195,18 +195,33 @@ def cost_section(session: Session, *, today: datetime, since: datetime) -> dict[
 
 def backup_section(backups: Path, *, now: datetime) -> dict[str, Any]:
     if not backups.is_dir():
-        return {"dir": str(backups), "exists": False, "newest": "", "age_days": None}
+        return {"dir": str(backups), "exists": False, "newest": "", "age_days": None, "verified": None}
     files = sorted(backups.glob("*.db"), key=lambda item: item.stat().st_mtime, reverse=True)
     if not files:
-        return {"dir": str(backups), "exists": True, "newest": "", "age_days": None}
+        return {"dir": str(backups), "exists": True, "newest": "", "age_days": None, "verified": None}
     newest = files[0]
     age = (now - datetime.fromtimestamp(newest.stat().st_mtime, UTC)).total_seconds() / 86400
+    # 备份验证的结论由 backend.scripts.backup_verify 写在备份旁边；
+    # 这里只读它，免得体检自己再跑一遍完整性检查（那是几十秒的事）。
+    verified = None
+    report_path = newest.with_suffix(".verify.json")
+    if report_path.is_file():
+        try:
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            verified = {
+                "ok": bool(payload.get("ok")),
+                "checked_at": str(payload.get("checked_at") or ""),
+                "problems": list(payload.get("problems") or []),
+            }
+        except (OSError, json.JSONDecodeError):
+            verified = {"ok": False, "checked_at": "", "problems": ["验证记录读不出来"]}
     return {
         "dir": str(backups),
         "exists": True,
         "newest": newest.name,
         "age_days": round(age, 1),
         "count": len(files),
+        "verified": verified,
     }
 
 
@@ -262,6 +277,15 @@ def attention_items(report: dict[str, Any]) -> list[str]:
         items.append("data/backups 里还没有任何备份")
     elif age > BACKUP_WARN_DAYS:
         items.append(f"最近一份备份已经 {age} 天（建议 python -m backend.scripts.backup_db）")
+    verified = report["backup"].get("verified")
+    if age is not None and verified is None:
+        items.append(
+            "最近一份备份还没验证过能不能恢复"
+            "（python -m backend.scripts.backup_verify：只读地打开它、跑完整性检查、和当前库比表与行数）"
+        )
+    elif verified is not None and not verified.get("ok"):
+        reason = "；".join(verified.get("problems") or []) or "原因没记下来"
+        items.append(f"最近一份备份验证不通过：{reason}")
     if report["disk"].get("ok") and report["disk"]["free_gb"] < DISK_WARN_GB:
         items.append(f"磁盘只剩 {report['disk']['free_gb']} GB")
     if report["tasks"].get("by_status", {}).get("paused"):

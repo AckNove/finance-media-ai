@@ -208,6 +208,14 @@ def backup_database(
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     manifest["manifest_path"] = str(manifest_path)
     manifest["pruned"] = _prune(out_dir, source_path.stem, keep)
+
+    # 备份完当场验收一遍：只读打开刚写出的文件、跑完整性/外键检查、和源库比表与行数。
+    # 结论落在备份旁边的 `.verify.json`，每日体检据此提醒——"有文件"不等于"能恢复"。
+    from backend.app.services.backup_service import verify_backup
+
+    verification = verify_backup(target, live_path=source_path)
+    manifest["verification"] = verification.as_dict()
+
     return {
         "ok": True,
         "backup": str(target),
@@ -219,6 +227,8 @@ def backup_database(
         "source_protected": manifest["source_protected"],
         "label": label,
         "pruned": manifest["pruned"],
+        "verified": verification.ok,
+        "verification": verification.as_dict(),
         "manifest": manifest,
     }
 

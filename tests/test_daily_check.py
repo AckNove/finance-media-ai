@@ -264,6 +264,52 @@ def test_stale_backup_is_flagged(tmp_path: Path, db_url: str) -> None:
     assert payload["backup"]["count"] == 2
 
 
+def test_an_unverified_backup_is_flagged(tmp_path: Path, db_url: str) -> None:
+    """有备份不等于能恢复：没验过的备份要提醒人去验一遍。"""
+
+    backups = tmp_path / "backups"
+    backups.mkdir()
+    fresh = backups / "finance-20260520-100000-000.db"
+    fresh.write_bytes(b"x")
+
+    payload = daily_check.collect(
+        database_url=db_url,
+        jobs_root=tmp_path / "jobs",
+        backups=backups,
+        now=NOW,
+    )
+    assert payload["backup"]["verified"] is None
+    assert any("还没验证过能不能恢复" in item for item in payload["attention"])
+
+
+def test_a_failed_verification_is_flagged_with_its_reason(tmp_path: Path, db_url: str) -> None:
+    backups = tmp_path / "backups"
+    backups.mkdir()
+    broken = backups / "finance-20260520-100000-000.db"
+    broken.write_bytes(b"x")
+    broken.with_suffix(".verify.json").write_text(
+        json.dumps(
+            {
+                "ok": False,
+                "checked_at": "2026-05-20T10:05:00+00:00",
+                "problems": ["integrity_check 不通过：database disk image is malformed"],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    payload = daily_check.collect(
+        database_url=db_url,
+        jobs_root=tmp_path / "jobs",
+        backups=backups,
+        now=NOW,
+    )
+    assert payload["backup"]["verified"]["ok"] is False
+    item = next(text for text in payload["attention"] if "验证不通过" in text)
+    assert "malformed" in item
+
+
 def test_protected_database_is_labelled(tmp_path: Path, db_url: str) -> None:
     payload = daily_check.collect(
         database_url="sqlite:///data/finance_media.db",
@@ -311,6 +357,11 @@ def test_main_returns_zero_when_everything_is_fine(
     backups.mkdir()
     fresh = backups / "finance-20260520-100000-000.db"
     fresh.write_bytes(b"z")
+    # 备份"验过且通过"也算干净的一部分：没验过的备份现在会被提醒（见下面的两条用例）
+    fresh.with_suffix(".verify.json").write_text(
+        json.dumps({"ok": True, "checked_at": "2026-05-20T10:05:00+00:00", "problems": []}),
+        encoding="utf-8",
+    )
     # 磁盘余量是**机器状态**，不是这条用例要验的东西：跑测试的机器真的只剩 4.9 GB
     # 时，这条"一切都好"的用例会红（实测踩到过一次）。这里把余量固定住。
     monkeypatch.setattr(

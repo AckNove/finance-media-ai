@@ -270,14 +270,24 @@ curl -s -X POST http://127.0.0.1:8000/api/calendar/1/metrics/import ^
 
 ```powershell
 # 备份（只读源库，在线安全；生成 .db + .json 说明，含两边 sha256）
+# 备份写完会**当场验收一遍**，结论写到同一个目录的 <备份名>.verify.json
 .venv\Scripts\python.exe -m backend.scripts.backup_db --database-url sqlite:///data/finance_media.db --keep 20
 
 # 看看有哪些备份
 .venv\Scripts\python.exe -m backend.scripts.backup_db --list
 
+# 单独验一份备份能不能恢复（只读打开、完整性/外键检查、和它自己的源库比表与行数）
+# 退出码：0 能恢复 / 1 有问题 / 2 目录里没有备份
+.venv\Scripts\python.exe -m backend.scripts.backup_verify --latest
+.venv\Scripts\python.exe -m backend.scripts.backup_verify --backup backups\xxx.db --json
+
 # 先干跑看清楚会做什么，再真恢复
 .venv\Scripts\python.exe -m backend.scripts.restore_db --backup backups\xxx.db --target sqlite:///... --dry-run
 ```
+
+**"有备份文件"不等于"能恢复"**：文件被半截复制、同步盘改坏、结构停在旧版本，只有真打开验一遍才知道。
+`backup_verify` 默认拿备份说明里记的**源库路径**做比对对象，所以验演示库的备份不会去跟真实库比、
+不会报"少了 12 张表"这种假问题。每日体检会把"有备份但没验过 / 验过但不通过"列进待办。
 
 恢复是**破坏性操作**：覆盖前会先存一份 `.pre-restore-<时间戳>.db`；默认**拒绝**覆盖真实开发库
 `data/finance_media.db`（要动它得显式加 `--allow-development-db`，而且这属于需要单独授权的操作）。

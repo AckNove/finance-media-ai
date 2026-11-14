@@ -1239,3 +1239,50 @@ purpose="纯色/渐变底板 #xxxx", credit="本仓库程序生成的纯色底�
 
 **测试**：`tests/test_calendar_consistency.py` 4 例（干净条目不报、先录后发被提醒、
 发布但进度没跟上被提醒、列表按行计数不串）；`tests/test_operations.py` 15 passed。
+
+### §34 备份不只是写一个文件，还得验它能不能恢复
+
+**为什么做这件事**：`backup_db.py` 原来只验"备份那一刻"——写完立刻 `PRAGMA integrity_check`，OK 就收工。
+但真正会坏的是之后：文件被半截复制、被同步盘改写、变成 0 字节、库结构停在旧版本。这些情况原来的脚本
+一个都查不出来；每日体检也只会说"还没有备份"或"备份太旧了"，不会说"这份备份打不开"。
+
+**做了什么**
+
+| 位置 | 内容 |
+|---|---|
+| `backend/app/services/backup_service.py`（新） | `verify_backup()` 只读打开备份，查：文件存在/非 0 字节、说明里记的 sha256 是否对得上、`PRAGMA integrity_check`、`PRAGMA foreign_key_check`、表数、`alembic_version`；给了当前库就**逐表比行数**。结论写 `<备份名>.verify.json` |
+| `backend/scripts/backup_verify.py`（新） | CLI：`--backup` / `--latest` / `--out` / `--compare-with` / `--no-compare` / `--list` / `--json`；退出码 0 能恢复 / 1 有问题 / 2 目录里没有备份 |
+| `backend/scripts/backup_db.py` | 写完备份**当场验收**，`verified` 与完整 `verification` 一起返回并记进说明文件 |
+| `backend/app/services/daily_service.py` | 备份段多一个 `verified`；待办里加两条：「最近一份备份还没验证过能不能恢复」「最近一份备份验证不通过：<具体原因>」 |
+
+**两个判断口径（写在这里免得以后被改坏）**
+
+1. **比对对象默认取说明里记的 `source_path`**，不是 `data/finance_media.db`。验一份演示库的备份却拿真实库去比，
+   会报"备份里没有当前库有的表：content_calendar…（拿它恢复会丢表）"这种纯属自己吓自己的假问题——
+   假警报多了，真警报就没人看了。
+2. **行数不同不算失败**。备份是某一刻的快照，之后库里继续长数据是正常的；只有"备份缺了现在有的**表**"
+   才会被判 `ok=False`，因为那才是拿它恢复会真的丢东西。
+
+**真机结果**（临时目录里拿工作库副本做的，没碰真实库）
+
+```
+[1] backup_db exit: 0
+    备份文件: ['demo-20261114-061914-363.db']
+    验收记录: ['demo-20261114-061914-363.verify.json']
+    ok: True | integrity: ok | 表数: 32 | 行数差异: 0 条 | problems: []
+[2] backup_verify --latest exit: 0
+[3] 把备份截成一半后 exit: 1
+    ok: False | problems: ['这个文件打不开成 SQLite 库：database disk image is malformed', '读不出 integrity_check 结果']
+[4] daily_check exit: 1
+    attention: ['1 个视频任务的确认被撤回过（已标记失效）',
+                '最近一份备份验证不通过：这个文件打不开成 SQLite 库：database disk image is malformed；读不出 integrity_check 结果']
+```
+
+**顺手修掉的一个真 bug（Windows 特有）**：`with sqlite3.Connection` 只管事务、**不关连接**。验完一遍之后
+备份文件句柄还开着，接着裁剪旧备份就报 `PermissionError: [WinError 32] 另一个程序正在使用此文件`。
+改成 `contextlib.closing()` 显式关。这个问题只有"验完立刻删/裁剪"才会暴露，`tests/test_backup_restore.py`
+的裁剪用例正好撞上了。
+
+**测试**：`tests/test_backup_verify.py` 9 例（真备份通过、截断文件、0 字节、文件不存在、备份缺表、
+行数差异只报不判失败、结论落盘、`latest_backup`、CLI 三个退出码）；`tests/test_daily_check.py` 新增
+2 例（没验过被提醒、验不过把原因带出来）。全量 **1207 passed, 2 skipped**。
