@@ -1,3 +1,31 @@
+## D-18 模型密钥的解析要能自己读 `.env`，不能只靠"父进程导过"
+
+**决定**：`capabilities/model/providers.py` 的 `_env()` 在进程环境里查不到时，
+直接去仓库根的 `.env` 查（`core/config.py::dotenv_value`）。**但**只要调用方显式传了
+`environ`（测试/单次覆盖）就只认那一份，不去读文件。
+
+**为什么**：实际发生的事——服务被某个"启动器 Python"再拉起一次，子进程没走到
+`load_dotenv_into_environ()`，于是 `ready_providers()` 返回空，脚本阶段静默退回规则版，
+而人看到的只是"这条是规则写的"。密钥来源仍然只有环境变量与 `.env` 两处，没有新增来源。
+
+**否决了什么**：否决"让 start.ps1 把 env 显式塞给子进程"——那只修一条启动路径，
+直跑 `python -m uvicorn` 的人照样踩。
+
+**代码落点**：`backend/app/core/config.py::dotenv_value`、
+`backend/app/capabilities/model/providers.py::_env`。
+
+## D-19 测试一律不读仓库里的真 `.env`
+
+**决定**：`tests/conftest.py` 加 session 级 autouse fixture，把 `FM_SKIP_DOTENV` 置 1。
+
+**为什么**：D-18 的兜底一上线，"缺密钥"用例就真的拿到真密钥、真的发出请求、真的花钱
+（实测一次 ¥0.017747）。测试必须与真人凭据绝缘，否则它既慢又不确定，还会在别人机器上
+花别人的钱。
+
+**否决了什么**：否决"在每条用例里各自删环境变量"——漏一条就复发。
+
+**代码落点**：`tests/conftest.py::_no_real_dotenv`、`backend/app/core/config.py::dotenv_value`。
+
 # DECISION_LOG.md — 为什么是这个做法
 
 > 只记**会影响后面怎么写代码**的决定，每条包含：决定 / 为什么 / 被否决的方案 / 代码落点。

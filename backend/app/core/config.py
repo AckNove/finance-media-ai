@@ -56,6 +56,36 @@ def load_dotenv_into_environ(path: Path | None = None) -> bool:
     return True
 
 
+def dotenv_value(key: str, path: Path | None = None) -> str | None:
+    """直接在 ``.env`` 里查某一项（不依赖进程环境是否被注入）。
+
+    为什么还要这一层：``load_dotenv_into_environ()`` 依赖 ``python-dotenv`` 能被导入，
+    而进程也可能在导入本模块之前就 fork（例如某些 Windows 启动器会把解释器再拉一次）。
+    密钥解析不该因为"父进程导过、子进程没导到"而假装没配置——这里直接读文件兜底，
+    仍然是"只从 .env 或环境变量来"，没有多出一个新的密钥来源。
+    """
+    import os
+
+    if os.environ.get("FM_SKIP_DOTENV") == "1":
+        # 测试与"只认真实环境变量"的场景不该因为仓库里恰好有 .env 而拿到真密钥
+        return None
+    current = os.environ.get(key)
+    if current is not None and str(current).strip():
+        return str(current).strip()
+    target = path or (PROJECT_ROOT / ".env")
+    if not target.is_file():
+        return None
+    try:
+        from dotenv import dotenv_values
+    except ImportError:
+        return None
+    values = dotenv_values(target)
+    raw = values.get(key)
+    if raw is None or not str(raw).strip():
+        return None
+    return str(raw).strip()
+
+
 load_dotenv_into_environ()
 
 

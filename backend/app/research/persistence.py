@@ -179,6 +179,7 @@ def record_report(
     *,
     digest: Digest,
     research_task_id: int | None = None,
+    topic_id: int | None = None,
     agent_run_id: int | None = None,
     outline: list[dict[str, Any]] | None = None,
     tier_stats: dict[str, Any] | None = None,
@@ -212,6 +213,8 @@ def record_report(
         report.limitations = limitations
         report.tier_stats = stats
         report.outline = outline or report.outline or []
+        if topic_id is not None:
+            report.topic_id = topic_id
         if agent_run_id is not None:
             report.agent_run_id = agent_run_id
         report.reading_time_minutes = max(1, len(summary) // 400)

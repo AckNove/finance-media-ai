@@ -37,6 +37,26 @@ for _key in MODEL_KEY_ENV_VARS:
     os.environ.pop(_key, None)
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _no_real_dotenv():
+    """测试一律不读仓库根的 .env。
+
+    没有这条，``dotenv_value()`` 的兜底会在一台真配了密钥的机器上让"缺密钥"用例
+    真的发出请求、真的产生费用（发生过一次：一个用例花了 ¥0.0177）。
+    """
+    import os
+
+    previous = os.environ.get("FM_SKIP_DOTENV")
+    os.environ["FM_SKIP_DOTENV"] = "1"
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("FM_SKIP_DOTENV", None)
+        else:
+            os.environ["FM_SKIP_DOTENV"] = previous
+
+
 @pytest.fixture(autouse=True)
 def no_real_model_keys(monkeypatch: pytest.MonkeyPatch) -> None:
     """每个用例都保证进程里没有真实密钥（防止一次手滑就产生费用）。"""

@@ -93,7 +93,11 @@ def _env(environ: Mapping[str, str] | None, key: str | None) -> str | None:
         return None
     value = source.get(key)
     if value is None or not str(value).strip():
-        return None
+        if environ is not None:
+            return None  # 调用方显式传了 environ：只认它，别去读文件
+        from backend.app.core.config import dotenv_value
+
+        return dotenv_value(key)
     return str(value).strip()
 
 

@@ -12,6 +12,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from typing import Any
 
 import pytest
@@ -333,3 +335,74 @@ def test_a_worker_style_executor_still_reaches_the_global_gateway(factory, tmp_p
     assert outcome.output["generated_by"] == "model"
     assert outcome.calls == 1
     assert gateway.requests and gateway.requests[0].purpose == "content.script"
+
+def test_script_only_task_falls_back_to_the_topic_report(factory, tmp_path) -> None:
+    """只写脚本的任务（研究阶段全跳过）自己没产出报告，要能用选题上那份。
+
+    真实场景：用户先跑 `research_only` 拿到研究报告、确认完结论，再想写脚本。
+    以前 `_latest_report` 只认 `research_task_id == 本任务`，这种任务永远拿不到报告，
+    只能重建任务把研究重跑一遍再花钱。
+    """
+    research_task_id = _seed(factory)
+    with factory() as session:
+        source = session.get(ResearchTask, research_task_id)
+        topic_id = source.topic_id
+        script_task = ResearchTask(
+            topic_id=topic_id,
+            title="只写脚本：商业银行怎么赚钱",
+            objective="只写脚本：商业银行怎么赚钱",
+            status="running",
+            plan={},
+            requested_by="human",
+        )
+        session.add(script_task)
+        session.commit()
+        script_task_id = script_task.id
+
+    executor = AgentExecutor(session_factory=factory, artifacts_root=tmp_path)
+    runtime = TaskRuntime(factory)
+    found = executor._latest_report(_claim(runtime, script_task_id, "content.script"))
+
+    assert found is not None
+    assert found.topic_id == topic_id
+    assert found.research_task_id == research_task_id
+
+
+def test_explicit_report_id_wins_over_the_topic_latest(factory, tmp_path) -> None:
+    """调用方点名要哪份报告时，就用哪份——别自作主张挑最新。"""
+    research_task_id = _seed(factory)
+    with factory() as session:
+        source = session.get(ResearchTask, research_task_id)
+        topic_id = source.topic_id
+        older = ResearchReport(
+            topic_id=topic_id,
+            research_task_id=research_task_id,
+            title="更早的一份",
+            summary="旧",
+            findings=[],
+            limitations="旧",
+        )
+        session.add(older)
+        session.commit()
+        older_id = older.id
+        script_task = ResearchTask(
+            topic_id=topic_id,
+            title="指定报告写脚本",
+            objective="指定报告写脚本",
+            status="running",
+            plan={},
+            requested_by="human",
+        )
+        session.add(script_task)
+        session.commit()
+        script_task_id = script_task.id
+
+    executor = AgentExecutor(session_factory=factory, artifacts_root=tmp_path)
+    runtime = TaskRuntime(factory)
+    claim = _claim(runtime, script_task_id, "content.script")
+    claim = replace(claim, input_payload={"research_report_id": older_id})
+
+    found = executor._latest_report(claim)
+
+    assert found is not None
+    assert found.id == older_id

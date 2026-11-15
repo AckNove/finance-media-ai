@@ -990,6 +990,7 @@ class AgentExecutor:
                     session,
                     digest=digest,
                     research_task_id=claim.task_id,
+            topic_id=self._task_topic_id(claim.task_id),
                     outline=[
                         {"source_id": ref.source_id, "title": ref.title, "url": ref.url}
                         for ref in digest.sources
@@ -1317,19 +1318,72 @@ class AgentExecutor:
             },
         )
 
+    def _task_topic_id(self, task_id: int) -> int | None:
+        """任务属于哪个选题（报告要记下来，之后才找得到）。"""
+        from backend.app.models.execution import ResearchTask
+
+        with self._session_factory() as session:
+            task = session.get(ResearchTask, task_id)
+            return None if task is None else getattr(task, "topic_id", None)
+
     def _latest_report(self, claim: Claim) -> Any | None:
-        """这条任务最新的一份研究报告（没有就是还没跑到 synthesize）。"""
+        """这条任务要写脚本用的那份研究报告。
+
+        三种找法，按顺序：
+
+        1. **任务自己产出的**（``research_task_id == 本任务``）——正常流水线走这条；
+        2. **调用方点名的**（``input_payload["research_report_id"]``）——人明确指定"就按这份写"；
+        3. **同一选题最新的一份**——"只写脚本"的任务（研究阶段全跳过）自己没有报告，
+           但选题上早就有一份确认过的研究，不该逼人重跑一遍研究再花钱。
+        """
         from sqlalchemy import select
 
+        from backend.app.models.execution import ResearchTask
         from backend.app.models.research import ResearchReport
 
         with self._session_factory() as session:
-            return session.scalars(
+            own = session.scalars(
                 select(ResearchReport)
                 .where(ResearchReport.research_task_id == claim.task_id)
                 .order_by(ResearchReport.id.desc())
                 .limit(1)
             ).first()
+            if own is not None:
+                return own
+
+            payload = claim.input_payload if isinstance(claim.input_payload, dict) else {}
+            wanted = payload.get("research_report_id")
+            if isinstance(wanted, int):
+                picked = session.get(ResearchReport, wanted)
+                if picked is not None:
+                    return picked
+
+            task = session.get(ResearchTask, claim.task_id)
+            topic_id = getattr(task, "topic_id", None)
+            if topic_id:
+                found = session.scalars(
+                    select(ResearchReport)
+                    .where(ResearchReport.topic_id == topic_id)
+                    .order_by(ResearchReport.id.desc())
+                    .limit(1)
+                ).first()
+                if found is not None:
+                    return found
+                # 老报告的 topic_id 是空的（那时候还没记选题），
+                # 就顺着"同一选题下的任务"再找一遍。
+                sibling_ids = list(
+                    session.scalars(
+                        select(ResearchTask.id).where(ResearchTask.topic_id == topic_id)
+                    ).all()
+                )
+                if sibling_ids:
+                    return session.scalars(
+                        select(ResearchReport)
+                        .where(ResearchReport.research_task_id.in_(sibling_ids))
+                        .order_by(ResearchReport.id.desc())
+                        .limit(1)
+                    ).first()
+            return None
 
     def _stage_dir(self, claim: Claim) -> Path:
         """内容三阶段（脚本/分镜/制作计划）的落盘目录。
@@ -1411,13 +1465,18 @@ class AgentExecutor:
         # 等于模型改写这条能力在生产链路上根本没接上。
         usage: dict[str, Any] = {}
         model_error = ""
+        model_note = ""
         script_gateway = self._model_gateway
         if script_gateway is None:
             from backend.app.capabilities.model import get_model_gateway
 
             script_gateway = get_model_gateway()
         probe = getattr(script_gateway, "ready_providers", None)
-        script_ready = True if not callable(probe) else bool(list(probe()))
+        ready_names = list(probe()) if callable(probe) else []
+        script_ready = True if not callable(probe) else bool(ready_names)
+        if callable(probe) and not ready_names:
+            # 这句话是给人看的：为什么这次是规则版，而不是模型版。
+            model_note = "没走模型：当前没有就绪的模型服务商（ready_providers 为空）"
         if script_gateway is not None and script_ready:
             from backend.app.capabilities.model import ModelRequest
             from backend.app.content.stages import (
@@ -1430,20 +1489,31 @@ class AgentExecutor:
                 confirmed=confirmed,
                 skill_notes=self._skill_notes(caller, claim),
             )
-            reply = script_gateway.complete(
-                caller,
-                ModelRequest(
-                    provider="deepseek",
-                    model="deepseek-flash",
-                    messages=messages,
-                    purpose="content.script",
-                    max_tokens=1600,
-                    response_format="json_object",
-                    cacheable=False,
-                ),
-                budget=self._budget_for(claim),
-            )
-            if reply.ok and reply.text:
+            # 思考型模型会先花 token 想，再花 token 写；上限给小了会出现
+            # "completion_tokens 正好等于 max_tokens、content 却是空串"的情况
+            # （实测 deepseek-flash 1600 全被思考吃掉）。所以这里给一个阶梯：
+            # 空回复且用满上限，就加预算再试一次，而不是直接退回规则版。
+            reply = None
+            for attempt_tokens in (3000, 4000):
+                reply = script_gateway.complete(
+                    caller,
+                    ModelRequest(
+                        provider="deepseek",
+                        model="deepseek-flash",
+                        messages=messages,
+                        purpose="content.script",
+                        max_tokens=attempt_tokens,
+                        response_format="json_object",
+                        cacheable=False,
+                    ),
+                    budget=self._budget_for(claim),
+                )
+                used = int(getattr(reply.record, "completion_tokens", 0) or 0) if reply.record else 0
+                if reply.ok and reply.text:
+                    break
+                if used < attempt_tokens:
+                    break  # 没撞上限还是空的，加预算也没用
+            if reply is not None and reply.ok and reply.text:
                 try:
                     model_draft, _ = parse_script_draft(
                         reply.text, draft=draft, confirmed=confirmed
@@ -1462,12 +1532,21 @@ class AgentExecutor:
                             "tokens": int(reply.record.prompt_tokens + reply.record.completion_tokens),
                             "cost_cny": Decimal(str(round(float(reply.record.cost_cny or 0), 6))),
                         }
-            else:
-                model_error = f"{reply.status}: {reply.error_code or 'no_reply'}"
+            elif reply is not None:
+                model_error = (
+                    f"{reply.status}: {reply.error_code or 'no_reply'}"
+                    f"（completion={getattr(reply.record, 'completion_tokens', 0) if reply.record else 0}）"
+                )
             if model_error:
+                model_note = f"模型改写失败，退回规则版：{model_error}"
                 draft = replace(
                     draft,
-                    notes=tuple(draft.notes) + (f"模型改写失败，退回规则版：{model_error}",),
+                    notes=tuple(draft.notes) + (model_note,),
+                )
+            elif draft.generated_by == "model":
+                model_note = (
+                    f"模型改写已生效：{draft.provider}/{draft.model}"
+                    f"（{usage.get('tokens', 0)} token，约 {usage.get('cost_cny', 0)} 元）"
                 )
 
         directory = self._stage_dir(claim)
@@ -1488,6 +1567,7 @@ class AgentExecutor:
                 "草稿只用了人工确认过的结论；未确认的一条都没进来。"
                 "机器音与渲染都不在这一步。"
             ),
+            "model_note": model_note,
         }
         if script_id is None:
             output["store_note"] = (

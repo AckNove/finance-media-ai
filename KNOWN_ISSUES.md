@@ -35,6 +35,15 @@
 - **替代**：发布后人工回填 CSV 进 `content_calendar` + `platform_metrics`。
 - **证据**：`DECISION_LOG.md` D-06（用户选择）。
 
+### K-16 思考型模型的 `max_tokens` 会被"思考"吃掉，表现为空回复
+
+`deepseek-flash` 先花 token 想再花 token 写。`max_tokens=1600` 时实测
+`completion_tokens=1600` 且 `content` 是空串——网关这边只看得到 `status=ok` + 空文本。
+`content.script` 已改成阶梯（3000 → 4000，撞满上限且空回复才加预算重试），并在
+子任务输出里写 `model_note` 说明这一次到底走没走模型、为什么没走。
+**仍在的风险**：其它用途（plan/analyze/verify）若把上限调小，会重现同一个现象，
+届时表现为"没有判定"而不是报错。
+
 ## 非阻断（知道就好，别当 bug 修）
 
 ### K-05 5 个历史任务的 `job.json` 仍记着 C 盘绝对路径
@@ -129,3 +138,13 @@
 - **处置**：成稿闸门只放行 `human_review_status=confirmed` 的结论，所以它们默认进不了脚本；若人工硬要确认，
   必须自己回原文核对过——页面上每条都列了来源编号。
 - **要做到"这三个数字也能用"**：需要重新检索并抓到明确写出这些数字的页面（新的研究任务），不是改核查逻辑。
+
+## K-16 思考型模型的 `max_tokens` 会被"思考"吃掉，表现为空回复（非阻断）
+
+`deepseek-flash` 先花 token 想再花 token 写。`max_tokens=1600` 时实测
+`completion_tokens=1600` 且 `content` 是空串——网关这边只看得到 `status=ok` + 空文本，
+于是脚本阶段静默退回规则版（实测两次，共花了 ¥0.038152）。
+已修：`content.script` 改阶梯（3000 → 4000，撞满上限且空回复才加预算重试），
+并在子任务输出里写 `model_note`，如实说明这次到底走没走模型、为什么没走。
+**仍存在的风险**：其它用途（plan/analyze/verify）若把上限调小会重现同一现象，
+届时表现为"没有判定"而不是报错。
