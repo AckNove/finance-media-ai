@@ -10,8 +10,9 @@
 | # | 事项 | 状态 | 验收方式 | 阻塞 |
 | --- | --- | --- | --- | --- |
 | B-01 | 落地高效开发协议与四份状态文件 | 已完成 | `docs/dev_protocol.md` + 四个根文件存在；`state_measure --md` 能复算 `PROJECT_STATE.md` 的数字 | — |
-| B-02 | 搬迁后实跑一次 `scripts\start.ps1`（验证启动脚本没有 C 盘假设） | 待办 | 在 `D:\finance-media-ai` 跑 `.\scripts\start.ps1 -NoWorker`，`http://127.0.0.1:8000/api/system/status` 返回 200 且 `database.journal_mode=delete` | — |
+| B-02 | 搬迁后实跑一次 `scripts\start.ps1`（验证启动脚本没有 C 盘假设） | 已完成 | 2026-11-15 21:37 在 `D:\finance-media-ai` 实跑 `.\scripts\start.ps1 -Port 8011 -NoWorker -NoBrowser`：先判出工作库落后（`b6_v6_operations` → `b8_calendar_tags`）并自动升级，`/health` 200、`/api/system/status` 200（32 表 / `b8_calendar_tags` / `journal_mode=delete`）、`/app/` 200、启动自检 8/8；停服后无残留进程、受保护开发库 sha256 未变 | — |
 | B-03 | 真实素材接入（第一份授权素材走通 `register_source` → 预检 → 进片） | 阻塞 | 用户给出文件 + 来源/链接/许可四项；`python -m backend.scripts.register_source ...` 后 `assert_renderable()` 通过，且成片里出现该素材 | **等用户给素材**（见 `KNOWN_ISSUES.md` K-02） |
+| B-04 | 启动时把"工作库版本 vs 代码版本"当闸门（本轮新增并完成） | 已完成 | `python -m backend.scripts.db_revision --json` 五种状态；`start.ps1` 落后即升级并复检、领先/未知拒绝启动；`tests/test_db_revision.py` 10 例 | — |
 
 ## P1 — 明显影响质量
 

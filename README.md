@@ -57,6 +57,8 @@
 #   接口文档 http://127.0.0.1:8000/docs
 #   健康检查 http://127.0.0.1:8000/api/system/status
 #   只看界面、不想让它自动跑任务：.\scripts\start.ps1 -NoWorker
+#   启动时会把工作库对齐到代码：库比代码旧就自动 alembic upgrade head 并复检，
+#   库比代码新（换回旧分支）直接拒绝启动，不会自动降级。想先不动库：-NoMigrate
 
 # 只做体检（不启动服务）：ok / blocked / error 三档，blocked 会告诉你怎么解
 .\.venv\Scripts\python.exe -m backend.scripts.preflight

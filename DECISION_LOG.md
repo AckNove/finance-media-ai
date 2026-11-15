@@ -102,3 +102,18 @@
 - **决定**：每轮一个能验证的改动 + 提交 + 推送（`AGENTS.md` §1）。
 - **为什么**：这个项目一轮里往往同时动"服务 + 接口 + 前端 + 文档 + 台账"，
   混在一个大提交里出问题时无法回退到"上次能跑"的状态。
+
+## D-14 一键启动必须先比库版本：落后就升级，领先就拒绝
+
+- **决定**：`scripts/start.ps1` 每次启动都先跑 `python -m backend.scripts.db_revision`，
+  按结果分五种状态处理——`current`/`fresh` 直接起；`behind` **自动 `alembic upgrade head`
+  并复检**；`ahead`/`unknown` **拒绝启动**（不自动降级）；想拦着不动就加 `-NoMigrate`。
+- **为什么**：原来的逻辑只在"库文件不存在"时建表，库一旦存在就直接用。换分支、拉新代码、
+  搬机器之后工作库可能还停在两个版本以前，服务照样起得来，只是碰新表的页面会在查询时报
+  `no such column`（历史真事：`topics.is_active`）。本轮实测就撞上了：D 盘工作库停在
+  `b6_v6_operations`，代码已到 `b8_calendar_tags`。
+- **否决**：①"库比代码新就自动降级"——降级会丢数据，宁可拒绝启动让人换回代码；
+  ②"启动时静默迁移、什么都不打印"——迁移是要紧事，必须出现在启动日志里。
+- **落点**：`backend/scripts/db_revision.py`（只读判断 + 五种状态 + 退出码）、
+  `scripts/start.ps1` 的 3.5 段、`tests/test_db_revision.py`（10 例）、
+  `tests/test_scripts_encoding.py`（脚本编码与 BOM 仍守着）。

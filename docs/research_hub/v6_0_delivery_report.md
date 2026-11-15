@@ -3188,3 +3188,77 @@ robocopy C:\Users\25803\finance-media-ai D:\finance-media-ai /E /COPY:DAT /DCOPY
   "另一进程"占着，`Remove-Item`、`cmd /c rmdir /s /q`、改名全都失败；等全量测试那批 shell 全部退出后再试才成功。
   记在这里是因为下次搬家大概率还会撞上同一件事：**先确认没有进程的工作目录还在旧路径下**。
 - **这次只腾空间，没改任何行为**：清理的是可再生中间产物，删完全量测试照样 1523 passed。
+
+## 60. 一键启动必须先对齐库版本（2026-11-15，第 44 轮协议下的 B-02）
+
+### 60.1 起因：搬家后唯一没做过端到端验证的东西
+
+仓库从 C 盘整体搬到 D:\finance-media-ai 之后，scripts/start.ps1 只在测试里被校验过
+编码与参数解析，**从没在 D 盘真起过一次服务**。本轮（P0 B-02）就是补这一课。
+
+### 60.2 实跑撞出的真缺陷
+
+start.ps1 原本只在**库文件不存在**时才 lembic upgrade head；库一旦存在就直接用。
+于是：
+
+- D 盘工作库 data/finance_media.work.db 停在 6_v6_operations；
+- 代码已经在 8_calendar_tags；
+- 服务照样起得来，**碰 B7/B8 新列的页面会在查询时报错**（历史真事：
+o such column: topics.is_active）。
+
+这类问题的特点是启动成功、用起来某个页面才炸，属于最难被发现的一类。
+
+### 60.3 修法
+
+新增 ackend/scripts/db_revision.py（**只读判断**，不改库），把库里是什么版本和
+代码是什么版本判成五种状态：
+
+| status | 含义 | start.ps1 的动作 | 退出码 |
+| --- | --- | --- | --- |
+| resh | 库在但没有迁移记录 | 建表（lembic upgrade head） | 0 |
+| current | 与代码同版本 | 直接用 | 0 |
+| ehind | 库比代码旧 | 自动升级 + **复检**，不是 current 就拒绝启动 | 3 |
+| head | 库比代码新 | **拒绝启动**，不自动降级（降级会丢数据） | 4 |
+| unknown | 版本不在迁移链上 | 拒绝启动，交人工看 | 4 |
+
+start.ps1 的 3.5 段接上它；想先不动库的人可以用 -NoMigrate（会大声警告碰新表的页面会报错）。
+
+### 60.4 真机验收（2026-11-15 21:37，D 盘）
+
+`
+[start] python: Python 3.12.10
+[start] 工作库比代码旧：库比代码旧，缺 2 个迁移：b7_topic_origin → b8_calendar_tags
+[start] 把工作库升到 b8_calendar_tags：alembic upgrade head
+[start] 迁移完成：b8_calendar_tags
+2026-11-15 21:37:58 | INFO | backend.app.main | 启动自检：8/8 项通过，error=0，warning=0
+`
+
+接口实测（-Port 8011 -NoWorker -NoBrowser）：
+
+| 请求 | 结果 |
+| --- | --- |
+| GET /health | 200 {"status":"ok","app":"finance-media-ai","version":"0.1.0"} |
+| GET /api/system/status | 200，	able_count=32、migration_revision=b8_calendar_tags、journal_mode=delete |
+| GET /app/ | 200（1,379 字节工作台 HTML） |
+| GET /api/topics?limit=3 | 200（用到 B7 的 	opics.origin_type） |
+| GET /api/calendar?days=7 | 200（用到 B8 的 content_calendar.tags） |
+| GET /api/system/daily | 200（989 字节今日体检） |
+
+停服后：8011 无监听、无残留 python.exe；**受保护开发库 data/finance_media.db
+大小 540,672 B、sha256 2df764e5…8203 与本轮开工时完全一致**。
+
+### 60.5 测试
+
+- 	ests/test_db_revision.py（**10 例**）：迁移头与磁盘上最新文件一致、文件不存在算 resh、
+  空文件也算 resh、升到 head 算 current、停在 B6 判 ehind 且点名缺的两个迁移、
+  **旧代码连新库判 head 并拒绝**、链外版本判 unknown 不猜、读不到 head 不当成 current、
+  CLI 输出单行可解析 JSON 且退出码分档、默认库只指向 work 库不指向受保护库。
+- 第二级：	ests/test_migrations.py + test_db_revision.py + test_scripts_encoding.py +
+  test_startup_checks.py + test_system_status.py → **61 passed**。
+
+### 60.6 诚实边界
+
+- 只覆盖 SQLite 单文件库；多实例并发场景没做（本项目是本地单机）。
+- 自动升级**不做备份**：迁移本身是幂等的（Alembic 记版本），但真出问题要靠 ackup_db.py
+  的既有备份，这一段没有强制升级前先备份。
+- head 状态只拒绝启动，不提供把库降回代码版本的命令（那属于危险操作，故意不自动化）。

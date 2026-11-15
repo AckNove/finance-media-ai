@@ -18,6 +18,9 @@ param(
     [switch]$NoBrowser,
     [switch]$Reload,
     [switch]$SkipPreflight,
+    # 想知道"库版本落后但先别动"的人用这个开关；默认会把工作库升到 head 再启动，
+    # 否则服务会拿着旧表结构跑，碰新表的页面直接报错。
+    [switch]$NoMigrate,
     # 默认连后台执行器一起起：不跑 worker，界面上建的研究任务会一直停在"已创建"，
     # 每天第一次用的人都会以为系统坏了。不想让它自动推进就加 -NoWorker。
     [switch]$NoWorker
@@ -99,14 +102,56 @@ if ($dbPath -eq $protected) {
 
 if (-not (Test-Path $dbPath)) {
     Write-Step "工作库不存在，创建并按迁移建表：$dbPath"
-    $env:DATABASE_URL = $dbUrl
-    & $python -m alembic upgrade head
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[start] 建表失败，见上方 alembic 输出。" -ForegroundColor Red
-        exit 1
+}
+
+# --- 3.5 库版本与代码对不对得上 ------------------------------------------------
+# 只在"库不存在"时建表是不够的：库一旦存在就直接用，于是换分支、拉新代码、搬机器之后
+# 工作库可能还停在两个版本以前，服务照样起得来，只是碰新表的页面会炸
+# （历史真事：no such column: topics.is_active）。这里每次启动都先比一次。
+$env:DATABASE_URL = $dbUrl
+$revisionRaw = & $python -m backend.scripts.db_revision --database-url $dbUrl --json
+$revision = $null
+try { $revision = ($revisionRaw | Select-Object -Last 1) | ConvertFrom-Json } catch { }
+
+if ($null -eq $revision) {
+    Write-Host "[start] 读不出工作库的迁移版本，不敢继续（往上看 python 的报错）。" -ForegroundColor Red
+    exit 1
+}
+
+switch ($revision.status) {
+    "current" {
+        Write-Step ("工作库版本 OK：{0}（与代码一致）" -f $revision.current)
     }
-} else {
-    Write-Step "使用已有工作库：$dbPath"
+    "fresh" {
+        Write-Step ("工作库还没有迁移记录，按迁移建表：{0}" -f $dbPath)
+    }
+    "behind" {
+        Write-Warn ("工作库比代码旧：{0}" -f $revision.detail)
+    }
+    default {
+        Write-Host ("[start] 工作库版本对不上，拒绝启动：{0}" -f $revision.detail) -ForegroundColor Red
+        Write-Host "[start] 这种状态不自动处理——自动降级会丢数据。换回对应版本的代码，或用 -Database 另指一个库。" -ForegroundColor Red
+        exit 2
+    }
+}
+
+if ($revision.needs_upgrade) {
+    if ($NoMigrate) {
+        Write-Warn "[start] 按 -NoMigrate 跳过迁移：服务会用旧表结构启动，碰新表的页面会报错。"
+    } else {
+        Write-Step ("把工作库升到 {0}：alembic upgrade head" -f $revision.head)
+        & $python -m alembic upgrade head
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[start] 迁移失败，见上方 alembic 输出。" -ForegroundColor Red
+            exit 1
+        }
+        $after = (& $python -m backend.scripts.db_revision --database-url $dbUrl --json | Select-Object -Last 1) | ConvertFrom-Json
+        if ($after.status -ne "current") {
+            Write-Host ("[start] 迁移跑完了但版本仍不是 current：{0}" -f $after.detail) -ForegroundColor Red
+            exit 1
+        }
+        Write-Step ("迁移完成：{0}" -f $after.current)
+    }
 }
 
 # --- 4. 环境检查（缺什么就说什么） --------------------------------------------

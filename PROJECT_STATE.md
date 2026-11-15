@@ -3,7 +3,7 @@
 > 本文件的每个数字都必须能由命令复算。**上一轮报告里的数字不算证据。**
 >
 > 更新命令：`python -m backend.scripts.state_measure --md`
-> 生成时间：2026-11-15 21:40（Asia/Shanghai），对应提交 `c9141ba`
+> 生成时间：2026-11-15 21:48（Asia/Shanghai），对应提交 `1e68576` + 本轮工作区
 
 ## 1. 这个项目是什么
 
@@ -24,10 +24,10 @@
 | 权限清单条目（`ROUTE_CALLERS`） | 84 |
 | 工作台页面（`web/app.js`） | 20 |
 | 已注册工具（`TOOL_NAMES`） | 11 |
-| 测试文件 | 117 |
+| 测试文件 | 118 |
 | `docs/*.md` | 10 |
 | `docs/research_hub/*.md` | 51 |
-| `backend/scripts/*.py` | 37 |
+| `backend/scripts/*.py` | 38 |
 | `scripts/*.ps1` | 3 |
 | 已出片的视频任务 | 9 |
 | `backend/app` 行数 | 41,881 |
@@ -50,6 +50,9 @@
 | journal_mode | `delete`（**没有开 WAL**） |
 | 有 `model_calls` 表 | 否 |
 
+| 真实开发库不动 | `data/finance_media.db` 永远 19 表 / `de8148733a9b`；启动脚本拒绝在它上面跑 |
+| 工作库 | `data/finance_media.work.db`（本机实测已到 `b8_calendar_tags`、32 表，启动脚本会自动升到 head） |
+
 **规矩**：这个库只读。任何迁移、seed、回填、开 WAL 的演练一律在临时库上做，
 并在报告里给出"真实库未改动"的证据（大小 + sha256 + 表数 + 迁移版本）。
 
@@ -57,8 +60,8 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 最近一次全量 | **1532 passed, 2 skipped**（2026-11-15 21:40，提交 `c9141ba`，耗时 6:45） |
-| 上一级测试（受影响模块） | `pytest tests/test_project_state.py tests/test_strategy_docs.py tests/test_matrix_lint.py tests/test_scripts_encoding.py` → 58 passed |
+| 最近一次全量 | **1542 passed, 2 skipped**（2026-11-15 21:47，耗时 6:01） |
+| 上一级测试（受影响模块） | 本轮 `test_db_revision.py + test_migrations.py + test_scripts_encoding.py + test_startup_checks.py + test_system_status.py` → 61 passed |
 | 已知告警 | 6 条 warning：`agent_runs ↔ research_subtasks` 外键环的 `SAWarning`（设计内，见 `KNOWN_ISSUES.md` K-07） |
 | 需求矩阵 | `python -m backend.scripts.matrix_lint` → 109 行需求，DONE 107 / BLOCKED 1 / NOT_IMPLEMENTED 1，无问题 |
 | 启动自检 | 8 项（`config_sections` / `task_type_registry` / `agent_roster` / `tool_specs` / `skill_registry` / `route_callers` / `pricing` / `database`），error 级不过就拒绝启动 |
