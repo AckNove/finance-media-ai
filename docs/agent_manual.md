@@ -112,3 +112,21 @@ run_worker --task-id N → TaskRuntime.claim_next() 拿租约（lease_until + at
   挂不上的进 `dropped`，不进报告。
 - **只有人工确认的结论能进成稿**：脚本、视频任务、`produce_video` 三个出口都拦。
 - 角色之间的 `handoff` 是**记账不是催办**：只有 `handoff=need_human` 会改任务状态。
+
+## 真实素材怎么登记（`register_source`）
+
+你给文件、给「来源 / 链接 / 许可」三项信息，其余交给这一条命令：
+
+```powershell
+python -m backend.scripts.register_source --job <任务号> --file "<文件路径>" `
+  --source-id S21 --source-name "<一句话名称>" --publisher "<谁发的>" `
+  --source-url "<链接>" --published-at <yyyy-mm-dd> --data-as-of <yyyy-mm-dd> `
+  --license "<许可说明>" --commercial-use allowed --credit "<片尾署名>"
+```
+
+- 文件会被复制进 `content/jobs/<任务号>/input/approved_sources/`，原文件不动；清单写在任务根目录的
+  `source_register.csv`。
+- **`--commercial-use allowed` + `--license` 两个都给全，素材才能进片**；只给 `allowed` 不给许可名，
+  命令会提示「预检会拦」。
+- 登记完用 `--list` 核对一遍：显示「已登记 N 份素材」和每份「可进片 / 预检会拦」。
+- 只登记、不想复制（文件已经在白名单目录里）：加 `--no-copy`。

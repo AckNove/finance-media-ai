@@ -3033,3 +3033,80 @@ total/work/wait/model/unpaired: 22.3  0.1  22.0  0.0  0.2
 - 「等人」只认 `paused` / `resumed` 事件；如果某次暂停没写事件，那段等待就进了「没算进任何一块」。
 - 模型耗时来自 `model_calls.duration_ms`，是调用方传的测量值，不是我们自己掐表。
 - 没给 `research_subtasks` 加 `started_at` / `finished_at`：那要迁移 + 回填历史，而事件流已经够用。
+
+## §58 真实素材怎么进来：一条命令
+
+### 58.1 问题：你给了我文件，然后呢
+
+第 41 轮之后，「真实素材」只剩一件事没解开：**素材本身**。你把图、PDF、截图发给我以后，
+它得先变成一条**白名单里的登记**，否则渲染前预检会拦住它（`license_denied` / `missing_asset_file`）。
+在此之前只有一条路：手工往 `source_register.csv` 里补 13 列，其中 `original_file_hash` 还要自己算
+sha256——漏一列、错一个字符，预检就会拒，而且拒的理由看起来像"素材有问题"。
+
+这一轮补的就是这条路。
+
+### 58.2 一条命令做什么
+
+```powershell
+python -m backend.scripts.register_source `
+  --job v6_accept_company_v3 `
+  --file "D:\给你的素材\隆基绿能2024年报.png" `
+  --source-id S21 `
+  --source-name "隆基绿能2024年报营业收入构成" `
+  --publisher "隆基绿能科技股份有限公司" `
+  --source-url "https://www.longi.com/..." `
+  --published-at 2025-04-25 --data-as-of 2024-12-31 `
+  --unit "亿元" --license "公司官网公开发布" --commercial-use allowed `
+  --credit "图源：隆基绿能2024年年报"
+```
+
+| 参数 | 含义 | 不填会怎样 |
+| --- | --- | --- |
+| `--job` | 任务目录名（`content/jobs/<job>/`） | 必填；目录不存在退出码 2 |
+| `--file` | 原始文件路径 | 必填；文件不存在退出码 2 |
+| `--source-id` / `--source-name` | 编号（S21 这种）与一句话名称 | 必填 |
+| `--publisher` / `--source-url` / `--published-at` / `--data-as-of` | 谁发的、在哪、什么时候发的、数据截止到哪天 | 可空，但空了以后核查时没法回原文 |
+| `--unit` / `--methodology` | 单位、口径 | 可空；有数字素材强烈建议填 |
+| `--license` / `--commercial-use` | 许可名、能不能商用（`allowed` / `editorial_only` / `unknown` / `prohibited`） | **不填 = `unknown`，进不了片** |
+| `--credit` | 片尾署名怎么写 | 可空 |
+| `--no-copy` | 只登记、不复制（要求文件已在白名单目录里） | 默认会复制进去 |
+| `--list` / `--json` | 看这个任务登记过什么 | — |
+
+它做的事：算出 sha256 → 把文件复制进 `content/jobs/<job>/input/approved_sources/`（**原文件不动**）→
+写一条记录到 `content/jobs/<job>/source_register.csv` → 打印哈希、许可和清单位置。
+
+### 58.3 三条规矩（都在代码里，不靠自觉）
+
+1. **同名不同内容不覆盖**：目标文件名已存在且哈希不同，直接拒（`name_taken`），
+   换名字或先用 `--source-id` 换个编号。别人的素材不能被悄悄顶掉。
+2. **清单写在任务根目录**：`content/jobs/<job>/source_register.csv`，**不在** `approved_sources/` 里。
+   第二次登记会先把已登记的读回来（`load_register()` 会**重新算每份文件的哈希**与 CSV 比对），
+   所以不会把上一份挤出清单，登记后被改过的文件也会在这一步被拒。
+3. **登记 ≠ 可进片**：预检要求 `commercial_use=allowed` **且** `license_name` 非空两条都满足
+   （`assert_renderable()`）。只写了 `allowed` 没写许可名，命令会当场提示「预检会拦」并告诉你补哪个参数。
+
+### 58.4 实测（临时目录 + 一张真 PNG，走真命令行）
+
+```
+[2] 登记第一份 rc=0  已登记 S01：自绘示意色块 / copied 75 B / sha256=0e162bb50c28… / 许可：本仓库原创·可商用=allowed
+[3] 登记第二份 rc=0  已登记 S02（没给许可、没给商用）/ reused / ⚠ 这份素材的 commercial_use 不是 allowed：渲染前预检会拦住它
+[4] 清单 rc=0        demo_job：已登记 2 份素材  S01 可进片 / S02 预检会拦（commercial_use=unknown）
+[5] 清单文件存在 True  行数 3（表头 + S01 + S02）
+[6] 白名单里的文件 ['fmai_r44_pixel.png']   ← 同一份文件登记两次只存一份
+[8] 任务目录不存在 rc=2  登记被拒（unknown_job）
+```
+
+### 58.5 测试
+
+`tests/test_register_source.py` **10 例**：复制进白名单并记录（原文件不动、清单在任务根、哈希 64 位）、
+非商用照登记但打 ⚠、同文件复用不重复复制且清单两行都在、同名不同内容拒绝且原文件不被改、
+`--no-copy` 拒绝、未知任务/文件不存在都是用法错误、缺必填参数报出具体参数名、
+`--list` 显示份数与「可进片」、`--json` 可解析、非法 `--commercial-use` 被 argparse 拒。
+
+### 58.6 诚实边界
+
+- **它只登记本机已有的文件，不下载任何东西**。素材从哪来仍然是人的决定。
+- **它不判断这份素材合不合规**：`commercial_use` 是你填的声明，程序只负责要求你明确表态并留痕。
+- **它不做内容去重**：同一份文件可以用两个 `source-id` 登记两次（实测就是这么跑的），
+  因为这可能真的是"同一张图用在两个地方"；但物理上只存一份。
+- **登记过的文件被改动，会在下一次读清单时被拒**（哈希对不上），而不是被静默当成新版本。

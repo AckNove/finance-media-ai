@@ -204,6 +204,7 @@ backend/scripts/                  seed_collections / enable_wal / install_ffmpeg
                                   / media_selftest / research_task / run_worker / render_job
                                   / produce_video / preflight / recover_tasks
                                   / model_smoke（真实模型冒烟）/ model_e2e_check（12 步真实闭环）/ v51_evidence（核查与成本取证）/ import_digest（底稿导入复现）
+                                  / register_source（真实素材登记进白名单）
                                   / flow_check（前端全链路验收）/ daily_check（每日体检：任务、核查、花费、备份、发布回填、磁盘；首页卡片是同一份判断）
                                   / backup_verify（备份能不能恢复）/ asset_audit（素材清单与成片对不对得上）/ matrix_lint（需求矩阵当账本查）
 / upgrade_drill（跨版本升级演练：带数据整库升到 head）
@@ -218,7 +219,7 @@ content/research/<task_id>/        研究底稿（digest.md / digest.json，规�
 video_engine/{templates,quality_control}  视频模板与 QC 规则（YAML）
 config/{settings,brand,content_rules,content_taxonomy,research_sources,models,agent_routing,pipelines}.yaml
 docs/research_hub/                架构、交付报告、决策登记、遗留问题
-tests/                            pytest 回归测试（1513 例）
+tests/                            pytest 回归测试（1523 例）
 ```
 
 ## 文档

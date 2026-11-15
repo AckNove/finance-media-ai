@@ -6,11 +6,11 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 84 个 API 操作 / 20 个页面 / 11 个工具 / **1513 passed**。
+> 最近一次刷新（`017da91` 之后）：31 张表 / 84 个 API 操作 / 20 个页面 / 11 个工具 / **1523 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
 > **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、84 个 API 操作、
-> 20 个前端页面、11 个已实现工具、`pytest` 1513 passed / 2 skipped；三主题真实验收已跑通（见 §L），
+> 20 个前端页面、11 个已实现工具、`pytest` 1523 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
 
@@ -192,6 +192,7 @@
 | 采纳选题建议时带上来源与合集 | `backend/app/services/topic_intake.py`、`POST /api/topics/from-suggestion`、`backend/app/schemas/topic.py` 的 `TopicFromSuggestionIn/Out`、`web/app.js` 的 `adoptFailure`/`refreshTopicsList`、`tests/test_topic_intake.py`（14 例） | DONE | 来源由服务端回库读、不信任页面文本；相似标题 409 且不留半截；分数与理由注明「采纳时页面显示、不是事实判断」；命中合集但栏目不存在时明说先跑 `seed_collections` |
 | 从选题直接建研究任务 | `backend/app/services/topic_research.py`、`POST /api/topics/{topic_id}/research-task`、`web/app.js` | DONE | 标题/目标/来源编号从选题带过去；默认 research_only；同一选题已有未结束任务时 409 并指向它；不改选题状态（避免假状态） |
 | 时间都花在哪（干活 / 等人 / 模型调用） | `backend/app/services/task_timing.py`、`GET /api/research-tasks/{task_id}/timing`、任务详情「时间都花在哪」卡 | DONE | 从 `task_events` 事件流推断：干活=每格 started→finished（重试累加）、等人=paused→resumed（含还在等）、模型耗时单独列不参与加减、空档如实报出；任务还开着时总时长算到现在。12 例测试 |
+| 真实素材登记（一条命令） | `backend/scripts/register_source.py`、`tests/test_register_source.py` | DONE | 命令行把素材复制进 `content/jobs/<job>/input/approved_sources/`、算 sha256、写 13 列清单；同名不同内容拒、第二次登记不挤掉第一份、登记≠可进片（预检要 `commercial_use=allowed` + 许可名）。10 例实测，真实命令行演练过。素材本身仍未到手，材料获取本身仍是 BLOCKED |
 | 整条链路（研究→报告→核查→脚本→成片→排期→导出） | `backend/app/services/content_chain.py`、`GET /api/research-reports/{report_id}/chain`、`web/app.js` | DONE | 七段各查各的表/目录，`current` 只给第一段没做完的；成片那段用标题挡掉别的库的同号任务；只读不写 |
 | 台账自查（矩阵当账本查） | A 基础设施 | DONE | `backend/app/services/matrix_lint.py` + `backend/scripts/matrix_lint.py` + `tests/test_matrix_lint.py`（13 例）：状态只许六种取值、`DONE` 行引用的文件/函数/接口必须真的存在、表头规模数字必须与代码实测一致（31 张表 / 74 个操作 / 20 个页面 / 11 个工具）、仓库路径都得还在；本轮据此改正两处真漂移（73→74 个操作、「技术 QC 十项 `video/qc.py`」→ 实际七项在 `backend/app/video/render.py`）。**只验证存在性，不证明功能可用** |
 | 跨版本升级演练（带数据整库升到 head） | `backend/app/services/upgrade_drill.py`、`backend/scripts/upgrade_drill.py`（`python -m backend.scripts.upgrade_drill`）、迁移 `b7_topic_origin`、`tests/test_upgrade_drill.py` | DONE | 9 步（源库只读复制 / 起点版本 / 塞旧数据 / 升级 / 版本 / 完整性 / 结构一致 / 回填 / 数据逐字保留 / 降级往返），初版空库与工作库副本两条路都实测通过；本次演练查出 `topics.origin_type` 老行为 NULL 并补了 B7 迁移 |
