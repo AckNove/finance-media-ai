@@ -1319,11 +1319,19 @@ async function pageChecks(view) {
     const verdictCells = Object.entries(data.by_verdict || {})
       .map(([key, value]) => `<span class="tag">${esc(VERDICT_LABEL[key] || key)} ${value}</span>`)
       .join('');
+    const unchecked = gate.ok ? Number(gate.data.unchecked || 0) : 0;
+    const gapRow = unchecked
+      ? `<div class="row"><span class="tag warn">报告里共 ${gate.data.findings_total} 条结论，另有 ${unchecked} 条没有任何核查记录</span>
+           <button class="btn ghost" id="checks-recheck">重新核查全部结论</button></div>
+         <p class="muted">当年核查漏过条（模型截断重试把没问到的结论丢了）。重新核查只重判、不改你已确认的状态，
+           会产生一小笔模型费用。</p>`
+      : `<div class="row"><button class="btn ghost" id="checks-recheck">重新核查全部结论</button></div>`;
     box.innerHTML = `
       <div class="card">
-        <h2>${data.total} 条结论 · 模型花费 ${money(data.model_cost_cny)} · ${data.model_calls} 次调用</h2>
+        <h2>${data.total} 条核查记录 · 模型花费 ${money(data.model_cost_cny)} · ${data.model_calls} 次调用</h2>
         <div class="row">${verdictCells}</div>
         <div class="row">${gateText}</div>
+        ${gapRow}
         <p class="muted">${esc(data.note || '')}</p>
         <p class="muted">口径：<strong>只有人工确认（confirmed）的结论可以进入成稿</strong>；
           模型判定只是意见，驳回与待复核的结论不会进稿。</p>
@@ -1364,6 +1372,31 @@ async function pageChecks(view) {
     box.querySelectorAll('button[data-review]').forEach((button) => {
       button.onclick = () => send(button.dataset.id, button.dataset.review);
     });
+    // 重新核查：只重判"现有证据支不支持这条结论"，不重新检索、不改人工确认状态。
+    // 会花一小笔模型费用，所以先问一句再发。
+    const recheckButton = box.querySelector('#checks-recheck');
+    if (recheckButton) {
+      recheckButton.onclick = async () => {
+        const agreed = window.confirm(
+          '会用现在的模型把这份报告的全部结论重判一遍（不重新检索，不改你已确认的状态），'
+          + '按当前价目大约花几分钱。要继续吗？',
+        );
+        if (!agreed) return;
+        recheckButton.disabled = true;
+        recheckButton.textContent = '正在重新核查…';
+        const response = await api(`/research-reports/${reportId}/checks/recheck`, { method: 'POST' });
+        if (!response.ok) {
+          window.alert(failure(response).replace(/<[^>]+>/g, ' ').trim());
+          recheckButton.disabled = false;
+          recheckButton.textContent = '重新核查全部结论';
+          return;
+        }
+        const info = response.data;
+        window.alert(`重判了 ${info.checks} 条（报告共 ${info.findings_total} 条），`
+          + `花费 ${money(info.cost_cny)}。\n\n${info.note || ''}`);
+        await load();
+      };
+    }
     bindPipeline(box, reportId, pipeline);
   };
 

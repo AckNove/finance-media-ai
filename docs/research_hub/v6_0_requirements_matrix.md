@@ -6,10 +6,10 @@
 >
 > 审计基准：`git 0090225`（2026-11-13），29 张表、58 个 API 操作、19 个前端页面、
 > 10 个已实现工具、20 个运维脚本、`pytest` 850 passed / 2 skipped。
-> 最近一次刷新（`017da91` 之后）：31 张表 / 84 个 API 操作 / 20 个页面 / 11 个工具 / **1523 passed**。
+> 最近一次刷新（重新核查落地后）：31 张表 / 85 个 API 操作 / 20 个页面 / 11 个工具 / **1565 passed**。
 > 本文件随开发推进**就地更新**，不另开副本。
 >
-> **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、84 个 API 操作、
+> **最近一次刷新**（V6.0 收尾提交，2026-11-14）：31 张表、85 个 API 操作、
 > 20 个前端页面、11 个已实现工具、`pytest` 1523 passed / 2 skipped；三主题真实验收已跑通（见 §L），
 > 内容质检在真片上从"3 条硬错"修到 `ok: true`（`content/jobs/v6_accept_company_v2`），
 > 跨站转载合并与历史任务分页已补齐（`research/dedupe.py`、`#/tasks?offset=&status=`）。
@@ -162,6 +162,7 @@
 | 导出前先过片子这一关 | K 自媒体运营 | DONE | `backend/app/services/export_service.py` 的 `BLOCKING_STATUSES = {draft_invalid, film_missing, job_missing}`：排期绑了视频任务就按磁盘事实核对，结论被撤回或压根没渲出来的**一律拒绝导出**（`ExportError` → 422 + `details.reason`），一个字都不写；`no_gate`（片子在但查不到闸门记录）允许导出但清单里明写「查不到，需人工核对」。同时新增 `publish_checklist.md`：片子路径/大小/规格/技术质检结论 + 三平台文案清单 + 发完必须回填的三件事；`meta.json` 里记 `readiness` 与 `film` 事实。7 例测试 + 真机探针（`v6_accept_industry` 被拒、`v6_accept_company_v2` 通过） |
 | 发布链接与回填提醒 | K 自媒体运营 | DONE | `backend/app/services/publish_links.py`：只拦必然错的（空值/非 http(s)/没有主机名/含空格/超长，422 带 `details.reason`），域名不像这个平台只写一条提醒不拦人（平台会换域名、有短链）；校验写在 `OperationsService.update()` 里，接口/页面/脚本三条路同一道闸，前端另有 `publishLinkComplaint()` 先本地拦一道（真机：`abc` 被本地拦住，0 个 PATCH 请求）。每日体检新增 `publish_section()`：进度已到 rendered/exported 却还没标已发布的排期会进 `attention`（「系统不代发，也不会替你标」）。31 例 + 1 例前端护栏 |
 | 报告往下走到哪一步 | G 内容策划 / J 前端工作台 | DONE | `GET /api/research-reports` 的每一项多一个 `progress`：`script_count` / `latest_script_version` / `job_count` / `jobs[]`（每个任务的底片就绪度）/ `next_step`。整页只做**一次**脚本分组查询 + **一次**任务目录扫描（`backend/app/services/report_progress.py`，有计数器用例钉住，不许退化成 N+1）；能不能发的判定直接复用 `calendar_readiness`，同一个问题不出现两个答案。详情接口不带 `progress`（不重复扫目录）。前端报告列表加「往下走到哪一步」列，按钮按事实换字（`用脚本建视频任务` / `重开视频任务`）。9 例测试 + 真机探针（脚本 v1 + 5 个真实任务目录 → 「能发 v6_accept_company_v2」） |
+| 重新核查（补判漏掉的结论） | F 语义核查 / J 前端工作台 | DONE | 核查漏条的补救入口：`POST /api/research-reports/{id}/checks/recheck` 只用**已入库证据**把全部结论重判一遍，整批替换核查行；人工已确认的按 `finding_index` 继承状态。报告不存在/没结论/没证据分别返回 `unknown_report`/`no_findings`/`no_evidence`。实测报告 #2：3 条 → **6 条**，¥0.037209。 | `backend/app/research/recheck.py`、`backend/app/api/routes/research_reports.py`、`web/app.js`、`tests/test_recheck.py` |
 | 账号数据导入 / 播放量 / 互动分析 | `platform_metrics` + `POST /api/calendar/{id}/metrics` + `POST /api/calendar/{id}/metrics/import`（CSV 批量）+ `GET /api/calendar/analytics`（取最新快照，不累加） | DONE | CSV 认中英列名与千分位；撞时间戳的跳过、坏行带行号报错、平台不一致直接拒（`tests/test_metrics_import.py` 13 例） |
 | 素材清单与实际使用是否一致 | `backend/app/video/asset_audit.py` 的 `audit_job()`（清单 / 分镜表 / 时间轴 / 渲染回执四份对账）+ `render_job` 末尾写 `qc/asset_audit.{json,md}` + `GET /api/workspace/jobs/{id}` 的 `asset_audit` 字段（**请求时现算**）+ 素材页审计卡 + CLI `python -m backend.scripts.asset_audit` | DONE | 补登记纯色底板（`_register_plate`，以前底板只在回执里、不在清单上）；无音轨时不再让质检崩掉（`scan_media(has_audio=…)`）；`tests/test_asset_audit.py` 12 例 + `tests/test_asset_audit_api.py` 3 例 |
 

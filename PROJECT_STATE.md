@@ -19,23 +19,23 @@
 | 项 | 实测 |
 | --- | --- |
 | ORM 表（`Base.metadata.tables`） | 31 |
-| API 路径 | 68 |
-| API 操作 | 84 |
-| 权限清单条目（`ROUTE_CALLERS`） | 84 |
+| API 路径 | 69 |
+| API 操作 | 85 |
+| 权限清单条目（`ROUTE_CALLERS`） | 85 |
 | 工作台页面（`web/app.js`） | 20 |
 | 已注册工具（`TOOL_NAMES`） | 11 |
-| 测试文件 | 118 |
+| 测试文件 | 120 |
 | `docs/*.md` | 10 |
 | `docs/research_hub/*.md` | 51 |
 | `backend/scripts/*.py` | 38 |
 | `scripts/*.ps1` | 3 |
 | 已出片的视频任务 | 9 |
-| `backend/app` 行数 | 41,881 |
-| `web/app.js` 行数 | 2,777 |
+| `backend/app` 行数 | 42,655 |
+| `web/app.js` 行数 | 2,873 |
 
 一致性不变量（改代码后必须仍成立，`tests/test_caller_permissions.py` 与启动自检会守）：
 
-- **API 操作数 == `ROUTE_CALLERS` 条目数**（当前都是 84）；启动自检还会逐条比对"清单声明的调用者"
+- **API 操作数 == `ROUTE_CALLERS` 条目数**（当前都是 85）；启动自检还会逐条比对"清单声明的调用者"
   与"端点上实际挂的依赖"，漏挂或多写都拒绝启动。
 - 业务表 31 张（ORM），真实开发库仍停在迁移 `de8148733a9b`（19 张表）。
 
@@ -60,7 +60,7 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 最近一次全量 | **1558 passed, 2 skipped**（2026-11-15 23:00，耗时 6:57） |
+| 最近一次全量 | **1565 passed, 2 skipped**（2026-11-15 23:00，耗时 8:39） |
 | 上一级测试（受影响模块） | 本轮 `test_db_revision.py + test_migrations.py + test_scripts_encoding.py + test_startup_checks.py + test_system_status.py` → 61 passed |
 | 已知告警 | 6 条 warning：`agent_runs ↔ research_subtasks` 外键环的 `SAWarning`（设计内，见 `KNOWN_ISSUES.md` K-07） |
 | 需求矩阵 | `python -m backend.scripts.matrix_lint` → 109 行需求，DONE 107 / BLOCKED 1 / NOT_IMPLEMENTED 1，无问题 |

@@ -3262,3 +3262,41 @@ start.ps1 的 3.5 段接上它；想先不动库的人可以用 -NoMigrate（会
 - 自动升级**不做备份**：迁移本身是幂等的（Alembic 记版本），但真出问题要靠 ackup_db.py
   的既有备份，这一段没有强制升级前先备份。
 - head 状态只拒绝启动，不提供把库降回代码版本的命令（那属于危险操作，故意不自动化）。
+
+---
+
+## §61 重新核查：让漏判的结论能补判（第 6 轮）
+
+### 61.1 起因
+
+电力选题（报告 #2）有 6 条结论，库里只有 3 条核查行——正是第 5 轮修掉的那个缺陷留下的残局：
+核查时模型输出被截断、重试只问了其中几条，没问到的直接从结果里消失了。用户要拿这条选题做第一个作品，
+不改就只能拿 3 条进稿。
+
+### 61.2 做法
+
+- `backend/app/research/recheck.py`：`_finding_rows()` 从 `report.findings` 取结论、`_evidence_units()`
+  按 `research_report_id` 取**已入库证据**（并用 `report.outline` 把 `sources` 主键换回 `S01` 这种编号，
+  对不上就写 `db-<id>`，绝不假装是原文来源），`_check_findings()` 转一手调语义核查，最后
+  `record_checks()` 整批替换。
+- 接口 `POST /api/research-reports/{id}/checks/recheck`（201）；报告不存在 / 没结论 / 没证据分别返回
+  422 + `details.reason`（`unknown_report` / `no_findings` / `no_evidence`）。
+- 核查页汇总卡多一行：当 `unchecked > 0` 时显示「报告里共 N 条结论，另有 M 条没有任何核查记录」+
+  「补判」按钮，确认框里写明**只重判不重新检索、不改已确认状态、约几分钱**。
+
+### 61.3 真机实测（报告 #2，电力）
+
+| 项 | 值 |
+| --- | --- |
+| 重判条数 | 6（原来 3） |
+| 判定分布 | supported 2 / insufficient_evidence 3 / partially_supported 1 |
+| token | 8901 + 2142 |
+| 花费 | **¥0.037209** |
+| 重试 | false |
+| 闸门 | `findings_total=6, unchecked=0, confirmed=0, allowed=false, reason=not_confirmed` |
+
+### 61.4 诚实边界
+
+- 只按**已入库证据**重判：证据里没有的数字仍会被判"证据不足"，这不是 bug，是它该做的事（见 `KNOWN_ISSUES.md` K-15）。
+- 重判不改变"人工确认"这条闸门：模型判完仍是 `pending`，仍要人逐条确认。
+- 花费与判定分布都来自真实调用记录，不是估算。

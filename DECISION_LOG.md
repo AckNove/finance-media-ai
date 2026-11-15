@@ -146,3 +146,19 @@
   人想看的就是接下来那几格怎么跑。
 - **落点**：`web/app.js` 的 `isActive()` / `startAutoRefresh()` / `passGate()` / `act()`、
   `tests/test_ui_copy.py` 两条护栏（passGate 与 act 内都必须出现 `startAutoRefresh();`）。
+
+---
+
+## D-17 重新核查只重判、不重新检索，且不许覆盖人工结论
+
+- **决定**：`POST /api/research-reports/{id}/checks/recheck` 用**报告已有的入库证据**把全部结论重判一遍，
+  整批替换核查行；人工已确认/驳回过的那几条，按 `finding_index` 把 `human_review_status`、`human_note`、
+  `human_reviewed_at` 原样继承。
+- **为什么**：核查漏条（截断重试把没问到的结论丢了）真实发生过，报告里会留下"6 条结论只有 3 条核查"的残局。
+  没有补判入口，人只能重建任务、重花一遍检索钱；而重判只用已有证据，几分钱就能补齐。
+- **否决了什么**：①重新联网检索（那是新的一次研究，成本和风险都不一样，不该藏在"补判"按钮后面）；
+  ②把人工结论清空重来（人核对过原文的判定，不该被模型再判一次就抹掉）。
+- **落点**：`backend/app/research/recheck.py`（`recheck_report` / `_check_findings` / `_evidence_units`）、
+  `backend/app/research/persistence.py`（`record_checks` 本来就是整批替换 + 继承人工状态）、
+  `backend/app/api/routes/research_reports.py`、`web/app.js`（`pageChecks` 的 `gapRow` 与 `#checks-recheck`）、
+  `tests/test_recheck.py`（7 例）。

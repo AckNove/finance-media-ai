@@ -23,6 +23,7 @@ from backend.app.research.draft_gate import (
     readiness_of,
 )
 from backend.app.research.persistence import HUMAN_REVIEW_STATUSES, set_human_review
+from backend.app.research.recheck import RecheckError, recheck_report
 from backend.app.schemas.common import Page
 from backend.app.schemas.content_chain import ContentChainOut
 from backend.app.schemas.draft_gate import DraftReadinessOut
@@ -234,6 +235,32 @@ def read_report_chain(db: DbSession, report_id: int = Path(ge=1)) -> ContentChai
     except ChainError as error:
         raise NotFoundError(error.message, details={"reason": error.reason}) from error
     return ContentChainOut(**chain.as_dict())
+
+
+@router.post(
+    "/{report_id}/checks/recheck",
+    status_code=status.HTTP_201_CREATED,
+    summary="重新核查这份报告的全部结论",
+    description=(
+        "拿报告现有的结论与已入库证据重跑语义核查，整批替换 finding_checks。"
+        "用途：当年核查漏过条（模型截断重试把没问到的结论丢了），报告本身没问题但缺核查记录。"
+        "重跑只写模型判定，人工已确认的状态按结论下标继承；**不会**把任何结论自动变成 confirmed。"
+    ),
+)
+def recheck_report_checks(
+    db: DbSession, report_id: int = Path(ge=1)
+) -> dict:
+    """重新核查，返回这次判了几条、花了多少钱。"""
+    from backend.app.database.session import get_session_factory
+
+    factory = get_session_factory()
+    try:
+        result = recheck_report(factory, report_id)
+    except RecheckError as error:
+        raise DomainValidationError(
+            str(error), details={"reason": error.reason, **error.details}
+        ) from error
+    return result.as_dict()
 
 
 @router.get(

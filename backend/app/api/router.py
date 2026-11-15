@@ -75,6 +75,7 @@ ROUTE_CALLERS: dict[tuple[str, str], frozenset[CallerKind]] = {
     ("GET", "/api/research-reports/{report_id}/chain"): HUMAN_ONLY,
     ("GET", "/api/research-reports/{report_id}/checks"): HUMAN_ONLY,
     ("GET", "/api/research-reports/{report_id}/checks/summary"): HUMAN_ONLY,
+    ("POST", "/api/research-reports/{report_id}/checks/recheck"): HUMAN_ONLY,
     ("POST", "/api/research-reports/{report_id}/checks/{check_id}/review"): HUMAN_ONLY,
     ("POST", "/api/reviews"): HUMAN_ONLY,
     ("GET", "/api/reviews"): HUMAN_ONLY,
