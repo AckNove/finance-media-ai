@@ -50,6 +50,11 @@ _STAGE_LABELS = (
 #: 一屏最多放几个数据点。超过就别塞，宁可少讲两句。
 MAX_POINTS = 6
 
+#: 一条片子最多几张"放大数字"的数据卡。超出的数据点改用大字排版镜头（字幕照念原句）。
+#: 六个数据点连着六张卡，观众看到的是会动的 PPT；而句子本身有没有信息量，不取决于是
+#: 不是把那个数字放大了 176 像素。
+MAX_CARDS = 3
+
 #: 字幕一行放不下太长的句子，超出就截断并加省略号（口播稿保持完整）。
 #: 46px 字号下 1080 宽画布一行约能放 18 个汉字，26 个会顶出画外（实测被裁）。
 MAX_CAPTION_CHARS = 18
@@ -121,6 +126,10 @@ class OutlineShot:
     subtitle: str
     source_id: str
     number: str = ""
+    # 这一镜是不是图表（`backend/app/video/chart_shots.py` 的 ChartPlan）。
+    # 用 Any 而不是直接标类型：chart_shots 反过来要 import 本模块的 unit_numbers，
+    # 标了类型就会绕成循环导入。
+    chart: Any = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -130,6 +139,7 @@ class OutlineShot:
             "subtitle": self.subtitle,
             "source_id": self.source_id,
             "number": self.number,
+            "chart": None if self.chart is None else self.chart.as_dict(),
         }
 
 
@@ -252,6 +262,114 @@ def _number_with_unit(text: str, numbers: Sequence[str]) -> str:
         if best is None or match.start() < best[0]:
             best = (match.start(), f"{number}{match.group(1)}")
     return best[1] if best is not None else ""
+
+
+@dataclass(frozen=True)
+class UnitNumber:
+    """原文里的一个"带单位的量"，连带它是谁的量、哪一期的量。
+
+    分镜要拿它做两件事：没有可比对象时上一张数据卡；有可比对象时（同单位同指标、
+    不同期/不同来源）拼成一张**真实图表**——图表比一串数据卡更能说明"变化"。
+    """
+
+    text: str  # 原样，含单位："920GW"
+    value: float
+    unit: str  # "GW"
+    keyword: str  # 它是什么量："组件产能"
+    label: str  # 哪一期："2023年" / "2024年三季度" / ""（原文没写）
+    position: int  # 在句子里的起始位置
+
+    @property
+    def comparable(self) -> bool:
+        """能不能拿去做图表：得知道自己是什么量、值必须为正。"""
+        return bool(self.keyword) and self.value > 0
+
+
+#: 数字前面常见的虚词/动词，抠关键词时要剥掉，否则"降至产能920GW"会得到"降至产能"。
+_KEYWORD_NOISE = (
+    "达到", "降至", "升至", "增至", "超过", "突破", "接近", "约为", "合计", "其中",
+    "同比", "环比", "的", "了", "是", "在", "为", "至", "达", "约", "已", "共",
+    "和", "与", "及", "超", "逾", "近", "破", "过",
+)
+_KEYWORD_TAIL = re.compile(r"[\d\s%％:：,，.。、（）()【】\[\]" + "".join(_UNITS) + r"]+$")
+#: 关键词开头残留的日历字（"2023年组件产能"剥完数字还剩"年组件产能"）要去掉。
+_KEYWORD_HEAD = re.compile(r"^[年月日号季度财]+")
+_PERIOD = re.compile(
+    r"(\d{4}\s*年(?:\s*(?:第?[一二三四1-4]\s*季度|\d{1,2}\s*月))?"
+    r"|\d{1,2}\s*月(?:\s*\d{1,2}\s*日)?"
+    r"|第?[一二三四1-4]\s*季度"
+    r"|[Qq][1-4])"
+)
+
+
+def _keyword_before(text: str, index: int) -> str:
+    """数字前面那段"它是什么量"（最多 5 个字，剥掉期、单位与虚词）。
+
+    "2023年组件产能920GW" → `组件产能`；"环比下降0.01个百分点" → `环比下降`（它确实是
+    一个"变化量"的说明，不是瞎凑）；"净息差降至1.52%" → `净息差`。图表拿这个词分组，
+    所以宁可短一点，也不能把期（2023年）或数字带进去——那会让"不同期"的组被拆散。
+    """
+    window = text[max(0, index - 16) : index]
+    periods = list(_PERIOD.finditer(window))
+    if periods:
+        window = window[periods[-1].end() :]
+    window = _KEYWORD_TAIL.sub("", window)
+    changed = True
+    while changed:
+        changed = False
+        for noise in _KEYWORD_NOISE:
+            if window.endswith(noise) and len(window) > len(noise):
+                window = window[: -len(noise)]
+                changed = True
+    match = re.search(r"([\u4e00-\u9fa5A-Za-z]{1,5})$", window)
+    return match.group(1) if match else ""
+
+
+def _period_before(text: str, index: int) -> str:
+    """数字前面最近的一处"期"（年份/季度/月份）：图表横轴要有它才谈得上比较。"""
+    window = text[max(0, index - 24) : index]
+    matches = _PERIOD.findall(window)
+    if not matches:
+        return ""
+    return " ".join(matches[-1].split()).replace(" ", "")
+
+
+def unit_numbers(text: str) -> tuple[UnitNumber, ...]:
+    """把一句话里"带单位的量"逐个抠出来（含它是什么量、哪一期）。
+
+    只认 ``_UNITS`` 里的量单位，日历数字（11月2日）与裸数字一律不算——
+    与数据卡同一套口径，避免图表里混进"11"这种毫无含义的柱子。
+    """
+    clean = " ".join(str(text).split())
+    found: list[UnitNumber] = []
+    seen: set[tuple[int, str]] = set()
+    for match in re.finditer(r"\d[\d,]*(?:\.\d+)?", clean):
+        bare = match.group(0).replace(",", "")
+        unit_match = re.match(_UNIT_PATTERN, clean[match.end() :])
+        if unit_match is None:
+            continue
+        unit = unit_match.group(1)
+        if _is_calendar_number(clean, bare):
+            continue
+        try:
+            value = float(bare)
+        except ValueError:
+            continue
+        key = (match.start(), unit)
+        if key in seen:
+            continue
+        seen.add(key)
+        found.append(
+            UnitNumber(
+                text=f"{bare}{unit}",
+                value=value,
+                unit=unit,
+                keyword=_keyword_before(clean, match.start()),
+                label=_period_before(clean, match.start()),
+                position=match.start(),
+            )
+        )
+    return tuple(found)
 
 
 def caption_around(text: str, number: str) -> str:
@@ -405,12 +523,39 @@ def build_outline(
         source_id="",
     )
     shots: list[OutlineShot] = [openings]
+    # 能拼成图表的数字就不上数据卡：同指标不同期的几个数字，真正的信息是"变化"，
+    # 六张各写一个数字的卡片加起来也说不清这件事（见 chart_shots 模块抬头）。
+    from backend.app.video.chart_shots import SECONDS_PER_CHART, plan_charts, visual_mix
+
+    charts, consumed = plan_charts(points)
+    chart_of: dict[int, Any] = {}
+    for plan in charts:
+        first = plan.point_indexes[0]
+        for index in plan.point_indexes:
+            chart_of[index] = None if index != first else plan
+    cursor_shot = 1
     for index, point in enumerate(points):
+        if index in consumed and chart_of.get(index) is None:
+            continue  # 这个数据点已经被并进前面那张图表了
+        plan = chart_of.get(index)
+        cursor_shot += 1
+        if plan is not None:
+            shots.append(
+                OutlineShot(
+                    shot_id=f"sh{cursor_shot:02d}",
+                    seconds=SECONDS_PER_CHART,
+                    narration=plan.narration,
+                    subtitle="",
+                    source_id=plan.source_ids[0] if plan.source_ids else "",
+                    chart=plan,
+                )
+            )
+            continue
         text = " ".join(str(point.text).split())
         numbers = _number_set(point)
         shots.append(
             OutlineShot(
-                shot_id=f"sh{index + 2:02d}",
+                shot_id=f"sh{cursor_shot:02d}",
                 seconds=SECONDS_PER_POINT,
                 narration=text,
                 subtitle=_caption(text),
@@ -439,9 +584,15 @@ def build_outline(
         start = round(cursor, 3)
         end = round(cursor + shot.seconds, 3)
         cursor = end
-        # 有数字的镜头做成数据卡：数字放大、来源标小。纯色底只留给开场与结尾。
+        chart_plan = shot.chart
         card = None
-        if shot.number and 0 < index < len(shots) - 1:
+        if chart_plan is not None:
+            from backend.app.video.chart_shots import write_chart
+
+            chart_plan = write_chart(root, chart_plan, canvas=canvas, shot_id=shot.shot_id)
+        # 有数字的镜头做成数据卡：数字放大、来源标小。纯色底只留给开场与结尾。
+        # 但卡最多 MAX_CARDS 张：再多的数字改用大字排版镜头，否则整条片子像 PPT。
+        elif shot.number and 0 < index < len(shots) - 1 and len(cards) < MAX_CARDS:
             from backend.app.video.cards import write_card
 
             card = write_card(
@@ -456,6 +607,33 @@ def build_outline(
                 shot_id=shot.shot_id,
             )
             cards.append(card)
+        if chart_plan is not None:
+            asset = {
+                "asset_id": chart_plan.asset_id,
+                "asset_type": "generated_image",
+                "asset_source": chart_plan.relative_path,
+                "license": "原创（程序生成图表）",
+            }
+        elif card is not None:
+            asset = {
+                "asset_id": card.asset_id,
+                "asset_type": "composition",
+                "asset_source": card.relative_path,
+                "license": "原创（程序生成）",
+            }
+        else:
+            asset = {
+                "asset_id": "",
+                "asset_type": "solid",
+                "asset_source": _COLORS,
+                "license": "原创（纯色底，程序生成）",
+            }
+        if chart_plan is not None:
+            visual = f"真实数字图表：{chart_plan.title}（柱状，横轴是各期/各来源）"
+        elif card is not None:
+            visual = "数据卡：放大数字 + 来源标注"
+        else:
+            visual = "纯色底 + 大字排版"
         rows.append(
             {
                 "shot_id": shot.shot_id,
@@ -465,30 +643,34 @@ def build_outline(
                     "收尾" if index == len(shots) - 1 else "引用数据点"
                 ),
                 "narration": shot.narration,
-                "visual_description": (
-                    "纯色底 + 大字排版" if card is None else "数据卡：放大数字 + 来源标注"
-                ),
-                "asset_id": card.asset_id if card else "",
-                "asset_type": "composition" if card else "solid",
-                "asset_source": card.relative_path if card else _COLORS,
-                "license": "原创（程序生成）" if card else "原创（纯色底，程序生成）",
+                "visual_description": visual,
+                "asset_id": asset["asset_id"],
+                "asset_type": asset["asset_type"],
+                "asset_source": asset["asset_source"],
+                "license": asset["license"],
                 "animation": "fade_in",
                 "camera_motion": (
                     _CARD_CAMERAS[index % len(_CARD_CAMERAS)]
-                    if card
+                    if asset["asset_type"] != "solid"
                     else _PLATE_CAMERAS[index % len(_PLATE_CAMERAS)]
                 ),
                 "transition": _TRANSITIONS[index % len(_TRANSITIONS)],
-                # 卡片上已经有这句说明了，底部再叠一条同样的字幕是重复。
-                "subtitle": "" if card else shot.subtitle,
+                # 卡片/图表上已经有说明与轴标签了，底部再叠一条字幕是重复。
+                "subtitle": "" if asset["asset_type"] != "solid" else shot.subtitle,
                 "sound_effect": "none",
                 "safety_zone": "bottom",
                 "fps": str(fps),
                 "canvas_width": str(canvas[0]),
                 "canvas_height": str(canvas[1]),
-                "notes": f"规则草稿；来源 {shot.source_id}" if shot.source_id else "规则草稿",
+                "notes": (
+                    f"规则草稿；来源 {'、'.join(chart_plan.source_ids)}"
+                    if chart_plan is not None
+                    else (f"规则草稿；来源 {shot.source_id}" if shot.source_id else "规则草稿")
+                ),
                 # 可追溯性落到结构化列上：内容质检靠这一列判「这一镜的说法能不能回溯」
-                "source_ids": shot.source_id,
+                "source_ids": (
+                    "、".join(chart_plan.source_ids) if chart_plan is not None else shot.source_id
+                ),
                 "source_start": "",
             }
         )
@@ -509,7 +691,10 @@ def build_outline(
         )
 
     notes_path = root / NOTES_REL
-    notes_path.write_text(_notes_text(job_id or root.name, title, shots, sources), encoding="utf-8")
+    notes_path.write_text(
+        _notes_text(job_id or root.name, title, shots, sources, mix=visual_mix(rows)),
+        encoding="utf-8",
+    )
 
     total = round(cursor, 3)
     warnings = (
@@ -637,7 +822,14 @@ def _write_rows(path: Path, rows: Sequence[dict[str, str]]) -> None:
         writer.writerows(rows)
 
 
-def _notes_text(job_id: str, title: str, shots: Iterable[OutlineShot], sources: Sequence[Any]) -> str:
+def _notes_text(
+    job_id: str,
+    title: str,
+    shots: Iterable[OutlineShot],
+    sources: Sequence[Any],
+    *,
+    mix: dict[str, Any] | None = None,
+) -> str:
     lines = [
         f"# {job_id} 分镜草稿（规则生成）",
         "",
@@ -646,14 +838,26 @@ def _notes_text(job_id: str, title: str, shots: Iterable[OutlineShot], sources: 
         "- 每镜的口播稿都是底稿里的原文，没有改写、没有推断、没有补全。",
         "- 它是一份可渲染的草稿，不是可以直接发布的文案。发布前必须人工看一遍。",
         "",
+    ]
+    if mix:
+        # 这一行只报事实：几张数据卡、几张图表、几张底板。好不好看不归程序判断。
+        lines += [
+            f"- 画面构成：{mix['total']} 个镜头里，数据卡 {mix['cards']} 个、"
+            f"真实图表 {mix['charts']} 个、纯色底 {mix['by_type'].get('solid', 0)} 个"
+            f"（数据卡占比 {mix['card_ratio']:.0%}）。",
+            "",
+        ]
+    lines += [
         "## 逐镜来源",
         "",
-        "| 镜头 | 时长 | 来源 | 口播稿（原文） |",
-        "| --- | --- | --- | --- |",
+        "| 镜头 | 时长 | 来源 | 画面 | 口播稿（原文） |",
+        "| --- | --- | --- | --- | --- |",
     ]
     for shot in shots:
+        picture = "图表" if shot.chart is not None else ("数据卡" if shot.number else "纯色底")
         lines.append(
-            f"| {shot.shot_id} | {shot.seconds:g}s | {shot.source_id or '—'} | {shot.narration} |"
+            f"| {shot.shot_id} | {shot.seconds:g}s | {shot.source_id or '—'} | {picture}"
+            f" | {shot.narration} |"
         )
     lines += ["", "## 本文引用到的资料", ""]
     keep = {shot.source_id for shot in shots if shot.source_id}
@@ -676,6 +880,8 @@ __all__ = [
     "OutlineShot",
     "SECONDS_PER_POINT",
     "STORYBOARD_REL",
+    "UnitNumber",
     "build_outline",
     "caption_around",
+    "unit_numbers",
 ]

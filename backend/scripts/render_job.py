@@ -63,6 +63,15 @@ def read_status(job_dir: Path) -> dict | None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # 输出会被别的程序（后台任务、预检脚本、测试）当 JSON 读走。Windows 控制台默认用
+    # 本地代码页（cp936）编码，管道另一端按 UTF-8 读就会在中文处炸掉——所以这里固定
+    # 输出 UTF-8，控制台里显示乱码是终端的锅，不要让机器可读的那一端跟着坏。
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):  # 被重定向到奇怪对象时不要因此崩
+        pass
+
     parser = argparse.ArgumentParser(description="在独立进程里渲染一条视频任务")
     parser.add_argument("--job", required=True, help="任务目录名（content/jobs/<job>）")
     parser.add_argument("--output", default="output/final.mp4")
