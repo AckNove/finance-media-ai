@@ -239,6 +239,11 @@ tests/                            pytest 回归测试（1523 例）
 | `docs/research_hub/v5_0_delivery_report.md` | **V5.0 交付报告**：20 个模块的落地状态、真实运行证据、BLOCKED 项与最少人工操作 |
 | `docs/research_hub/v5_0_oss_evaluation.md` | 17 个开源项目的源码级评估（固定 SHA、许可证、采用方式） |
 | `agents/PROTOCOL.md` | Agent 统一输入输出协议（10 字段）+ 品牌与内容规则 |
+| `docs/dev_protocol.md` | **怎么干活**：高效开发执行协议 V1.0 的本仓库落地版（三级测试、计时、停止条件） |
+| `PROJECT_STATE.md` | **现在是什么样**：数字全部由 `python -m backend.scripts.state_measure --md` 现算 |
+| `TASK_BACKLOG.md` | **还欠什么**：P0–P3 + 阻塞原因 + 每条怎么验收 |
+| `DECISION_LOG.md` | **为什么这么做**：13 条关键决定，含被否决的方案 |
+| `KNOWN_ISSUES.md` | **哪里还疼**：4 条阻断 + 8 条非阻断，每条带证据 |
 
 ## 换机器 / 换目录（整个仓库可以搬）
 

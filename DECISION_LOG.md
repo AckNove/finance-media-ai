@@ -1,0 +1,104 @@
+# DECISION_LOG.md — 为什么是这个做法
+
+> 只记**会影响后面怎么写代码**的决定，每条包含：决定 / 为什么 / 被否决的方案 / 代码落点。
+> 改主意了就追加一条新记录并标注"取代 D-xx"，**不要删旧的**。
+
+---
+
+## D-01 价目未知就不发请求（不是"先跑再算钱"）
+
+- **决定**：模型价目缺失或未核对时，`pricing_policy: reject_unknown` → 直接 `blocked`，一个字节都不发。
+- **为什么**：先跑再补价 = 账单不可控。用户明确要求"未知价目禁止请求、不得产生未授权费用"。
+- **否决**：①按 0 元记账（会让当日预算闸门形同不存在）②用"上次价格"猜。
+- **落点**：`config/models.yaml`（`pricing_policy`）、`backend/app/capabilities/model/gateway.py`、
+  启动自检的 `pricing` 检查（缺价目 → warning，不阻断启动但拦住调用）。
+
+## D-02 只有人工确认的结论能进成稿
+
+- **决定**：`human_review_status == confirmed` 才算可成稿；模型判定只是意见，永远不会自动变成人工确认。
+- **为什么**：User said (m15463)：「结论必须 confirmed 才能进入成稿吧」。程序能判断"有没有出处"，
+  判断不了"这个口径该不该这么说"。
+- **否决**：模型判定 supported 就直接放行（省事，但等于把事实责任交给模型）。
+- **落点**：`backend/app/research/draft_gate.py`（`assert_draft_ready` 拦四个出口：建视频任务、建脚本、
+  `produce_video`、交接稿分节）。反例留证：`content/jobs/v6_accept_industry`（确认被撤回后成片即判失效）。
+
+## D-03 规则与模型分离：排不出来就说排不出来
+
+- **决定**：`content.script` 用模型改写成片脚本；**模型排不出来时只记 `outline.reason`，不退化成规则分镜**。
+- **为什么**：静默降级会让人以为"模型写的"，实际是模板拼的——这是最坏的一种谎。
+- **否决**：失败后用规则兜底并标 `planner=rules`（容易被忽略，等于默认接受低质量）。
+- **落点**：`backend/app/video/script_film.py`、`backend/app/video/script_board.py`。
+
+## D-04 产物路径一律写相对路径
+
+- **决定**：`job.json` 里的 `storyboard` / `notes` 写相对任务目录的路径。
+- **为什么**：2026-11-15 搬家时发现 5 个任务记着 `C:\Users\<用户名>\...` 的绝对路径——搬完就全指错，
+  而且产物里带用户名本身就是信息泄露。
+- **否决**：搬家时批量改写历史 JSON（那是"当时在哪儿生成"的记录，改了等于伪造）。
+- **落点**：`backend/app/video/outline.py`（`OutlineResult.as_dict()`）+ 护栏测试
+  `tests/test_video_outline.py::test_recorded_paths_are_relative_so_the_job_can_move`。
+
+## D-05 同号不同库：一律用指纹做第二道校验
+
+- **决定**：`report_id` / `task_id` 只在一个库里唯一，凡是跨"库 + 目录"的地方，都要再用
+  标题 / objective 指纹比对一次。
+- **为什么**：临时库里的 `report #1` 和仓库里的 `report #1` 完全不是一回事。这条踩过两次：
+  临时库跑一次把真实底稿覆盖了（`content/research/task-1`），链路页把别人的成片算成了我的。
+- **落点**：`backend/app/services/content_chain.py`（`_same_report`）、`backend/app/execution/executor.py`
+  （`_stage_dir` 落 `task-<id>-<sha8>`）、`backend/app/video/handoff.py`。
+
+## D-06 多平台账号 API 不做，改人工回填 CSV
+
+- **决定**：抖音/视频号/B 站/小红书不接开放平台，发布后人工回填数据（`content_calendar` + CSV 导入）。
+- **为什么**：User said (m28360 前后) 选择人工；且这些平台开放能力基本要企业资质，
+  人工回填每天十条以内完全够用。
+- **重估条件**：每天发布 10 条以上，再回来评估（记在 `TASK_BACKLOG.md` B-11）。
+
+## D-07 永不自动发布
+
+- **决定**：系统不自己有发布动作；`published` 状态必须有 `published_url` 才算数。
+- **为什么**：V6.0 任务书硬约束（不得未经批准自动发布）。技术上也不成立——没有平台授权。
+- **落点**：`content_calendar` 的发布接口校验链接；日历页明写"系统不会自己发布"。
+
+## D-08 git 推送用 `-c` 覆盖，不动全局配置
+
+- **决定**：每次推送都带
+  `git -c http.proxy= -c https.proxy= -c http.https://github.com.proxy= push origin main`。
+- **为什么**：全局 `~/.gitconfig` 里三条代理键指向 `http://127.0.0.1:7890`，但本机常年没有代理在监听；
+  User said (m28360 前后) 选 **A：不动全局配置**。直连 GitHub 时通时不通，失败就挂后台每 60 秒重试。
+- **否决**：全局改 `http.proxy=""`（用户明确不想动全局环境）。
+
+## D-09 仓库整体搬到 D 盘，代码不留绝对路径
+
+- **决定**：仓库落在 `D:\finance-media-ai`；代码与配置里**不写任何绝对路径**，一律从 `PROJECT_ROOT` 推。
+- **为什么**：C 盘当时只剩 2.52 GB（写临时文件直接 `ENOSPC`）。搬迁后 C 盘回到 20 GB 以上。
+- **前提**：`.venv` 可以整体搬（`sys.prefix` 跟着目录走），本项目脚本全走 `python -m` 形态，
+  不碰内嵌旧路径的 `Scripts\*.exe`。
+- **落点**：`README.md`（「换机器 / 换目录」）、本文件 D-04。
+
+## D-10 真实开发库只读，演练一律临时库
+
+- **决定**：`data/finance_media.db` 不迁移、不 seed、不回填、不开 WAL；所有演练在 `%TEMP%` 的库里做，
+  并每轮给出"未改动"证据（大小 + sha256 + 表数 + 迁移版本）。
+- **为什么**：V6.0 安全红线。库文件里只有 `alembic_version` 一行，但它是判断"真实环境有没有被污染"的标杆。
+- **落点**：`backend/app/core/startup_checks.py`（启动只探测不改）、`backend/scripts/*` 一律拒绝该路径。
+
+## D-11 模型耗时单独列，不参与加减
+
+- **决定**：任务耗时分 `总时长 / 干活 / 等人 / 模型调用` 四块；**模型调用与"干活"重叠，不参与加减**。
+- **为什么**：模型调用发生在某个格子里，算两遍会让人以为任务跑了双倍时间。
+- **否决**：把模型耗时算进"干活"（数字看似自洽，实际重复计）。
+- **落点**：`backend/app/services/task_timing.py` + `tests/test_task_timing.py` 钉死
+  "等待时长不可能超过总时长"。
+
+## D-12 台账自查只改文档，不改测试
+
+- **决定**：`matrix_lint` 抓到"表头写的 83 个操作，代码里是 84 个"时，永远改文档。
+- **为什么**：台账是用来对齐现实的下游产物，测试才是现实的守门人；反过来改测试就是自欺。
+- **落点**：`backend/app/services/matrix_lint.py`、`tests/test_matrix_lint.py`。
+
+## D-13 一次搬一个可验证的小改动
+
+- **决定**：每轮一个能验证的改动 + 提交 + 推送（`AGENTS.md` §1）。
+- **为什么**：这个项目一轮里往往同时动"服务 + 接口 + 前端 + 文档 + 台账"，
+  混在一个大提交里出问题时无法回退到"上次能跑"的状态。
