@@ -42,6 +42,10 @@ NOTE_NO_CHECKS = (
     "没有核查就不能成稿。"
 )
 NOTE_READY = "有 {confirmed} 条结论已人工确认，可以进入成稿；未确认的结论不会进稿。"
+NOTE_UNCHECKED = (
+    "另外还有 {unchecked} 条结论没有任何核查记录（不在这 {total} 条里）："
+    "它们同样不会进成稿。想要它们进稿，得让核查从头把它们也判一遍。"
+)
 
 
 class DraftGateError(RuntimeError):
@@ -60,6 +64,8 @@ class DraftReadiness:
     report_id: int
     total_checks: int
     confirmed: int
+    findings_total: int = 0
+    unchecked: int = 0
     by_human_review: dict[str, int] = field(default_factory=dict)
     by_verdict: dict[str, int] = field(default_factory=dict)
     allowed: bool = False
@@ -71,6 +77,8 @@ class DraftReadiness:
             "report_id": self.report_id,
             "total_checks": self.total_checks,
             "confirmed": self.confirmed,
+            "findings_total": self.findings_total,
+            "unchecked": self.unchecked,
             "by_human_review": dict(self.by_human_review),
             "by_verdict": dict(self.by_verdict),
             "allowed": self.allowed,
@@ -121,15 +129,25 @@ def readiness_of(session: Any, report: Any) -> DraftReadiness:
         by_verdict[verdict] = by_verdict.get(verdict, 0) + 1
     confirmed = by_human.get(CONFIRMED, 0)
     allowed = confirmed > 0
+    # 报告里有几条结论、其中几条压根没有核查行。两者不相等说明当年核查漏过条
+    # （重试时把没问到的结论丢了，已在 semantic.py 修掉），这里只如实报出来：
+    # 漏掉的那些不会进成稿，但也不能让"4/6"看着像"全核查过"。
+    findings_total = len(list(getattr(report, "findings", None) or []))
+    unchecked = max(findings_total - len(rows), 0)
+    note = NOTE_READY.format(confirmed=confirmed) if allowed else NOTE_BLOCKED
+    if unchecked:
+        note = f"{note} " + NOTE_UNCHECKED.format(unchecked=unchecked, total=len(rows))
     return DraftReadiness(
         report_id=report_id,
         total_checks=len(rows),
         confirmed=confirmed,
+        findings_total=findings_total,
+        unchecked=unchecked,
         by_human_review=by_human,
         by_verdict=by_verdict,
         allowed=allowed,
         reason="" if allowed else "not_confirmed",
-        note=NOTE_READY.format(confirmed=confirmed) if allowed else NOTE_BLOCKED,
+        note=note,
     )
 
 

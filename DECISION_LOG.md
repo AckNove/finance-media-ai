@@ -129,7 +129,10 @@
 - **否决**：①"重试失败就整批失败"——模型偶尔截断，整批重来白花钱；②"没问到的默认判为支持"——
   这是拿机器的沉默冒充证据。
 - **落点**：`backend/app/research/semantic.py`（`requested_items` + `_report_notes`）、
-  `tests/test_semantic_check.py::test_findings_dropped_by_the_retry_still_get_a_row`。
+  `tests/test_semantic_check.py::test_findings_dropped_by_the_retry_still_get_a_row`、
+  `backend/app/research/draft_gate.py`（`readiness_of` 额外报 `findings_total` / `unchecked`，
+  并在 note 里写明「另有 N 条结论没有任何核查记录，不会进成稿」）、
+  `tests/test_draft_gate.py::test_unchecked_findings_are_reported_not_hidden`。
 
 ## D-16 人工闸门放行之后，界面必须自己动起来
 

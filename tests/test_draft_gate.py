@@ -467,3 +467,21 @@ def test_review_endpoint_only_touches_the_configured_jobs_root(
     after = sorted(p.relative_to(real_root).as_posix() for p in real_root.rglob("INVALIDATED.md"))
     assert after == before, f"测试动了仓库里的真实任务：{set(after) - set(before)}"
     assert (job_dir / "INVALIDATED.md").exists(), "被撤回确认的任务应当被标记失效"
+
+def test_unchecked_findings_are_reported_not_hidden(db_session: Any) -> None:
+    """报告里 6 条结论、库里只有 4 条核查行：不许让"4/6"看着像"全核查过"。"""
+    from backend.app.models.research import ResearchReport
+
+    report = _seed_report(db_session)
+    report.findings = [{"text": f"结论 {i}"} for i in range(6)]
+    db_session.commit()
+    for index in range(4):
+        _check(db_session, index=index, status="confirmed")
+
+    state = readiness_of(db_session, db_session.get(ResearchReport, report.id))
+
+    assert state.total_checks == 4
+    assert state.findings_total == 6
+    assert state.unchecked == 2
+    assert "2 条结论没有任何核查记录" in state.note
+    assert state.as_dict()["unchecked"] == 2
