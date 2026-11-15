@@ -3,7 +3,7 @@
 > 本文件的每个数字都必须能由命令复算。**上一轮报告里的数字不算证据。**
 >
 > 更新命令：`python -m backend.scripts.state_measure --md`
-> 生成时间：2026-11-15 21:2x（Asia/Shanghai），对应提交 `8f10d14`
+> 生成时间：2026-11-15 21:40（Asia/Shanghai），对应提交 `c9141ba`
 
 ## 1. 这个项目是什么
 
@@ -24,8 +24,8 @@
 | 权限清单条目（`ROUTE_CALLERS`） | 84 |
 | 工作台页面（`web/app.js`） | 20 |
 | 已注册工具（`TOOL_NAMES`） | 11 |
-| 测试文件 | 116 |
-| `docs/*.md` | 9 |
+| 测试文件 | 117 |
+| `docs/*.md` | 10 |
 | `docs/research_hub/*.md` | 51 |
 | `backend/scripts/*.py` | 37 |
 | `scripts/*.ps1` | 3 |
@@ -57,7 +57,8 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 最近一次全量 | **1524 passed, 2 skipped**（2026-11-15 18:59，提交 `8f10d14`，耗时 7:40） |
+| 最近一次全量 | **1532 passed, 2 skipped**（2026-11-15 21:40，提交 `c9141ba`，耗时 6:45） |
+| 上一级测试（受影响模块） | `pytest tests/test_project_state.py tests/test_strategy_docs.py tests/test_matrix_lint.py tests/test_scripts_encoding.py` → 58 passed |
 | 已知告警 | 6 条 warning：`agent_runs ↔ research_subtasks` 外键环的 `SAWarning`（设计内，见 `KNOWN_ISSUES.md` K-07） |
 | 需求矩阵 | `python -m backend.scripts.matrix_lint` → 109 行需求，DONE 107 / BLOCKED 1 / NOT_IMPLEMENTED 1，无问题 |
 | 启动自检 | 8 项（`config_sections` / `task_type_registry` / `agent_roster` / `tool_specs` / `skill_registry` / `route_callers` / `pricing` / `database`），error 级不过就拒绝启动 |
