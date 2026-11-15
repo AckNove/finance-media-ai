@@ -177,6 +177,22 @@ def test_the_sheet_is_validated_before_it_is_returned(tmp_path: Path) -> None:
     )
 
 
+def test_recorded_paths_are_relative_so_the_job_can_move(tmp_path: Path) -> None:
+    """写进 job.json 的路径必须是相对任务目录的。
+
+    2026-11-15 整个仓库从 C 盘搬到 D 盘：老任务里记着
+    `C:\\Users\\...\\storyboard\\storyboard.csv` 这种绝对路径，搬完之后记录就全指错了。
+    产物里不该出现任何一台机器的绝对路径。
+    """
+    result = build_outline(_digest(), job_root=tmp_path / "job")
+    payload = result.as_dict()
+    assert payload["storyboard"] == "storyboard/storyboard.csv"
+    assert payload["notes"] == "storyboard/OUTLINE.md"
+    for key in ("storyboard", "notes"):
+        assert not Path(payload[key]).is_absolute(), key
+        assert "\\" not in payload[key], f"{key} 用了反斜杠：换台机器/换个系统就对不上"
+
+
 def test_points_without_a_number_tuple_still_get_their_number_from_the_text(
     tmp_path: Path,
 ) -> None:

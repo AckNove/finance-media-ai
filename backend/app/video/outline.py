@@ -151,8 +151,10 @@ class OutlineResult:
     def as_dict(self) -> dict[str, Any]:
         return {
             "job_id": self.job_id,
-            "storyboard": str(self.storyboard_path),
-            "notes": str(self.notes_path),
+            # 写相对任务目录的路径，不写绝对路径：任务目录整体搬走（C 盘 → D 盘）
+            # 之后这份记录仍然指得对，而且不会把某台机器的用户名写进产物。
+            "storyboard": STORYBOARD_REL.as_posix(),
+            "notes": NOTES_REL.as_posix(),
             "shots": [shot.as_dict() for shot in self.shots],
             "shot_count": len(self.shots),
             "total_seconds": round(self.total_seconds, 3),

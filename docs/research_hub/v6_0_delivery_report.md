@@ -3110,3 +3110,81 @@ python -m backend.scripts.register_source `
 - **它不做内容去重**：同一份文件可以用两个 `source-id` 登记两次（实测就是这么跑的），
   因为这可能真的是"同一张图用在两个地方"；但物理上只存一份。
 - **登记过的文件被改动，会在下一次读清单时被拒**（哈希对不上），而不是被静默当成新版本。
+
+---
+
+## 59. 搬家：从 C 盘搬到 D 盘（2026-11-15）
+
+### 59.1 起因
+
+C 盘只剩 **2.52 GB** 可用（写个临时脚本都直接 `ENOSPC`）。项目本体占 **18.34 GB**。
+
+### 59.2 先量，再删，最后才搬
+
+体积分布量出来的结果很集中：`content` 占 16.75 GB，`content/jobs` 一家就 16.74 GB。
+三个大户 `phase2_media_engine_demo` 8.07 GB、`v5_research_film` 6.23 GB、`video_engine_demo` 1.14 GB，
+大头全是 `project/<hash>/.openkatana/jobs`（渲染出来的帧序列，单个 job 就 1.8 GB）、
+`.openkatana/compositions/*/frames` 和 `plates/`（底板视频）。
+
+这三类都是**可再生的中间产物**，本来就写在 `.gitignore` 里，删掉不影响任何交付物：
+
+| 删的东西 | 数量 | 释放 |
+| --- | --- | --- |
+| `.openkatana/jobs` + `.openkatana/compositions/*/frames` | 144 个目录 | 16.08 GB |
+| `plates/`（底板视频） | 6 个目录 | 572 MB |
+| `__pycache__` / `.pytest_cache` / `.ruff_cache` / `.mypy_cache` | 838 个 | 163 MB |
+
+删之前对每个目标做了路径断言（必须在 `content\jobs` 下、路径里必须含 `\.openkatana\` 或叶子是 `plates`、
+叶子只能是 `jobs`/`frames`/`plates`）。**第一版断言把 `frames` 的父目录也当成了 `.openkatana`，
+结果 144 个目录全被拒绝、一个字节没删**——断言过严时先怀疑断言，别顺手放宽成「只要在 content/jobs 下就删」。
+
+**一根毫毛没动**：9 个成品 MP4（`content/jobs/*/output/*.mp4`，71 MB，逐条列过全在）、
+`data/finance_media.db`、源码、素材白名单、`composition.json` 源文档、时间轴/分镜/QC、
+`tools/ffmpeg`（8.1.2）、`tools/openkatana` 本体。删完跑全量：**1523 passed, 2 skipped**。
+
+### 59.3 搬迁实测
+
+```
+robocopy C:\Users\25803\finance-media-ai D:\finance-media-ai /E /COPY:DAT /DCOPY:DAT /R:1 /W:1
+   Dirs: 2706   Files: 19347   Bytes: 2.067 g   FAILED: 0
+```
+
+搬完在 D 盘逐项复核：
+
+| 项目 | 结果 |
+| --- | --- |
+| `git log -1` / `git status` / 与 origin 的差距 | `80ee641` / 干净 / `0 0` |
+| 真实库 sha256 | `2df764e5…8203`，与搬家前**逐字节一致** |
+| `.venv` 能否直接用 | 能。`sys.prefix` 正确解析成 `D:\finance-media-ai\.venv`，`import fastapi 0.162.2 / sqlalchemy 2.0.57` 正常 |
+| 启动自检 | 8/8（`config_sections` / `task_type_registry` / `agent_roster` / `tool_specs` / `skill_registry` / `route_callers` / `pricing` / `database`） |
+| OpenKatana | `doctor` → `ready_to_render: true` |
+| 全量测试 | **1523 passed, 2 skipped** |
+
+`.venv` 不重建的原因：venv 靠 `pyvenv.cfg` + 相对 `site-packages` 定位，只有 `Scripts\*.exe`
+这类 console launcher 内嵌了旧绝对路径——用 `python -m` 调用就绕开了，本项目所有脚本都是 `python -m` 形态。
+
+### 59.4 搬家顺带查出的一个真问题
+
+全仓扫 `C:\Users\25803\finance-media-ai` 命中 **439 处，全部在 `content/` 下**，
+`backend/`、`web/`、`config/`、`scripts/`、`tests/` **一处都没有**——这说明代码从来没写死过路径。
+
+但那 439 处里有一类不是历史快照，而是**活的工作文件**：5 个任务的 `job.json` 里
+`"storyboard"` / `"notes"` 存的是绝对路径（`outline.OutlineResult.as_dict()` 写的）。
+搬完之后这些记录全指向已经不存在的 C 盘路径。
+
+真正要紧的不是这份 JSON（渲染链路是从任务根目录重新拼路径的，`render.py:703`、`preflight.py:179`、
+`content_qc.py:248` 都是 `root / "storyboard" / "storyboard.csv"`，所以旧任务照样能重渲），
+而是**产物里出现了某台机器的用户名**——这种东西一旦分发出去就是信息泄露，而且换机器就指错。
+
+改法：`OutlineResult.as_dict()` 改成写相对路径（`storyboard/storyboard.csv`、`storyboard/OUTLINE.md`），
+与 `script_board.py` 早已采用的口径一致；补一条护栏测试
+`test_recorded_paths_are_relative_so_the_job_can_move`，断言这两项既不是绝对路径也不含反斜杠。
+
+### 59.5 诚实边界
+
+- **`content/` 里 439 处旧路径没有批量改写**。它们是当时生成的验收 JSON/MD 里记录的"那会儿在哪儿生成"，
+  改写等于伪造历史记录。要看当时的痕迹就让它原样留着。
+- **C 盘的空壳目录最后是删掉的**，但它曾经删不掉：逐文件删完（0 个失败）后，空目录树根仍被
+  "另一进程"占着，`Remove-Item`、`cmd /c rmdir /s /q`、改名全都失败；等全量测试那批 shell 全部退出后再试才成功。
+  记在这里是因为下次搬家大概率还会撞上同一件事：**先确认没有进程的工作目录还在旧路径下**。
+- **这次只腾空间，没改任何行为**：清理的是可再生中间产物，删完全量测试照样 1523 passed。

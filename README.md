@@ -240,6 +240,20 @@ tests/                            pytest 回归测试（1523 例）
 | `docs/research_hub/v5_0_oss_evaluation.md` | 17 个开源项目的源码级评估（固定 SHA、许可证、采用方式） |
 | `agents/PROTOCOL.md` | Agent 统一输入输出协议（10 字段）+ 品牌与内容规则 |
 
+## 换机器 / 换目录（整个仓库可以搬）
+
+代码与配置里**没有任何绝对路径**：所有路径都从 `PROJECT_ROOT` 推出来，产物也只记相对路径。
+2026-11-15 实测把整个仓库从 `C:\Users\25803\finance-media-ai` 搬到 `D:\finance-media-ai`：
+
+- `robocopy <旧目录> <新目录> /E /COPY:DAT /DCOPY:DAT` —— 19,347 个文件、2.07 GB、0 失败；
+- **`.venv` 不用重建**：`sys.prefix` 跟着目录走，只有 `Scripts\*.exe` 内嵌旧路径，
+  而本项目所有脚本都是 `python -m` 形态，不碰那些 exe；
+- 搬完 `git status` 干净、与 `origin/main` 一致、受保护的真实库 sha256 未变；
+- 启动自检 8/8、`tools/openkatana` 的 `doctor` 仍 `ready_to_render: true`、全量测试 1523 passed。
+
+唯一还带着旧绝对路径的是 `content/` 下的**历史快照**（当时生成的验收 JSON/MD，439 处）——
+它们记录的是"当时在哪儿生成的"，改写等于伪造记录，所以保留原样。
+
 ## 安全约定
 
 - 密钥只走环境变量；`.env` 已被 `.gitignore` 忽略，仓库只提交 `.env.example`（空占位）。
