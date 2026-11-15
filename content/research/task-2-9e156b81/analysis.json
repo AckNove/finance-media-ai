@@ -1,0 +1,217 @@
+{
+  "summary": "组件报价0.67-0.70元/W已低于行业现金成本约0.75元/W（S01），但头部企业仍在扩产：一是2020-2022年暴利期上马的产能在18-24个月建设周期后集中于2024-2026年释放，落地时需求已降温（S13）；二是高沉没成本与地方保护抬高了退出壁垒，企业陷入「谁先减产谁丢份额」的囚徒困境（S13、S14）；三是逆势扩产主要投向BC、TOPCon3.0等高效差异化产能，以技术代差替换同质化产能（S04、S11）。代价是全行业连续三年亏损，2025年五大组件巨头合计净亏约345亿元（S01）。",
+  "findings": [
+    {
+      "claim": "全球组件需求550-600GW，而名义产能超1100-1400GW，供给约为需求2倍，开工率不足50%-60%，过剩是价格跌破成本的直接原因",
+      "kind": "fact",
+      "source_ids": [
+        "S01",
+        "S03"
+      ],
+      "numbers": [
+        "550",
+        "600",
+        "1400",
+        "1100",
+        "1.8",
+        "50",
+        "60"
+      ],
+      "section": "supply_demand"
+    },
+    {
+      "claim": "7月初TOPCon组件报价0.67-0.70元/W，低于行业现金成本0.75元/W与完全成本0.82元/W，每出货一瓦亏损一毛以上",
+      "kind": "fact",
+      "source_ids": [
+        "S01"
+      ],
+      "numbers": [
+        "0.67",
+        "0.70",
+        "0.75",
+        "0.82"
+      ],
+      "section": "competition"
+    },
+    {
+      "claim": "2020-2022年行业暴利吸引龙头、跨界企业与地方平台同时上马项目，工厂建设周期18-24个月，产能集中在2024-2026年释放，与需求周期错配",
+      "kind": "inference",
+      "source_ids": [
+        "S13"
+      ],
+      "numbers": [
+        "2020",
+        "2022",
+        "18",
+        "24",
+        "2024",
+        "2026"
+      ],
+      "section": "cycle"
+    },
+    {
+      "claim": "重资产下沉没成本高、退出壁垒高，且与地方税收就业绑定，企业宁可亏损维持开工也不愿先减产让出份额，形成囚徒困境",
+      "kind": "inference",
+      "source_ids": [
+        "S13",
+        "S14"
+      ],
+      "numbers": [],
+      "section": "competition"
+    },
+    {
+      "claim": "逆势扩产集中在高效差异化产能：隆基投32.06亿元建12.5GW BC电池（效率26.6%），晶科TOPCon3.0产能超40GW，行业630W以上年化产能约450GW",
+      "kind": "fact",
+      "source_ids": [
+        "S04",
+        "S11"
+      ],
+      "numbers": [
+        "32.06",
+        "12.5",
+        "26.6",
+        "40",
+        "630",
+        "450"
+      ],
+      "section": "structure"
+    },
+    {
+      "claim": "代价已兑现：2025年五大组件巨头合计净亏约345亿元，晶科、天合分别亏损67.86亿与69.94亿元，属连续第三年大面积亏损",
+      "kind": "fact",
+      "source_ids": [
+        "S01",
+        "S03"
+      ],
+      "numbers": [
+        "345",
+        "67.86",
+        "69.94"
+      ],
+      "section": "risks"
+    }
+  ],
+  "data_gaps": [
+    "缺少头部企业现金储备、经营性现金流与资产负债率数据，无法判断「亏损维持开工」还能持续多久",
+    "缺少各扩产项目的资金来源、投产时间表与实际开工率，无法验证扩产是否真在落地",
+    "缺少组件价格与行业开工率的月度历史序列，无法定位周期拐点的先行指标",
+    "缺少官方行业分类口径与协会统计的产能/出货量定义，供需数字口径不统一",
+    "缺少地方政府补贴、土地与融资支持的具体金额与政策原文，制度性退出壁垒只有定性描述",
+    "缺少需求侧（全球装机、出口政策）的同期量化数据，无法评估需求能否消化过剩产能"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 3,
+  "prompt_tokens": 11401,
+  "completion_tokens": 1568,
+  "cost_cny": 0.037643,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "industry",
+  "checklist": {
+    "framework": "industry",
+    "title": "行业研究",
+    "sections": {
+      "definition": {
+        "title": "行业定义与边界",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "stage": {
+        "title": "发展阶段",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "market_size": {
+        "title": "市场规模",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "structure": {
+        "title": "产业结构",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S04",
+          "S11"
+        ]
+      },
+      "supply_demand": {
+        "title": "供需关系",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S01",
+          "S03"
+        ]
+      },
+      "competition": {
+        "title": "竞争格局",
+        "claims": 2,
+        "facts": 1,
+        "inferences": 1,
+        "sources": [
+          "S01",
+          "S13",
+          "S14"
+        ]
+      },
+      "drivers": {
+        "title": "驱动因素",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "cycle": {
+        "title": "周期位置",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S13"
+        ]
+      },
+      "policy": {
+        "title": "政策与监管",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "risks": {
+        "title": "主要风险",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S01",
+          "S03"
+        ]
+      }
+    },
+    "empty_sections": [
+      "definition",
+      "stage",
+      "market_size",
+      "drivers",
+      "policy"
+    ],
+    "inference_only_sections": [
+      "cycle"
+    ],
+    "unsectioned": [],
+    "coverage": 0.5
+  },
+  "skills_used": [
+    "investigative-storytelling"
+  ]
+}

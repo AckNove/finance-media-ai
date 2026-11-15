@@ -611,6 +611,9 @@ def check_findings(
     # 证据条数必须从 MAX_EVIDENCE 起算——库里可能有几百条证据，全塞进提示词一次就是
     # 十几万 token，比核查本身值钱得多。
     base_evidence = min(len(evidence), MAX_EVIDENCE)
+    # 原始待核查清单：缩梯子时只改"这一轮问模型几条"，不能把它弄丢（丢了就等于
+    # 那几条结论从没被核查过，却在页面上看不出来）。
+    requested_items = list(items)
     attempts = (
         (len(items), base_evidence, max_tokens),
         (max(4, len(items) // 2), max(12, base_evidence // 2), max_tokens),
@@ -679,13 +682,17 @@ def check_findings(
         raise last_error or SemanticError("truncated", "核查输出被截断", usage={**spent, "model_call_id": last_usage.get("model_call_id")})
     if reply is None:  # pragma: no cover
         raise last_error or SemanticError("truncated", "核查输出被截断", usage={**spent, "model_call_id": last_usage.get("model_call_id")})
-    items = used_items
+    # 缩梯子只减少"这一轮问模型多少条"，不能顺手把没问到的结论从核查结果里抹掉：
+    # 没问到的那些必须留一行"模型没有给出这一条的判定"，否则页面上看着全核查过、
+    # 实际漏了一截（真跑里出现过 6 条结论只落 4 条核查）。
+    items = requested_items
     units = used_units
 
     record = getattr(reply, "record", None)
     completion_tokens = int(getattr(record, "completion_tokens", 0) or 0)
 
     checks = parse_checks(reply.text, findings=items, evidence=units)
+    unreported = sum(1 for check in checks if "missing_from_reply" in tuple(check.notes or ()))
     # 一次调用核查多条结论：把这次核查的 Token 与费用按条均摊到每行，
     # 这样 SUM(finding_checks.cost_cny) 等于真实花费，不会因为"一行记全款"而重复计数。
     # 注意用 spent 而不是最后一次 record：撞上限重试的第一次也是真花了钱，
@@ -727,8 +734,22 @@ def check_findings(
         completion_tokens=int(spent["completion_tokens"]),
         cost_cny=round(cost_total, 6),
         checked_at=checked_at,
-        notes=(f"retried:{spent['calls']} 次（撞上限后减少条数重试，费用按实际累加）",) if retried else (),
+        notes=_report_notes(retried=retried, calls=int(spent["calls"]),
+                            checked=len(stamped), unreported=unreported),
     )
+
+
+def _report_notes(*, retried: bool, calls: int, checked: int, unreported: int) -> tuple[str, ...]:
+    """核查这次的整体口径：重试过几次、有几条是模型没给出判定、几条真被核查过。"""
+    notes: list[str] = []
+    if retried:
+        notes.append(f"retried:{calls} 次（撞上限后减少条数重试，费用按实际累加）")
+    if unreported:
+        notes.append(
+            f"coverage:{checked - unreported}/{checked}"
+            f"（{unreported} 条模型这次没有给出判定，仍需人工看原文判断）"
+        )
+    return tuple(notes)
 
 
 def _timestamp(now: Any = None) -> str:

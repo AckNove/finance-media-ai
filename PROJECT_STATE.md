@@ -31,7 +31,7 @@
 | `scripts/*.ps1` | 3 |
 | 已出片的视频任务 | 9 |
 | `backend/app` 行数 | 41,881 |
-| `web/app.js` 行数 | 2,853 |
+| `web/app.js` 行数 | 2,777 |
 
 一致性不变量（改代码后必须仍成立，`tests/test_caller_permissions.py` 与启动自检会守）：
 
@@ -60,7 +60,7 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 最近一次全量 | **1542 passed, 2 skipped**（2026-11-15 21:47，耗时 6:01） |
+| 最近一次全量 | **1558 passed, 2 skipped**（2026-11-15 23:00，耗时 6:57） |
 | 上一级测试（受影响模块） | 本轮 `test_db_revision.py + test_migrations.py + test_scripts_encoding.py + test_startup_checks.py + test_system_status.py` → 61 passed |
 | 已知告警 | 6 条 warning：`agent_runs ↔ research_subtasks` 外键环的 `SAWarning`（设计内，见 `KNOWN_ISSUES.md` K-07） |
 | 需求矩阵 | `python -m backend.scripts.matrix_lint` → 109 行需求，DONE 107 / BLOCKED 1 / NOT_IMPLEMENTED 1，无问题 |

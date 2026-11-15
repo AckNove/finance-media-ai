@@ -117,3 +117,29 @@
 - **落点**：`backend/scripts/db_revision.py`（只读判断 + 五种状态 + 退出码）、
   `scripts/start.ps1` 的 3.5 段、`tests/test_db_revision.py`（10 例）、
   `tests/test_scripts_encoding.py`（脚本编码与 BOM 仍守着）。
+
+## D-15 重试阶梯只减"问几条"，不许减"记几条"
+
+- **决定**：模型因 `finish_reason=length` 截断而重试时，缩小的是**这一轮问模型几条结论**；
+  落库的核查结果始终按**原始结论条数**生成，没问到的补 `verdict=unverifiable` +
+  `notes=("missing_from_reply",)`，并在 notes 里写 `coverage:2/6`。
+- **为什么**：原来重试后 `items = used_items`，没问到的结论直接从结果里消失——页面上看是
+  "6 条结论全核查过、4 条有判定"，实际是 2 条被抹掉、没人会去数。核查是成稿闸门的唯一依据，
+  少一条就等于让一条没人看过的结论混进成稿。
+- **否决**：①"重试失败就整批失败"——模型偶尔截断，整批重来白花钱；②"没问到的默认判为支持"——
+  这是拿机器的沉默冒充证据。
+- **落点**：`backend/app/research/semantic.py`（`requested_items` + `_report_notes`）、
+  `tests/test_semantic_check.py::test_findings_dropped_by_the_retry_still_get_a_row`。
+
+## D-16 人工闸门放行之后，界面必须自己动起来
+
+- **决定**：任务详情页的轮询由 `startAutoRefresh()` 统一管；**放行闸门（passGate）与推进（act）
+  成功后都要开轮询**，而且放行提示写进持久的 `#task-action` 区域，不写在会被清空的闸门卡里。
+- **为什么**：真事——用户在 `paused` 页点「继续跑」，后端真的跑起来了（库里 4 格 succeeded、
+  花了 ¥0.0237），但页面一直停在旧画面：轮询只在"进页面时已是 running"才启动；
+  而放行提示写在闸门卡内，任务一恢复、闸门卡被清空，提示跟着消失。人看到的就是"点了没反应"，
+  然后去建第二条任务，把同一批抓取做两遍、钱花两遍。
+- **否决**：①"让人手动点刷新"——状态机是后台推进的，手动刷是反人性的；②"放行后就跳转离开"——
+  人想看的就是接下来那几格怎么跑。
+- **落点**：`web/app.js` 的 `isActive()` / `startAutoRefresh()` / `passGate()` / `act()`、
+  `tests/test_ui_copy.py` 两条护栏（passGate 与 act 内都必须出现 `startAutoRefresh();`）。

@@ -395,3 +395,65 @@ def test_a_retried_check_charges_every_attempt_not_just_the_last_one() -> None:
     assert report.as_dict()["notes"]
 
 
+def test_findings_dropped_by_the_retry_still_get_a_row() -> None:
+    """缩梯子只减少"这一轮问模型几条"，没问到的结论必须留一行"没有判定"。
+
+    真跑里出现过：报告 6 条结论、核查只落 4 条——剩下 2 条在页面上根本不存在，
+    人会以为全核查过了（实际既没判定、也就无从确认）。
+    """
+    six = tuple(
+        {
+            "text": f"第 {index} 条结论：净息差降到 {1.5 + index / 100:.2f}%",
+            "kind": "fact",
+            "source_ids": ["S01"],
+            "numbers": [f"{1.5 + index / 100:.2f}%"],
+        }
+        for index in range(6)
+    )
+    calls: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode("utf-8"))
+        calls.append(int(body["max_tokens"]))
+        if len(calls) == 1:
+            return httpx.Response(
+                200,
+                json={
+                    "id": "chatcmpl-cut",
+                    "model": "deepseek-flash",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {"role": "assistant", "content": "{\"checks\": [{\"ind"},
+                            "finish_reason": "length",
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 1200,
+                        "completion_tokens": body["max_tokens"],
+                        "total_tokens": 1200 + body["max_tokens"],
+                    },
+                },
+            )
+        # 第二次（条数被砍到 4 条）只回了前两条的判定
+        return ok_response(
+            payload(
+                {"index": 0, "verdict": "unverifiable", "reason": "证据不足"},
+                {"index": 1, "verdict": "unverifiable", "reason": "证据不足"},
+            ),
+            prompt=900,
+            completion=120,
+        )
+
+    report = check_findings(list(six), list(EVIDENCE), gateway=build_gateway(handler), max_tokens=300)
+    assert len(calls) == 2
+    # 6 条结论一条都不能少：被梯子砍掉的两条也要有行
+    assert [item.index for item in report.checks] == [0, 1, 2, 3, 4, 5]
+    assert all(item.verdict == "unverifiable" for item in report.checks)
+    assert all("missing_from_reply" in tuple(item.notes or ()) for item in report.checks[2:])
+    # 口径写清楚：6 条里只有 2 条真拿到了判定
+    assert any("coverage:2/6" in note for note in report.notes)
+    # 花的还是那两次调用的钱（1200+900 输入、300+120 输出），不因为多写了几行而多算
+    assert report.cost_cny == pytest.approx(0.008051, abs=1e-9)
+
+

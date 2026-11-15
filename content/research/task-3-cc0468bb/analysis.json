@@ -1,0 +1,209 @@
+{
+  "summary": "电力行业的财富分配变化并非电价普涨，真正变化是收入来源重构：容量电价给“备用能力”单独付费，算电协同给绿电与区位重新定价，利润从按发电量分配转向按可调性与位置分配。但2026年上半年电力热力生产和供应业利润总额3352.8亿元、同比下降6.2%，说明当前是存量再分配，行业总量并未扩张；该判断能否成立，要看容量与算电收入的实际兑现。",
+  "findings": [
+    {
+      "claim": "容量电价成为“第二张收入表”：发电量下滑仍可收费，利润与电量脱钩",
+      "kind": "fact",
+      "source_ids": [
+        "S02",
+        "S01"
+      ],
+      "numbers": [
+        "165",
+        "1.65",
+        "4.28",
+        "14.89"
+      ],
+      "section": "cycle"
+    },
+    {
+      "claim": "分配规则由政策硬性设定：煤电固定成本回收比例不低于50%",
+      "kind": "fact",
+      "source_ids": [
+        "S02"
+      ],
+      "numbers": [
+        "50",
+        "114",
+        "2026"
+      ],
+      "section": "policy"
+    },
+    {
+      "claim": "收益分化明显：容量机制利润占比在华电国际123%、大唐76%、华能63%，各家表现不同",
+      "kind": "inference",
+      "source_ids": [
+        "S02"
+      ],
+      "numbers": [
+        "63",
+        "123",
+        "53",
+        "76"
+      ],
+      "section": "structure"
+    },
+    {
+      "claim": "算电协同改写估值依据：电力资产从“红利资产”向“AI能源底座”切换",
+      "kind": "inference",
+      "source_ids": [
+        "S01"
+      ],
+      "numbers": [
+        "4.67"
+      ],
+      "section": "drivers"
+    },
+    {
+      "claim": "以区位定价：绿电直供与算力协同场景直接投资超34亿元，带动千亿元",
+      "kind": "fact",
+      "source_ids": [
+        "S01"
+      ],
+      "numbers": [
+        "136",
+        "34",
+        "2026",
+        "2030"
+      ],
+      "section": "policy"
+    },
+    {
+      "claim": "反证：2026年上半年行业利润同比降6.2%，表明这属于存量再分配，并非总量扩张",
+      "kind": "inference",
+      "source_ids": [
+        "S11",
+        "S12"
+      ],
+      "numbers": [
+        "3352.8",
+        "6.2",
+        "384.32",
+        "12.91"
+      ],
+      "section": "risks"
+    }
+  ],
+  "data_gaps": [
+    "缺行业总收入、上网电量等统一口径的规模与增速数据，无法量化“分配”的绝对量级",
+    "缺各省容量电价覆盖面、用户侧电价是否传导的证据；S04/S05/S06均为2020—2023年旧文，不能用于当前判断",
+    "缺算电协同项目对具体上市公司利润的量化贡献数据",
+    "缺万得电力指数估值（PE/PB）历史序列，无法验证“估值体系切换”是否已发生",
+    "缺五大发电以外的地方与民营发电企业的分配变化证据，样本集中度过高"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 8,
+  "prompt_tokens": 10919,
+  "completion_tokens": 1228,
+  "cost_cny": 0.03372,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "industry",
+  "checklist": {
+    "framework": "industry",
+    "title": "行业研究",
+    "sections": {
+      "definition": {
+        "title": "行业定义与边界",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "stage": {
+        "title": "发展阶段",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "market_size": {
+        "title": "市场规模",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "structure": {
+        "title": "产业结构",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S02"
+        ]
+      },
+      "supply_demand": {
+        "title": "供需关系",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "competition": {
+        "title": "竞争格局",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "drivers": {
+        "title": "驱动因素",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S01"
+        ]
+      },
+      "cycle": {
+        "title": "周期位置",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S02",
+          "S01"
+        ]
+      },
+      "policy": {
+        "title": "政策与监管",
+        "claims": 2,
+        "facts": 2,
+        "inferences": 0,
+        "sources": [
+          "S02",
+          "S01"
+        ]
+      },
+      "risks": {
+        "title": "主要风险",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S11",
+          "S12"
+        ]
+      }
+    },
+    "empty_sections": [
+      "definition",
+      "stage",
+      "market_size",
+      "supply_demand",
+      "competition"
+    ],
+    "inference_only_sections": [
+      "structure",
+      "drivers",
+      "risks"
+    ],
+    "unsectioned": [],
+    "coverage": 0.5
+  },
+  "skills_used": [
+    "investigative-storytelling"
+  ]
+}

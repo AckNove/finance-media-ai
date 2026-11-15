@@ -99,8 +99,12 @@ def test_task_detail_shows_the_artifact_before_the_gate(source: str) -> None:
     assert "function taskArtifactsCard(bundle, taskId)" in source
     assert "/artifacts`" in source
     # 闸门卡上的按钮先把任务恢复再推进，不是只发一个 resume 就完事
-    gate_block = source.split("getElementById('gate-pass')", 1)[1][:1500]
+    gate_block = source.split("const passGate = async () => {", 1)[1][:1500]
     assert "/resume" in gate_block and "/run" in gate_block
+    # 放行之后必须开自动刷新：否则人点了「继续跑」，界面还停在暂停时的旧画面，
+    # 看着就是"点了没反应"（真发生过，用户以为卡死点了两次）
+    assert "startAutoRefresh();" in gate_block
+    assert "startAutoRefresh();" in source.split("const act = async (path, label)", 1)[1][:1500]
 
 
 def test_task_detail_polls_by_id_not_by_card_index(source: str) -> None:

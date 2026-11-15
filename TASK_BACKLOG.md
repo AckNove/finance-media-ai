@@ -13,6 +13,8 @@
 | B-02 | 搬迁后实跑一次 `scripts\start.ps1`（验证启动脚本没有 C 盘假设） | 已完成 | 2026-11-15 21:37 在 `D:\finance-media-ai` 实跑 `.\scripts\start.ps1 -Port 8011 -NoWorker -NoBrowser`：先判出工作库落后（`b6_v6_operations` → `b8_calendar_tags`）并自动升级，`/health` 200、`/api/system/status` 200（32 表 / `b8_calendar_tags` / `journal_mode=delete`）、`/app/` 200、启动自检 8/8；停服后无残留进程、受保护开发库 sha256 未变 | — |
 | B-03 | 真实素材接入（第一份授权素材走通 `register_source` → 预检 → 进片） | 阻塞 | 用户给出文件 + 来源/链接/许可四项；`python -m backend.scripts.register_source ...` 后 `assert_renderable()` 通过，且成片里出现该素材 | **等用户给素材**（见 `KNOWN_ISSUES.md` K-02） |
 | B-13 | 启动时把"工作库版本 vs 代码版本"当闸门（本轮新增并完成） | 已完成 | `python -m backend.scripts.db_revision --json` 五种状态；`start.ps1` 落后即升级并复检、领先/未知拒绝启动；`tests/test_db_revision.py` 10 例 | — |
+| B-14 | 核查漏条：模型重试时把没问到的结论从核查结果里抹掉 | 已完成 | 报告 6 条结论只落 4 条核查。修 `backend/app/research/semantic.py`：缩梯子只减少"问模型几条"，结果集仍按**原始 6 条**落库，没问到的补 `verdict=unverifiable` + `notes=missing_from_reply`，notes 写 `coverage:2/6`。`tests/test_semantic_check.py::test_findings_dropped_by_the_retry_still_get_a_row`（6 条齐全 + 费用仍是两次之和） | — |
+| B-15 | 闸门页点「继续跑」后界面不动（自动刷新没开、提示被自己抹掉） | 已完成 | 根因：轮询只在进入页面时状态已是 active 才启动；放行提示写在闸门卡内，任务一恢复闸门卡被清空 → 提示随之消失。修 `web/app.js`：抽 `isActive()`/`startAutoRefresh()`，放行与推进成功后都开轮询，提示改写到持久的 `#task-action`。`tests/test_ui_copy.py` 两条护栏钉死；真机 Playwright 实测进度卡自己变化、`page errors` 为空 | — |
 
 ## P1 — 明显影响质量
 

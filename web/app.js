@@ -983,7 +983,7 @@ async function pageTaskDetail(view, params) {
       api(`/research-tasks/${id}/events?limit=50`),
       api(`/research-tasks/${id}/timing`),
     ]);
-    if (!fresh.ok) return;
+    if (!fresh.ok) return null;
     const next = fresh.data;
     const progressCard = view.querySelector('#progress-card');
     const eventsCard = view.querySelector('#events-card');
@@ -1023,21 +1023,39 @@ async function pageTaskDetail(view, params) {
         <span class="tag">花费 ${money(next.cost_spent_cny)}</span>
         ${next.failure_reason ? `<span class="tag warn">${esc(next.failure_reason)}</span>` : ''}`;
     }
+    return next;
+  };
+
+  // 任务在跑的时候自动刷新：只换卡片内容，不动按钮与输出区。
+  // **放行之后也要开**——以前只有"进页面时已经是 running"才开，于是人在暂停页点了
+  // 「继续跑」，界面还停在旧画面，看着像没反应（真事：用户点了两次都以为卡死）。
+  const isActive = (status) => ['created', 'planning', 'running'].includes(String(status));
+  const startAutoRefresh = () => {
+    if (activePoll) { clearInterval(activePoll); activePoll = null; }
+    activePoll = setInterval(async () => {
+      const next = await refreshTaskCards();
+      if (!next || !isActive(next.status)) {
+        clearInterval(activePoll);
+        activePoll = null;
+      }
+    }, 4000);
   };
 
   const passGate = async () => {
     const box = document.getElementById('gate-feedback');
-    if (!box) return;
-    box.innerHTML = '<div class="note">先恢复任务…</div>';
+    if (box) box.innerHTML = '<div class="note">先恢复任务…</div>';
     const resumed = await api(`/research-tasks/${id}/resume`, { method: 'POST', body: '{}' });
-    if (!resumed.ok) { box.innerHTML = failure(resumed); return; }
-    box.innerHTML = '<div class="note">放行了，正在往下跑（会真的联网检索）…</div>';
+    if (!resumed.ok) { if (box) box.innerHTML = failure(resumed); return; }
+    if (box) box.innerHTML = '';
+    output.innerHTML = '<div class="note">放行了：任务已恢复，正在往下跑（会真的联网检索）。'
+      + '下面的进度与事件流每 4 秒自动刷新，不用手动点刷新。</div>';
+    startAutoRefresh();
     const ran = await api(`/research-tasks/${id}/run`, {
       method: 'POST',
       body: JSON.stringify({ max_iterations: 3 }),
     });
-    if (!ran.ok) { box.innerHTML = failure(ran); return; }
-    box.innerHTML = runSummaryBlock(ran.data.summary);
+    if (!ran.ok) { output.innerHTML = failure(ran); return; }
+    output.innerHTML = runSummaryBlock(ran.data.summary);
     await refreshTaskCards();
   };
 
@@ -1050,6 +1068,7 @@ async function pageTaskDetail(view, params) {
     } else {
       output.innerHTML = `<div class="note ok">${esc(label)}完成：${esc(result.data.status || result.data.task?.status || '')}</div>`;
     }
+    if (isActive(result.data.status || result.data.task?.status)) startAutoRefresh();
     await refreshTaskCards();
   };
   document.getElementById('run-task').onclick = () => act(`/research-tasks/${id}/run`, '推进执行（真实搜索与抓取）');
@@ -1063,40 +1082,8 @@ async function pageTaskDetail(view, params) {
     passButton.onclick = () => passGate();
   }
 
-  // 任务在跑的时候自动刷新进度：只换两张卡的内容，不动按钮与输出区。
-  if (['created', 'planning', 'running'].includes(String(task.status))) {
-    const progressCard = view.querySelector('#progress-card');
-    const eventsCard = view.querySelector('#events-card');
-    activePoll = setInterval(async () => {
-      const [fresh, freshEvents] = await Promise.all([
-        api(`/research-tasks/${id}`),
-        api(`/research-tasks/${id}/events?limit=50`),
-      ]);
-      if (!fresh.ok) return;
-      const next = fresh.data;
-      progressCard.innerHTML = `<h2>阶段进度</h2><div class="row">${statusTag(next.status)}
-        <span class="tag info">花费 ${money(next.cost_spent_cny)}</span></div>` + table([
-        { title: '#', key: 'sequence', num: true },
-        { title: '阶段', key: 'task_type' },
-        { title: '执行者', value: (row) => esc(row.assignee || '—') },
-        { title: '状态', value: (row) => statusTag(row.status), raw: true },
-        { title: '尝试', value: (row) => `${row.attempts}/${row.max_attempts}`, num: true },
-        { title: '说明', value: (row) => esc(row.failure_reason || '') },
-      ], next.subtasks);
-      if (freshEvents.ok) {
-        eventsCard.innerHTML = `<h2>事件流</h2>` + table([
-          { title: '#', key: 'event_seq', num: true },
-          { title: '类型', key: 'event_type' },
-          { title: '执行者', value: (row) => esc(row.actor || '—') },
-          { title: '时间', value: (row) => when(row.created_at) },
-        ], freshEvents.data.items);
-      }
-      if (!['created', 'planning', 'running'].includes(String(next.status))) {
-        clearInterval(activePoll);
-        activePoll = null;
-      }
-    }, 4000);
-  }
+  // 进页面时任务已经在跑：直接开自动刷新。
+  if (isActive(task.status)) startAutoRefresh();
 }
 
 async function pageSearch(view) {

@@ -1,0 +1,183 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 5,
+  "prompt_tokens": 14744,
+  "completion_tokens": 5078,
+  "cost_cny": 0.074669,
+  "checked_at": "2026-11-15T14:08:21+00:00",
+  "counts": {
+    "supported": 0,
+    "partially_supported": 2,
+    "contradicted": 0,
+    "insufficient_evidence": 2,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "全球组件需求550-600GW，而名义产能超1100-1400GW，供给约为需求2倍，开工率不足50%-60%，过剩是价格跌破成本的直接原因",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "所给 S01、S03 摘录只讲了龙头亏损和组件报价击穿现金成本，没有出现全球需求550-600GW、名义产能1100-1400GW、开工率50%-60%中的任何数字；供给约为需求2倍和过剩导致价格跌破成本的因果判断也无原文依据。",
+      "evidence_ids": [
+        1
+      ],
+      "source_ids": [
+        "S01",
+        "S03"
+      ],
+      "supporting": [
+        "价格已击穿全链现金成本"
+      ],
+      "contradicting": [],
+      "missing": [
+        "全球组件需求550-600GW的原文",
+        "名义产能1100-1400GW的原文",
+        "开工率不足50%-60%的原文",
+        "过剩是价格跌破成本直接原因的论证"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "证据只覆盖\"价格跌破成本\"这一半，产能与需求规模数据完全缺失"
+        },
+        {
+          "code": "causal_leap",
+          "note": "摘录仅陈述价格低于成本，未证明过剩是直接原因"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3686,
+      "completion_tokens": 1269,
+      "cost_cny": 0.018667,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-15T14:08:21+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "7月初TOPCon组件报价0.67-0.70元/W，低于行业现金成本0.75元/W与完全成本0.82元/W，每出货一瓦亏损一毛以上",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "报价0.67-0.70元/W、现金成本约0.75元/W、完全成本0.82元以上均有原文，但\"每瓦亏损一毛以上\"若对照现金成本只有0.05-0.08元，只有对照完全成本才超过0.1元，原文也未直接给出单瓦亏损表述。",
+      "evidence_ids": [
+        1
+      ],
+      "source_ids": [
+        "S01"
+      ],
+      "supporting": [
+        "据SMM数据，7月初TOPCon组件市场报价已跌至0.67-0.70元/W",
+        "而行业合理现金成本约0.75元/W，完全成本在0.82元以"
+      ],
+      "contradicting": [],
+      "missing": [
+        "\"每出货一瓦亏损一毛以上\"的原文表述或测算口径说明（是对现金成本还是完全成本）"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "价格与成本数字被支持，但\"亏损一毛以上\"只在完全成本口径下成立"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3686,
+      "completion_tokens": 1269,
+      "cost_cny": 0.018667,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-15T14:08:21+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "2020-2022年行业暴利吸引龙头、跨界企业与地方平台同时上马项目，工厂建设周期18-24个月，产能集中在2024-2026年释放，与需求周期错配",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "S13摘录支持2020-2022年暴利、龙头/跨界/地方平台集中上马项目和建设周期与需求周期错配，但18-24个月建设周期和产能2024-2026年释放这两点摘录中未出现。",
+      "evidence_ids": [
+        51
+      ],
+      "source_ids": [
+        "S13"
+      ],
+      "supporting": [
+        "2020‑2022年光伏行业暴利，资本市场疯狂追捧。龙头企业、跨界企业、地方平台公司，全部大规模上马项目",
+        "建设周期和需求周期错配（最核心）"
+      ],
+      "contradicting": [],
+      "missing": [
+        "工厂建设周期18-24个月的原文",
+        "产能集中在2024-2026年释放的原文"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "扩产主体与周期错配得到支持，具体建设周期与产能释放年份缺失"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3686,
+      "completion_tokens": 1269,
+      "cost_cny": 0.018667,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-15T14:08:21+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "重资产下沉没成本高、退出壁垒高，且与地方税收就业绑定，企业宁可亏损维持开工也不愿先减产让出份额，形成囚徒困境",
+      "claim_kind": "inference",
+      "verdict": "insufficient_evidence",
+      "reason": "S13摘录只到\"大规模上马项目\"为止，未涉及沉没成本、退出壁垒、地方税收就业绑定或囚徒困境；S14在给定证据中没有任何原文摘录。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S13",
+        "S14"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "S13中关于重资产/沉没成本高/退出壁垒的原文",
+        "地方税收就业绑定的原文",
+        "企业宁可亏损维持开工、囚徒困境的原文",
+        "S14的任何原文摘录"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "所引两个来源中仅有一个有片段，且片段未覆盖结论要点"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 5,
+      "prompt_tokens": 3686,
+      "completion_tokens": 1269,
+      "cost_cny": 0.018667,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-15T14:08:21+00:00",
+      "notes": [
+        "usage_share:1/4"
+      ]
+    }
+  ],
+  "notes": [
+    "retried:2 次（撞上限后减少条数重试，费用按实际累加）"
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

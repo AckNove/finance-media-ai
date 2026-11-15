@@ -1,0 +1,119 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 14,
+  "prompt_tokens": 17444,
+  "completion_tokens": 7893,
+  "cost_cny": 0.104404,
+  "checked_at": "2026-11-15T14:52:14+00:00",
+  "counts": {
+    "supported": 1,
+    "partially_supported": 0,
+    "contradicted": 0,
+    "insufficient_evidence": 2,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "容量电价成为“第二张收入表”：发电量下滑仍可收费，利润与电量脱钩",
+      "claim_kind": "fact",
+      "verdict": "supported",
+      "reason": "证据原文明确指出容量电价不按实际发电量结算、少发电也能获得补偿，并称其为“第二张收入表”重塑盈利逻辑，与结论核心一致。",
+      "evidence_ids": [
+        234
+      ],
+      "source_ids": [
+        "S02",
+        "S01"
+      ],
+      "supporting": [
+        "部分发电企业发电量下滑，但盈利底盘依旧稳固",
+        "它不按照实际发电量结算，而是为机组“需要时能够顶上去”的备用能力付费，即便机组少发电，也可以拿到相应补偿",
+        "这份“第二张收入表”正在重塑电力企业的盈利逻辑"
+      ],
+      "contradicting": [],
+      "missing": [
+        "所列数字（165、1.65、4.28、14.89）在给出的摘录中均未出现，无法核对",
+        "“利润与电量脱钩”的量化程度（脱钩比例）无数据支撑"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 14,
+      "prompt_tokens": 5814,
+      "completion_tokens": 2631,
+      "cost_cny": 0.034801,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-15T14:52:14+00:00",
+      "notes": [
+        "usage_share:1/3"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "分配规则由政策硬性设定：煤电固定成本回收比例不低于50%",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "给出的S02摘录只讲述容量电价的性质与作用，未涉及分配规则、政策硬性设定或煤电固定成本回收比例，50%、114、2026等数字均未出现。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S02"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "关于容量电价分配规则的政策原文",
+        "煤电固定成本回收比例不低于50%的具体表述",
+        "数字114与2026所对应的口径与出处"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 14,
+      "prompt_tokens": 5814,
+      "completion_tokens": 2631,
+      "cost_cny": 0.034801,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-15T14:52:14+00:00",
+      "notes": [
+        "usage_share:1/3"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "收益分化明显：容量机制利润占比在华电国际123%、大唐76%、华能63%，各家表现不同",
+      "claim_kind": "inference",
+      "verdict": "insufficient_evidence",
+      "reason": "证据中没有华电国际、大唐、华能等主体，也没有123%、76%、63%、53%等容量机制利润占比数据，无法支撑或反驳该推断。",
+      "evidence_ids": [],
+      "source_ids": [
+        "S02"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "各公司容量电价收益占利润比例的原始数据",
+        "“容量机制利润占比”的计算口径说明"
+      ],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 14,
+      "prompt_tokens": 5814,
+      "completion_tokens": 2631,
+      "cost_cny": 0.034801,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-15T14:52:14+00:00",
+      "notes": [
+        "usage_share:1/3"
+      ]
+    }
+  ],
+  "notes": [
+    "retried:3 次（撞上限后减少条数重试，费用按实际累加）"
+  ],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

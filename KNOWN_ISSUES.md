@@ -103,3 +103,17 @@
 - **影响**：只影响本机工作库（gitignore 的 `*.db`），**受保护开发库 `data/finance_media.db`
   全程未被打开写入**（sha256 `2df764e5…8203` 未变）。
 - **不需要做什么**：下次启动会读到 `current`，不会重复迁移。
+
+## K-14 选题列表里有一条编码事故留下的空壳（非阻断）
+
+- **现象**：`topics` 里 `id=1` 那条的标题/摘要是一串乱码（`ä¸ºä»ä¹å...`），是第一次用
+  PowerShell `Invoke-RestMethod` 建任务时按 Latin-1 发送造成的；对应的 `research_tasks` #1 已
+  `cancelled`（`failure_reason=human_cancel`），不占额度、不会自己跑。
+- **为什么留着没清**：`TopicUpdate` 只接受 `description/priority/research_status/content_status/
+  football_analogy_required/estimated_duration`，**没有能改 `topics.status` 或删除选题的接口**；
+  直接写库又违反"真实数据只经接口改"的口径。
+- **绕过办法**：在页面上忽略它即可；新建选题走 `#/topics` 正常。
+- **将来怎么修**：给 `/api/topics/{id}` 加 `status` 字段允许置 `archived`（需要一次迁移评审），
+  或在选题页加"归档"按钮走同一个 PATCH。
+- **教训**：Windows PowerShell 5.1 发 JSON 必须自己 `[System.Text.Encoding]::UTF8.GetBytes($json)`，
+  否则中文按 Latin-1 出去就回不来了；python 侧一律用 urllib/requests 发 UTF-8 字节。
