@@ -20,6 +20,8 @@
 
 from __future__ import annotations
 
+import json
+
 import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -156,6 +158,36 @@ def _caption(text: str) -> str:
     return window[: MAX_CAPTION_CHARS - 1] + "…"
 
 
+def write_headline(
+    job_root: Path | str,
+    *,
+    asset_id: str,
+    text: str,
+    source_id: str,
+    frames: int,
+    width: int,
+    height: int,
+    shot_id: str,
+    kicker: str = "",
+) -> Any:
+    """把一句话写成一个"整句大字"画板文件（返回 CardDocument 形态的对象）。"""
+    from backend.app.video.cards import CARD_DIR, CardDocument, headline_document
+
+    root = Path(job_root)
+    document = headline_document(
+        text=text,
+        source_id=source_id,
+        frames=frames,
+        width=width,
+        height=height,
+        kicker=kicker,
+    )
+    target = root / CARD_DIR / f"{asset_id.lower()}.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding="utf-8")
+    return CardDocument(asset_id=asset_id, path=target, document=document, frames=frames, shot_id=shot_id)
+
+
 def storyboard_from_draft(
     draft: ScriptDraft,
     *,
@@ -172,12 +204,16 @@ def storyboard_from_draft(
     shots = plan_shots(draft)
     rows: list[dict[str, Any]] = []
     cards: list[Any] = []
+    data_cards: list[Any] = []
+    text_cards: list[Any] = []
     # 时间轴按**整帧累加**：`plan_shots` 给的秒数是 len/4.2 这类浮点数（如 11.43 秒），
     # 直接写进分镜表会被 `load_storyboard` 判成 `bad_time`（时间必须落在整数帧上）。
     # 渲染器也是逐帧取图的，这里先对齐帧，后面就不用再算一次。
     frame_cursor = 0
 
     from backend.app.video.cards import register_cards, write_card
+    from backend.app.video.kinetic import number_roll_document, write_composition
+    from backend.app.video.outline import unit_numbers
 
     for index, shot in enumerate(shots):
         seconds = float(shot.get("seconds") or 0.0)
@@ -189,20 +225,63 @@ def storyboard_from_draft(
         source_ids = ",".join(str(value) for value in (shot.get("source_ids") or ()))
         number = _card_number(narration) if shot.get("asset_type") == "data_card" else ""
         card = None
+        headline = None
+        kinetic_doc = None
         if number:
-            source_label = source_ids.split(",")[0] if source_ids else ""
-            card = write_card(
+            # 有数字就别用静态卡：数字从 0 滚上去、底色会呼吸，画面跟着数据走。
+            numbers = unit_numbers(narration)
+            first = numbers[0] if numbers else None
+            if first is not None and first.comparable:
+                kinetic_doc = number_roll_document(
+                    value=first.value,
+                    unit=first.unit,
+                    label=_caption(narration),
+                    source_id=(source_ids.split(",")[0] if source_ids else ""),
+                    frames=frames,
+                    width=canvas[0],
+                    height=canvas[1],
+                    kicker=str(shot.get("purpose") or "")[:12],
+                )
+        if not number and narration.strip():
+            # 没有数字的镜头别只给一块底色 + 字幕：把这句话本身做成画面主体，
+            # 否则整片看起来就是"会动的 PPT"（用户对早期样片提过这个意见）。
+            headline = write_headline(
                 root,
-                asset_id=f"CARD_{shot['shot_id']}",
-                number=number,
-                caption=_caption(narration),
-                source_id=source_label,
+                asset_id=f"TEXT_{shot['shot_id']}",
+                text=narration,
+                source_id=(source_ids.split(",")[0] if source_ids else ""),
                 frames=frames,
                 width=canvas[0],
                 height=canvas[1],
                 shot_id=str(shot.get("shot_id") or ""),
+                kicker=str(shot.get("purpose") or "")[:12],
             )
+            cards.append(headline)
+            text_cards.append(headline)
+        if number:
+            source_label = source_ids.split(",")[0] if source_ids else ""
+            if kinetic_doc is not None:
+                card = write_composition(
+                    root,
+                    asset_id=f"CARD_{shot['shot_id']}",
+                    document=kinetic_doc,
+                    frames=frames,
+                    shot_id=str(shot.get("shot_id") or ""),
+                )
+            else:
+                card = write_card(
+                    root,
+                    asset_id=f"CARD_{shot['shot_id']}",
+                    number=number,
+                    caption=_caption(narration),
+                    source_id=source_label,
+                    frames=frames,
+                    width=canvas[0],
+                    height=canvas[1],
+                    shot_id=str(shot.get("shot_id") or ""),
+                )
             cards.append(card)
+            data_cards.append(card)
         rows.append(
             {
                 "shot_id": shot["shot_id"],
@@ -211,12 +290,16 @@ def storyboard_from_draft(
                 "narrative_purpose": str(shot.get("purpose") or ""),
                 "narration": narration,
                 "visual_description": (
-                    "数据卡：放大数字 + 来源标注" if card else str(shot.get("visual") or "")
+                    "数据卡：放大数字 + 来源标注"
+                    if card
+                    else ("整句大字：脚本原句 + 来源" if headline else str(shot.get("visual") or ""))
                 ),
-                "asset_id": card.asset_id if card else "",
-                "asset_type": "composition" if card else "solid",
-                "asset_source": card.relative_path if card else "#1d2a44",
-                "license": "原创（程序生成）" if card else "原创（纯色底，程序生成）",
+                "asset_id": (card or headline).asset_id if (card or headline) else "",
+                "asset_type": "composition" if (card or headline) else "solid",
+                "asset_source": (card or headline).relative_path if (card or headline) else "#1d2a44",
+                "license": (
+                    "原创（程序生成）" if (card or headline) else "原创（纯色底，程序生成）"
+                ),
                 "animation": "fade_in",
                 "camera_motion": (
                     _CARD_CAMERAS[index % len(_CARD_CAMERAS)]
@@ -224,7 +307,7 @@ def storyboard_from_draft(
                     else _PLATE_CAMERAS[index % len(_PLATE_CAMERAS)]
                 ),
                 "transition": _TRANSITIONS[index % len(_TRANSITIONS)],
-                "subtitle": "" if card else _caption(narration),
+                "subtitle": "" if (card or headline) else _caption(narration),
                 "sound_effect": "none",
                 "safety_zone": "bottom",
                 "notes": f"来自脚本；来源 {source_ids}" if source_ids else "来自脚本",
@@ -253,7 +336,8 @@ def storyboard_from_draft(
                 "",
                 f"- 镜头数：{len(rows)}",
                 f"- 总时长：{board.duration:.2f} 秒（{fps}fps）",
-                f"- 数据卡：{len(cards)} 张",
+                f"- 数据卡：{len(data_cards)} 张（数字滚动/放大）",
+                f"- 整句大字：{len(text_cards)} 块（没有数字的句子把原句做成画面）",
                 f"- 句子来源：{draft.generated_by}",
                 "",
                 "## 和规则分镜的区别",
@@ -278,7 +362,8 @@ def storyboard_from_draft(
         "storyboard": str(path.relative_to(root).as_posix()),
         "notes": str(notes_path.relative_to(root).as_posix()),
         "shot_count": len(rows),
-        "card_count": len(cards),
+        "card_count": len(data_cards),
+        "text_count": len(text_cards),
         "total_seconds": round(board.duration, 3),
         "frames": int(round(board.duration * fps)),
     }

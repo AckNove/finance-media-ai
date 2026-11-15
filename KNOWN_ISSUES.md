@@ -148,3 +148,13 @@
 并在子任务输出里写 `model_note`，如实说明这次到底走没走模型、为什么没走。
 **仍存在的风险**：其它用途（plan/analyze/verify）若把上限调小会重现同一现象，
 届时表现为"没有判定"而不是报错。
+
+## K-17 OpenKatana 画板的两个隐形规矩（非阻断，但会让人白折腾半天）
+
+* **样式只认白名单**：写 `background` 会被拒（`ContractError: stage.style: unsupported fields: background`），
+  必须写 `background-color`；同理别指望渐变、`background-image`、CSS 动画。
+* **文字块不许跨整片缩放**：给整块文字挂一条 `scale`（0.97→1.03）会报
+  `ContractError: Composition is not deterministic when seeking backwards`，渲染直接失败。
+  要让画面「一直在动」，请让色条 / 圆点 / 条形这类**非文字元素**去动。
+* 这两条已经写成 `tests/test_script_board.py` 的两条护栏（轨道属性/缓动/关键帧范围 + 文字块不许缩放），
+  改画板代码时会先被测试拦住，不用再等渲染失败才发现。

@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -128,7 +129,12 @@ def test_numeric_sentence_becomes_a_data_card_and_registers_as_an_asset(tmp_path
     assert result["card_count"] == 1
 
 
-def test_sentences_without_units_stay_text_cards(tmp_path: Path) -> None:
+def test_sentences_without_units_become_headline_cards(tmp_path: Path) -> None:
+    """没有数字的句子也要有画面。
+
+    早期成片这里是"纯色底 + 底部字幕"，抽帧后整片就是会动的 PPT（用户原话
+    "做出来的质量极差"）。现在每句都画成一块整句大字画板，字幕不再重复。
+    """
     board_draft = ScriptDraft(
         title="t",
         hook="开场",
@@ -137,11 +143,15 @@ def test_sentences_without_units_stay_text_cards(tmp_path: Path) -> None:
             ScriptLine(text="第二条也没有数字。", role="evidence", source_ids=("S02",)),
         ),
     )
-    storyboard_from_draft(board_draft, job_root=tmp_path)
+    result = storyboard_from_draft(board_draft, job_root=tmp_path)
     board = load_storyboard(tmp_path / "storyboard" / "storyboard.csv")
 
-    assert all(shot.asset_type == "solid" for shot in board.shots)
-    assert board.shots[1].subtitle == "第一条没有数字。"
+    assert all(shot.asset_type == "composition" for shot in board.shots)
+    assert all(shot.asset_id.startswith("TEXT_") for shot in board.shots)
+    assert all(shot.subtitle == "" for shot in board.shots)
+    assert all((tmp_path / shot.asset_source).is_file() for shot in board.shots)
+    assert result["text_count"] == len(board.shots)
+    assert result["card_count"] == 0
 
 
 def test_timeline_is_contiguous_and_starts_at_zero(tmp_path: Path) -> None:
@@ -190,6 +200,64 @@ def test_capacity_units_also_become_data_cards(tmp_path: Path) -> None:
     assert "1200千瓦时" in board
 
 
+def test_headline_never_scales_the_text_block(tmp_path: Path) -> None:
+    """整块文字缓慢放大 = 引擎判"倒着放一遍不一致"。
+
+    实测事故：`lines` 节点上挂一条跨整片 0.97→1.03 的 `scale` 轨道，渲染时报
+    `ContractError: Composition is not deterministic when seeking backwards`，
+    表现是这条分镜渲染直接失败。改法是让非文字色条去动（`accent` 的 scale），
+    文字只做入场动画。
+    """
+
+    draft = ScriptDraft(
+        title="t",
+        hook="开场",
+        lines=(
+            ScriptLine(text="这一句没有数字，只能用大字说。", role="hook", source_ids=("S01",)),
+            ScriptLine(text="这一句同样没有数字，也要有画面。", role="evidence", source_ids=("S02",)),
+        ),
+    )
+    storyboard_from_draft(draft, job_root=tmp_path)
+
+    for path in sorted((tmp_path / "assets" / "compositions").glob("text_*.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        scaled_text = [
+            track
+            for track in document["tracks"]
+            if track["property"] == "scale" and track["node"] in {"lines", "line1", "line2", "line3"}
+        ]
+        assert scaled_text == [], f"{path.name} 又给文字块加了缩放轨道"
+        assert any(track["property"] == "scale" for track in document["tracks"]), (
+            f"{path.name} 没有任何持续运动，成片会被判成冻结画面"
+        )
+
+
+def test_every_composition_obeys_the_engine_track_rules(tmp_path: Path) -> None:
+    """把引擎的轨道规则写成断言，省得下次再靠渲染失败才发现。
+
+    规则来自 `tools/openkatana/docs/COMPOSITIONS.md`：属性只有六个、缓动只有三种、
+    关键帧必须落在 `0..frames-1`、同一节点同一属性只能有一条轨道。
+    """
+
+    allowed = {"opacity", "reveal", "translateX", "translateY", "rotate", "scale"}
+    easings = {"linear", "smooth", "step"}
+    result = storyboard_from_draft(_draft(), job_root=tmp_path)
+    assert result["shot_count"] >= 2
+
+    for path in sorted((tmp_path / "assets" / "compositions").glob("*.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        frames = document["canvas"]["frames"]
+        seen: set[tuple[str, str]] = set()
+        for track in document["tracks"]:
+            assert track["property"] in allowed, f"{path.name}: 未知属性 {track['property']}"
+            assert track["easing"] in easings, f"{path.name}: 未知缓动 {track['easing']}"
+            key = (track["node"], track["property"])
+            assert key not in seen, f"{path.name}: {key} 有两条轨道"
+            seen.add(key)
+            for frame, _value in track["keys"]:
+                assert 0 <= frame <= frames - 1, f"{path.name}: 关键帧 {frame} 越界（0..{frames - 1}）"
+
+
 def test_script_storyboard_accepts_a_script_row(tmp_path: Path) -> None:
     result = script_storyboard(_script_row(), job_root=tmp_path)
 
@@ -229,8 +297,9 @@ def test_captions_obey_the_same_screen_limit_as_the_rule_storyboard(tmp_path: Pa
     storyboard_from_draft(draft, job_root=tmp_path)
     board = load_storyboard(tmp_path / "storyboard" / "storyboard.csv")
 
+    # 现在每句都有画板，字幕不再兜底；但只要有字幕，就必须守同一个上限。
     subtitles = [shot.subtitle for shot in board.shots if shot.subtitle]
-    assert subtitles, "至少有旁白镜头要带字幕"
-    assert max(len(text) for text in subtitles) <= script_board.MAX_CAPTION_CHARS
-    assert any(text.endswith("…") for text in subtitles)
+    if subtitles:
+        assert max(len(text) for text in subtitles) <= script_board.MAX_CAPTION_CHARS
+    assert all(shot.asset_type == "composition" for shot in board.shots)
 

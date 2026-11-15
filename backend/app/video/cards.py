@@ -38,6 +38,7 @@ PAPER = "#f2f5f7"
 DIM = "#94a3b8"
 LIME = "#b6ff1f"
 CYAN = "#35e0ff"
+MAGENTA = "#ff2bd6"
 
 FONT_FAMILY = "AKSC"
 FONT_SRC = "fonts/NotoSansSC-VF.ttf"
@@ -183,6 +184,177 @@ def card_document(
         "root": root,
         "tracks": tracks,
     }
+
+
+def backdrop_nodes(*, frames: int, accent: str = LIME, seed: int = 0) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """柔光底层：三个模糊大圆缓慢漂移，返回 (节点, 轨道)。
+
+    为什么不用渐变：OpenKatana 的画板只认白名单里的 CSS 属性，`background-image`
+    与 CSS 动画都不能用，所以只能拿"大圆 + blur + 位移"堆出流光底色。
+    """
+    palette = [accent, CYAN, MAGENTA]
+    nodes: list[dict[str, Any]] = []
+    tracks: list[dict[str, Any]] = []
+    for index in range(3):
+        node_id = f"blob{index}"
+        nodes.append(
+            {
+                "id": node_id,
+                "type": "box",
+                "style": {
+                    "position": "absolute",
+                    "left": f"{-18 + index * 26}%",
+                    "top": f"{6 + index * 24}%",
+                    "width": f"{760 + index * 90}px",
+                    "height": f"{760 + index * 90}px",
+                    "border-radius": "50%",
+                    "background-color": palette[(index + seed) % len(palette)],
+                    "opacity": f"{0.22 - index * 0.05}",
+                    "filter": "blur(120px)",
+                },
+            }
+        )
+        drift = 46 + index * 28
+        tracks.append(_track(node_id, "translateX", [[0, -drift], [frames - 1, drift]], frames=frames))
+        tracks.append(_track(node_id, "translateY", [[0, drift // 2], [frames - 1, -drift // 2]], frames=frames))
+        tracks.append(
+            _track(node_id, "scale", [[0, 1.0], [(frames - 1) // 2, 1.12], [frames - 1, 1.0]], frames=frames)
+        )
+    return nodes, tracks
+
+
+def headline_document(
+    *,
+    text: str,
+    source_id: str = "",
+    frames: int,
+    width: int = 1080,
+    height: int = 1920,
+    kicker: str = "",
+    accent: str = LIME,
+) -> dict[str, Any]:
+    """生成一张"整句大字"画板文档（给没有数字的镜头用）。
+
+    为什么需要它：只把句子写进字幕、画面给一块底色，看起来就是"会动的 PPT"。
+    这里把这句话本身做成画面主体——最多三行、按可用宽度自动缩字号，关键数字
+    （若句中恰好带单位数字）单独用强调色，其余为纸白色。
+    """
+    if frames < 2:
+        raise ValueError("frames 至少为 2，否则动画没有可用的时间轴")
+
+    body = text.strip()
+    if not body:
+        raise ValueError("headline 的正文不能为空")
+    # 按标点切句、每行最多 10 个字，最多三行：竖屏 1080 宽下 10 个全角字约 720px，
+    # 留得住左右边距；再多行就会把正文字号压到看不清。
+    lines = _headline_lines(body)
+    size = textfit.fit_text_size(
+        lines, base=88, canvas_width=width, budget=0.82, minimum=44
+    )
+
+    blobs, blob_tracks = backdrop_nodes(frames=frames, accent=accent)
+    children: list[dict[str, Any]] = []
+    tracks: list[dict[str, Any]] = list(blob_tracks)
+    if kicker:
+        children.append(_text("kicker", kicker, size=34, color=CYAN, spacing="0.16em"))
+        tracks.append(_track("kicker", "reveal", [[0, 0], [min(10, frames - 1), 1]], frames=frames))
+    line_nodes = []
+    for index, line in enumerate(lines):
+        node_id = f"line{index + 1}"
+        line_nodes.append(node_id)
+        children.append(_text(node_id, line, size=size, color=PAPER, weight=700))
+        begin = min(4 + index * 6, frames - 2)
+        tracks.append(_track(node_id, "opacity", [[begin, 0], [min(begin + 12, frames - 1), 1]], frames=frames))
+        tracks.append(
+            _track(node_id, "translateY", [[begin, 28], [min(begin + 14, frames - 1), 0]], frames=frames)
+        )
+    if source_id:
+        children.append(_text("source", f"来源 {source_id}", size=32, color=DIM))
+
+    # 让非文字元素一直动：纯文字画板如果动画停在半路就不再变像素，会被判成"冻结画面"。
+    # **不能靠整块文字缓慢放大**——实测那样每帧都在改字号对齐方式，引擎做
+    # "倒着放一遍比对"时会报 `Composition is not deterministic when seeking backwards`。
+    # 换成一根色条慢慢长长：动的是纯色块，不涉及字形重排，确定性没问题。
+    tracks.append(_track("accent", "scale", [[0, 0.12], [frames - 1, 1.0]], frames=frames))
+
+    return {
+        "schema": 1,
+        "canvas": {"w": width, "h": height, "fps": 30, "frames": frames},
+        "fonts": [{"family": FONT_FAMILY, "src": FONT_SRC}],
+        "plugins": [],
+        "root": {
+            "id": "stage",
+            "type": "box",
+            "style": {
+                "position": "relative",
+                "display": "flex",
+                "flex-direction": "column",
+                "justify-content": "center",
+                "align-items": "center",
+                "gap": "18px",
+                "width": "100%",
+                "height": "100%",
+                "padding": "0 96px",
+                "background-color": INK,
+                "overflow": "hidden",
+            },
+            "children": blobs + [
+                {
+                    # 一根贴着文字块的色条，用来提供持续运动（见上面注释）。
+                    "id": "accent",
+                    "type": "box",
+                    "style": {
+                        "width": "320px",
+                        "height": "8px",
+                        "border-radius": "4px",
+                        "background-color": accent,
+                        "transform-origin": "left center",
+                        "opacity": "0.9",
+                    },
+                },
+                {
+                    "id": "lines",
+                    "type": "box",
+                    "style": {
+                        "position": "relative",
+                        "display": "flex",
+                        "flex-direction": "column",
+                        "align-items": "center",
+                        "gap": "14px",
+                    },
+                    "children": children,
+                }
+            ],
+        },
+        "tracks": tracks,
+    }
+
+
+def _headline_lines(text: str, *, per_line: int = 10, max_lines: int = 3) -> list[str]:
+    """把一句话切成"每行不超过 per_line 个字"的若干行（最多 max_lines 行）。"""
+    body = "".join(part.strip() for part in text.split("\n"))
+    if len(body) <= per_line:
+        return [body]
+    lines: list[str] = []
+    rest = body
+    while rest and len(lines) < max_lines:
+        if len(rest) <= per_line:
+            lines.append(rest)
+            rest = ""
+            break
+        cut = per_line
+        # 尽量在标点/空格处断行，别把词劈开
+        for offset in range(0, min(6, len(rest) - per_line)):
+            char = rest[per_line - offset - 1]
+            if char in "，。、；：！？,.!?;: ":
+                cut = per_line - offset
+                break
+        lines.append(rest[:cut].strip())
+        rest = rest[cut:].strip()
+    if rest:
+        # 超出三行就把剩下的并进最后一行
+        lines[-1] = f"{lines[-1]}{rest}"
+    return lines
 
 
 def card_path(job_root: Path | str, asset_id: str) -> Path:

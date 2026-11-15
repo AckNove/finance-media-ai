@@ -24,14 +24,14 @@
 | 权限清单条目（`ROUTE_CALLERS`） | 85 |
 | 工作台页面（`web/app.js`） | 20 |
 | 已注册工具（`TOOL_NAMES`） | 11 |
-| 测试文件 | 120 |
+| 测试文件 | 121 |
 | `docs/*.md` | 10 |
 | `docs/research_hub/*.md` | 51 |
 | `backend/scripts/*.py` | 38 |
 | `scripts/*.ps1` | 3 |
-| 已出片的视频任务 | 9 |
-| `backend/app` 行数 | 42,655 |
-| `web/app.js` 行数 | 2,873 |
+| 已出片的视频任务 | 10 |
+| `backend/app` 行数 | 43,535 |
+| `web/app.js` 行数 | 2,876 |
 
 一致性不变量（改代码后必须仍成立，`tests/test_caller_permissions.py` 与启动自检会守）：
 
@@ -60,7 +60,7 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 最近一次全量 | **1565 passed, 2 skipped**（2026-11-15 23:00，耗时 8:39） |
+| 最近一次全量 | **1575 passed, 2 skipped**（2026-11-16 02:05，耗时 7:12） |
 | 上一级测试（受影响模块） | 本轮 `test_db_revision.py + test_migrations.py + test_scripts_encoding.py + test_startup_checks.py + test_system_status.py` → 61 passed |
 | 已知告警 | 6 条 warning：`agent_runs ↔ research_subtasks` 外键环的 `SAWarning`（设计内，见 `KNOWN_ISSUES.md` K-07） |
 | 需求矩阵 | `python -m backend.scripts.matrix_lint` → 109 行需求，DONE 107 / BLOCKED 1 / NOT_IMPLEMENTED 1，无问题 |

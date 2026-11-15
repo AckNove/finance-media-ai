@@ -190,3 +190,22 @@
   `backend/app/research/persistence.py`（`record_checks` 本来就是整批替换 + 继承人工状态）、
   `backend/app/api/routes/research_reports.py`、`web/app.js`（`pageChecks` 的 `gapRow` 与 `#checks-recheck`）、
   `tests/test_recheck.py`（7 例）。
+
+## D-20 画面：没有素材也要有画面，且只动色块不动字形
+
+**决定**：规则分镜与脚本分镜里，**每个镜头都必须是一块画板**（`composition`），不再有「纯色底 + 底部字幕」；
+带单位数字的镜头用数字滚动，无数字的句子用整句大字，画板底色用会漂移的柔光圆，持续运动交给**非文字元素**
+（色条、圆、条形）承担。画板样式只写 `background-color`，不写 `background`。
+
+**为什么**：用户看完第一条成片说「做出来的质量极差」——8 个镜头里 7 个是深色底 + 底部字幕，等于会动的 PPT。
+另外两个真问题：①OpenKatana 的样式白名单不认 `background`，写了直接 `ContractError: unsupported fields: background`；
+②给整块文字加跨整片的 `scale`（0.97→1.03）会报 `Composition is not deterministic when seeking backwards`，
+因为每帧的字形对齐都在变，引擎「倒着放一遍比对」必然不一致。
+
+**否决了什么**：否决「文字整体缓慢放大」这条防冻结套路（改成色条 `scale`）；否决「没素材就铺底色加字幕」；
+否决「用生成图片/视频素材顶上」（真实素材仍待用户提供，C 类生成素材不许冒充真实场景）。
+
+**代码落点**：`backend/app/video/kinetic.py`（数字滚动/对比条/机制图/柔光底）、
+`backend/app/video/cards.py::headline_document`（整句大字 + `accent` 色条）、
+`backend/app/video/script_board.py`（逐镜选画板、分开统计 `card_count`/`text_count`）、
+`tests/test_script_board.py::test_headline_never_scales_the_text_block`、`test_every_composition_obeys_the_engine_track_rules`。

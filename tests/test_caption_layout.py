@@ -71,12 +71,57 @@ def test_storyboard_captions_fit_the_frame(tmp_path: Path) -> None:
     storyboard_from_draft(draft, job_root=tmp_path)
     board = load_storyboard(tmp_path / "storyboard" / "storyboard.csv")
 
+    # 脚本分镜现在每句都画成整句大字画板，不再往画面上叠字幕（早先的
+    # "纯色底 + 底部字幕"正是被用户否掉的形态）。字幕这条路径仍在规则分镜里，
+    # 所以下面另起一份规则分镜，继续守"字幕必须落在画面内"这条不变量。
+    assert all(shot.asset_type == "composition" for shot in board.shots)
     subtitles = [shot.subtitle for shot in board.shots if shot.subtitle]
-    assert subtitles
-    assert max(len(text) for text in subtitles) <= MAX_CAPTION_CHARS
-    size = caption_font_size(board, base=46, width=board.width)
-    widest = max(display_width(text) for text in subtitles)
-    assert widest * size <= board.width, "字幕宽度必须落在画面内"
+    if subtitles:
+        assert max(len(text) for text in subtitles) <= MAX_CAPTION_CHARS
+
+    from backend.app.research.digest import DataPoint, Digest, SourceRef
+    from backend.app.video.outline import build_outline
+
+    refs = tuple(
+        SourceRef(
+            source_id=f"S{index + 1:02d}",
+            title=f"资料 {index + 1}",
+            url=f"https://example.com/{index + 1}",
+            site_name="example",
+            author="",
+            published_at="2025-01-01",
+            sha256="a" * 64,
+            snapshot_path="",
+            char_count=1000,
+            query="电力",
+        )
+        for index in range(2)
+    )
+    digest = Digest(
+        title="电力行业为什么在重新分配利润",
+        objective="电力行业为什么在重新分配利润",
+        sources=refs,
+        data_points=(
+            DataPoint(
+                source_id="S01",
+                text="全产业链亏损：2024年三季度起主链毛利率持续为负，硅料硅片电池组件普遍亏损。",
+                numbers=("2024年",),
+            ),
+            DataPoint(
+                source_id="S02",
+                text="供给过剩把报价压到成本线以下。",
+                numbers=(),
+            ),
+        ),
+    )
+    rule = build_outline(digest, job_root=tmp_path / "rule", job_id="rule")
+    rule_board = load_storyboard(rule.storyboard_path)
+    rule_subtitles = [shot.subtitle for shot in rule_board.shots if shot.subtitle]
+    assert rule_subtitles, "规则分镜靠字幕念句子，必须真的产生字幕"
+    assert max(len(text) for text in rule_subtitles) <= MAX_CAPTION_CHARS
+    size = caption_font_size(rule_board, base=46, width=rule_board.width)
+    widest = max(display_width(text) for text in rule_subtitles)
+    assert widest * size <= rule_board.width, "字幕宽度必须落在画面内"
 
 
 def _caption_size_of(document: dict) -> int:

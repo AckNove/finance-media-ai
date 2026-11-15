@@ -17,6 +17,7 @@
 | B-15 | 闸门页点「继续跑」后界面不动（自动刷新没开、提示被自己抹掉） | 已完成 | 根因：轮询只在进入页面时状态已是 active 才启动；放行提示写在闸门卡内，任务一恢复闸门卡被清空 → 提示随之消失。修 `web/app.js`：抽 `isActive()`/`startAutoRefresh()`，放行与推进成功后都开轮询，提示改写到持久的 `#task-action`。`tests/test_ui_copy.py` 两条护栏钉死；真机 Playwright 实测进度卡自己变化、`page errors` 为空 | — |
 | B-16 | 重新核查：漏判的结论能补判（只重判不重新检索） | 已完成 | `POST /api/research-reports/{id}/checks/recheck`；报告 #2 从 3/6 补到 6/6，花 ¥0.037209 |
 | B-17 | 让「只写脚本」的任务真的用上模型（选题兜底 + 密钥解析 + token 阶梯） | 已完成 | 报告 `topic_id` 一直是 NULL → 记下来并三级兜底；密钥解析直接读 `.env`；脚本超限改阶梯 3000/4000，产出 `generated_by=model`、¥0.016648 |
+| B-18 | 画面从「底色+字幕」升级为动态图表 / 数字动画 / 整句大字 | **已完成** | `backend/app/video/kinetic.py`、`cards.headline_document`、`script_board` 逐镜选画板；回执新增 `card_count`/`text_count`；两条契约护栏在 `tests/test_script_board.py` |
 
 ## P1 — 明显影响质量
 

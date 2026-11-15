@@ -819,6 +819,18 @@ def render_job(
                 )
                 if again.tracks:
                     narration_audio = audio_mix(list(again.tracks))
+                # 重排之后必须用"重排后"的实测时长覆盖报告：
+                # 否则 QC 里还写着重排前的 `shot_seconds` 与 `overrun`，
+                # 看上去"旁白比镜头长 3.8 秒"（其实是重排前的旧账），人会以为音频被切了。
+                first_pass = narration_payload
+                narration_payload = again.as_dict()
+                narration_payload["retimed"] = changed
+                narration_payload["first_pass"] = {
+                    "overrun_total": sum(
+                        max(0.0, float(clip.overrun_seconds)) for clip in result.clips
+                    ),
+                    "clips": len(result.clips),
+                }
                 # 镜头变长了，数据卡画板也要按新时长重写，否则后半段是静止的最后一帧。
                 from backend.app.video.cards import resize_cards
                 from backend.app.video.chain import resize_chains
