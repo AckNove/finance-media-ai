@@ -1338,8 +1338,10 @@ async function pageChecks(view) {
       </div>
       ${nextCard}
       <div class="card"><h2>逐条核查</h2>
+        <p class="muted">最右边一列是「人工复核 / 操作」，已固定在表格右侧：上面是你现在的复核状态（待人工复核 / 已确认 / 已驳回），
+          下面三个按钮点完就生效。表格中间那几列（理由、支持片段）可以左右拖。</p>
         <div class="scroll"><table style="min-width:1240px">
-          <thead><tr><th>#</th><th>结论</th><th>模型判定</th><th>理由</th><th>支持片段</th><th>反对片段</th><th>人工</th><th>操作</th></tr></thead>
+          <thead><tr><th>#</th><th>结论</th><th>模型判定</th><th>理由</th><th>支持片段</th><th>反对片段</th><th class="actions">人工复核 / 操作</th></tr></thead>
           <tbody>
             ${checks.data.items.map((row) => `
               <tr data-check="${row.id}">
@@ -1349,8 +1351,9 @@ async function pageChecks(view) {
                 <td class="muted">${esc((row.issues || []).map((item) => item.code).join(', ') || '—')}</td>
                 <td style="min-width:180px">${quoteList(row.supporting)}</td>
                 <td style="min-width:180px">${quoteList(row.contradicting)}</td>
-                <td>${humanTag(row.human_review_status)}${row.human_note ? `<div class="muted">${esc(row.human_note)}</div>` : ''}</td>
                 <td class="actions">
+                  <div class="row" style="margin:0 0 6px">${humanTag(row.human_review_status)}</div>
+                  ${row.human_note ? `<div class="muted" style="margin-bottom:6px">${esc(row.human_note)}</div>` : ''}
                   <button class="btn ghost" data-review="confirmed" data-id="${row.id}">确认</button>
                   <button class="btn ghost" data-review="rejected" data-id="${row.id}">驳回</button>
                   <button class="btn ghost" data-review="needs_more_evidence" data-id="${row.id}">需补证据</button>

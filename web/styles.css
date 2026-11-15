@@ -112,6 +112,18 @@ tbody tr.focus-row { background: rgba(182, 255, 31, 0.08); box-shadow: inset 3px
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .scroll { overflow-x: auto; }
 
+/* 表格很宽时，「操作」列固定在右边——
+   否则「确认」按钮会跑到横向滚动能看见的范围之外，人根本找不到（真实踩过）。 */
+.scroll table td.actions,
+.scroll table th.actions {
+  position: sticky;
+  right: 0;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  white-space: nowrap;
+  box-shadow: -8px 0 10px -10px rgba(0, 0, 0, 0.8);
+}
+
 .btn {
   background: var(--lime); color: #08111f; border: none; border-radius: 8px;
   padding: 8px 14px; font-weight: 700; cursor: pointer; font-size: 13px;
