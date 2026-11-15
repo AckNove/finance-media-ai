@@ -13,6 +13,10 @@ class DraftReadinessOut(BaseModel):
     report_id: int = Field(..., description="研究报告 ID")
     total_checks: int = Field(..., description="这份报告有几条语义核查记录")
     confirmed: int = Field(..., description="其中被人工确认了几条")
+    findings_total: int = Field(0, description="报告里有几条结论（与 total_checks 不等就有漏核查的）")
+    unchecked: int = Field(
+        0, description="没有任何核查记录的结论条数：它们不会进成稿"
+    )
     by_human_review: dict[str, int] = Field(
         default_factory=dict, description="按人工复核状态计数（pending/confirmed/...）"
     )
