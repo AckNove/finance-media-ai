@@ -71,6 +71,19 @@
     font-size: 20px;
     letter-spacing: 0.4px;
   }
+  .ak-overlay {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  .ak-overlay-label {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.9);
+    will-change: opacity;
+  }
 </style>
 </head>
 <body>
@@ -80,8 +93,15 @@
   <div class="grade-bottom"></div>
   <div class="vignette"></div>
   <div id="label">资料画面</div>
-  <div class="ak-text" data-at="0.150" style="top:1181px;font-size:30px;color:#f2f5f7;text-align:left;opacity:0">真实变电设备 · 资料画面</div>
-  <div class="ak-text" data-at="0.450" style="top:1267px;font-size:62px;color:#f2f5f7;text-align:left;opacity:0">一条线卖电，
+  <div class="ak-overlay" data-kind="rule" data-at="0.400" data-grow="0.500" style="left:86px;top:970px;width:907px;height:3px;background:rgba(242,245,247,0.5);transform-origin:0 50%;transform:scaleX(0.001);"></div>
+  <div class="ak-overlay" data-kind="bar" data-at="0.700" data-grow="1.100" style="left:216px;top:749px;width:173px;height:221px;background:#4d86a8;border-radius:6px 6px 0 0;transform-origin:50% 100%;transform:scaleY(0.001);box-shadow:0 0 40px rgba(182,255,31,0.25);"></div>
+  <div class="ak-overlay-label" data-at="1.800" style="left:216px;top:705px;color:#4d86a8;opacity:0">电量收入</div>
+  <div class="ak-overlay-label" data-at="1.800" style="left:216px;top:745px;color:rgba(242,245,247,0.72);font-size:24px;opacity:0">按发电量结算</div>
+  <div class="ak-overlay" data-kind="bar" data-at="0.900" data-grow="1.400" style="left:670px;top:614px;width:173px;height:355px;background:#b6ff1f;border-radius:6px 6px 0 0;transform-origin:50% 100%;transform:scaleY(0.001);box-shadow:0 0 40px rgba(182,255,31,0.25);"></div>
+  <div class="ak-overlay-label" data-at="2.300" style="left:670px;top:570px;color:#b6ff1f;opacity:0">容量收入</div>
+  <div class="ak-overlay-label" data-at="2.300" style="left:670px;top:610px;color:rgba(242,245,247,0.72);font-size:24px;opacity:0">按待命能力结算</div>
+  <div class="ak-text" data-at="0.150" style="top:1089px;font-size:30px;color:#f2f5f7;text-align:left;opacity:0">真实变电设备 · 资料画面</div>
+  <div class="ak-text" data-at="0.450" style="top:1181px;font-size:62px;color:#f2f5f7;text-align:left;opacity:0">一条线卖电，
 另一条线卖「待命」</div>
   <div id="credit">Saiphani02 · CC BY 4.0</div>
 </div>
@@ -89,6 +109,8 @@
 const SCENE = {"fps": 30, "duration": 6.2, "width": 1080, "height": 1920, "move": {"z0": 1.12, "z1": 1.02, "x0": -0.02, "x1": 0.03, "y0": 0.0, "y1": -0.01, "ease": "smooth"}};
 const photo = document.getElementById("photo");
 const nodes = Array.from(document.querySelectorAll(".ak-text"));
+const overlays = Array.from(document.querySelectorAll(".ak-overlay"));
+const overlayLabels = Array.from(document.querySelectorAll(".ak-overlay-label"));
 
 function smooth(x) { return x * x * (3 - 2 * x); }
 function ease(t) {
@@ -102,13 +124,33 @@ function seek(t) {
   const z = m.z0 + (m.z1 - m.z0) * k;
   const dx = (m.x0 + (m.x1 - m.x0) * k) * 100;
   const dy = (m.y0 + (m.y1 - m.y0) * k) * 100;
-  photo.style.transform = `translate(${-dx}%, ${-dy}%) scale(${z})`;
+  const maxShift = Math.max(0, (z - 1) * 50 * 0.8);
+  const tx = Math.max(-maxShift, Math.min(maxShift, dx));
+  const ty = Math.max(-maxShift, Math.min(maxShift, dy));
+  photo.style.transform = `translate(${-tx}%, ${-ty}%) scale(${z})`;
   for (const node of nodes) {
     const at = Number(node.dataset.at || 0);
     const span = 0.45;
     const p = Math.min(1, Math.max(0, (t - at) / span));
     node.style.opacity = String(p);
     node.style.transform = `translateY(${(1 - p) * 18}px)`;
+  }
+  for (const node of overlays) {
+    const at = Number(node.dataset.at || 0);
+    const grow = Math.max(0.05, Number(node.dataset.grow || 0.9));
+    const p = Math.min(1, Math.max(0, (t - at) / grow));
+    const eased = smooth(p);
+    node.style.opacity = String(Math.min(1, p * 3));
+    if (node.dataset.kind === "bar") {
+      node.style.transform = `scaleY(${Math.max(0.001, eased)})`;
+    } else {
+      node.style.transform = `scaleX(${Math.max(0.001, eased)})`;
+    }
+  }
+  for (const node of overlayLabels) {
+    const at = Number(node.dataset.at || 0);
+    const p = Math.min(1, Math.max(0, (t - at) / 0.4));
+    node.style.opacity = String(p);
   }
 }
 

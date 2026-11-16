@@ -25,6 +25,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.app.video.cinema.photo import (  # noqa: E402
     PhotoMove,
+    PhotoOverlay,
     PhotoScene,
     PhotoText,
     build_photo_scene,
@@ -47,6 +48,7 @@ class Shot:
     move: PhotoMove
     title_y: float = 0.66
     kicker_y: float = 0.615
+    overlays: tuple[PhotoOverlay, ...] = ()
 
 
 # 顺序按分镜表；文字只保留"这一镜在说什么"，不堆句子
@@ -68,6 +70,22 @@ SHOTS: tuple[Shot, ...] = (
         kicker="真实变电设备 · 资料画面",
         title="一条线卖电，\n另一条线卖「待命」",
         move=PhotoMove(z0=1.12, z1=1.02, x0=-0.02, x1=0.03, y0=0.0, y1=-0.01),
+        title_y=0.615,
+        kicker_y=0.567,
+        overlays=(
+            # 基准线：两条收入线都从这条地面起算
+            PhotoOverlay("base", "rule", 0.08, 0.505, 0.84, 0.0018, color="rgba(242,245,247,0.5)", at=0.4, grow=0.5),
+            # 左：电量收入——跟着发电量走，越走越低
+            PhotoOverlay(
+                "bar_energy", "bar", 0.20, 0.505, 0.16, 0.115,
+                color="#4d86a8", label="电量收入", note="按发电量结算", at=0.7, grow=1.1,
+            ),
+            # 右：容量收入——按可用的"待命能力"付费，往上长
+            PhotoOverlay(
+                "bar_capacity", "bar", 0.62, 0.505, 0.16, 0.185,
+                color="#b6ff1f", label="容量收入", note="按待命能力结算", at=0.9, grow=1.4,
+            ),
+        ),
     ),
     Shot(
         shot_id="D1_industry",
@@ -105,6 +123,7 @@ def build(only: tuple[str, ...] = ()) -> list[dict]:
                 PhotoText("kicker", shot.kicker, shot.kicker_y, at=0.15),
                 PhotoText("title", shot.title, shot.title_y, at=0.45, size=62),
             ),
+            overlays=shot.overlays,
             label="资料画面",
             grade=shot.grade,
         )

@@ -174,3 +174,7 @@ content/jobs/*/remaster_v2/assets/audio/*.wav
 
 # V2 真实素材：允许入库的实拍原图（授权已逐项登记，见 source_register.csv）
 !content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/*.jpg
+content/jobs/*/remaster_v2/production/clips/
+content/jobs/*/remaster_v2/output/prototype.ass
+content/jobs/*/remaster_v2/output/prototype_concat.txt
+!content/jobs/v6_power_first_film/remaster_v2/output/prototype_15_20s.mp4

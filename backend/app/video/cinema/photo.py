@@ -55,6 +55,32 @@ class PhotoText:
 
 
 @dataclass(frozen=True)
+class PhotoOverlay:
+    """压在实拍画面上的数据层。
+
+    为什么要有它：任务书要求"真实场景里展示数据"，而不是另起一张图表页。
+    所以数据以半透明色块 + 标签的形式长在真实画面上——下面还是变电站本体，
+    观众看到的是"这套设备的收入由两条线组成"，不是"一张柱状图"。
+
+    kind="bar" 从底线往上长；kind="rule" 是一条水平基准线；kind="chip" 是一枚小胶囊标签。
+    x/y/w/h 都是画面宽高的比例；at 是出现时间（秒），grow 是生长时长（秒）。
+    """
+
+    id: str
+    kind: str
+    x: float
+    y: float
+    w: float
+    h: float
+    color: str = "#b6ff1f"
+    label: str = ""
+    note: str = ""
+    at: float = 0.6
+    grow: float = 0.9
+    label_side: str = "above"  # above | below | inside
+
+
+@dataclass(frozen=True)
 class PhotoScene:
     scene_id: str
     asset_id: str
@@ -62,6 +88,7 @@ class PhotoScene:
     duration: float
     move: PhotoMove = field(default_factory=PhotoMove)
     texts: tuple[PhotoText, ...] = ()
+    overlays: tuple[PhotoOverlay, ...] = ()
     label: str = "资料画面"
     credit: str = ""
     grade: str = "cinema"
@@ -151,6 +178,19 @@ PAGE_TEMPLATE = """<!doctype html>
     font-size: 20px;
     letter-spacing: 0.4px;
   }}
+  .ak-overlay {{
+    position: absolute;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }}
+  .ak-overlay-label {{
+    position: absolute;
+    white-space: nowrap;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.9);
+    will-change: opacity;
+  }}
 </style>
 </head>
 <body>
@@ -160,6 +200,7 @@ PAGE_TEMPLATE = """<!doctype html>
   <div class="grade-bottom"></div>
   <div class="vignette"></div>
   <div id="label">{label}</div>
+  {overlay_nodes}
   {text_nodes}
   <div id="credit">{credit}</div>
 </div>
@@ -167,6 +208,8 @@ PAGE_TEMPLATE = """<!doctype html>
 const SCENE = {scene_json};
 const photo = document.getElementById("photo");
 const nodes = Array.from(document.querySelectorAll(".ak-text"));
+const overlays = Array.from(document.querySelectorAll(".ak-overlay"));
+const overlayLabels = Array.from(document.querySelectorAll(".ak-overlay-label"));
 
 function smooth(x) {{ return x * x * (3 - 2 * x); }}
 function ease(t) {{
@@ -180,13 +223,33 @@ function seek(t) {{
   const z = m.z0 + (m.z1 - m.z0) * k;
   const dx = (m.x0 + (m.x1 - m.x0) * k) * 100;
   const dy = (m.y0 + (m.y1 - m.y0) * k) * 100;
-  photo.style.transform = `translate(${{-dx}}%, ${{-dy}}%) scale(${{z}})`;
+  const maxShift = Math.max(0, (z - 1) * 50 * 0.8);
+  const tx = Math.max(-maxShift, Math.min(maxShift, dx));
+  const ty = Math.max(-maxShift, Math.min(maxShift, dy));
+  photo.style.transform = `translate(${{-tx}}%, ${{-ty}}%) scale(${{z}})`;
   for (const node of nodes) {{
     const at = Number(node.dataset.at || 0);
     const span = 0.45;
     const p = Math.min(1, Math.max(0, (t - at) / span));
     node.style.opacity = String(p);
     node.style.transform = `translateY(${{(1 - p) * 18}}px)`;
+  }}
+  for (const node of overlays) {{
+    const at = Number(node.dataset.at || 0);
+    const grow = Math.max(0.05, Number(node.dataset.grow || 0.9));
+    const p = Math.min(1, Math.max(0, (t - at) / grow));
+    const eased = smooth(p);
+    node.style.opacity = String(Math.min(1, p * 3));
+    if (node.dataset.kind === "bar") {{
+      node.style.transform = `scaleY(${{Math.max(0.001, eased)}})`;
+    }} else {{
+      node.style.transform = `scaleX(${{Math.max(0.001, eased)}})`;
+    }}
+  }}
+  for (const node of overlayLabels) {{
+    const at = Number(node.dataset.at || 0);
+    const p = Math.min(1, Math.max(0, (t - at) / 0.4));
+    node.style.opacity = String(p);
   }}
 }}
 
@@ -207,6 +270,54 @@ if (photo.complete && photo.naturalWidth > 0) {{
 </body>
 </html>
 """
+
+
+def _overlay_nodes(overlays: tuple[PhotoOverlay, ...], width: int, height: int) -> str:
+    parts: list[str] = []
+    for item in overlays:
+        left = item.x * width
+        top = item.y * height
+        w = item.w * width
+        h = item.h * height
+        if item.kind == "bar":
+            style = (
+                f"left:{left:.0f}px;top:{top - h:.0f}px;width:{w:.0f}px;height:{h:.0f}px;"
+                f"background:{item.color};border-radius:6px 6px 0 0;"
+                "transform-origin:50% 100%;transform:scaleY(0.001);"
+                "box-shadow:0 0 40px rgba(182,255,31,0.25);"
+            )
+        elif item.kind == "rule":
+            style = (
+                f"left:{left:.0f}px;top:{top:.0f}px;width:{w:.0f}px;height:{max(2, h):.0f}px;"
+                f"background:{item.color};transform-origin:0 50%;transform:scaleX(0.001);"
+            )
+        else:  # chip
+            style = (
+                f"left:{left:.0f}px;top:{top:.0f}px;width:{w:.0f}px;height:{h:.0f}px;"
+                f"background:{item.color};border-radius:999px;opacity:0;"
+            )
+        parts.append(
+            f'<div class="ak-overlay" data-kind="{item.kind}" data-at="{item.at:.3f}" '
+            f'data-grow="{item.grow:.3f}" style="{style}"></div>'
+        )
+        if item.label:
+            if item.label_side == "below":
+                label_top = top + 12
+            elif item.label_side == "inside":
+                label_top = top - h / 2 - 18
+            else:
+                label_top = top - h - 44
+            parts.append(
+                f'<div class="ak-overlay-label" data-at="{item.at + item.grow:.3f}" style="'
+                f"left:{left:.0f}px;top:{label_top:.0f}px;color:{item.color};opacity:0\">{item.label}</div>"
+            )
+        if item.note:
+            parts.append(
+                f'<div class="ak-overlay-label" data-at="{item.at + item.grow:.3f}" style="'
+                f"left:{left:.0f}px;top:{label_top + 40:.0f}px;color:rgba(242,245,247,0.72);"
+                f'font-size:24px;opacity:0">{item.note}</div>'
+            )
+    return "\n  ".join(parts)
 
 
 def _text_nodes(texts: tuple[PhotoText, ...], height: int) -> str:
@@ -273,6 +384,7 @@ def build_photo_scene(
         photo="photo.jpg",
         label=scene.label,
         credit=credit,
+        overlay_nodes=_overlay_nodes(scene.overlays, scene.width, scene.height),
         text_nodes=_text_nodes(scene.texts, scene.height),
         scene_json=json.dumps(
             {
