@@ -1,0 +1,440 @@
+{
+  "schema": 1,
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 171
+  },
+  "fonts": [
+    {
+      "family": "AKSC",
+      "src": "fonts/NotoSansSC-VF.ttf"
+    }
+  ],
+  "plugins": [],
+  "root": {
+    "id": "stage",
+    "type": "box",
+    "style": {
+      "position": "relative",
+      "display": "flex",
+      "flex-direction": "column",
+      "justify-content": "center",
+      "align-items": "center",
+      "gap": "18px",
+      "width": "100%",
+      "height": "100%",
+      "padding": "0 96px",
+      "background-color": "#1d2a44",
+      "overflow": "hidden"
+    },
+    "children": [
+      {
+        "id": "blob0",
+        "type": "box",
+        "style": {
+          "position": "absolute",
+          "left": "-18%",
+          "top": "6%",
+          "width": "760px",
+          "height": "760px",
+          "border-radius": "50%",
+          "background-color": "#b6ff1f",
+          "opacity": "0.22",
+          "filter": "blur(120px)"
+        }
+      },
+      {
+        "id": "blob1",
+        "type": "box",
+        "style": {
+          "position": "absolute",
+          "left": "8%",
+          "top": "30%",
+          "width": "850px",
+          "height": "850px",
+          "border-radius": "50%",
+          "background-color": "#35e0ff",
+          "opacity": "0.16999999999999998",
+          "filter": "blur(120px)"
+        }
+      },
+      {
+        "id": "blob2",
+        "type": "box",
+        "style": {
+          "position": "absolute",
+          "left": "34%",
+          "top": "54%",
+          "width": "940px",
+          "height": "940px",
+          "border-radius": "50%",
+          "background-color": "#ff2bd6",
+          "opacity": "0.12",
+          "filter": "blur(120px)"
+        }
+      },
+      {
+        "id": "accent",
+        "type": "box",
+        "style": {
+          "width": "320px",
+          "height": "8px",
+          "border-radius": "4px",
+          "background-color": "#b6ff1f",
+          "transform-origin": "left center",
+          "opacity": "0.9"
+        }
+      },
+      {
+        "id": "lines",
+        "type": "box",
+        "style": {
+          "position": "relative",
+          "display": "flex",
+          "flex-direction": "column",
+          "align-items": "center",
+          "gap": "14px"
+        },
+        "children": [
+          {
+            "id": "kicker",
+            "type": "text",
+            "text": "讲机制",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "34px",
+              "font-weight": "400",
+              "color": "#35e0ff",
+              "line-height": "1.25",
+              "text-align": "center",
+              "letter-spacing": "0.16em"
+            }
+          },
+          {
+            "id": "line1",
+            "type": "text",
+            "text": "它叫容量电价，",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "700",
+              "color": "#f2f5f7",
+              "line-height": "1.25",
+              "text-align": "center"
+            }
+          },
+          {
+            "id": "line2",
+            "type": "text",
+            "text": "利润跟电量脱钩，",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "700",
+              "color": "#f2f5f7",
+              "line-height": "1.25",
+              "text-align": "center"
+            }
+          },
+          {
+            "id": "line3",
+            "type": "text",
+            "text": "不再绑在一根绳上。",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "72px",
+              "font-weight": "700",
+              "color": "#f2f5f7",
+              "line-height": "1.25",
+              "text-align": "center"
+            }
+          },
+          {
+            "id": "source",
+            "type": "text",
+            "text": "来源 S02",
+            "style": {
+              "font-family": "AKSC",
+              "font-size": "32px",
+              "font-weight": "400",
+              "color": "#94a3b8",
+              "line-height": "1.25",
+              "text-align": "center"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "node": "blob0",
+      "property": "translateX",
+      "keys": [
+        [
+          0,
+          -46
+        ],
+        [
+          170,
+          46
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob0",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          23
+        ],
+        [
+          170,
+          -23
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob0",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          1.0
+        ],
+        [
+          85,
+          1.12
+        ],
+        [
+          170,
+          1.0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob1",
+      "property": "translateX",
+      "keys": [
+        [
+          0,
+          -74
+        ],
+        [
+          170,
+          74
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob1",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          37
+        ],
+        [
+          170,
+          -37
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob1",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          1.0
+        ],
+        [
+          85,
+          1.12
+        ],
+        [
+          170,
+          1.0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob2",
+      "property": "translateX",
+      "keys": [
+        [
+          0,
+          -102
+        ],
+        [
+          170,
+          102
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob2",
+      "property": "translateY",
+      "keys": [
+        [
+          0,
+          51
+        ],
+        [
+          170,
+          -51
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "blob2",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          1.0
+        ],
+        [
+          85,
+          1.12
+        ],
+        [
+          170,
+          1.0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "kicker",
+      "property": "reveal",
+      "keys": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line1",
+      "property": "opacity",
+      "keys": [
+        [
+          4,
+          0
+        ],
+        [
+          16,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line1",
+      "property": "translateY",
+      "keys": [
+        [
+          4,
+          28
+        ],
+        [
+          18,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line2",
+      "property": "opacity",
+      "keys": [
+        [
+          10,
+          0
+        ],
+        [
+          22,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line2",
+      "property": "translateY",
+      "keys": [
+        [
+          10,
+          28
+        ],
+        [
+          24,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line3",
+      "property": "opacity",
+      "keys": [
+        [
+          16,
+          0
+        ],
+        [
+          28,
+          1
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "line3",
+      "property": "translateY",
+      "keys": [
+        [
+          16,
+          28
+        ],
+        [
+          30,
+          0
+        ]
+      ],
+      "easing": "smooth"
+    },
+    {
+      "node": "accent",
+      "property": "scale",
+      "keys": [
+        [
+          0,
+          0.12
+        ],
+        [
+          170,
+          1.0
+        ]
+      ],
+      "easing": "smooth"
+    }
+  ]
+}

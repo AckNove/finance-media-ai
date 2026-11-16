@@ -1,0 +1,115 @@
+{
+ "job_id": "v6_power_first_film",
+ "created_at": "2026-11-15T16:18:57.194682+00:00",
+ "source": "script",
+ "stage": "storyboard_ready",
+ "next_stage": "render",
+ "blocked": false,
+ "blocked_reason": "",
+ "outline": {
+  "ok": true,
+  "source": "script",
+  "storyboard": "storyboard/storyboard.csv",
+  "notes": "storyboard/FROM_SCRIPT.md",
+  "shot_count": 8,
+  "card_count": 1,
+  "total_seconds": 45.1,
+  "frames": 1353
+ },
+ "script": {
+  "script_id": 3,
+  "version": 3,
+  "status": "approved",
+  "title": "电力的第二张收入表：钱没变多，只是分法变了",
+  "hook": "发电量下滑，电费收入却还能收上来，钱从哪来？",
+  "body": "发电量下滑，收入却还能收上来——这就是第二张收入表。\n\n它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。\n\n估值依据也跟着换：从红利资产，变成AI的能源底座。\n\n但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。\n\n利润在降，说明这是存量再分配，不是总量扩张。\n\n一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。",
+  "segments": [
+   {
+    "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。",
+    "role": "hook",
+    "source_ids": [
+     "S02",
+     "S01"
+    ],
+    "numbers": []
+   },
+   {
+    "text": "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。",
+    "role": "mechanism",
+    "source_ids": [
+     "S02",
+     "S01"
+    ],
+    "numbers": []
+   },
+   {
+    "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。",
+    "role": "mechanism",
+    "source_ids": [
+     "S01"
+    ],
+    "numbers": []
+   },
+   {
+    "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。",
+    "role": "counter",
+    "source_ids": [
+     "S11",
+     "S12"
+    ],
+    "numbers": [
+     "6.2%"
+    ]
+   },
+   {
+    "text": "利润在降，说明这是存量再分配，不是总量扩张。",
+    "role": "evidence",
+    "source_ids": [
+     "S11",
+     "S12"
+    ],
+    "numbers": []
+   },
+   {
+    "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。",
+    "role": "closing",
+    "source_ids": [
+     "S11",
+     "S12"
+    ],
+    "numbers": []
+   }
+  ],
+  "disclaimer": "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。",
+  "word_count": 158,
+  "estimated_duration": 38,
+  "research_report_id": 2
+ },
+ "report": {
+  "report_id": 2,
+  "research_task_id": 3,
+  "title": "结论整合：回答「为什么中国电力行业，可能正在迎来一场新的财富分配？」：它是什么、为什么会这样、谁受影响、有哪些带出处的数字可以证实。",
+  "verification_status": "unverified"
+ },
+ "draft_gate": {
+  "rule": "只有人工确认过的结论可以进成稿；这条片子按已批准的脚本制作",
+  "source": "script",
+  "script_id": 3,
+  "script_status": "approved",
+  "confirmed_findings": [
+   0,
+   3,
+   5
+  ],
+  "check_ids": [
+   5,
+   8,
+   10
+  ]
+ },
+ "not_done": [
+  "assets_manifest.csv（数据卡由分镜阶段登记；外部素材必须先登记授权）",
+  "audio/ 与 output/（跑 render_job 才会生成）",
+  "正式发布（系统不代发）"
+ ]
+}

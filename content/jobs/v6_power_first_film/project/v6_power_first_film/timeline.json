@@ -1,0 +1,301 @@
+{
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30,
+    "frames": 1319,
+    "bg": "#1d2a44"
+  },
+  "clips": {
+    "TEXT_sh01": {
+      "frames_dir": ".openkatana/compositions/fae3766189614fc8b481a4caebb95a2f/frames",
+      "pattern": "%05d.png",
+      "n": 150,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "TEXT_sh02": {
+      "frames_dir": ".openkatana/compositions/4133c4bb9deb49f787661c276a3b92d2/frames",
+      "pattern": "%05d.png",
+      "n": 186,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "TEXT_sh03": {
+      "frames_dir": ".openkatana/compositions/68b79d3c56744c04acc8c4e973be26ad/frames",
+      "pattern": "%05d.png",
+      "n": 171,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "TEXT_sh04": {
+      "frames_dir": ".openkatana/compositions/be323a13cbbf4924a5f5b3c13ea5e837/frames",
+      "pattern": "%05d.png",
+      "n": 178,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "CARD_sh05": {
+      "frames_dir": ".openkatana/compositions/e1015d7a8d294c94a2d17ce0844b33d5/frames",
+      "pattern": "%05d.png",
+      "n": 243,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "TEXT_sh06": {
+      "frames_dir": ".openkatana/compositions/c2d7f0769d604ed191ccf73b6e8ecf95/frames",
+      "pattern": "%05d.png",
+      "n": 157,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "TEXT_sh07": {
+      "frames_dir": ".openkatana/compositions/3c9c2fdb9bf34308860c4a4cd8ab4fa4/frames",
+      "pattern": "%05d.png",
+      "n": 193,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    },
+    "TEXT_sh08": {
+      "frames_dir": ".openkatana/compositions/e5e9bdbb15b04e39bcc89d5b70626865/frames",
+      "pattern": "%05d.png",
+      "n": 75,
+      "fps": 30,
+      "w": 1080,
+      "h": 1920
+    }
+  },
+  "shots": [
+    {
+      "f0": 0,
+      "f1": 136,
+      "clip": "TEXT_sh01",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 136,
+      "f1": 283,
+      "clip": "TEXT_sh02",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 283,
+      "f1": 423,
+      "clip": "TEXT_sh03",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "slide",
+        "d": 0.4,
+        "dir": "up"
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 423,
+      "f1": 588,
+      "clip": "TEXT_sh04",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 588,
+      "f1": 798,
+      "clip": "CARD_sh05",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "wipe",
+        "d": 0.4,
+        "dir": "ltr"
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 798,
+      "f1": 936,
+      "clip": "TEXT_sh06",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dip",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 936,
+      "f1": 1120,
+      "clip": "TEXT_sh07",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    },
+    {
+      "f0": 1120,
+      "f1": 1319,
+      "clip": "TEXT_sh08",
+      "src": 0,
+      "speed": 1,
+      "cam": {
+        "push": {
+          "v": 0.03
+        },
+        "fit": "cover",
+        "cover": true
+      },
+      "transition": {
+        "type": "dissolve",
+        "d": 0.4
+      },
+      "in": {
+        "type": "dip",
+        "d": 0.22,
+        "color": "#0b1220"
+      }
+    }
+  ],
+  "audio": {
+    "mode": "mix",
+    "gain": 1.0,
+    "tracks": [
+      {
+        "src": "audio/narration/sh01.mp3",
+        "at": 0.0,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh02.mp3",
+        "at": 4.533,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh03.mp3",
+        "at": 9.433,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh04.mp3",
+        "at": 14.1,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh05.mp3",
+        "at": 19.6,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh06.mp3",
+        "at": 26.6,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh07.mp3",
+        "at": 31.2,
+        "volume": 1.0
+      },
+      {
+        "src": "audio/narration/sh08.mp3",
+        "at": 37.333,
+        "volume": 1.0
+      }
+    ]
+  }
+}

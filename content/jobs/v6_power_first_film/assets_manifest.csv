@@ -1,0 +1,10 @@
+asset_id,asset_class,kind,file,source_id,publisher,source_url,retrieved_at,sha256,license,commercial_use,credit,verification_status,used_in_shots,purpose
+CARD_sh05,B,composition,assets/compositions/card_sh05.json,CARD_sh05,本仓库,,,b04329641a001e5fe3357485d488faea1d96213673ea5900a0f124c3196896c0,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh05,数据卡 CARD_sh05
+solid_1d2a44,B,plate,assets/plates/solid_1d2a44.mp4,solid_1d2a44,本仓库,,,49aad05b18c2a045ae8e3cfb6dff88d648bfb14070d85825179d1e37c54ec382,self-generated,allowed,本仓库程序生成的纯色底板（无外部素材）,self_generated,"sh01,sh02,sh03,sh04,sh06,sh07,sh08",纯色/渐变底板 #1d2a44
+TEXT_sh01,B,composition,assets/compositions/text_sh01.json,TEXT_sh01,本仓库,,,52be29e9aa387bdae96afdde5f158d6d54ae8dd9fcc7910554ee2874303c4b12,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh01,数据卡 TEXT_sh01
+TEXT_sh02,B,composition,assets/compositions/text_sh02.json,TEXT_sh02,本仓库,,,e3b2ed0f779e5c8794b1559fe2993e207dc6dce11149326fa3fab7eec40b775e,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh02,数据卡 TEXT_sh02
+TEXT_sh03,B,composition,assets/compositions/text_sh03.json,TEXT_sh03,本仓库,,,c5312cf08aee8b9280d33eca2e54dedc468393914b879cf7af16384f8b06629e,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh03,数据卡 TEXT_sh03
+TEXT_sh04,B,composition,assets/compositions/text_sh04.json,TEXT_sh04,本仓库,,,d7a68870dc975ce579fd2323a59da8dbff00d9e7496cd6504a22bd335e650e9a,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh04,数据卡 TEXT_sh04
+TEXT_sh06,B,composition,assets/compositions/text_sh06.json,TEXT_sh06,本仓库,,,7821568553c92e265ec68febb54e1d5852c39e77716df6cb991fec35a22e8bc8,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh06,数据卡 TEXT_sh06
+TEXT_sh07,B,composition,assets/compositions/text_sh07.json,TEXT_sh07,本仓库,,,e71c51805dcd81ba32d44b8ccc0fd774067531e28baa8861f7323620309c6670,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh07,数据卡 TEXT_sh07
+TEXT_sh08,B,composition,assets/compositions/text_sh08.json,TEXT_sh08,本仓库,,,b46719ecc9296a0bf1704c205df7eb9c085188d8949d0b2c4890efec6525bd0f,self-generated,allowed,本仓库按原文数据排版生成（纯色底数据卡）,self_generated,sh08,数据卡 TEXT_sh08

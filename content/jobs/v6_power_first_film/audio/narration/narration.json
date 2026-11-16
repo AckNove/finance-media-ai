@@ -1,0 +1,174 @@
+{
+  "ok": true,
+  "provider": "edge",
+  "voice": "zh-CN-YunxiNeural",
+  "clip_count": 8,
+  "total_seconds": 41.16,
+  "overrun_count": 0,
+  "clips": [
+    {
+      "shot_id": "sh01",
+      "file": "audio/narration/sh01.mp3",
+      "duration_seconds": 4.176,
+      "shot_seconds": 4.533,
+      "overrun_seconds": 0.0,
+      "sha256": "182688ae82761228a206f86c22f0f4869f77165b18cb19a3e29ca8dac80dffbd",
+      "byte_size": 25293,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 13,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "发电量下滑，电费收入却还能收上来，钱从哪来？"
+    },
+    {
+      "shot_id": "sh02",
+      "file": "audio/narration/sh02.mp3",
+      "duration_seconds": 4.536,
+      "shot_seconds": 4.9,
+      "overrun_seconds": 0.0,
+      "sha256": "46bbc8e574df2ad4b2fa96adbdbd1315df4f4f3dcc206bfda9c137eb7d8e7e46",
+      "byte_size": 27453,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 14,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。"
+    },
+    {
+      "shot_id": "sh03",
+      "file": "audio/narration/sh03.mp3",
+      "duration_seconds": 4.32,
+      "shot_seconds": 4.667,
+      "overrun_seconds": 0.0,
+      "sha256": "bc42186a1a7963acca26ad0a1879ea8d342ccd76cc2080844d947ed5d4c5fd4b",
+      "byte_size": 26157,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 15,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。"
+    },
+    {
+      "shot_id": "sh04",
+      "file": "audio/narration/sh04.mp3",
+      "duration_seconds": 5.16,
+      "shot_seconds": 5.5,
+      "overrun_seconds": 0.0,
+      "sha256": "70dbc841cf3f2d9d57ba715979cc98661e25c3364bb6595a1a15a0498acc52e2",
+      "byte_size": 31197,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 13,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。"
+    },
+    {
+      "shot_id": "sh05",
+      "file": "audio/narration/sh05.mp3",
+      "duration_seconds": 6.648,
+      "shot_seconds": 7.0,
+      "overrun_seconds": 0.0,
+      "sha256": "5bfdbcd27d90797943952a0af9cd78a4ed8d2aa5c70e58137ff18746afb79e13",
+      "byte_size": 40125,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 17,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。"
+    },
+    {
+      "shot_id": "sh06",
+      "file": "audio/narration/sh06.mp3",
+      "duration_seconds": 4.248,
+      "shot_seconds": 4.6,
+      "overrun_seconds": 0.0,
+      "sha256": "156a3d07f69d0a9a261171b65cab79816cbde88f511cef556a66a339e3a67691",
+      "byte_size": 25725,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 12,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "利润在降，说明这是存量再分配，不是总量扩张。"
+    },
+    {
+      "shot_id": "sh07",
+      "file": "audio/narration/sh07.mp3",
+      "duration_seconds": 5.784,
+      "shot_seconds": 6.133,
+      "overrun_seconds": 0.0,
+      "sha256": "61363c79ca5f6b948d1c5b732158a2701abcffffc8f8d8203bcf3bc6ba704c7f",
+      "byte_size": 34941,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 16,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。"
+    },
+    {
+      "shot_id": "sh08",
+      "file": "audio/narration/sh08.mp3",
+      "duration_seconds": 6.288,
+      "shot_seconds": 6.633,
+      "overrun_seconds": 0.0,
+      "sha256": "5d7cbeaec047ae49a6ec55d475f8e6d19263e1c4be96947e414c87df8f88ab21",
+      "byte_size": 37965,
+      "provider": "edge",
+      "voice": "zh-CN-YunxiNeural",
+      "word_count": 17,
+      "cue_count": 2,
+      "estimated_timing": false,
+      "text": "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。"
+    }
+  ],
+  "tracks": [
+    {
+      "src": "audio/narration/sh01.mp3",
+      "at": 0.0,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh02.mp3",
+      "at": 4.533,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh03.mp3",
+      "at": 9.433,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh04.mp3",
+      "at": 14.1,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh05.mp3",
+      "at": 19.6,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh06.mp3",
+      "at": 26.6,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh07.mp3",
+      "at": 31.2,
+      "volume": 1.0
+    },
+    {
+      "src": "audio/narration/sh08.mp3",
+      "at": 37.333,
+      "volume": 1.0
+    }
+  ],
+  "srt": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\audio\\narration\\narration.srt",
+  "problems": []
+}

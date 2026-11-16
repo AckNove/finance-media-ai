@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "name": "v6_power_first_film",
+  "created_at": "2026-11-15T16:19:07.493456+00:00",
+  "assets": [
+    {
+      "id": "07c03e100e6e",
+      "name": "solid_1d2a44.mp4",
+      "path": "media/d45ef7dad621.mp4",
+      "sha256": "49aad05b18c2a045ae8e3cfb6dff88d648bfb14070d85825179d1e37c54ec382",
+      "rights": "self-generated",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/07c03e100e6e",
+        "n": 120,
+        "fps": 30.0,
+        "w": 1080,
+        "h": 1920,
+        "pattern": "%05d.png"
+      }
+    },
+    {
+      "id": "517d38154c84",
+      "name": "solid_1d2a44.mp4",
+      "path": "media/8deedf2641ac.mp4",
+      "sha256": "49aad05b18c2a045ae8e3cfb6dff88d648bfb14070d85825179d1e37c54ec382",
+      "rights": "self-generated",
+      "kind": "video",
+      "clip": {
+        "frames_dir": "plates/517d38154c84",
+        "n": 120,
+        "fps": 30.0,
+        "w": 1080,
+        "h": 1920,
+        "pattern": "%05d.png"
+      }
+    }
+  ],
+  "reviews": [],
+  "release": "project review pending"
+}

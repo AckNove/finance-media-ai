@@ -1,0 +1,55 @@
+{
+ "job_id": "v6_power_first_film",
+ "ok": true,
+ "manifest_present": true,
+ "manifest_assets": 9,
+ "storyboard_assets": 8,
+ "timeline_assets": 2,
+ "errors": 0,
+ "warnings": 7,
+ "findings": [
+  {
+   "check": "asset_unused",
+   "severity": "warning",
+   "asset_id": "TEXT_sh01",
+   "detail": "清单里有 TEXT_sh01，但这一版成片没用它"
+  },
+  {
+   "check": "asset_unused",
+   "severity": "warning",
+   "asset_id": "TEXT_sh02",
+   "detail": "清单里有 TEXT_sh02，但这一版成片没用它"
+  },
+  {
+   "check": "asset_unused",
+   "severity": "warning",
+   "asset_id": "TEXT_sh03",
+   "detail": "清单里有 TEXT_sh03，但这一版成片没用它"
+  },
+  {
+   "check": "asset_unused",
+   "severity": "warning",
+   "asset_id": "TEXT_sh04",
+   "detail": "清单里有 TEXT_sh04，但这一版成片没用它"
+  },
+  {
+   "check": "asset_unused",
+   "severity": "warning",
+   "asset_id": "TEXT_sh06",
+   "detail": "清单里有 TEXT_sh06，但这一版成片没用它"
+  },
+  {
+   "check": "asset_unused",
+   "severity": "warning",
+   "asset_id": "TEXT_sh07",
+   "detail": "清单里有 TEXT_sh07，但这一版成片没用它"
+  },
+  {
+   "check": "asset_unused",
+   "severity": "warning",
+   "asset_id": "TEXT_sh08",
+   "detail": "清单里有 TEXT_sh08，但这一版成片没用它"
+  }
+ ],
+ "summary": "素材审计通过：清单 9 条，分镜用到 8 个，时间轴 2 个 clip；7 条提醒"
+}
