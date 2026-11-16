@@ -25,6 +25,11 @@
 - 渲染中间产物（`.openkatana/`、`plates/`、`media/`、`fonts/`、`history/`），它们以 GB 计且可再生；
 - 第三方二进制与克隆仓库（`tools/ffmpeg/{bin,doc,presets}`、`tools/openkatana/`）；
 - 旧任务目录 `content/jobs/20261110_jgb_gold_repricing/`（含从本机桌面复制的原始数据）。
+- 成片 `*.mp4` 与渲染帧：`.gitignore` 已覆盖，但**任务目录里的文本产物要入库**——
+  `job.json`、`script/`、`storyboard/`、`assets/compositions/*.json`、`project/timeline.json`、
+  `qc/`、`assets_manifest.csv`、`audio/narration/*.json|*.srt`。它们是"这条片子可复核"的部分，
+  合计只有百 KB 级；成片可以随时用它们原样重渲。
+
 
 入库前自查一条命令：`git diff --cached --name-only` 里不应出现上面任何一类。
 
