@@ -376,7 +376,7 @@ def build_substation_scene(
     height: int = 1920,
     texts: tuple[tuple[str, str, float, int], ...] = (
         ("kicker", "原创三维 · 变电站空间关系", 0.60, 30),
-        ("title", "电从电厂出来，\n先到这里，才卖得出去", 0.655, 60),
+        ("title", "利润在降，\n说明这是存量再分配", 0.655, 60),
     ),
 ) -> dict:
     scene_dir = SCENES / scene_id

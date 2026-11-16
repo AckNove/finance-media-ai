@@ -97,15 +97,16 @@
   <div class="vignette"></div>
   <div id="label">资料画面</div>
   <div class="ak-overlay" data-kind="callout" data-at="0.500" data-grow="0.500" style="left:140px;top:576px;width:2916px;height:368640px;border-left:2px solid rgba(182,255,31,0.85);opacity:0;"></div>
-  <div class="ak-overlay-label" data-at="1.000" style="left:140px;top:588px;color:rgba(182,255,31,0.85);opacity:0">变压器 · 容量在这里计量</div>
+  <div class="ak-overlay-label" data-at="1.000" style="left:140px;top:588px;color:rgba(182,255,31,0.85);opacity:0">这台变压器 · 就是资产本身</div>
   <div class="ak-overlay" data-kind="callout" data-at="0.750" data-grow="0.500" style="left:648px;top:499px;width:2916px;height:516096px;border-left:2px solid rgba(77,134,168,0.9);opacity:0;"></div>
-  <div class="ak-overlay-label" data-at="1.250" style="left:648px;top:511px;color:rgba(77,134,168,0.9);opacity:0">母线 · 电量从这里走</div>
+  <div class="ak-overlay-label" data-at="1.250" style="left:648px;top:511px;color:rgba(77,134,168,0.9);opacity:0">输出去的电 · 仍在按电量计价</div>
   <div class="ak-text" data-at="0.120" style="top:1450px;font-size:30px;color:#f2f5f7;text-align:left;opacity:0">同一座变电站 · 设备特写</div>
-  <div class="ak-text" data-at="0.300" style="top:1536px;font-size:58px;color:#f2f5f7;text-align:left;opacity:0">两种钱，两套结算</div>
+  <div class="ak-text" data-at="0.300" style="top:1536px;font-size:58px;color:#f2f5f7;text-align:left;opacity:0">设备没变，
+定价的依据变了</div>
   <div id="credit">Saiphani02 · CC BY 4.0</div>
 </div>
 <script>
-const SCENE = {"fps": 30, "duration": 2.8, "width": 1080, "height": 1920, "move": {"z0": 1.75, "z1": 1.9, "x0": 0.05, "x1": 0.02, "y0": -0.02, "y1": 0.0, "ease": "smooth"}, "videoStart": 0.0, "videoRate": 1.0};
+const SCENE = {"fps": 30, "duration": 5.4, "width": 1080, "height": 1920, "move": {"z0": 1.75, "z1": 1.9, "x0": 0.05, "x1": 0.02, "y0": -0.02, "y1": 0.0, "ease": "smooth"}, "videoStart": 0.0, "videoRate": 1.0};
 const photo = document.getElementById("photo");
 const VIDEO = photo && photo.tagName === "VIDEO" ? photo : null;
 const nodes = Array.from(document.querySelectorAll(".ak-text"));
@@ -132,8 +133,9 @@ async function seek(t) {
     // 视频按帧定位：先算目标时间，再等 seeked 事件，确保抓到的就是这一帧
     const target = SCENE.videoStart + t * SCENE.videoRate;
     await new Promise((resolve) => {
-      const done = () => resolve();
-      if (Math.abs(VIDEO.currentTime - target) < 0.002 && VIDEO.readyState >= 2) { resolve(); return; }
+      // 定位到位后再等两帧：否则截到的是上一帧（关键帧间隔大的片子尤其明显）
+      const done = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+      if (Math.abs(VIDEO.currentTime - target) < 0.002 && VIDEO.readyState >= 2) { done(); return; }
       VIDEO.addEventListener("seeked", done, { once: true });
       VIDEO.currentTime = Math.min(target, (VIDEO.duration || target) - 0.02);
     });

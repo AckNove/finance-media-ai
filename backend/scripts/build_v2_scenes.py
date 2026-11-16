@@ -86,7 +86,7 @@ SHOTS: tuple[Shot, ...] = (
     Shot(
         shot_id="B1_wide",
         asset_id="R02",  # 牵引变电站（CC BY 4.0，需署名）
-        duration=3.4,
+        duration=4.5,
         grade="industrial",
         kicker="真实变电设备 · 资料画面",
         title="一条线卖电，另一条线卖「待命」",
@@ -115,32 +115,32 @@ SHOTS: tuple[Shot, ...] = (
     Shot(
         shot_id="B1_tight",
         asset_id="R02",
-        duration=2.8,
+        duration=5.4,
         grade="industrial",
         kicker="同一座变电站 · 设备特写",
-        title="两种钱，两套结算",
+        title="设备没变，\n定价的依据变了",
         move=PhotoMove(z0=1.75, z1=1.90, x0=0.05, x1=0.02, y0=-0.02, y1=0.0),
         title_y=0.80,
         kicker_y=0.755,
         title_size=58,
         overlays=(
             PhotoOverlay("cal_tank", "callout", 0.13, 0.30, 0.0025, 0.10, color="rgba(182,255,31,0.85)", at=0.5, grow=0.5,
-                         label="变压器 · 容量在这里计量", label_side="below"),
+                         label="这台变压器 · 就是资产本身", label_side="below"),
             PhotoOverlay("cal_bus", "callout", 0.60, 0.26, 0.0025, 0.14, color="rgba(77,134,168,0.9)", at=0.75, grow=0.5,
-                         label="母线 · 电量从这里走", label_side="below"),
+                         label="输出去的电 · 仍在按电量计价", label_side="below"),
         ),
     ),
     Shot(
         shot_id="E1_close",
         asset_id="R11",  # 鞍山输电铁塔（CC BY 2.0）
-        duration=3.0,
+        duration=6.6,  # 正片收尾镜，要盖住 6.29 秒的免责旁白
         grade="dusk",
         kicker="真实输电线路 · 资料画面",
-        title="钱没有变多，只是分法变了",
-        move=PhotoMove(z0=1.35, z1=1.22, x0=0.02, x1=-0.01, y0=0.0, y1=-0.015),
-        title_y=0.70,
-        kicker_y=0.655,
-        title_size=58,
+        title="钱没变多，\n只是分法变了",
+        move=PhotoMove(z0=1.02, z1=1.12, x0=0.0, x1=-0.01, y0=0.0, y1=-0.008),
+        title_y=0.66,
+        kicker_y=0.615,
+        title_size=76,
     ),
 )
 
@@ -167,11 +167,38 @@ class VideoShot:
 
 VIDEO_SHOTS: tuple[VideoShot, ...] = (
     VideoShot(
+        shot_id="V4_wind",
+        asset_id="V03",
+        slot="wind_farm",
+        start=1.0,
+        duration=6.0,
+        crop_x=0.50,
+        grade="cinema",
+        kicker="真实风电场 · 动态素材",
+        title="利润在降，\n说明这是存量再分配",
+        title_y=0.70,
+        kicker_y=0.63,
+    ),
+    VideoShot(
+        shot_id="V5_city",
+        asset_id="V05",
+        slot="city_power",
+        start=2.0,
+        duration=6.6,
+        crop_x=0.50,
+        grade="dusk",
+        kicker="城市用电 · 动态素材",
+        title="钱没变多，\n只是分法变了",
+        title_y=0.70,
+        kicker_y=0.63,
+    ),
+    # ---- 样片用过的三段 ----
+    VideoShot(
         shot_id="V1_plant",
         asset_id="V01",  # Moorburg 电厂，CC BY 4.0
         slot="plant_moorburg",
         start=26.0,
-        duration=3.0,
+        duration=4.4,
         crop_x=0.577,
         grade="cinema",
         kicker="真实电厂 · 动态素材",
@@ -183,7 +210,7 @@ VIDEO_SHOTS: tuple[VideoShot, ...] = (
         asset_id="V02",  # REN 高压线路检修，CC BY 2.0
         slot="line_maintenance",
         start=0.6,
-        duration=2.6,
+        duration=4.5,
         crop_x=0.42,
         grade="cinema",
         kicker="真实线路检修 · 动态素材",
@@ -195,7 +222,7 @@ VIDEO_SHOTS: tuple[VideoShot, ...] = (
         asset_id="V04",  # 卢布尔雅那供热站航拍，CC BY 3.0
         slot="plant_drone",
         start=12.0,
-        duration=3.0,
+        duration=4.8,
         crop_x=0.55,
         grade="dusk",
         kicker="真实厂区 · 航拍素材",

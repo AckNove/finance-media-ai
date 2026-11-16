@@ -94,6 +94,35 @@ NARRATION_CUES: tuple[NarrationCue, ...] = (
 )
 
 
+OUTPUT_STEM = "prototype_15_20s"
+THREE_D_SECONDS = 6.4
+DURATION_RANGE: tuple[float, float] = (15.0, 20.0)
+
+
+# ---- 正片：八镜对八句旁白（时长按旁白实测 4.18/4.54/4.32/5.16/6.65/4.25/5.78/6.29 定） ----
+FILM_SEGMENTS: tuple[Segment, ...] = (
+    Segment("V1_plant", 4.4, ((0.05, "whoosh"),)),
+    Segment("V3_drone", 4.8, ((0.02, "whoosh"), (1.2, "impact"))),
+    Segment("B1_wide", 4.5, ((0.02, "whoosh"), (0.5, "tick"), (1.4, "tick"))),
+    Segment("B1_tight", 5.4, ((0.02, "whoosh"), (0.8, "spark"))),
+    Segment("C1_substation", 6.9, ((0.02, "whoosh"), (2.0, "impact"), (4.4, "tick"))),
+    Segment("V2_line", 4.5, ((0.02, "impact"),)),
+    Segment("V4_wind", 6.0, ((0.02, "whoosh"),)),
+    Segment("E1_close", 6.6, ((0.02, "whoosh"), (1.6, "impact"))),
+)
+
+FILM_CUES: tuple[NarrationCue, ...] = (
+    NarrationCue(0.10, "sh01", "发电量下滑，电费收入却还能收上来，钱从哪来？"),
+    NarrationCue(4.50, "sh02", "发电量下滑，收入却还能收上来——这就是第二张收入表。"),
+    NarrationCue(9.30, "sh03", "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。"),
+    NarrationCue(13.80, "sh04", "估值依据也跟着换：从红利资产，变成AI的能源底座。"),
+    NarrationCue(19.20, "sh05", "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。"),
+    NarrationCue(26.10, "sh06", "利润在降，说明这是存量再分配，不是总量扩张。"),
+    NarrationCue(30.60, "sh07", "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。"),
+    NarrationCue(36.60, "sh08", "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。"),
+)
+
+
 def _run(
     command: list[str], *, log_name: str, cwd: Path | None = None
 ) -> subprocess.CompletedProcess:
@@ -113,7 +142,7 @@ def stage_scenes() -> dict:
 
     receipts = build_photo()
     receipts.extend(build_videos())
-    receipts.append(build_substation_scene())
+    receipts.append(build_substation_scene(duration=THREE_D_SECONDS))
     return {"scenes": [item["scene"] for item in receipts]}
 
 
@@ -255,13 +284,13 @@ def write_ass(path: Path) -> Path:
 def stage_assemble() -> dict:
     CLIPS.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
-    ass_path = write_ass(OUT / "prototype.ass")
+    ass_path = write_ass(OUT / f"{OUTPUT_STEM}.ass")
 
     missing = [seg.scene_id for seg in SEGMENTS if not (CLIPS / f"{seg.scene_id}.mp4").exists()]
     if missing:
         raise FileNotFoundError(f"这些镜头还没渲染：{missing}")
 
-    concat_list = OUT / "prototype_concat.txt"
+    concat_list = OUT / f"{OUTPUT_STEM}_concat.txt"
     concat_list.write_text(
         "\n".join(f"file '{(CLIPS / f'{seg.scene_id}.mp4').as_posix()}'" for seg in SEGMENTS) + "\n",
         encoding="utf-8",
@@ -276,9 +305,30 @@ def stage_assemble() -> dict:
         filters.append(f"[{index + 1}:a]adelay={delay_ms}|{delay_ms}[n{index}]")
 
     narration_mix = "".join(f"[n{i}]" for i in range(len(NARRATION_CUES)))
+    end_card = ""
+    if OUTPUT_STEM == "final":
+        # 片尾来源卡：旁白最后一句承诺"所有数字均来自片尾列出的公开来源"，就得真有这一屏
+        card = OUT / "film_sources.txt"
+        card.write_text(
+            "资料画面（均可商用，已署名）\n"
+            "Moorburg 电厂 · CC BY 4.0 ／ REN 带电检修 · CC BY 2.0\n"
+            "卢布尔雅那供热站航拍 · CC BY 3.0 ／ Albany 风电场 · CC0\n"
+            "鞍山输电铁塔 · CC BY 2.0 ／ 牵引变电站 · CC BY 4.0\n"
+            "\n"
+            "数据来源：研究底稿 S01 / S02 / S11（详见报告证据表）\n"
+            "本片为合规资料整理，不构成投资建议",
+            encoding="utf-8",
+        )
+        end_card = (
+            f",drawtext=fontfile=fonts/NotoSansSC-VF.ttf:textfile=film_sources.txt"
+            f":fontcolor=0xF2F5F7:fontsize=30:line_spacing=16:x=(w-text_w)/2:y=h*0.17"
+            f":box=1:boxcolor=0x04080E@0.76:boxborderw=30"
+            f":enable='between(t,{total - 2.8:.2f},{total:.2f})'"
+        )
+
     filter_complex = (
         # 加暗角与极细颗粒：静照最容易显得"平"，颗粒和暗角是最便宜的质感补丁
-        "[0:v]subtitles=prototype.ass,vignette=PI/4.8,noise=alls=5:allf=t+u[vout];"
+        f"[0:v]subtitles={OUTPUT_STEM}.ass,vignette=PI/4.8,noise=alls=5:allf=t+u{end_card}[vout];"
         + ";".join(filters)
         + f";{narration_mix}amix=inputs={len(NARRATION_CUES)}:duration=longest:normalize=0[narr];"
         + "[1:a]volume=1.0[music];[2:a]volume=0.85[sfx];"
@@ -325,13 +375,13 @@ def stage_assemble() -> dict:
         "192k",
         "-movflags",
         "+faststart",
-        str(OUT / "prototype_15_20s.mp4"),
+        str(OUT / f"{OUTPUT_STEM}.mp4"),
     ]
-    proc = _run(command, log_name="assemble_prototype.log", cwd=OUT)
+    proc = _run(command, log_name=f"assemble_{OUTPUT_STEM}.log", cwd=OUT)
     if proc.returncode != 0:
         raise RuntimeError(f"拼片失败：{proc.stderr[-800:]}")
 
-    target = OUT / "prototype_15_20s.mp4"
+    target = OUT / f"{OUTPUT_STEM}.mp4"
     return {
         "video": str(target.relative_to(PROJECT_ROOT)),
         "bytes": target.stat().st_size,
@@ -392,7 +442,7 @@ def _loudness(path: Path) -> dict:
 
 def stage_qc() -> dict:
     QC.mkdir(parents=True, exist_ok=True)
-    target = OUT / "prototype_15_20s.mp4"
+    target = OUT / f"{OUTPUT_STEM}.mp4"
     info = _probe(target)
     video = next((s for s in info.get("streams", []) if s.get("codec_type") == "video"), {})
     audio = next((s for s in info.get("streams", []) if s.get("codec_type") == "audio"), {})
@@ -404,7 +454,7 @@ def stage_qc() -> dict:
 
     duration = float(info.get("format", {}).get("duration", 0))
     checks = {
-        "duration_in_range": 15.0 <= duration <= 20.5,
+        "duration_in_range": DURATION_RANGE[0] <= duration <= DURATION_RANGE[1],
         "portrait_1080x1920": (video.get("width"), video.get("height")) == (WIDTH, HEIGHT),
         "fps_30": str(video.get("r_frame_rate")) in {"30/1"},
         "has_audio": audio.get("codec_name") is not None,
@@ -432,7 +482,7 @@ def stage_qc() -> dict:
         "checks": checks,
         "failed": [name for name, ok in checks.items() if not ok],
     }
-    (QC / "prototype_qc.json").write_text(
+    (QC / f"{OUTPUT_STEM}_qc.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     return report
@@ -445,7 +495,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--only", nargs="*", default=[])
     parser.add_argument("--force", action="store_true", help="已存在的镜头也重渲")
+    parser.add_argument("--film", action="store_true", help="出正片（八镜 forty-plus 秒），而不是 15–20 秒样片")
     args = parser.parse_args(argv)
+
+    global SEGMENTS, NARRATION_CUES, OUTPUT_STEM, THREE_D_SECONDS, DURATION_RANGE
+    if args.film:
+        SEGMENTS = FILM_SEGMENTS
+        NARRATION_CUES = FILM_CUES
+        OUTPUT_STEM = "final"
+        THREE_D_SECONDS = 6.9
+        DURATION_RANGE = (30.0, 60.0)
 
     payload: dict = {}
     if args.stage in {"scenes", "all"}:

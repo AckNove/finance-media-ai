@@ -1,0 +1,8 @@
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/V1_plant.mp4'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/V3_drone.mp4'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/B1_wide.mp4'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/B1_tight.mp4'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/C1_substation.mp4'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/V2_line.mp4'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/V4_wind.mp4'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/remaster_v2/production/clips/E1_close.mp4'

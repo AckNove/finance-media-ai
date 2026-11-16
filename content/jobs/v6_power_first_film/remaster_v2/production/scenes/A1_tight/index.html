@@ -129,8 +129,9 @@ async function seek(t) {
     // 视频按帧定位：先算目标时间，再等 seeked 事件，确保抓到的就是这一帧
     const target = SCENE.videoStart + t * SCENE.videoRate;
     await new Promise((resolve) => {
-      const done = () => resolve();
-      if (Math.abs(VIDEO.currentTime - target) < 0.002 && VIDEO.readyState >= 2) { resolve(); return; }
+      // 定位到位后再等两帧：否则截到的是上一帧（关键帧间隔大的片子尤其明显）
+      const done = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+      if (Math.abs(VIDEO.currentTime - target) < 0.002 && VIDEO.readyState >= 2) { done(); return; }
       VIDEO.addEventListener("seeked", done, { once: true });
       VIDEO.currentTime = Math.min(target, (VIDEO.duration || target) - 0.02);
     });
