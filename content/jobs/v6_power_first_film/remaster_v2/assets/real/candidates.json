@@ -1,0 +1,420 @@
+{
+  "source": "Wikimedia Commons",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "policy": {
+    "accepted": [
+      "CC0",
+      "Public domain",
+      "PD",
+      "CC BY 4.0",
+      "CC BY 3.0",
+      "CC BY 2.0",
+      "CC BY 2.5"
+    ],
+    "rejected_keywords": [
+      "SA",
+      "NC",
+      "ND",
+      "Fair use",
+      "Non-free"
+    ],
+    "note": "只收允许商用且允许改编的授权；CC BY-SA 与 NC 一律不收。"
+  },
+  "retrieved_at": "2026-11-16T14:14:33+08:00",
+  "results": [
+    {
+      "slot": "coal_power_plant",
+      "query": "coal power station",
+      "found": 20,
+      "usable": 3,
+      "chosen": {
+        "slot": "coal_power_plant",
+        "title": "File:Coal power plant (52135634496).jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Coal_power_plant_(52135634496).jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Coal_power_plant_%2852135634496%29.jpg/1920px-Coal_power_plant_%2852135634496%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 6195,
+        "height": 4130,
+        "size_bytes": 7537676,
+        "license_short": "CC0",
+        "license_name": "cc0",
+        "artist": "Mussi Katz from Israel",
+        "credit": "coal power plant",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/coal_power_plant_Coal_power_plant_52135634496_jpg.jpg",
+        "sha256": "0f8e30855a91d6f6c7011be88bab4d4b3e6eb325c7bc73d7b223d52896eb11cf",
+        "retrieved_at": "2026-11-16T14:13:39+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:Colenso Power Station.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Komatsu bulldozer pushing coal in Power plant Ljubljana (winter 2017).jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Sihanoukville Province. Steung Hav Coal Power Plant 04.jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Stung Hav Coal Power Plant.jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Albright Power Station.jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "substation_transformer",
+      "query": "electrical substation",
+      "found": 20,
+      "usable": 3,
+      "chosen": {
+        "slot": "substation_transformer",
+        "title": "File:Electrical substation of railways in Vizianagaram.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Electrical_substation_of_railways_in_Vizianagaram.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Electrical_substation_of_railways_in_Vizianagaram.jpg/1920px-Electrical_substation_of_railways_in_Vizianagaram.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 6000,
+        "height": 4000,
+        "size_bytes": 21430272,
+        "license_short": "CC BY 4.0",
+        "license_name": "cc-by-4.0",
+        "artist": "Saiphani02",
+        "credit": "Own work",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/substation_transformer_Electrical_substation_of_railways_in_Vizianagaram_jpg.jpg",
+        "sha256": "c8f4f8091a2965abd646c70f0ff0f9feb57af63b79871e8cd2c4553aac4017b9",
+        "retrieved_at": "2026-11-16T14:13:46+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:Taipei Taiwan Electrical-Substation-at-Taipei-Zoo-South-Station-01.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Electrical substation, Ashburn Croft, Wetherby (22nd June 2019).jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Electrical substation, First Avenue, Wetherby (18th July 2019).jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Electrical substation, Crossley Street, Wetherby (18th July 2019).jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Meinohama Electrical Substation of Fukuoka City Transportation Bureau 20220804.jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "grid_control_room",
+      "query": "power grid control room",
+      "found": 11,
+      "usable": 8,
+      "chosen": {
+        "slot": "grid_control_room",
+        "title": "File:20240407-USDA-RD-AR-LSC-D810L-0685 (53892746738).jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:20240407-USDA-RD-AR-LSC-D810L-0685_(53892746738).jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/20240407-USDA-RD-AR-LSC-D810L-0685_%2853892746738%29.jpg/1920px-20240407-USDA-RD-AR-LSC-D810L-0685_%2853892746738%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 7360,
+        "height": 4912,
+        "size_bytes": 40728831,
+        "license_short": "Public domain",
+        "license_name": "pd",
+        "artist": "USDAgov",
+        "credit": "20240407-USDA-RD-AR-LSC-D810L-0685",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/grid_control_room_20240407_USDA_RD_AR_LSC_D810L_0685_53892746738_jpg.jpg",
+        "sha256": "d8a24c46b219924530e0148c21cbecd8eb1f23ab33d3e23fe7b0a882515e84da",
+        "retrieved_at": "2026-11-16T14:13:53+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:Homeless down in the corner.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Kazi at 100MW Solar Power Plant Bahawalpur Control Room.jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Nova Scotia DSC03224 - Control Room (8475702461).jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "wind_farm",
+      "query": "wind turbines farm",
+      "found": 20,
+      "usable": 4,
+      "chosen": {
+        "slot": "wind_farm",
+        "title": "File:Vierwies wind farm, seen from a hot air balloon, Zele, 2026.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Vierwies_wind_farm,_seen_from_a_hot_air_balloon,_Zele,_2026.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Vierwies_wind_farm%2C_seen_from_a_hot_air_balloon%2C_Zele%2C_2026.jpg/1920px-Vierwies_wind_farm%2C_seen_from_a_hot_air_balloon%2C_Zele%2C_2026.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 2662,
+        "height": 3992,
+        "size_bytes": 3821287,
+        "license_short": "CC0",
+        "license_name": "cc0",
+        "artist": "DimiTalen",
+        "credit": "Own work",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/wind_farm_Vierwies_wind_farm_seen_from_a_hot_air_balloon_Zele_2026_jpg.jpg",
+        "sha256": "c011691a9ca420458e1ab1826f86a8821130ec5404de3b02bdfcafae4be455ae",
+        "retrieved_at": "2026-11-16T14:14:00+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:Wind Turbines and Power Lines, East Sussex, England - April 2009.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Middelgrunden wind farm 2009-07-01 edit filtered.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Wind Lift I, Emder Hafen WhiteBalanced.jpg",
+          "license": "CC BY-SA 3.0 de",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Wind Turbines, Longpark Wind farm - geograph.org.uk - 1357476.jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Barrow Offshore wind turbines NR.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "industrial_power_use",
+      "query": "steel mill factory",
+      "found": 20,
+      "usable": 15,
+      "chosen": {
+        "slot": "industrial_power_use",
+        "title": "File:Geneva Steel Factory, November 1942.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Geneva_Steel_Factory,_November_1942.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Geneva_Steel_Factory%2C_November_1942.jpg/1920px-Geneva_Steel_Factory%2C_November_1942.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 8513,
+        "height": 6577,
+        "size_bytes": 14109676,
+        "license_short": "CC0",
+        "license_name": "cc0",
+        "artist": "Andreas Feininger",
+        "credit": "https://www.flickr.com/photos/157979053@N04/43385179112/in/photostream/",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/industrial_power_use_Geneva_Steel_Factory_November_1942_jpg.jpg",
+        "sha256": "d168f35a3cfed08c74b13ebf766e4c7cb37ed0815e094c065ed7fec349114de2",
+        "retrieved_at": "2026-11-16T14:14:06+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:Cleveland Steel Mill.jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Corus Steel rail mill. - geograph.org.uk - 88958.jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Proserpine Mill - January 2012.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:BOF steel mill at Avilés 2.JPG",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:BOF steel mill at Avilés 1.JPG",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "city_night_power",
+      "query": "city night skyline",
+      "found": 20,
+      "usable": 7,
+      "chosen": {
+        "slot": "city_night_power",
+        "title": "File:Quebec City skyline at night from the Saint Lawrence River.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Quebec_City_skyline_at_night_from_the_Saint_Lawrence_River.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Quebec_City_skyline_at_night_from_the_Saint_Lawrence_River.jpg/1920px-Quebec_City_skyline_at_night_from_the_Saint_Lawrence_River.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 6000,
+        "height": 4000,
+        "size_bytes": 7501468,
+        "license_short": "CC BY 4.0",
+        "license_name": "cc-by-4.0",
+        "artist": "Hayden Soloviev",
+        "credit": "Own work",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/city_night_power_Quebec_City_skyline_at_night_from_the_Saint_Lawrence_River_j.jpg",
+        "sha256": "19ef4c402a901e8b6914d61f6c9c4ac6675e512654be1d30722b8611bf92d5ab",
+        "retrieved_at": "2026-11-16T14:14:11+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:New York City at night HDR.jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:New York Midtown Skyline at night - Jan 2006 edit1.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Kansas City, MO skyline at night.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Manhattan from Weehawken, NJ.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Lower Manhattan from Jersey City November 2014 panorama 3.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "pylon_line_sunset",
+      "query": "power lines sunset",
+      "found": 20,
+      "usable": 10,
+      "chosen": {
+        "slot": "pylon_line_sunset",
+        "title": "File:Transmission Lines at Sunset.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Transmission_Lines_at_Sunset.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Transmission_Lines_at_Sunset.jpg/1920px-Transmission_Lines_at_Sunset.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 6960,
+        "height": 4640,
+        "size_bytes": 17216059,
+        "license_short": "CC BY 4.0",
+        "license_name": "cc-by-4.0",
+        "artist": "Kkiefuik\n\n This photo was taken with Canon EOS 90D",
+        "credit": "Own work",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/pylon_line_sunset_Transmission_Lines_at_Sunset_jpg.jpg",
+        "sha256": "c31383d230c1f9397d66c3878b7576c1f6bb8a5e36127976a9eb3fc8811d6fce",
+        "retrieved_at": "2026-11-16T14:14:16+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:Power lines and pylon on the skyline at sunset - geograph.org.uk - 632839.jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Power lines over Rearquhar - geograph.org.uk - 1532631.jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Late-night summer sunset behind power line, Yellowknife, NT.jpg",
+          "license": "CC BY-SA 3.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Shingle Creek Sunset Power Lines, Brooklyn Center, Minnesota (24042134562).jpg",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        },
+        {
+          "title": "File:Mekong pirogue at sunset in the 4000 islands.jpg",
+          "license": "CC BY-SA 4.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "nrel_power_plant",
+      "query": "NREL power plant",
+      "found": 5,
+      "usable": 4,
+      "chosen": {
+        "slot": "nrel_power_plant",
+        "title": "File:Kodiak, Alaska (28771221818).jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Kodiak,_Alaska_(28771221818).jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Kodiak%2C_Alaska_%2828771221818%29.jpg/1920px-Kodiak%2C_Alaska_%2828771221818%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 6767,
+        "height": 4568,
+        "size_bytes": 26954605,
+        "license_short": "Public domain",
+        "license_name": "pd",
+        "artist": "U.S. Department of Energy from United States",
+        "credit": "Kodiak, Alaska",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/nrel_power_plant_Kodiak_Alaska_28771221818_jpg.jpg",
+        "sha256": "eed8d24dcff3d2026ff63274e1a429189c5c72192950eef51e3e476d5ced00c6",
+        "retrieved_at": "2026-11-16T14:14:31+08:00"
+      },
+      "rejected_sample": [
+        {
+          "title": "File:Colombia Power Plant map.png",
+          "license": "CC BY-SA 2.0",
+          "why": "授权含 SA，不能用于变现内容"
+        }
+      ],
+      "status": "downloaded"
+    }
+  ]
+}

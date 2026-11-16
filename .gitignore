@@ -165,3 +165,12 @@ content/jobs/*/remaster_v1/assets/audio/*.wav
 !content/jobs/v6_power_first_film/remaster_v1/output/prototype_15_20s.mp4
 # 镜头目录里的字体是每镜一份拷贝（17 MB/个），由 --stage scenes 自动复制，不入库
 content/jobs/*/remaster_v1/production/scenes/*/fonts/
+
+# V2 重制：镜头页里的字体拷贝（每镜 17 MB，源字体在 content/jobs/*/fonts/）、渲染帧与逐镜视频
+content/jobs/*/remaster_v2/production/scenes/*/fonts/
+content/jobs/*/remaster_v2/production/frames/
+content/jobs/*/remaster_v2/production/scenes_video/
+content/jobs/*/remaster_v2/assets/audio/*.wav
+
+# V2 真实素材：允许入库的实拍原图（授权已逐项登记，见 source_register.csv）
+!content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/*.jpg

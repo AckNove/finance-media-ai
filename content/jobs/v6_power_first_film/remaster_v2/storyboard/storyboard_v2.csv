@@ -1,0 +1,6 @@
+shot_id,start_s,end_s,duration_s,layer,primary_asset,asset_id,evidence,on_screen_text,visual_purpose,camera_motion,transition,narration_ref
+A1,0.000,5.200,5.200,real_footage,coal_power_plant,R01,S02,"真实电厂 · 资料画面 / 发电量在掉，电费收入却还在涨","用真实电厂把观众带进行业现场，不是深蓝背景","缓慢推近（1.08→1.22），轻微下移","cut","sh01"
+B1,5.200,14.700,9.500,mixed,electrical_substation,R02,S02,"电量收入 ↓ / 容量收入 ↑（叠加在真实开关场上）","在真实设备画面上解释两条收入流为什么分叉","缓慢横移 + 定焦推，数据层跟随进场","dissolve 0.4","sh02"
+C1,14.700,21.100,6.400,three_d,original_3d_substation,-,S01,"资产用途变了：从卖电，到卖可用性","写实三维解释发-输-配-用的空间关系与设备用途","低角度轨道 + 焦点从近景开关拉到远景母线","wipe 0.35","sh03"
+D1,21.100,32.500,11.400,mixed,industrial_power_use,R05,S11,"6.2%（2026 上半年行业利润同比）","真实工业用电画面上叠加份额与利润，让反证落在实体上","手持轻微晃动 + 数据层固定","push 0.3","sh04"
+E1,32.500,44.000,11.500,real_footage,city_night_power,R06,S11,"钱没变多，只是分法变了","回到真实世界收束，避免动画片式结尾","缓慢拉远","dip 0.5","sh05"

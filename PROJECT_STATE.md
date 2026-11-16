@@ -94,3 +94,12 @@ python -m backend.scripts.daily_check                    # 今日体检（花钱
 - `DECISION_LOG.md`：**为什么这么做**，含被否决的方案与理由。
 - `KNOWN_ISSUES.md`：**哪里还疼**，含证据与是否阻断。
 - `docs/dev_protocol.md`：**怎么干活**（效率协议）。
+
+## V2 真实场景重制（进行中，2026-11-16）
+
+- 任务书：`content/jobs/v6_power_first_film/remaster_v2/`（V1 的 `remaster_v1/` 保留不动）。
+- 已落地：真实素材获取链（`backend/scripts/acquire_real_assets.py`，维基共享资源，只收 CC0/PD/CC BY）、
+  素材登记表（`backend/scripts/build_real_asset_register.py` → `assets/real/source_register.csv`，8 项全部可商用）、
+  实拍镜头渲染器（`backend/app/video/cinema/photo.py`，逐帧确定性 Ken Burns + 调色 + 角标署名）。
+- 已出片帧：`r1_plant`（电厂实拍）、`r2_pylon`（输电线路实拍）各 2 帧验证通过。
+- 待办：写实三维变电站镜头、实拍+数据融合层、音频重排、15–20 秒验证片段。
