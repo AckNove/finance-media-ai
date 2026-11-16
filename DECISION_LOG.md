@@ -209,3 +209,23 @@
 `backend/app/video/cards.py::headline_document`（整句大字 + `accent` 色条）、
 `backend/app/video/script_board.py`（逐镜选画板、分开统计 `card_count`/`text_count`）、
 `tests/test_script_board.py::test_headline_never_scales_the_text_block`、`test_every_composition_obeys_the_engine_track_rules`。
+
+## D-21 数据读数走二维层，三维只负责场景与气氛
+
+**决定**：`cinema` 引擎里，"哪根柱子代表什么、涨了多少"这类读数用 DOM 二维面板画；三维只负责空间、透视与气氛，两层叠在同一张画布上。
+
+**为什么**：三维里柱子的颜色与明暗随光照和视角变化，同一根柱子在两个角度下亮度不同，观众无法据此读"谁高谁低"；而数据必须一眼能读。先做过三维柱列，实测被点光源打成灰白、语义丢失。
+
+**否决了什么**：否决"全部用三维表达数据"（更炫但读不出量），也否决"全部用二维"（画面立刻退回 PPT 观感）。
+
+**代码落点**：`backend/app/video/cinema/scene.js` 的 `buildPanels/updatePanels`；用例见 `build_cinema_film.py` 的 `stage_s2/stage_s4`。
+
+## D-22 字幕自己写 ASS，不用 SRT + force_style
+
+**决定**：烧字幕一律生成 `.ass`，显式写 `PlayResX/PlayResY` 与 `Style`，不用 SRT 配 `force_style`。
+
+**为什么**：SRT 没有分辨率概念，libass 按默认 288 高度换算字号，实测把字幕放大约 6.7 倍、烧到画面中部并压住画面文字。
+
+**否决了什么**：否决"调 MarginV/FontSize 硬凑"（换分辨率就崩），也否决"用 drawtext 手画"（换行与描边都要自己算）。
+
+**代码落点**：`backend/scripts/build_cinema_film.py` 的 `_write_ass/_ass_time`。

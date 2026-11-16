@@ -1,0 +1,2967 @@
+{
+  "version": 1,
+  "title": "电力的第二张收入表",
+  "logline": "发电量在掉，电费收入却还在涨——因为电力公司开始靠「待命」收钱。",
+  "fps": 30,
+  "canvas": [
+    1080,
+    1920
+  ],
+  "brand": "AK 带你拆解世界",
+  "palette": {
+    "ink": "#04060b",
+    "sky": "#31567f",
+    "skin": "#f2f5f7",
+    "lime": "#b6ff1f",
+    "cyan": "#35e0ff",
+    "amber": "#ffb020",
+    "dim": "#8ea3bd"
+  },
+  "fonts": [
+    "AKSC"
+  ],
+  "scenes": [
+    {
+      "scene_id": "s1",
+      "duration": 5.676,
+      "engine": "cinema-html",
+      "entry": "s1/index.html",
+      "narrative_purpose": "让观众先看见一个矛盾：电卖得少了，钱反而没少。",
+      "knowledge_objective": "观众知道这条片子要拆解的是「电力企业为什么在发电量下滑时还能收钱」。",
+      "visual_concept": "黄昏的输电网络从远处推近，两条收入流在塔与塔之间亮起来，像血管。",
+      "composition": {
+        "主体": "输电塔沿透视线退远",
+        "前景": "最近的塔与光环",
+        "背景": "黄昏天空与地面网格",
+        "文字区": "下三分之一，压在压暗层上"
+      },
+      "camera": [
+        {
+          "t": 0.0,
+          "pos": [
+            3.0,
+            4.4,
+            21.0
+          ],
+          "look": [
+            2.8,
+            2.6,
+            -8.0
+          ],
+          "fov": 33,
+          "roll": 0.0
+        },
+        {
+          "t": 2.4,
+          "pos": [
+            3.1,
+            2.9,
+            13.0
+          ],
+          "look": [
+            2.7,
+            2.5,
+            -8.4
+          ],
+          "fov": 32,
+          "roll": 0.0
+        },
+        {
+          "t": 5.7,
+          "pos": [
+            3.2,
+            2.1,
+            8.2
+          ],
+          "look": [
+            2.5,
+            2.5,
+            -9.0
+          ],
+          "fov": 31,
+          "roll": 0.0
+        }
+      ],
+      "visual_events": [
+        {
+          "t": 1.2,
+          "kind": "camera",
+          "target": "s1",
+          "note": "riser 音效与画面同步",
+          "params": {
+            "sfx": "riser"
+          }
+        },
+        {
+          "t": 2.4,
+          "kind": "highlight",
+          "target": "s1",
+          "note": "impact 音效与画面同步",
+          "params": {
+            "sfx": "impact"
+          }
+        }
+      ],
+      "motion_design": {
+        "stage": {
+          "exposure": 1.0,
+          "ambient": 0.18,
+          "keyLight": 0.5,
+          "scrimStrength": 0.86,
+          "sky": {
+            "top": "#31567f",
+            "bottom": "#04060b",
+            "fog": [
+              20,
+              85
+            ],
+            "css": "linear-gradient(to bottom, #36608f 0%, #27507c 16%, #16304f 36%, #0a1424 60%, #04060b 100%)"
+          },
+          "lights": [
+            {
+              "at": [
+                -4.0,
+                2.4,
+                6.0
+              ],
+              "color": "#7fd8ff",
+              "intensity": 12,
+              "distance": 24
+            },
+            {
+              "at": [
+                4.0,
+                4.0,
+                -14.0
+              ],
+              "color": "#9ec8ff",
+              "intensity": 66,
+              "distance": 60
+            },
+            {
+              "at": [
+                2.0,
+                0.6,
+                1.0
+              ],
+              "color": "#b6ff1f",
+              "intensity": 4,
+              "distance": 14
+            }
+          ],
+          "objects": [
+            {
+              "id": "net",
+              "type": "grid",
+              "size": 110,
+              "div": 34,
+              "y": -3.25,
+              "color": "#14263a",
+              "opacity": 0.3,
+              "enter": [
+                0,
+                0.7
+              ]
+            },
+            {
+              "id": "towerA",
+              "type": "pylon",
+              "at": [
+                3.4,
+                -3.2,
+                -2.2
+              ],
+              "height": 8.6,
+              "base": 1.0,
+              "thickness": 1.0,
+              "color": "#33445c",
+              "glow": "#6fc4f0",
+              "glowStrength": 0.3,
+              "enter": [
+                0.1,
+                1.0
+              ]
+            },
+            {
+              "id": "towerB",
+              "type": "pylon",
+              "at": [
+                6.8,
+                -3.2,
+                -10.0
+              ],
+              "height": 8.0,
+              "base": 0.95,
+              "thickness": 0.9,
+              "color": "#33445c",
+              "glow": "#6fc4f0",
+              "glowStrength": 0.3,
+              "enter": [
+                0.3,
+                1.2
+              ]
+            },
+            {
+              "id": "towerC",
+              "type": "pylon",
+              "at": [
+                0.9,
+                -3.2,
+                -16.0
+              ],
+              "height": 7.2,
+              "base": 0.9,
+              "thickness": 0.8,
+              "color": "#2b3a4e",
+              "glow": "#5aa8d8",
+              "glowStrength": 0.22,
+              "enter": [
+                0.5,
+                1.4
+              ]
+            },
+            {
+              "id": "towerD",
+              "type": "pylon",
+              "at": [
+                5.0,
+                -3.2,
+                -26.0
+              ],
+              "height": 6.4,
+              "base": 0.85,
+              "thickness": 0.7,
+              "color": "#243244",
+              "glow": "#4a93c0",
+              "glowStrength": 0.16,
+              "enter": [
+                0.7,
+                1.6
+              ]
+            },
+            {
+              "id": "flowPower",
+              "type": "flow",
+              "points": [
+                [
+                  3.4,
+                  2.7,
+                  -2.2
+                ],
+                [
+                  6.8,
+                  2.4,
+                  -10.0
+                ],
+                [
+                  5.0,
+                  2.1,
+                  -26.0
+                ]
+              ],
+              "color": "#9ee83a",
+              "radius": 0.028,
+              "particleRadius": 0.0392,
+              "particles": 56,
+              "speed": -0.1,
+              "tubeOpacity": 0.08,
+              "enter": [
+                1.1,
+                2.0
+              ]
+            },
+            {
+              "id": "flowCapacity",
+              "type": "flow",
+              "points": [
+                [
+                  3.4,
+                  2.5,
+                  -2.2
+                ],
+                [
+                  0.9,
+                  2.2,
+                  -16.0
+                ]
+              ],
+              "color": "#45c8f5",
+              "radius": 0.024,
+              "particleRadius": 0.0336,
+              "particles": 44,
+              "speed": 0.09,
+              "tubeOpacity": 0.08,
+              "enter": [
+                1.5,
+                2.4
+              ]
+            },
+            {
+              "id": "ringA",
+              "type": "ring",
+              "at": [
+                3.4,
+                1.0,
+                -2.2
+              ],
+              "radius": 2.4,
+              "thickness": 0.016,
+              "color": "#35e0ff",
+              "opacity": 0.32,
+              "enter": [
+                1.6,
+                2.4
+              ],
+              "spin": 0.24
+            },
+            {
+              "id": "cap",
+              "type": "sphere",
+              "at": [
+                3.4,
+                2.85,
+                -2.2
+              ],
+              "radius": 0.13,
+              "color": "#b6ff1f",
+              "glowStrength": 1.4,
+              "enter": [
+                1.9,
+                2.5
+              ],
+              "pulse": 0.9,
+              "pulseSpeed": 0.5
+            }
+          ],
+          "texts": [
+            {
+              "id": "kicker",
+              "role": "kicker",
+              "text": "AK 带你拆解世界 · 第 01 期",
+              "x": 0.08,
+              "y": 0.055,
+              "w": 0.84,
+              "enter": [
+                0.2,
+                0.9
+              ]
+            },
+            {
+              "id": "q",
+              "role": "title",
+              "text": "发电量在掉，\n电费收入却还在涨",
+              "x": 0.08,
+              "y": 0.6,
+              "w": 0.86,
+              "enter": [
+                0.9,
+                1.8
+              ],
+              "size": 78,
+              "maxLines": 4
+            },
+            {
+              "id": "ask",
+              "role": "subtitle",
+              "text": "钱，从哪来？",
+              "x": 0.08,
+              "y": 0.795,
+              "w": 0.86,
+              "enter": [
+                2.4,
+                3.1
+              ],
+              "size": 56
+            },
+            {
+              "id": "src",
+              "role": "source",
+              "text": "来源 S02 · 容量电价机制（已人工确认）",
+              "x": 0.08,
+              "y": 0.915,
+              "w": 0.86,
+              "enter": [
+                3.2,
+                3.9
+              ]
+            }
+          ]
+        },
+        "audio_layout": [
+          {
+            "clip": "sh01",
+            "start": 0.9,
+            "seconds": 4.176,
+            "text": "发电量下滑，电费收入却还能收上来，钱从哪来？"
+          }
+        ]
+      },
+      "assets": [
+        {
+          "id": "three",
+          "type": "font",
+          "source": "three.js r147（本地 vendor）",
+          "license": "MIT",
+          "path": "../../../../tools/vendor/three.min.js",
+          "note": "UMD 构建，内联进镜头页"
+        },
+        {
+          "id": "noto",
+          "type": "font",
+          "source": "Noto Sans SC（本机 Windows 字体目录）",
+          "license": "OFL-1.1",
+          "path": "fonts/NotoSansSC-VF.ttf",
+          "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+        },
+        {
+          "id": "engine",
+          "type": "2d",
+          "source": "本仓库 backend/app/video/cinema/scene.js",
+          "license": "本仓库自有",
+          "path": "scene.js",
+          "note": "程序化三维场景，非实拍"
+        }
+      ],
+      "audio_cues": [
+        {
+          "t": 1.2,
+          "kind": "riser",
+          "id": "sfx_riser",
+          "gain_db": -14.0
+        },
+        {
+          "t": 2.4,
+          "kind": "impact",
+          "id": "sfx_impact",
+          "gain_db": -14.0
+        }
+      ],
+      "subtitle": {
+        "text": "发电量下滑，电费收入却还能收上来，钱从哪来？",
+        "in": 0.75,
+        "out": 5.276000000000001,
+        "style": "lower"
+      },
+      "evidence_refs": [
+        {
+          "source_id": "S02",
+          "claim": "容量电价把「可用容量」单独计价，利润不再完全绑在发电量上（已人工确认）",
+          "check": "confirmed"
+        }
+      ],
+      "quality_requirements": [
+        "camera_motion_has_purpose",
+        "knowledge_visualized",
+        "text_is_not_the_main_visual"
+      ],
+      "narration": "发电量下滑，电费收入却还能收上来，钱从哪来？",
+      "status": "planned",
+      "qc": {}
+    },
+    {
+      "scene_id": "s2",
+      "duration": 10.306,
+      "engine": "cinema-html",
+      "entry": "s2/index.html",
+      "narrative_purpose": "把「第二张收入表」变成看得见的结构：收入分成两根柱子。",
+      "knowledge_objective": "观众能说出：电量收入跟着发电量走，容量收入按「可用能力」单独计价，两者脱钩。",
+      "visual_concept": "左边三根冷色柱随发电量下沉，右边三根绿柱按「待命」立起来，中间那条连线在中段断掉。",
+      "composition": {
+        "主体": "两组柱列，左冷右暖",
+        "前景": "柱底基座",
+        "背景": "夜网格",
+        "文字区": "上下两端，中间留给柱列"
+      },
+      "camera": [
+        {
+          "t": 0.0,
+          "pos": [
+            -0.6,
+            0.9,
+            8.6
+          ],
+          "look": [
+            -0.6,
+            0.4,
+            -1.2
+          ],
+          "fov": 36,
+          "roll": 0.0
+        },
+        {
+          "t": 3.4,
+          "pos": [
+            0.2,
+            0.9,
+            7.4
+          ],
+          "look": [
+            0.0,
+            0.5,
+            -1.2
+          ],
+          "fov": 35,
+          "roll": 0.0
+        },
+        {
+          "t": 6.6,
+          "pos": [
+            1.2,
+            1.0,
+            6.6
+          ],
+          "look": [
+            1.4,
+            0.6,
+            -1.2
+          ],
+          "fov": 34,
+          "roll": 0.0
+        },
+        {
+          "t": 10.3,
+          "pos": [
+            1.5,
+            1.1,
+            6.0
+          ],
+          "look": [
+            1.5,
+            0.7,
+            -1.2
+          ],
+          "fov": 34,
+          "roll": 0.0
+        }
+      ],
+      "visual_events": [
+        {
+          "t": 3.4,
+          "kind": "camera",
+          "target": "s2",
+          "note": "whoosh 音效与画面同步",
+          "params": {
+            "sfx": "whoosh"
+          }
+        },
+        {
+          "t": 6.2,
+          "kind": "highlight",
+          "target": "s2",
+          "note": "impact 音效与画面同步",
+          "params": {
+            "sfx": "impact"
+          }
+        },
+        {
+          "t": 8.6,
+          "kind": "highlight",
+          "target": "s2",
+          "note": "tick 音效与画面同步",
+          "params": {
+            "sfx": "tick"
+          }
+        }
+      ],
+      "motion_design": {
+        "stage": {
+          "exposure": 1.0,
+          "ambient": 0.22,
+          "keyLight": 0.55,
+          "scrimStrength": 0.8,
+          "sky": {
+            "top": "#31567f",
+            "bottom": "#04060b",
+            "fog": [
+              20,
+              85
+            ],
+            "css": "radial-gradient(ellipse 150% 70% at 62% 6%, #24405f 0%, #14263c 34%, #04060b 66%)"
+          },
+          "lights": [
+            {
+              "at": [
+                -3.0,
+                1.6,
+                3.2
+              ],
+              "color": "#3f7f9e",
+              "intensity": 16,
+              "distance": 20
+            },
+            {
+              "at": [
+                3.4,
+                1.8,
+                3.2
+              ],
+              "color": "#b6ff1f",
+              "intensity": 22,
+              "distance": 22
+            },
+            {
+              "at": [
+                0.0,
+                5.0,
+                -8.0
+              ],
+              "color": "#6f9be0",
+              "intensity": 30,
+              "distance": 40
+            }
+          ],
+          "objects": [
+            {
+              "id": "net",
+              "type": "grid",
+              "size": 60,
+              "div": 24,
+              "y": -3.24,
+              "color": "#13293f",
+              "opacity": 0.28,
+              "enter": [
+                0,
+                0.6
+              ]
+            },
+            {
+              "id": "e1",
+              "type": "bar",
+              "at": [
+                -2.6,
+                -3.2,
+                -1.2
+              ],
+              "width": 0.52,
+              "depth": 0.52,
+              "height": 3.4,
+              "color": "#2f5d78",
+              "glow": "#2f5d78",
+              "glowStrength": 0.18,
+              "keyframes": [
+                [
+                  0,
+                  0.15
+                ],
+                [
+                  1.6,
+                  1.0
+                ],
+                [
+                  5.2,
+                  0.62
+                ],
+                [
+                  9.6,
+                  0.42
+                ]
+              ],
+              "enter": [
+                0.3,
+                1.4
+              ]
+            },
+            {
+              "id": "e2",
+              "type": "bar",
+              "at": [
+                -1.8,
+                -3.2,
+                -1.2
+              ],
+              "width": 0.52,
+              "depth": 0.52,
+              "height": 3.0,
+              "color": "#2a5468",
+              "glow": "#2a5468",
+              "glowStrength": 0.16,
+              "keyframes": [
+                [
+                  0,
+                  0.15
+                ],
+                [
+                  1.7,
+                  0.95
+                ],
+                [
+                  5.4,
+                  0.55
+                ],
+                [
+                  9.7,
+                  0.34
+                ]
+              ],
+              "enter": [
+                0.4,
+                1.5
+              ]
+            },
+            {
+              "id": "e3",
+              "type": "bar",
+              "at": [
+                -1.0,
+                -3.2,
+                -1.2
+              ],
+              "width": 0.52,
+              "depth": 0.52,
+              "height": 2.6,
+              "color": "#24495c",
+              "glow": "#24495c",
+              "glowStrength": 0.14,
+              "keyframes": [
+                [
+                  0,
+                  0.15
+                ],
+                [
+                  1.8,
+                  0.9
+                ],
+                [
+                  5.6,
+                  0.5
+                ],
+                [
+                  9.8,
+                  0.28
+                ]
+              ],
+              "enter": [
+                0.5,
+                1.6
+              ]
+            },
+            {
+              "id": "c1",
+              "type": "bar",
+              "at": [
+                1.0,
+                -3.2,
+                -1.2
+              ],
+              "width": 0.52,
+              "depth": 0.52,
+              "height": 2.2,
+              "color": "#7fbf2a",
+              "glow": "#7fbf2a",
+              "glowStrength": 0.5,
+              "keyframes": [
+                [
+                  0,
+                  0.12
+                ],
+                [
+                  3.4,
+                  0.3
+                ],
+                [
+                  6.2,
+                  0.72
+                ],
+                [
+                  9.9,
+                  1.0
+                ]
+              ],
+              "enter": [
+                2.8,
+                3.8
+              ]
+            },
+            {
+              "id": "c2",
+              "type": "bar",
+              "at": [
+                1.8,
+                -3.2,
+                -1.2
+              ],
+              "width": 0.52,
+              "depth": 0.52,
+              "height": 2.6,
+              "color": "#9ee83a",
+              "glow": "#9ee83a",
+              "glowStrength": 0.55,
+              "keyframes": [
+                [
+                  0,
+                  0.12
+                ],
+                [
+                  3.5,
+                  0.34
+                ],
+                [
+                  6.4,
+                  0.76
+                ],
+                [
+                  10.0,
+                  1.0
+                ]
+              ],
+              "enter": [
+                2.9,
+                3.9
+              ]
+            },
+            {
+              "id": "c3",
+              "type": "bar",
+              "at": [
+                2.6,
+                -3.2,
+                -1.2
+              ],
+              "width": 0.52,
+              "depth": 0.52,
+              "height": 3.0,
+              "color": "#b6ff1f",
+              "glow": "#b6ff1f",
+              "glowStrength": 0.6,
+              "keyframes": [
+                [
+                  0,
+                  0.12
+                ],
+                [
+                  3.6,
+                  0.38
+                ],
+                [
+                  6.6,
+                  0.8
+                ],
+                [
+                  10.1,
+                  1.0
+                ]
+              ],
+              "enter": [
+                3.0,
+                4.0
+              ]
+            },
+            {
+              "id": "base",
+              "type": "box",
+              "at": [
+                0.0,
+                -3.28,
+                -1.2
+              ],
+              "size": [
+                7.6,
+                0.16,
+                2.6
+              ],
+              "color": "#1b2c42",
+              "glow": "#1b2c42",
+              "glowStrength": 0.1,
+              "enter": [
+                0,
+                0.8
+              ]
+            },
+            {
+              "id": "tieBreak",
+              "type": "flow",
+              "points": [
+                [
+                  -0.4,
+                  0.4,
+                  -1.2
+                ],
+                [
+                  0.0,
+                  0.9,
+                  -1.2
+                ]
+              ],
+              "color": "#8ea3bd",
+              "radius": 0.02,
+              "particleRadius": 0.027999999999999997,
+              "particles": 12,
+              "speed": 0.4,
+              "tubeOpacity": 0.22,
+              "enter": [
+                2.6,
+                3.4
+              ]
+            },
+            {
+              "id": "capFlow",
+              "type": "flow",
+              "points": [
+                [
+                  1.0,
+                  0.4,
+                  -1.2
+                ],
+                [
+                  2.6,
+                  1.1,
+                  -1.2
+                ],
+                [
+                  3.6,
+                  2.4,
+                  -1.2
+                ]
+              ],
+              "color": "#b6ff1f",
+              "radius": 0.03,
+              "particleRadius": 0.041999999999999996,
+              "particles": 30,
+              "speed": 0.22,
+              "tubeOpacity": 0.1,
+              "enter": [
+                3.6,
+                4.6
+              ]
+            },
+            {
+              "id": "divider",
+              "type": "box",
+              "at": [
+                0.0,
+                -1.4,
+                -1.2
+              ],
+              "size": [
+                0.035,
+                3.6,
+                2.4
+              ],
+              "color": "#2b4a6b",
+              "glow": "#2b4a6b",
+              "glowStrength": 0.25,
+              "enter": [
+                2.2,
+                3.2
+              ]
+            }
+          ],
+          "texts": [
+            {
+              "id": "kicker",
+              "role": "kicker",
+              "text": "第二张收入表",
+              "x": 0.08,
+              "y": 0.055,
+              "w": 0.84,
+              "enter": [
+                0.2,
+                1.0
+              ]
+            },
+            {
+              "id": "leftLabel",
+              "role": "label",
+              "text": "电量收入",
+              "x": 0.06,
+              "y": 0.3,
+              "w": 0.42,
+              "enter": [
+                0.8,
+                1.8
+              ],
+              "align": "left"
+            },
+            {
+              "id": "leftTrend",
+              "role": "caption",
+              "text": "跟着发电量一起掉 ↓",
+              "x": 0.06,
+              "y": 0.345,
+              "w": 0.42,
+              "enter": [
+                2.0,
+                3.0
+              ],
+              "size": 32
+            },
+            {
+              "id": "rightLabel",
+              "role": "label",
+              "text": "容量收入",
+              "x": 0.52,
+              "y": 0.3,
+              "w": 0.42,
+              "enter": [
+                3.0,
+                4.0
+              ],
+              "align": "left",
+              "color": "#b6ff1f"
+            },
+            {
+              "id": "rightTrend",
+              "role": "caption",
+              "text": "只要「待命」就能收 ↑",
+              "x": 0.52,
+              "y": 0.345,
+              "w": 0.44,
+              "enter": [
+                4.0,
+                5.0
+              ],
+              "size": 32,
+              "color": "#d8ffa0"
+            },
+            {
+              "id": "hook",
+              "role": "title",
+              "text": "两根柱子，\n各算各的账",
+              "x": 0.08,
+              "y": 0.615,
+              "w": 0.86,
+              "enter": [
+                0.9,
+                1.9
+              ],
+              "size": 72,
+              "maxLines": 3
+            },
+            {
+              "id": "caption",
+              "role": "caption",
+              "text": "利润跟电量脱钩，不再绑在一根绳上。",
+              "x": 0.08,
+              "y": 0.795,
+              "w": 0.88,
+              "enter": [
+                5.4,
+                6.4
+              ]
+            },
+            {
+              "id": "src",
+              "role": "source",
+              "text": "来源 S02 · 容量电价机制（已人工确认）",
+              "x": 0.08,
+              "y": 0.915,
+              "w": 0.86,
+              "enter": [
+                1.2,
+                2.0
+              ]
+            }
+          ]
+        },
+        "audio_layout": [
+          {
+            "clip": "sh02",
+            "start": 0.5,
+            "seconds": 4.536,
+            "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。"
+          },
+          {
+            "clip": "sh03",
+            "start": 5.386,
+            "seconds": 4.32,
+            "text": "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。"
+          }
+        ]
+      },
+      "assets": [
+        {
+          "id": "three",
+          "type": "font",
+          "source": "three.js r147（本地 vendor）",
+          "license": "MIT",
+          "path": "../../../../tools/vendor/three.min.js",
+          "note": "UMD 构建，内联进镜头页"
+        },
+        {
+          "id": "noto",
+          "type": "font",
+          "source": "Noto Sans SC（本机 Windows 字体目录）",
+          "license": "OFL-1.1",
+          "path": "fonts/NotoSansSC-VF.ttf",
+          "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+        },
+        {
+          "id": "engine",
+          "type": "2d",
+          "source": "本仓库 backend/app/video/cinema/scene.js",
+          "license": "本仓库自有",
+          "path": "scene.js",
+          "note": "程序化三维场景，非实拍"
+        }
+      ],
+      "audio_cues": [
+        {
+          "t": 3.4,
+          "kind": "whoosh",
+          "id": "sfx_whoosh",
+          "gain_db": -14.0
+        },
+        {
+          "t": 6.2,
+          "kind": "impact",
+          "id": "sfx_impact",
+          "gain_db": -14.0
+        },
+        {
+          "t": 8.6,
+          "kind": "tick",
+          "id": "sfx_tick",
+          "gain_db": -14.0
+        }
+      ],
+      "subtitle": {
+        "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。",
+        "in": 0.35,
+        "out": 9.905999999999999,
+        "style": "lower"
+      },
+      "evidence_refs": [
+        {
+          "source_id": "S02",
+          "claim": "容量电价把「可用容量」单独计价，利润不再完全绑在发电量上（已人工确认）",
+          "check": "confirmed"
+        }
+      ],
+      "quality_requirements": [
+        "camera_motion_has_purpose",
+        "knowledge_visualized",
+        "text_is_not_the_main_visual"
+      ],
+      "narration": "发电量下滑，收入却还能收上来——这就是第二张收入表。 它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。",
+      "status": "planned",
+      "qc": {}
+    },
+    {
+      "scene_id": "s3",
+      "duration": 6.16,
+      "engine": "cinema-html",
+      "entry": "s3/index.html",
+      "narrative_purpose": "说明同一份资产为什么会被重新定价。",
+      "knowledge_objective": "观众能说出：定价依据从「红利资产」换成「AI 的能源底座」。",
+      "visual_concept": "一枚发光的锚从左边的金色账本移到右边的算力方块阵，左侧随之变暗。",
+      "composition": {
+        "主体": "左右两个资产簇",
+        "前景": "移动中的锚环",
+        "背景": "渐变夜",
+        "文字区": "两端标注 + 中部大标题"
+      },
+      "camera": [
+        {
+          "t": 0.0,
+          "pos": [
+            0.0,
+            1.6,
+            7.6
+          ],
+          "look": [
+            -1.2,
+            0.2,
+            -1.0
+          ],
+          "fov": 35,
+          "roll": 0.0
+        },
+        {
+          "t": 2.6,
+          "pos": [
+            0.0,
+            1.4,
+            6.6
+          ],
+          "look": [
+            -0.6,
+            0.3,
+            -1.0
+          ],
+          "fov": 34,
+          "roll": 0.0
+        },
+        {
+          "t": 4.8,
+          "pos": [
+            0.4,
+            1.4,
+            6.2
+          ],
+          "look": [
+            0.8,
+            0.5,
+            -1.0
+          ],
+          "fov": 34,
+          "roll": 0.0
+        },
+        {
+          "t": 6.2,
+          "pos": [
+            0.6,
+            1.4,
+            5.8
+          ],
+          "look": [
+            1.4,
+            0.6,
+            -1.0
+          ],
+          "fov": 33,
+          "roll": 0.0
+        }
+      ],
+      "visual_events": [
+        {
+          "t": 1.4,
+          "kind": "camera",
+          "target": "s3",
+          "note": "riser 音效与画面同步",
+          "params": {
+            "sfx": "riser"
+          }
+        },
+        {
+          "t": 4.4,
+          "kind": "camera",
+          "target": "s3",
+          "note": "whoosh 音效与画面同步",
+          "params": {
+            "sfx": "whoosh"
+          }
+        },
+        {
+          "t": 5.6,
+          "kind": "highlight",
+          "target": "s3",
+          "note": "impact 音效与画面同步",
+          "params": {
+            "sfx": "impact"
+          }
+        }
+      ],
+      "motion_design": {
+        "stage": {
+          "exposure": 1.05,
+          "ambient": 0.2,
+          "keyLight": 0.5,
+          "scrimStrength": 0.8,
+          "sky": {
+            "top": "#31567f",
+            "bottom": "#04060b",
+            "fog": [
+              20,
+              85
+            ],
+            "css": "radial-gradient(ellipse 150% 70% at 62% 6%, #24405f 0%, #14263c 34%, #04060b 66%)"
+          },
+          "lights": [
+            {
+              "at": [
+                -2.2,
+                0.6,
+                2.6
+              ],
+              "color": "#ffb020",
+              "intensity": 12,
+              "distance": 16
+            },
+            {
+              "at": [
+                2.0,
+                1.2,
+                2.6
+              ],
+              "color": "#35e0ff",
+              "intensity": 26,
+              "distance": 22
+            }
+          ],
+          "objects": [
+            {
+              "id": "net",
+              "type": "grid",
+              "size": 60,
+              "div": 24,
+              "y": -3.24,
+              "color": "#13293f",
+              "opacity": 0.26,
+              "enter": [
+                0,
+                0.6
+              ]
+            },
+            {
+              "id": "redis1",
+              "type": "box",
+              "at": [
+                -2.2,
+                -2.9,
+                -1.0
+              ],
+              "size": [
+                1.5,
+                0.42,
+                1.5
+              ],
+              "color": "#7a5a1f",
+              "glow": "#ffb020",
+              "glowStrength": 0.35,
+              "enter": [
+                0.3,
+                1.3
+              ]
+            },
+            {
+              "id": "redis2",
+              "type": "box",
+              "at": [
+                -2.2,
+                -2.42,
+                -1.0
+              ],
+              "size": [
+                1.3,
+                0.38,
+                1.3
+              ],
+              "color": "#8a6623",
+              "glow": "#ffb020",
+              "glowStrength": 0.3,
+              "enter": [
+                0.45,
+                1.45
+              ]
+            },
+            {
+              "id": "redis3",
+              "type": "box",
+              "at": [
+                -2.2,
+                -2.0,
+                -1.0
+              ],
+              "size": [
+                1.1,
+                0.34,
+                1.1
+              ],
+              "color": "#9a7327",
+              "glow": "#ffb020",
+              "glowStrength": 0.26,
+              "enter": [
+                0.6,
+                1.6
+              ]
+            },
+            {
+              "id": "aic00",
+              "type": "box",
+              "at": [
+                1.1,
+                -3.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#2a7f9c",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.2,
+                3.2
+              ],
+              "pulse": 0.5,
+              "pulseSpeed": 0.5
+            },
+            {
+              "id": "aic01",
+              "type": "box",
+              "at": [
+                1.62,
+                -3.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.29,
+                3.29
+              ]
+            },
+            {
+              "id": "aic02",
+              "type": "box",
+              "at": [
+                2.14,
+                -3.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.3800000000000003,
+                3.3800000000000003
+              ]
+            },
+            {
+              "id": "aic03",
+              "type": "box",
+              "at": [
+                2.66,
+                -3.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#2a7f9c",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.47,
+                3.47
+              ],
+              "pulse": 0.5,
+              "pulseSpeed": 0.5
+            },
+            {
+              "id": "aic10",
+              "type": "box",
+              "at": [
+                1.1,
+                -2.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.29,
+                3.29
+              ]
+            },
+            {
+              "id": "aic11",
+              "type": "box",
+              "at": [
+                1.62,
+                -2.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.3800000000000003,
+                3.3800000000000003
+              ]
+            },
+            {
+              "id": "aic12",
+              "type": "box",
+              "at": [
+                2.14,
+                -2.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#2a7f9c",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.47,
+                3.47
+              ],
+              "pulse": 0.5,
+              "pulseSpeed": 0.5
+            },
+            {
+              "id": "aic13",
+              "type": "box",
+              "at": [
+                2.66,
+                -2.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.56,
+                3.56
+              ]
+            },
+            {
+              "id": "aic20",
+              "type": "box",
+              "at": [
+                1.1,
+                -2.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.3800000000000003,
+                3.3800000000000003
+              ]
+            },
+            {
+              "id": "aic21",
+              "type": "box",
+              "at": [
+                1.62,
+                -2.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#2a7f9c",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.47,
+                3.47
+              ],
+              "pulse": 0.5,
+              "pulseSpeed": 0.5
+            },
+            {
+              "id": "aic22",
+              "type": "box",
+              "at": [
+                2.14,
+                -2.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.56,
+                3.56
+              ]
+            },
+            {
+              "id": "aic23",
+              "type": "box",
+              "at": [
+                2.66,
+                -2.0,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.6500000000000004,
+                3.6500000000000004
+              ]
+            },
+            {
+              "id": "aic30",
+              "type": "box",
+              "at": [
+                1.1,
+                -1.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#2a7f9c",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.47,
+                3.47
+              ],
+              "pulse": 0.5,
+              "pulseSpeed": 0.5
+            },
+            {
+              "id": "aic31",
+              "type": "box",
+              "at": [
+                1.62,
+                -1.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.56,
+                3.56
+              ]
+            },
+            {
+              "id": "aic32",
+              "type": "box",
+              "at": [
+                2.14,
+                -1.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#1f4f66",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.6500000000000004,
+                3.6500000000000004
+              ]
+            },
+            {
+              "id": "aic33",
+              "type": "box",
+              "at": [
+                2.66,
+                -1.5,
+                -1.0
+              ],
+              "size": [
+                0.42,
+                0.36,
+                0.42
+              ],
+              "color": "#2a7f9c",
+              "glow": "#35e0ff",
+              "glowStrength": 0.55,
+              "enter": [
+                2.74,
+                3.74
+              ],
+              "pulse": 0.5,
+              "pulseSpeed": 0.5
+            },
+            {
+              "id": "anchor",
+              "type": "ring",
+              "at": [
+                -2.2,
+                0.6,
+                -1.0
+              ],
+              "radius": 0.75,
+              "thickness": 0.045,
+              "color": "#b6ff1f",
+              "opacity": 0.9,
+              "enter": [
+                1.2,
+                2.0
+              ],
+              "spin": 0.5,
+              "move": [
+                [
+                  2.0,
+                  [
+                    -2.2,
+                    0.6,
+                    -1.0
+                  ]
+                ],
+                [
+                  4.4,
+                  [
+                    -0.2,
+                    1.4,
+                    -1.0
+                  ]
+                ],
+                [
+                  5.6,
+                  [
+                    2.0,
+                    1.0,
+                    -1.0
+                  ]
+                ]
+              ]
+            },
+            {
+              "id": "anchorDot",
+              "type": "sphere",
+              "at": [
+                -2.2,
+                0.6,
+                -1.0
+              ],
+              "radius": 0.12,
+              "color": "#b6ff1f",
+              "glowStrength": 1.6,
+              "enter": [
+                1.3,
+                2.1
+              ],
+              "move": [
+                [
+                  2.0,
+                  [
+                    -2.2,
+                    0.6,
+                    -1.0
+                  ]
+                ],
+                [
+                  4.4,
+                  [
+                    -0.2,
+                    1.4,
+                    -1.0
+                  ]
+                ],
+                [
+                  5.6,
+                  [
+                    2.0,
+                    1.0,
+                    -1.0
+                  ]
+                ]
+              ]
+            }
+          ],
+          "texts": [
+            {
+              "id": "kicker",
+              "role": "kicker",
+              "text": "估值锚在移动",
+              "x": 0.08,
+              "y": 0.055,
+              "w": 0.84,
+              "enter": [
+                0.2,
+                1.0
+              ]
+            },
+            {
+              "id": "oldLabel",
+              "role": "label",
+              "text": "红利资产",
+              "x": 0.06,
+              "y": 0.28,
+              "w": 0.4,
+              "enter": [
+                0.8,
+                1.8
+              ],
+              "color": "#ffb020"
+            },
+            {
+              "id": "oldNote",
+              "role": "caption",
+              "text": "看股息、看稳定性",
+              "x": 0.06,
+              "y": 0.325,
+              "w": 0.4,
+              "enter": [
+                1.8,
+                2.8
+              ],
+              "size": 30,
+              "color": "#d9b978"
+            },
+            {
+              "id": "newLabel",
+              "role": "label",
+              "text": "AI 的能源底座",
+              "x": 0.52,
+              "y": 0.28,
+              "w": 0.44,
+              "enter": [
+                4.6,
+                5.6
+              ],
+              "color": "#35e0ff"
+            },
+            {
+              "id": "newNote",
+              "role": "caption",
+              "text": "看算力用电、看待命能力",
+              "x": 0.52,
+              "y": 0.325,
+              "w": 0.46,
+              "enter": [
+                5.2,
+                6.2
+              ],
+              "size": 30,
+              "color": "#9fdcf0"
+            },
+            {
+              "id": "title",
+              "role": "title",
+              "text": "同一个资产，\n换了一套定价依据",
+              "x": 0.08,
+              "y": 0.62,
+              "w": 0.88,
+              "enter": [
+                0.9,
+                1.9
+              ],
+              "size": 68,
+              "maxLines": 3
+            },
+            {
+              "id": "caption",
+              "role": "caption",
+              "text": "估值依据也跟着换：从红利资产，变成 AI 的能源底座。",
+              "x": 0.08,
+              "y": 0.8,
+              "w": 0.9,
+              "enter": [
+                4.8,
+                5.8
+              ],
+              "size": 34
+            },
+            {
+              "id": "src",
+              "role": "source",
+              "text": "来源 S01 · 算电协同（已人工确认）",
+              "x": 0.08,
+              "y": 0.915,
+              "w": 0.86,
+              "enter": [
+                1.2,
+                2.0
+              ]
+            }
+          ]
+        },
+        "audio_layout": [
+          {
+            "clip": "sh04",
+            "start": 0.4,
+            "seconds": 5.16,
+            "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。"
+          }
+        ]
+      },
+      "assets": [
+        {
+          "id": "three",
+          "type": "font",
+          "source": "three.js r147（本地 vendor）",
+          "license": "MIT",
+          "path": "../../../../tools/vendor/three.min.js",
+          "note": "UMD 构建，内联进镜头页"
+        },
+        {
+          "id": "noto",
+          "type": "font",
+          "source": "Noto Sans SC（本机 Windows 字体目录）",
+          "license": "OFL-1.1",
+          "path": "fonts/NotoSansSC-VF.ttf",
+          "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+        },
+        {
+          "id": "engine",
+          "type": "2d",
+          "source": "本仓库 backend/app/video/cinema/scene.js",
+          "license": "本仓库自有",
+          "path": "scene.js",
+          "note": "程序化三维场景，非实拍"
+        }
+      ],
+      "audio_cues": [
+        {
+          "t": 1.4,
+          "kind": "riser",
+          "id": "sfx_riser",
+          "gain_db": -14.0
+        },
+        {
+          "t": 4.4,
+          "kind": "whoosh",
+          "id": "sfx_whoosh",
+          "gain_db": -14.0
+        },
+        {
+          "t": 5.6,
+          "kind": "impact",
+          "id": "sfx_impact",
+          "gain_db": -14.0
+        }
+      ],
+      "subtitle": {
+        "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。",
+        "in": 0.25,
+        "out": 5.760000000000001,
+        "style": "lower"
+      },
+      "evidence_refs": [
+        {
+          "source_id": "S01",
+          "claim": "用电需求结构与估值框架正在从「红利资产」向「算力基础设施」切换（已人工确认）",
+          "check": "confirmed"
+        }
+      ],
+      "quality_requirements": [
+        "camera_motion_has_purpose",
+        "knowledge_visualized",
+        "text_is_not_the_main_visual"
+      ],
+      "narration": "估值依据也跟着换：从红利资产，变成AI的能源底座。",
+      "status": "planned",
+      "qc": {}
+    },
+    {
+      "scene_id": "s4",
+      "duration": 12.096,
+      "engine": "cinema-html",
+      "entry": "s4/index.html",
+      "narrative_purpose": "用一条反证把前面的乐观压回来。",
+      "knowledge_objective": "观众能说出：行业利润同比降 6.2%，四个份额此消彼长、总量线不动，所以是再分配不是扩张。",
+      "visual_concept": "四根份额柱此消彼长，一条不动的总量线压在上方，6.2% 的数字滚下来。",
+      "composition": {
+        "主体": "四根份额柱",
+        "前景": "总量线与数字",
+        "背景": "渐变夜空",
+        "文字区": "上三分之一的数字 + 下三分之一的结论"
+      },
+      "camera": [
+        {
+          "t": 0.0,
+          "pos": [
+            2.0,
+            2.4,
+            12.6
+          ],
+          "look": [
+            1.8,
+            0.6,
+            -1.0
+          ],
+          "fov": 36,
+          "roll": 0.0
+        },
+        {
+          "t": 3.6,
+          "pos": [
+            1.9,
+            1.9,
+            10.4
+          ],
+          "look": [
+            1.8,
+            0.9,
+            -1.0
+          ],
+          "fov": 35,
+          "roll": 0.0
+        },
+        {
+          "t": 8.0,
+          "pos": [
+            1.5,
+            1.7,
+            9.2
+          ],
+          "look": [
+            1.6,
+            1.0,
+            -1.0
+          ],
+          "fov": 34,
+          "roll": 0.0
+        },
+        {
+          "t": 12.1,
+          "pos": [
+            1.4,
+            1.7,
+            8.8
+          ],
+          "look": [
+            1.6,
+            1.0,
+            -1.0
+          ],
+          "fov": 34,
+          "roll": 0.0
+        }
+      ],
+      "visual_events": [
+        {
+          "t": 5.6,
+          "kind": "highlight",
+          "target": "s4",
+          "note": "impact 音效与画面同步",
+          "params": {
+            "sfx": "impact"
+          }
+        },
+        {
+          "t": 6.4,
+          "kind": "camera",
+          "target": "s4",
+          "note": "riser 音效与画面同步",
+          "params": {
+            "sfx": "riser"
+          }
+        },
+        {
+          "t": 9.4,
+          "kind": "highlight",
+          "target": "s4",
+          "note": "tick 音效与画面同步",
+          "params": {
+            "sfx": "tick"
+          }
+        }
+      ],
+      "motion_design": {
+        "stage": {
+          "exposure": 1.0,
+          "ambient": 0.24,
+          "keyLight": 0.6,
+          "scrimStrength": 0.82,
+          "sky": {
+            "top": "#31567f",
+            "bottom": "#04060b",
+            "fog": [
+              20,
+              85
+            ],
+            "css": "linear-gradient(to bottom, #2c4f74 0%, #1b3453 22%, #0b1523 52%, #04060b 100%)"
+          },
+          "lights": [
+            {
+              "at": [
+                0.0,
+                3.2,
+                4.0
+              ],
+              "color": "#9ec8ff",
+              "intensity": 22,
+              "distance": 24
+            },
+            {
+              "at": [
+                5.0,
+                1.2,
+                1.0
+              ],
+              "color": "#b6ff1f",
+              "intensity": 12,
+              "distance": 18
+            }
+          ],
+          "objects": [
+            {
+              "id": "net",
+              "type": "grid",
+              "size": 70,
+              "div": 28,
+              "y": -3.24,
+              "color": "#13293f",
+              "opacity": 0.26,
+              "enter": [
+                0,
+                0.6
+              ]
+            },
+            {
+              "id": "q1",
+              "type": "bar",
+              "at": [
+                -2.4,
+                -3.2,
+                -1.0
+              ],
+              "width": 0.8,
+              "depth": 0.8,
+              "height": 3.2,
+              "color": "#2f5d78",
+              "glow": "#2f5d78",
+              "glowStrength": 0.2,
+              "keyframes": [
+                [
+                  0,
+                  0.2
+                ],
+                [
+                  1.4,
+                  1.0
+                ],
+                [
+                  3.2,
+                  1.0
+                ],
+                [
+                  6.0,
+                  0.86
+                ],
+                [
+                  9.0,
+                  0.74
+                ],
+                [
+                  11.6,
+                  0.68
+                ]
+              ],
+              "enter": [
+                0.2,
+                1.2
+              ]
+            },
+            {
+              "id": "q2",
+              "type": "bar",
+              "at": [
+                0.4,
+                -3.2,
+                -1.0
+              ],
+              "width": 0.8,
+              "depth": 0.8,
+              "height": 3.2,
+              "color": "#3c6f8c",
+              "glow": "#3c6f8c",
+              "glowStrength": 0.22,
+              "keyframes": [
+                [
+                  0,
+                  0.2
+                ],
+                [
+                  1.5,
+                  0.78
+                ],
+                [
+                  3.4,
+                  0.78
+                ],
+                [
+                  6.2,
+                  0.9
+                ],
+                [
+                  9.2,
+                  1.0
+                ],
+                [
+                  11.8,
+                  1.0
+                ]
+              ],
+              "enter": [
+                0.3,
+                1.3
+              ]
+            },
+            {
+              "id": "q3",
+              "type": "bar",
+              "at": [
+                3.2,
+                -3.2,
+                -1.0
+              ],
+              "width": 0.8,
+              "depth": 0.8,
+              "height": 3.2,
+              "color": "#6fae35",
+              "glow": "#6fae35",
+              "glowStrength": 0.3,
+              "keyframes": [
+                [
+                  0,
+                  0.2
+                ],
+                [
+                  1.6,
+                  0.62
+                ],
+                [
+                  3.6,
+                  0.62
+                ],
+                [
+                  6.4,
+                  0.8
+                ],
+                [
+                  9.4,
+                  0.98
+                ],
+                [
+                  12.0,
+                  1.06
+                ]
+              ],
+              "enter": [
+                0.4,
+                1.4
+              ]
+            },
+            {
+              "id": "q4",
+              "type": "bar",
+              "at": [
+                6.0,
+                -3.2,
+                -1.0
+              ],
+              "width": 0.8,
+              "depth": 0.8,
+              "height": 3.2,
+              "color": "#b6ff1f",
+              "glow": "#b6ff1f",
+              "glowStrength": 0.45,
+              "keyframes": [
+                [
+                  0,
+                  0.2
+                ],
+                [
+                  1.7,
+                  0.5
+                ],
+                [
+                  3.8,
+                  0.5
+                ],
+                [
+                  6.6,
+                  0.72
+                ],
+                [
+                  9.6,
+                  0.94
+                ],
+                [
+                  12.2,
+                  1.02
+                ]
+              ],
+              "enter": [
+                0.5,
+                1.5
+              ]
+            },
+            {
+              "id": "totalLine",
+              "type": "box",
+              "at": [
+                1.8,
+                0.4,
+                -1.0
+              ],
+              "size": [
+                9.6,
+                0.05,
+                0.9
+              ],
+              "color": "#8ea3bd",
+              "glow": "#8ea3bd",
+              "glowStrength": 0.5,
+              "enter": [
+                3.0,
+                3.8
+              ]
+            }
+          ],
+          "texts": [
+            {
+              "id": "kicker",
+              "role": "kicker",
+              "text": "反证：利润在降",
+              "x": 0.08,
+              "y": 0.055,
+              "w": 0.84,
+              "enter": [
+                0.2,
+                1.0
+              ]
+            },
+            {
+              "id": "num",
+              "role": "number",
+              "text": "0%",
+              "x": 0.08,
+              "y": 0.2,
+              "w": 0.8,
+              "enter": [
+                5.6,
+                6.4
+              ],
+              "size": 150,
+              "count": {
+                "from": 0,
+                "to": 6.2,
+                "decimals": 1,
+                "suffix": "%",
+                "start": 5.8,
+                "end": 8.6
+              }
+            },
+            {
+              "id": "numLabel",
+              "role": "label",
+              "text": "2026 年上半年行业利润同比",
+              "x": 0.08,
+              "y": 0.155,
+              "w": 0.8,
+              "enter": [
+                5.4,
+                6.2
+              ],
+              "color": "#8ea3bd"
+            },
+            {
+              "id": "title",
+              "role": "title",
+              "text": "总量没变，\n变的只是分法",
+              "x": 0.08,
+              "y": 0.63,
+              "w": 0.88,
+              "enter": [
+                0.9,
+                1.9
+              ],
+              "size": 70,
+              "maxLines": 3
+            },
+            {
+              "id": "caption",
+              "role": "caption",
+              "text": "利润在降，说明这是存量再分配，不是总量扩张。",
+              "x": 0.08,
+              "y": 0.8,
+              "w": 0.9,
+              "enter": [
+                9.4,
+                10.4
+              ],
+              "size": 34
+            },
+            {
+              "id": "src",
+              "role": "source",
+              "text": "来源 S11 · 规模以上工业企业利润（已人工确认可用）",
+              "x": 0.08,
+              "y": 0.915,
+              "w": 0.88,
+              "enter": [
+                1.2,
+                2.0
+              ]
+            }
+          ]
+        },
+        "audio_layout": [
+          {
+            "clip": "sh05",
+            "start": 0.4,
+            "seconds": 6.648,
+            "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。"
+          },
+          {
+            "clip": "sh06",
+            "start": 7.348,
+            "seconds": 4.248,
+            "text": "利润在降，说明这是存量再分配，不是总量扩张。"
+          }
+        ]
+      },
+      "assets": [
+        {
+          "id": "three",
+          "type": "font",
+          "source": "three.js r147（本地 vendor）",
+          "license": "MIT",
+          "path": "../../../../tools/vendor/three.min.js",
+          "note": "UMD 构建，内联进镜头页"
+        },
+        {
+          "id": "noto",
+          "type": "font",
+          "source": "Noto Sans SC（本机 Windows 字体目录）",
+          "license": "OFL-1.1",
+          "path": "fonts/NotoSansSC-VF.ttf",
+          "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+        },
+        {
+          "id": "engine",
+          "type": "2d",
+          "source": "本仓库 backend/app/video/cinema/scene.js",
+          "license": "本仓库自有",
+          "path": "scene.js",
+          "note": "程序化三维场景，非实拍"
+        }
+      ],
+      "audio_cues": [
+        {
+          "t": 5.6,
+          "kind": "impact",
+          "id": "sfx_impact",
+          "gain_db": -14.0
+        },
+        {
+          "t": 6.4,
+          "kind": "riser",
+          "id": "sfx_riser",
+          "gain_db": -14.0
+        },
+        {
+          "t": 9.4,
+          "kind": "tick",
+          "id": "sfx_tick",
+          "gain_db": -14.0
+        }
+      ],
+      "subtitle": {
+        "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。",
+        "in": 0.25,
+        "out": 11.796,
+        "style": "lower"
+      },
+      "evidence_refs": [
+        {
+          "source_id": "S11",
+          "claim": "2026 年上半年电力、热力生产和供应业利润总额 3392.8 亿元，同比降 6.2%（模型判定部分支持，已人工确认可用）",
+          "check": "confirmed"
+        }
+      ],
+      "quality_requirements": [
+        "camera_motion_has_purpose",
+        "knowledge_visualized",
+        "text_is_not_the_main_visual"
+      ],
+      "narration": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。 利润在降，说明这是存量再分配，不是总量扩张。",
+      "status": "planned",
+      "qc": {}
+    },
+    {
+      "scene_id": "s5",
+      "duration": 13.472,
+      "engine": "cinema-html",
+      "entry": "s5/index.html",
+      "narrative_purpose": "收束成一句能被记住的话，并交代合规边界。",
+      "knowledge_objective": "观众带走的判断：这是存量再分配，不是新蛋糕。",
+      "visual_concept": "镜头拉远，两条流并成一条长线铺向地平线，最后落回品牌签名。",
+      "composition": {
+        "主体": "回路全景",
+        "前景": "近处塔与光环",
+        "背景": "天际线",
+        "文字区": "中部结论 + 底部免责"
+      },
+      "camera": [
+        {
+          "t": 0.0,
+          "pos": [
+            3.2,
+            2.2,
+            7.6
+          ],
+          "look": [
+            2.6,
+            2.4,
+            -9.0
+          ],
+          "fov": 33,
+          "roll": 0.0
+        },
+        {
+          "t": 4.0,
+          "pos": [
+            3.0,
+            3.4,
+            13.0
+          ],
+          "look": [
+            2.6,
+            2.4,
+            -10.0
+          ],
+          "fov": 34,
+          "roll": 0.0
+        },
+        {
+          "t": 8.0,
+          "pos": [
+            2.6,
+            4.6,
+            19.0
+          ],
+          "look": [
+            2.4,
+            2.2,
+            -12.0
+          ],
+          "fov": 36,
+          "roll": 0.0
+        },
+        {
+          "t": 13.4,
+          "pos": [
+            2.2,
+            5.4,
+            23.0
+          ],
+          "look": [
+            2.2,
+            2.0,
+            -13.0
+          ],
+          "fov": 37,
+          "roll": 0.0
+        }
+      ],
+      "visual_events": [
+        {
+          "t": 1.0,
+          "kind": "camera",
+          "target": "s5",
+          "note": "whoosh 音效与画面同步",
+          "params": {
+            "sfx": "whoosh"
+          }
+        },
+        {
+          "t": 6.6,
+          "kind": "highlight",
+          "target": "s5",
+          "note": "impact 音效与画面同步",
+          "params": {
+            "sfx": "impact"
+          }
+        },
+        {
+          "t": 7.4,
+          "kind": "highlight",
+          "target": "s5",
+          "note": "tick 音效与画面同步",
+          "params": {
+            "sfx": "tick"
+          }
+        }
+      ],
+      "motion_design": {
+        "stage": {
+          "exposure": 0.98,
+          "ambient": 0.18,
+          "keyLight": 0.45,
+          "scrimStrength": 0.86,
+          "sky": {
+            "top": "#31567f",
+            "bottom": "#04060b",
+            "fog": [
+              20,
+              85
+            ],
+            "css": "linear-gradient(to bottom, #36608f 0%, #27507c 16%, #16304f 36%, #0a1424 60%, #04060b 100%)"
+          },
+          "lights": [
+            {
+              "at": [
+                -4.0,
+                2.4,
+                6.0
+              ],
+              "color": "#7fd8ff",
+              "intensity": 12,
+              "distance": 24
+            },
+            {
+              "at": [
+                4.0,
+                4.0,
+                -14.0
+              ],
+              "color": "#9ec8ff",
+              "intensity": 60,
+              "distance": 60
+            }
+          ],
+          "objects": [
+            {
+              "id": "net",
+              "type": "grid",
+              "size": 120,
+              "div": 36,
+              "y": -3.25,
+              "color": "#14263a",
+              "opacity": 0.3,
+              "enter": [
+                0,
+                0.7
+              ]
+            },
+            {
+              "id": "towerA",
+              "type": "pylon",
+              "at": [
+                3.4,
+                -3.2,
+                -3.0
+              ],
+              "height": 8.6,
+              "base": 1.0,
+              "thickness": 1.0,
+              "color": "#33445c",
+              "glow": "#6fc4f0",
+              "glowStrength": 0.3,
+              "enter": [
+                0.1,
+                1.0
+              ]
+            },
+            {
+              "id": "towerB",
+              "type": "pylon",
+              "at": [
+                6.8,
+                -3.2,
+                -11.0
+              ],
+              "height": 8.0,
+              "base": 0.95,
+              "thickness": 0.9,
+              "color": "#33445c",
+              "glow": "#6fc4f0",
+              "glowStrength": 0.3,
+              "enter": [
+                0.3,
+                1.2
+              ]
+            },
+            {
+              "id": "towerC",
+              "type": "pylon",
+              "at": [
+                0.4,
+                -3.2,
+                -17.0
+              ],
+              "height": 7.2,
+              "base": 0.9,
+              "thickness": 0.8,
+              "color": "#2b3a4e",
+              "glow": "#5aa8d8",
+              "glowStrength": 0.22,
+              "enter": [
+                0.5,
+                1.4
+              ]
+            },
+            {
+              "id": "towerD",
+              "type": "pylon",
+              "at": [
+                4.6,
+                -3.2,
+                -27.0
+              ],
+              "height": 6.4,
+              "base": 0.85,
+              "thickness": 0.7,
+              "color": "#243244",
+              "glow": "#4a93c0",
+              "glowStrength": 0.16,
+              "enter": [
+                0.7,
+                1.6
+              ]
+            },
+            {
+              "id": "merged",
+              "type": "flow",
+              "points": [
+                [
+                  3.4,
+                  2.8,
+                  -3.0
+                ],
+                [
+                  5.2,
+                  2.5,
+                  -11.0
+                ],
+                [
+                  4.6,
+                  2.2,
+                  -27.0
+                ]
+              ],
+              "color": "#b6ff1f",
+              "radius": 0.032,
+              "particleRadius": 0.0448,
+              "particles": 72,
+              "speed": -0.08,
+              "tubeOpacity": 0.12,
+              "enter": [
+                1.0,
+                2.2
+              ]
+            },
+            {
+              "id": "mergedCapacity",
+              "type": "flow",
+              "points": [
+                [
+                  3.4,
+                  2.6,
+                  -3.0
+                ],
+                [
+                  0.4,
+                  2.3,
+                  -17.0
+                ]
+              ],
+              "color": "#45c8f5",
+              "radius": 0.026,
+              "particleRadius": 0.036399999999999995,
+              "particles": 48,
+              "speed": 0.08,
+              "tubeOpacity": 0.08,
+              "enter": [
+                1.6,
+                2.6
+              ]
+            },
+            {
+              "id": "ringA",
+              "type": "ring",
+              "at": [
+                3.4,
+                1.2,
+                -3.0
+              ],
+              "radius": 2.6,
+              "thickness": 0.016,
+              "color": "#35e0ff",
+              "opacity": 0.3,
+              "enter": [
+                1.6,
+                2.4
+              ],
+              "spin": 0.2
+            }
+          ],
+          "texts": [
+            {
+              "id": "kicker",
+              "role": "kicker",
+              "text": "结论",
+              "x": 0.08,
+              "y": 0.055,
+              "w": 0.84,
+              "enter": [
+                0.2,
+                1.0
+              ]
+            },
+            {
+              "id": "title",
+              "role": "title",
+              "text": "钱没变多，\n只是分法变了",
+              "x": 0.08,
+              "y": 0.585,
+              "w": 0.88,
+              "enter": [
+                0.8,
+                1.8
+              ],
+              "size": 86,
+              "maxLines": 3
+            },
+            {
+              "id": "caption",
+              "role": "caption",
+              "text": "别把「再分配」看成新蛋糕。",
+              "x": 0.08,
+              "y": 0.775,
+              "w": 0.88,
+              "enter": [
+                5.0,
+                6.0
+              ],
+              "size": 40
+            },
+            {
+              "id": "disclaimer",
+              "role": "caption",
+              "text": "本片为合规资料整理，不构成投资建议；\n所有数字均来自片尾列出的公开来源。",
+              "x": 0.08,
+              "y": 0.855,
+              "w": 0.88,
+              "enter": [
+                6.6,
+                7.6
+              ],
+              "size": 28,
+              "color": "#98a7bd"
+            },
+            {
+              "id": "sign",
+              "role": "source",
+              "text": "AK 带你拆解世界 · 电力之王 AK",
+              "x": 0.08,
+              "y": 0.945,
+              "w": 0.86,
+              "enter": [
+                7.4,
+                8.2
+              ]
+            }
+          ]
+        },
+        "audio_layout": [
+          {
+            "clip": "sh07",
+            "start": 0.4,
+            "seconds": 5.784,
+            "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。"
+          },
+          {
+            "clip": "sh08",
+            "start": 6.484,
+            "seconds": 6.288,
+            "text": "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。"
+          }
+        ]
+      },
+      "assets": [
+        {
+          "id": "three",
+          "type": "font",
+          "source": "three.js r147（本地 vendor）",
+          "license": "MIT",
+          "path": "../../../../tools/vendor/three.min.js",
+          "note": "UMD 构建，内联进镜头页"
+        },
+        {
+          "id": "noto",
+          "type": "font",
+          "source": "Noto Sans SC（本机 Windows 字体目录）",
+          "license": "OFL-1.1",
+          "path": "fonts/NotoSansSC-VF.ttf",
+          "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+        },
+        {
+          "id": "engine",
+          "type": "2d",
+          "source": "本仓库 backend/app/video/cinema/scene.js",
+          "license": "本仓库自有",
+          "path": "scene.js",
+          "note": "程序化三维场景，非实拍"
+        }
+      ],
+      "audio_cues": [
+        {
+          "t": 1.0,
+          "kind": "whoosh",
+          "id": "sfx_whoosh",
+          "gain_db": -14.0
+        },
+        {
+          "t": 6.6,
+          "kind": "impact",
+          "id": "sfx_impact",
+          "gain_db": -14.0
+        },
+        {
+          "t": 7.4,
+          "kind": "tick",
+          "id": "sfx_tick",
+          "gain_db": -14.0
+        }
+      ],
+      "subtitle": {
+        "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。",
+        "in": 0.25,
+        "out": 12.972,
+        "style": "lower"
+      },
+      "evidence_refs": [
+        {
+          "source_id": "S02",
+          "claim": "结论回扣：钱没变多，只是分法变了",
+          "check": "confirmed"
+        }
+      ],
+      "quality_requirements": [
+        "camera_motion_has_purpose",
+        "knowledge_visualized",
+        "text_is_not_the_main_visual"
+      ],
+      "narration": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。 本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。",
+      "status": "planned",
+      "qc": {}
+    }
+  ]
+}

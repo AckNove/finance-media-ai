@@ -1,0 +1,529 @@
+{
+  "scene_id": "s4",
+  "duration": 12.096,
+  "engine": "cinema-html",
+  "entry": "s4/index.html",
+  "narrative_purpose": "用一条反证把前面的乐观压回来。",
+  "knowledge_objective": "观众能说出：行业利润同比降 6.2%，四个份额此消彼长、总量线不动，所以是再分配不是扩张。",
+  "visual_concept": "四根份额柱此消彼长，一条不动的总量线压在上方，6.2% 的数字滚下来。",
+  "composition": {
+    "主体": "四根份额柱",
+    "前景": "总量线与数字",
+    "背景": "渐变夜空",
+    "文字区": "上三分之一的数字 + 下三分之一的结论"
+  },
+  "camera": [
+    {
+      "t": 0.0,
+      "pos": [
+        2.0,
+        2.4,
+        12.6
+      ],
+      "look": [
+        1.8,
+        0.6,
+        -1.0
+      ],
+      "fov": 36,
+      "roll": 0.0
+    },
+    {
+      "t": 3.6,
+      "pos": [
+        1.9,
+        1.9,
+        10.4
+      ],
+      "look": [
+        1.8,
+        0.9,
+        -1.0
+      ],
+      "fov": 35,
+      "roll": 0.0
+    },
+    {
+      "t": 8.0,
+      "pos": [
+        1.5,
+        1.7,
+        9.2
+      ],
+      "look": [
+        1.6,
+        1.0,
+        -1.0
+      ],
+      "fov": 34,
+      "roll": 0.0
+    },
+    {
+      "t": 12.1,
+      "pos": [
+        1.4,
+        1.7,
+        8.8
+      ],
+      "look": [
+        1.6,
+        1.0,
+        -1.0
+      ],
+      "fov": 34,
+      "roll": 0.0
+    }
+  ],
+  "visual_events": [
+    {
+      "t": 5.6,
+      "kind": "highlight",
+      "target": "s4",
+      "note": "impact 音效与画面同步",
+      "params": {
+        "sfx": "impact"
+      }
+    },
+    {
+      "t": 6.4,
+      "kind": "camera",
+      "target": "s4",
+      "note": "riser 音效与画面同步",
+      "params": {
+        "sfx": "riser"
+      }
+    },
+    {
+      "t": 9.4,
+      "kind": "highlight",
+      "target": "s4",
+      "note": "tick 音效与画面同步",
+      "params": {
+        "sfx": "tick"
+      }
+    }
+  ],
+  "motion_design": {
+    "stage": {
+      "exposure": 1.0,
+      "ambient": 0.24,
+      "keyLight": 0.6,
+      "scrimStrength": 0.82,
+      "sky": {
+        "top": "#31567f",
+        "bottom": "#04060b",
+        "fog": [
+          20,
+          85
+        ],
+        "css": "linear-gradient(to bottom, #2c4f74 0%, #1b3453 22%, #0b1523 52%, #04060b 100%)"
+      },
+      "lights": [
+        {
+          "at": [
+            0.0,
+            3.2,
+            4.0
+          ],
+          "color": "#9ec8ff",
+          "intensity": 22,
+          "distance": 24
+        },
+        {
+          "at": [
+            5.0,
+            1.2,
+            1.0
+          ],
+          "color": "#b6ff1f",
+          "intensity": 12,
+          "distance": 18
+        }
+      ],
+      "objects": [
+        {
+          "id": "net",
+          "type": "grid",
+          "size": 70,
+          "div": 28,
+          "y": -3.24,
+          "color": "#13293f",
+          "opacity": 0.26,
+          "enter": [
+            0,
+            0.6
+          ]
+        },
+        {
+          "id": "q1",
+          "type": "bar",
+          "at": [
+            -2.4,
+            -3.2,
+            -1.0
+          ],
+          "width": 0.8,
+          "depth": 0.8,
+          "height": 3.2,
+          "color": "#2f5d78",
+          "glow": "#2f5d78",
+          "glowStrength": 0.2,
+          "keyframes": [
+            [
+              0,
+              0.2
+            ],
+            [
+              1.4,
+              1.0
+            ],
+            [
+              3.2,
+              1.0
+            ],
+            [
+              6.0,
+              0.86
+            ],
+            [
+              9.0,
+              0.74
+            ],
+            [
+              11.6,
+              0.68
+            ]
+          ],
+          "enter": [
+            0.2,
+            1.2
+          ]
+        },
+        {
+          "id": "q2",
+          "type": "bar",
+          "at": [
+            0.4,
+            -3.2,
+            -1.0
+          ],
+          "width": 0.8,
+          "depth": 0.8,
+          "height": 3.2,
+          "color": "#3c6f8c",
+          "glow": "#3c6f8c",
+          "glowStrength": 0.22,
+          "keyframes": [
+            [
+              0,
+              0.2
+            ],
+            [
+              1.5,
+              0.78
+            ],
+            [
+              3.4,
+              0.78
+            ],
+            [
+              6.2,
+              0.9
+            ],
+            [
+              9.2,
+              1.0
+            ],
+            [
+              11.8,
+              1.0
+            ]
+          ],
+          "enter": [
+            0.3,
+            1.3
+          ]
+        },
+        {
+          "id": "q3",
+          "type": "bar",
+          "at": [
+            3.2,
+            -3.2,
+            -1.0
+          ],
+          "width": 0.8,
+          "depth": 0.8,
+          "height": 3.2,
+          "color": "#6fae35",
+          "glow": "#6fae35",
+          "glowStrength": 0.3,
+          "keyframes": [
+            [
+              0,
+              0.2
+            ],
+            [
+              1.6,
+              0.62
+            ],
+            [
+              3.6,
+              0.62
+            ],
+            [
+              6.4,
+              0.8
+            ],
+            [
+              9.4,
+              0.98
+            ],
+            [
+              12.0,
+              1.06
+            ]
+          ],
+          "enter": [
+            0.4,
+            1.4
+          ]
+        },
+        {
+          "id": "q4",
+          "type": "bar",
+          "at": [
+            6.0,
+            -3.2,
+            -1.0
+          ],
+          "width": 0.8,
+          "depth": 0.8,
+          "height": 3.2,
+          "color": "#b6ff1f",
+          "glow": "#b6ff1f",
+          "glowStrength": 0.45,
+          "keyframes": [
+            [
+              0,
+              0.2
+            ],
+            [
+              1.7,
+              0.5
+            ],
+            [
+              3.8,
+              0.5
+            ],
+            [
+              6.6,
+              0.72
+            ],
+            [
+              9.6,
+              0.94
+            ],
+            [
+              12.2,
+              1.02
+            ]
+          ],
+          "enter": [
+            0.5,
+            1.5
+          ]
+        },
+        {
+          "id": "totalLine",
+          "type": "box",
+          "at": [
+            1.8,
+            0.4,
+            -1.0
+          ],
+          "size": [
+            9.6,
+            0.05,
+            0.9
+          ],
+          "color": "#8ea3bd",
+          "glow": "#8ea3bd",
+          "glowStrength": 0.5,
+          "enter": [
+            3.0,
+            3.8
+          ]
+        }
+      ],
+      "texts": [
+        {
+          "id": "kicker",
+          "role": "kicker",
+          "text": "反证：利润在降",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "enter": [
+            0.2,
+            1.0
+          ]
+        },
+        {
+          "id": "num",
+          "role": "number",
+          "text": "0%",
+          "x": 0.08,
+          "y": 0.2,
+          "w": 0.8,
+          "enter": [
+            5.6,
+            6.4
+          ],
+          "size": 150,
+          "count": {
+            "from": 0,
+            "to": 6.2,
+            "decimals": 1,
+            "suffix": "%",
+            "start": 5.8,
+            "end": 8.6
+          }
+        },
+        {
+          "id": "numLabel",
+          "role": "label",
+          "text": "2026 年上半年行业利润同比",
+          "x": 0.08,
+          "y": 0.155,
+          "w": 0.8,
+          "enter": [
+            5.4,
+            6.2
+          ],
+          "color": "#8ea3bd"
+        },
+        {
+          "id": "title",
+          "role": "title",
+          "text": "总量没变，\n变的只是分法",
+          "x": 0.08,
+          "y": 0.63,
+          "w": 0.88,
+          "enter": [
+            0.9,
+            1.9
+          ],
+          "size": 70,
+          "maxLines": 3
+        },
+        {
+          "id": "caption",
+          "role": "caption",
+          "text": "利润在降，说明这是存量再分配，不是总量扩张。",
+          "x": 0.08,
+          "y": 0.8,
+          "w": 0.9,
+          "enter": [
+            9.4,
+            10.4
+          ],
+          "size": 34
+        },
+        {
+          "id": "src",
+          "role": "source",
+          "text": "来源 S11 · 规模以上工业企业利润（已人工确认可用）",
+          "x": 0.08,
+          "y": 0.915,
+          "w": 0.88,
+          "enter": [
+            1.2,
+            2.0
+          ]
+        }
+      ]
+    },
+    "audio_layout": [
+      {
+        "clip": "sh05",
+        "start": 0.4,
+        "seconds": 6.648,
+        "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。"
+      },
+      {
+        "clip": "sh06",
+        "start": 7.348,
+        "seconds": 4.248,
+        "text": "利润在降，说明这是存量再分配，不是总量扩张。"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "three",
+      "type": "font",
+      "source": "three.js r147（本地 vendor）",
+      "license": "MIT",
+      "path": "../../../../tools/vendor/three.min.js",
+      "note": "UMD 构建，内联进镜头页"
+    },
+    {
+      "id": "noto",
+      "type": "font",
+      "source": "Noto Sans SC（本机 Windows 字体目录）",
+      "license": "OFL-1.1",
+      "path": "fonts/NotoSansSC-VF.ttf",
+      "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+    },
+    {
+      "id": "engine",
+      "type": "2d",
+      "source": "本仓库 backend/app/video/cinema/scene.js",
+      "license": "本仓库自有",
+      "path": "scene.js",
+      "note": "程序化三维场景，非实拍"
+    }
+  ],
+  "audio_cues": [
+    {
+      "t": 5.6,
+      "kind": "impact",
+      "id": "sfx_impact",
+      "gain_db": -14.0
+    },
+    {
+      "t": 6.4,
+      "kind": "riser",
+      "id": "sfx_riser",
+      "gain_db": -14.0
+    },
+    {
+      "t": 9.4,
+      "kind": "tick",
+      "id": "sfx_tick",
+      "gain_db": -14.0
+    }
+  ],
+  "subtitle": {
+    "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。",
+    "in": 0.25,
+    "out": 11.796,
+    "style": "lower"
+  },
+  "evidence_refs": [
+    {
+      "source_id": "S11",
+      "claim": "2026 年上半年电力、热力生产和供应业利润总额 3392.8 亿元，同比降 6.2%（模型判定部分支持，已人工确认可用）",
+      "check": "confirmed"
+    }
+  ],
+  "quality_requirements": [
+    "camera_motion_has_purpose",
+    "knowledge_visualized",
+    "text_is_not_the_main_visual"
+  ],
+  "narration": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。 利润在降，说明这是存量再分配，不是总量扩张。",
+  "status": "planned",
+  "qc": {}
+}

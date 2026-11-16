@@ -1,0 +1,839 @@
+{
+  "scene_id": "s3",
+  "duration": 6.16,
+  "engine": "cinema-html",
+  "entry": "s3/index.html",
+  "narrative_purpose": "说明同一份资产为什么会被重新定价。",
+  "knowledge_objective": "观众能说出：定价依据从「红利资产」换成「AI 的能源底座」。",
+  "visual_concept": "一枚发光的锚从左边的金色账本移到右边的算力方块阵，左侧随之变暗。",
+  "composition": {
+    "主体": "左右两个资产簇",
+    "前景": "移动中的锚环",
+    "背景": "渐变夜",
+    "文字区": "两端标注 + 中部大标题"
+  },
+  "camera": [
+    {
+      "t": 0.0,
+      "pos": [
+        0.0,
+        1.6,
+        7.6
+      ],
+      "look": [
+        -1.2,
+        0.2,
+        -1.0
+      ],
+      "fov": 35,
+      "roll": 0.0
+    },
+    {
+      "t": 2.6,
+      "pos": [
+        0.0,
+        1.4,
+        6.6
+      ],
+      "look": [
+        -0.6,
+        0.3,
+        -1.0
+      ],
+      "fov": 34,
+      "roll": 0.0
+    },
+    {
+      "t": 4.8,
+      "pos": [
+        0.4,
+        1.4,
+        6.2
+      ],
+      "look": [
+        0.8,
+        0.5,
+        -1.0
+      ],
+      "fov": 34,
+      "roll": 0.0
+    },
+    {
+      "t": 6.2,
+      "pos": [
+        0.6,
+        1.4,
+        5.8
+      ],
+      "look": [
+        1.4,
+        0.6,
+        -1.0
+      ],
+      "fov": 33,
+      "roll": 0.0
+    }
+  ],
+  "visual_events": [
+    {
+      "t": 1.4,
+      "kind": "camera",
+      "target": "s3",
+      "note": "riser 音效与画面同步",
+      "params": {
+        "sfx": "riser"
+      }
+    },
+    {
+      "t": 4.4,
+      "kind": "camera",
+      "target": "s3",
+      "note": "whoosh 音效与画面同步",
+      "params": {
+        "sfx": "whoosh"
+      }
+    },
+    {
+      "t": 5.6,
+      "kind": "highlight",
+      "target": "s3",
+      "note": "impact 音效与画面同步",
+      "params": {
+        "sfx": "impact"
+      }
+    }
+  ],
+  "motion_design": {
+    "stage": {
+      "exposure": 1.05,
+      "ambient": 0.2,
+      "keyLight": 0.5,
+      "scrimStrength": 0.8,
+      "sky": {
+        "top": "#31567f",
+        "bottom": "#04060b",
+        "fog": [
+          20,
+          85
+        ],
+        "css": "radial-gradient(ellipse 150% 70% at 62% 6%, #24405f 0%, #14263c 34%, #04060b 66%)"
+      },
+      "lights": [
+        {
+          "at": [
+            -2.2,
+            0.6,
+            2.6
+          ],
+          "color": "#ffb020",
+          "intensity": 12,
+          "distance": 16
+        },
+        {
+          "at": [
+            2.0,
+            1.2,
+            2.6
+          ],
+          "color": "#35e0ff",
+          "intensity": 26,
+          "distance": 22
+        }
+      ],
+      "objects": [
+        {
+          "id": "net",
+          "type": "grid",
+          "size": 60,
+          "div": 24,
+          "y": -3.24,
+          "color": "#13293f",
+          "opacity": 0.26,
+          "enter": [
+            0,
+            0.6
+          ]
+        },
+        {
+          "id": "redis1",
+          "type": "box",
+          "at": [
+            -2.2,
+            -2.9,
+            -1.0
+          ],
+          "size": [
+            1.5,
+            0.42,
+            1.5
+          ],
+          "color": "#7a5a1f",
+          "glow": "#ffb020",
+          "glowStrength": 0.35,
+          "enter": [
+            0.3,
+            1.3
+          ]
+        },
+        {
+          "id": "redis2",
+          "type": "box",
+          "at": [
+            -2.2,
+            -2.42,
+            -1.0
+          ],
+          "size": [
+            1.3,
+            0.38,
+            1.3
+          ],
+          "color": "#8a6623",
+          "glow": "#ffb020",
+          "glowStrength": 0.3,
+          "enter": [
+            0.45,
+            1.45
+          ]
+        },
+        {
+          "id": "redis3",
+          "type": "box",
+          "at": [
+            -2.2,
+            -2.0,
+            -1.0
+          ],
+          "size": [
+            1.1,
+            0.34,
+            1.1
+          ],
+          "color": "#9a7327",
+          "glow": "#ffb020",
+          "glowStrength": 0.26,
+          "enter": [
+            0.6,
+            1.6
+          ]
+        },
+        {
+          "id": "aic00",
+          "type": "box",
+          "at": [
+            1.1,
+            -3.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#2a7f9c",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.2,
+            3.2
+          ],
+          "pulse": 0.5,
+          "pulseSpeed": 0.5
+        },
+        {
+          "id": "aic01",
+          "type": "box",
+          "at": [
+            1.62,
+            -3.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.29,
+            3.29
+          ]
+        },
+        {
+          "id": "aic02",
+          "type": "box",
+          "at": [
+            2.14,
+            -3.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.3800000000000003,
+            3.3800000000000003
+          ]
+        },
+        {
+          "id": "aic03",
+          "type": "box",
+          "at": [
+            2.66,
+            -3.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#2a7f9c",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.47,
+            3.47
+          ],
+          "pulse": 0.5,
+          "pulseSpeed": 0.5
+        },
+        {
+          "id": "aic10",
+          "type": "box",
+          "at": [
+            1.1,
+            -2.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.29,
+            3.29
+          ]
+        },
+        {
+          "id": "aic11",
+          "type": "box",
+          "at": [
+            1.62,
+            -2.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.3800000000000003,
+            3.3800000000000003
+          ]
+        },
+        {
+          "id": "aic12",
+          "type": "box",
+          "at": [
+            2.14,
+            -2.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#2a7f9c",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.47,
+            3.47
+          ],
+          "pulse": 0.5,
+          "pulseSpeed": 0.5
+        },
+        {
+          "id": "aic13",
+          "type": "box",
+          "at": [
+            2.66,
+            -2.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.56,
+            3.56
+          ]
+        },
+        {
+          "id": "aic20",
+          "type": "box",
+          "at": [
+            1.1,
+            -2.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.3800000000000003,
+            3.3800000000000003
+          ]
+        },
+        {
+          "id": "aic21",
+          "type": "box",
+          "at": [
+            1.62,
+            -2.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#2a7f9c",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.47,
+            3.47
+          ],
+          "pulse": 0.5,
+          "pulseSpeed": 0.5
+        },
+        {
+          "id": "aic22",
+          "type": "box",
+          "at": [
+            2.14,
+            -2.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.56,
+            3.56
+          ]
+        },
+        {
+          "id": "aic23",
+          "type": "box",
+          "at": [
+            2.66,
+            -2.0,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.6500000000000004,
+            3.6500000000000004
+          ]
+        },
+        {
+          "id": "aic30",
+          "type": "box",
+          "at": [
+            1.1,
+            -1.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#2a7f9c",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.47,
+            3.47
+          ],
+          "pulse": 0.5,
+          "pulseSpeed": 0.5
+        },
+        {
+          "id": "aic31",
+          "type": "box",
+          "at": [
+            1.62,
+            -1.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.56,
+            3.56
+          ]
+        },
+        {
+          "id": "aic32",
+          "type": "box",
+          "at": [
+            2.14,
+            -1.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#1f4f66",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.6500000000000004,
+            3.6500000000000004
+          ]
+        },
+        {
+          "id": "aic33",
+          "type": "box",
+          "at": [
+            2.66,
+            -1.5,
+            -1.0
+          ],
+          "size": [
+            0.42,
+            0.36,
+            0.42
+          ],
+          "color": "#2a7f9c",
+          "glow": "#35e0ff",
+          "glowStrength": 0.55,
+          "enter": [
+            2.74,
+            3.74
+          ],
+          "pulse": 0.5,
+          "pulseSpeed": 0.5
+        },
+        {
+          "id": "anchor",
+          "type": "ring",
+          "at": [
+            -2.2,
+            0.6,
+            -1.0
+          ],
+          "radius": 0.75,
+          "thickness": 0.045,
+          "color": "#b6ff1f",
+          "opacity": 0.9,
+          "enter": [
+            1.2,
+            2.0
+          ],
+          "spin": 0.5,
+          "move": [
+            [
+              2.0,
+              [
+                -2.2,
+                0.6,
+                -1.0
+              ]
+            ],
+            [
+              4.4,
+              [
+                -0.2,
+                1.4,
+                -1.0
+              ]
+            ],
+            [
+              5.6,
+              [
+                2.0,
+                1.0,
+                -1.0
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "anchorDot",
+          "type": "sphere",
+          "at": [
+            -2.2,
+            0.6,
+            -1.0
+          ],
+          "radius": 0.12,
+          "color": "#b6ff1f",
+          "glowStrength": 1.6,
+          "enter": [
+            1.3,
+            2.1
+          ],
+          "move": [
+            [
+              2.0,
+              [
+                -2.2,
+                0.6,
+                -1.0
+              ]
+            ],
+            [
+              4.4,
+              [
+                -0.2,
+                1.4,
+                -1.0
+              ]
+            ],
+            [
+              5.6,
+              [
+                2.0,
+                1.0,
+                -1.0
+              ]
+            ]
+          ]
+        }
+      ],
+      "texts": [
+        {
+          "id": "kicker",
+          "role": "kicker",
+          "text": "估值锚在移动",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "enter": [
+            0.2,
+            1.0
+          ]
+        },
+        {
+          "id": "oldLabel",
+          "role": "label",
+          "text": "红利资产",
+          "x": 0.06,
+          "y": 0.28,
+          "w": 0.4,
+          "enter": [
+            0.8,
+            1.8
+          ],
+          "color": "#ffb020"
+        },
+        {
+          "id": "oldNote",
+          "role": "caption",
+          "text": "看股息、看稳定性",
+          "x": 0.06,
+          "y": 0.325,
+          "w": 0.4,
+          "enter": [
+            1.8,
+            2.8
+          ],
+          "size": 30,
+          "color": "#d9b978"
+        },
+        {
+          "id": "newLabel",
+          "role": "label",
+          "text": "AI 的能源底座",
+          "x": 0.52,
+          "y": 0.28,
+          "w": 0.44,
+          "enter": [
+            4.6,
+            5.6
+          ],
+          "color": "#35e0ff"
+        },
+        {
+          "id": "newNote",
+          "role": "caption",
+          "text": "看算力用电、看待命能力",
+          "x": 0.52,
+          "y": 0.325,
+          "w": 0.46,
+          "enter": [
+            5.2,
+            6.2
+          ],
+          "size": 30,
+          "color": "#9fdcf0"
+        },
+        {
+          "id": "title",
+          "role": "title",
+          "text": "同一个资产，\n换了一套定价依据",
+          "x": 0.08,
+          "y": 0.62,
+          "w": 0.88,
+          "enter": [
+            0.9,
+            1.9
+          ],
+          "size": 68,
+          "maxLines": 3
+        },
+        {
+          "id": "caption",
+          "role": "caption",
+          "text": "估值依据也跟着换：从红利资产，变成 AI 的能源底座。",
+          "x": 0.08,
+          "y": 0.8,
+          "w": 0.9,
+          "enter": [
+            4.8,
+            5.8
+          ],
+          "size": 34
+        },
+        {
+          "id": "src",
+          "role": "source",
+          "text": "来源 S01 · 算电协同（已人工确认）",
+          "x": 0.08,
+          "y": 0.915,
+          "w": 0.86,
+          "enter": [
+            1.2,
+            2.0
+          ]
+        }
+      ]
+    },
+    "audio_layout": [
+      {
+        "clip": "sh04",
+        "start": 0.4,
+        "seconds": 5.16,
+        "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "three",
+      "type": "font",
+      "source": "three.js r147（本地 vendor）",
+      "license": "MIT",
+      "path": "../../../../tools/vendor/three.min.js",
+      "note": "UMD 构建，内联进镜头页"
+    },
+    {
+      "id": "noto",
+      "type": "font",
+      "source": "Noto Sans SC（本机 Windows 字体目录）",
+      "license": "OFL-1.1",
+      "path": "fonts/NotoSansSC-VF.ttf",
+      "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+    },
+    {
+      "id": "engine",
+      "type": "2d",
+      "source": "本仓库 backend/app/video/cinema/scene.js",
+      "license": "本仓库自有",
+      "path": "scene.js",
+      "note": "程序化三维场景，非实拍"
+    }
+  ],
+  "audio_cues": [
+    {
+      "t": 1.4,
+      "kind": "riser",
+      "id": "sfx_riser",
+      "gain_db": -14.0
+    },
+    {
+      "t": 4.4,
+      "kind": "whoosh",
+      "id": "sfx_whoosh",
+      "gain_db": -14.0
+    },
+    {
+      "t": 5.6,
+      "kind": "impact",
+      "id": "sfx_impact",
+      "gain_db": -14.0
+    }
+  ],
+  "subtitle": {
+    "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。",
+    "in": 0.25,
+    "out": 5.760000000000001,
+    "style": "lower"
+  },
+  "evidence_refs": [
+    {
+      "source_id": "S01",
+      "claim": "用电需求结构与估值框架正在从「红利资产」向「算力基础设施」切换（已人工确认）",
+      "check": "confirmed"
+    }
+  ],
+  "quality_requirements": [
+    "camera_motion_has_purpose",
+    "knowledge_visualized",
+    "text_is_not_the_main_visual"
+  ],
+  "narration": "估值依据也跟着换：从红利资产，变成AI的能源底座。",
+  "status": "planned",
+  "qc": {}
+}

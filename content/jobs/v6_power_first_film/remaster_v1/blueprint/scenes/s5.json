@@ -1,0 +1,459 @@
+{
+  "scene_id": "s5",
+  "duration": 13.472,
+  "engine": "cinema-html",
+  "entry": "s5/index.html",
+  "narrative_purpose": "收束成一句能被记住的话，并交代合规边界。",
+  "knowledge_objective": "观众带走的判断：这是存量再分配，不是新蛋糕。",
+  "visual_concept": "镜头拉远，两条流并成一条长线铺向地平线，最后落回品牌签名。",
+  "composition": {
+    "主体": "回路全景",
+    "前景": "近处塔与光环",
+    "背景": "天际线",
+    "文字区": "中部结论 + 底部免责"
+  },
+  "camera": [
+    {
+      "t": 0.0,
+      "pos": [
+        3.2,
+        2.2,
+        7.6
+      ],
+      "look": [
+        2.6,
+        2.4,
+        -9.0
+      ],
+      "fov": 33,
+      "roll": 0.0
+    },
+    {
+      "t": 4.0,
+      "pos": [
+        3.0,
+        3.4,
+        13.0
+      ],
+      "look": [
+        2.6,
+        2.4,
+        -10.0
+      ],
+      "fov": 34,
+      "roll": 0.0
+    },
+    {
+      "t": 8.0,
+      "pos": [
+        2.6,
+        4.6,
+        19.0
+      ],
+      "look": [
+        2.4,
+        2.2,
+        -12.0
+      ],
+      "fov": 36,
+      "roll": 0.0
+    },
+    {
+      "t": 13.4,
+      "pos": [
+        2.2,
+        5.4,
+        23.0
+      ],
+      "look": [
+        2.2,
+        2.0,
+        -13.0
+      ],
+      "fov": 37,
+      "roll": 0.0
+    }
+  ],
+  "visual_events": [
+    {
+      "t": 1.0,
+      "kind": "camera",
+      "target": "s5",
+      "note": "whoosh 音效与画面同步",
+      "params": {
+        "sfx": "whoosh"
+      }
+    },
+    {
+      "t": 6.6,
+      "kind": "highlight",
+      "target": "s5",
+      "note": "impact 音效与画面同步",
+      "params": {
+        "sfx": "impact"
+      }
+    },
+    {
+      "t": 7.4,
+      "kind": "highlight",
+      "target": "s5",
+      "note": "tick 音效与画面同步",
+      "params": {
+        "sfx": "tick"
+      }
+    }
+  ],
+  "motion_design": {
+    "stage": {
+      "exposure": 0.98,
+      "ambient": 0.18,
+      "keyLight": 0.45,
+      "scrimStrength": 0.86,
+      "sky": {
+        "top": "#31567f",
+        "bottom": "#04060b",
+        "fog": [
+          20,
+          85
+        ],
+        "css": "linear-gradient(to bottom, #36608f 0%, #27507c 16%, #16304f 36%, #0a1424 60%, #04060b 100%)"
+      },
+      "lights": [
+        {
+          "at": [
+            -4.0,
+            2.4,
+            6.0
+          ],
+          "color": "#7fd8ff",
+          "intensity": 12,
+          "distance": 24
+        },
+        {
+          "at": [
+            4.0,
+            4.0,
+            -14.0
+          ],
+          "color": "#9ec8ff",
+          "intensity": 60,
+          "distance": 60
+        }
+      ],
+      "objects": [
+        {
+          "id": "net",
+          "type": "grid",
+          "size": 120,
+          "div": 36,
+          "y": -3.25,
+          "color": "#14263a",
+          "opacity": 0.3,
+          "enter": [
+            0,
+            0.7
+          ]
+        },
+        {
+          "id": "towerA",
+          "type": "pylon",
+          "at": [
+            3.4,
+            -3.2,
+            -3.0
+          ],
+          "height": 8.6,
+          "base": 1.0,
+          "thickness": 1.0,
+          "color": "#33445c",
+          "glow": "#6fc4f0",
+          "glowStrength": 0.3,
+          "enter": [
+            0.1,
+            1.0
+          ]
+        },
+        {
+          "id": "towerB",
+          "type": "pylon",
+          "at": [
+            6.8,
+            -3.2,
+            -11.0
+          ],
+          "height": 8.0,
+          "base": 0.95,
+          "thickness": 0.9,
+          "color": "#33445c",
+          "glow": "#6fc4f0",
+          "glowStrength": 0.3,
+          "enter": [
+            0.3,
+            1.2
+          ]
+        },
+        {
+          "id": "towerC",
+          "type": "pylon",
+          "at": [
+            0.4,
+            -3.2,
+            -17.0
+          ],
+          "height": 7.2,
+          "base": 0.9,
+          "thickness": 0.8,
+          "color": "#2b3a4e",
+          "glow": "#5aa8d8",
+          "glowStrength": 0.22,
+          "enter": [
+            0.5,
+            1.4
+          ]
+        },
+        {
+          "id": "towerD",
+          "type": "pylon",
+          "at": [
+            4.6,
+            -3.2,
+            -27.0
+          ],
+          "height": 6.4,
+          "base": 0.85,
+          "thickness": 0.7,
+          "color": "#243244",
+          "glow": "#4a93c0",
+          "glowStrength": 0.16,
+          "enter": [
+            0.7,
+            1.6
+          ]
+        },
+        {
+          "id": "merged",
+          "type": "flow",
+          "points": [
+            [
+              3.4,
+              2.8,
+              -3.0
+            ],
+            [
+              5.2,
+              2.5,
+              -11.0
+            ],
+            [
+              4.6,
+              2.2,
+              -27.0
+            ]
+          ],
+          "color": "#b6ff1f",
+          "radius": 0.032,
+          "particleRadius": 0.0448,
+          "particles": 72,
+          "speed": -0.08,
+          "tubeOpacity": 0.12,
+          "enter": [
+            1.0,
+            2.2
+          ]
+        },
+        {
+          "id": "mergedCapacity",
+          "type": "flow",
+          "points": [
+            [
+              3.4,
+              2.6,
+              -3.0
+            ],
+            [
+              0.4,
+              2.3,
+              -17.0
+            ]
+          ],
+          "color": "#45c8f5",
+          "radius": 0.026,
+          "particleRadius": 0.036399999999999995,
+          "particles": 48,
+          "speed": 0.08,
+          "tubeOpacity": 0.08,
+          "enter": [
+            1.6,
+            2.6
+          ]
+        },
+        {
+          "id": "ringA",
+          "type": "ring",
+          "at": [
+            3.4,
+            1.2,
+            -3.0
+          ],
+          "radius": 2.6,
+          "thickness": 0.016,
+          "color": "#35e0ff",
+          "opacity": 0.3,
+          "enter": [
+            1.6,
+            2.4
+          ],
+          "spin": 0.2
+        }
+      ],
+      "texts": [
+        {
+          "id": "kicker",
+          "role": "kicker",
+          "text": "结论",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "enter": [
+            0.2,
+            1.0
+          ]
+        },
+        {
+          "id": "title",
+          "role": "title",
+          "text": "钱没变多，\n只是分法变了",
+          "x": 0.08,
+          "y": 0.585,
+          "w": 0.88,
+          "enter": [
+            0.8,
+            1.8
+          ],
+          "size": 86,
+          "maxLines": 3
+        },
+        {
+          "id": "caption",
+          "role": "caption",
+          "text": "别把「再分配」看成新蛋糕。",
+          "x": 0.08,
+          "y": 0.775,
+          "w": 0.88,
+          "enter": [
+            5.0,
+            6.0
+          ],
+          "size": 40
+        },
+        {
+          "id": "disclaimer",
+          "role": "caption",
+          "text": "本片为合规资料整理，不构成投资建议；\n所有数字均来自片尾列出的公开来源。",
+          "x": 0.08,
+          "y": 0.855,
+          "w": 0.88,
+          "enter": [
+            6.6,
+            7.6
+          ],
+          "size": 28,
+          "color": "#98a7bd"
+        },
+        {
+          "id": "sign",
+          "role": "source",
+          "text": "AK 带你拆解世界 · 电力之王 AK",
+          "x": 0.08,
+          "y": 0.945,
+          "w": 0.86,
+          "enter": [
+            7.4,
+            8.2
+          ]
+        }
+      ]
+    },
+    "audio_layout": [
+      {
+        "clip": "sh07",
+        "start": 0.4,
+        "seconds": 5.784,
+        "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。"
+      },
+      {
+        "clip": "sh08",
+        "start": 6.484,
+        "seconds": 6.288,
+        "text": "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "three",
+      "type": "font",
+      "source": "three.js r147（本地 vendor）",
+      "license": "MIT",
+      "path": "../../../../tools/vendor/three.min.js",
+      "note": "UMD 构建，内联进镜头页"
+    },
+    {
+      "id": "noto",
+      "type": "font",
+      "source": "Noto Sans SC（本机 Windows 字体目录）",
+      "license": "OFL-1.1",
+      "path": "fonts/NotoSansSC-VF.ttf",
+      "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+    },
+    {
+      "id": "engine",
+      "type": "2d",
+      "source": "本仓库 backend/app/video/cinema/scene.js",
+      "license": "本仓库自有",
+      "path": "scene.js",
+      "note": "程序化三维场景，非实拍"
+    }
+  ],
+  "audio_cues": [
+    {
+      "t": 1.0,
+      "kind": "whoosh",
+      "id": "sfx_whoosh",
+      "gain_db": -14.0
+    },
+    {
+      "t": 6.6,
+      "kind": "impact",
+      "id": "sfx_impact",
+      "gain_db": -14.0
+    },
+    {
+      "t": 7.4,
+      "kind": "tick",
+      "id": "sfx_tick",
+      "gain_db": -14.0
+    }
+  ],
+  "subtitle": {
+    "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。",
+    "in": 0.25,
+    "out": 12.972,
+    "style": "lower"
+  },
+  "evidence_refs": [
+    {
+      "source_id": "S02",
+      "claim": "结论回扣：钱没变多，只是分法变了",
+      "check": "confirmed"
+    }
+  ],
+  "quality_requirements": [
+    "camera_motion_has_purpose",
+    "knowledge_visualized",
+    "text_is_not_the_main_visual"
+  ],
+  "narration": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。 本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。",
+  "status": "planned",
+  "qc": {}
+}

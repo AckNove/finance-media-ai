@@ -1,0 +1,678 @@
+{
+  "scene_id": "s2",
+  "duration": 10.306,
+  "engine": "cinema-html",
+  "entry": "s2/index.html",
+  "narrative_purpose": "把「第二张收入表」变成看得见的结构：收入分成两根柱子。",
+  "knowledge_objective": "观众能说出：电量收入跟着发电量走，容量收入按「可用能力」单独计价，两者脱钩。",
+  "visual_concept": "左边三根冷色柱随发电量下沉，右边三根绿柱按「待命」立起来，中间那条连线在中段断掉。",
+  "composition": {
+    "主体": "两组柱列，左冷右暖",
+    "前景": "柱底基座",
+    "背景": "夜网格",
+    "文字区": "上下两端，中间留给柱列"
+  },
+  "camera": [
+    {
+      "t": 0.0,
+      "pos": [
+        -0.6,
+        0.9,
+        8.6
+      ],
+      "look": [
+        -0.6,
+        0.4,
+        -1.2
+      ],
+      "fov": 36,
+      "roll": 0.0
+    },
+    {
+      "t": 3.4,
+      "pos": [
+        0.2,
+        0.9,
+        7.4
+      ],
+      "look": [
+        0.0,
+        0.5,
+        -1.2
+      ],
+      "fov": 35,
+      "roll": 0.0
+    },
+    {
+      "t": 6.6,
+      "pos": [
+        1.2,
+        1.0,
+        6.6
+      ],
+      "look": [
+        1.4,
+        0.6,
+        -1.2
+      ],
+      "fov": 34,
+      "roll": 0.0
+    },
+    {
+      "t": 10.3,
+      "pos": [
+        1.5,
+        1.1,
+        6.0
+      ],
+      "look": [
+        1.5,
+        0.7,
+        -1.2
+      ],
+      "fov": 34,
+      "roll": 0.0
+    }
+  ],
+  "visual_events": [
+    {
+      "t": 3.4,
+      "kind": "camera",
+      "target": "s2",
+      "note": "whoosh 音效与画面同步",
+      "params": {
+        "sfx": "whoosh"
+      }
+    },
+    {
+      "t": 6.2,
+      "kind": "highlight",
+      "target": "s2",
+      "note": "impact 音效与画面同步",
+      "params": {
+        "sfx": "impact"
+      }
+    },
+    {
+      "t": 8.6,
+      "kind": "highlight",
+      "target": "s2",
+      "note": "tick 音效与画面同步",
+      "params": {
+        "sfx": "tick"
+      }
+    }
+  ],
+  "motion_design": {
+    "stage": {
+      "exposure": 1.0,
+      "ambient": 0.22,
+      "keyLight": 0.55,
+      "scrimStrength": 0.8,
+      "sky": {
+        "top": "#31567f",
+        "bottom": "#04060b",
+        "fog": [
+          20,
+          85
+        ],
+        "css": "radial-gradient(ellipse 150% 70% at 62% 6%, #24405f 0%, #14263c 34%, #04060b 66%)"
+      },
+      "lights": [
+        {
+          "at": [
+            -3.0,
+            1.6,
+            3.2
+          ],
+          "color": "#3f7f9e",
+          "intensity": 16,
+          "distance": 20
+        },
+        {
+          "at": [
+            3.4,
+            1.8,
+            3.2
+          ],
+          "color": "#b6ff1f",
+          "intensity": 22,
+          "distance": 22
+        },
+        {
+          "at": [
+            0.0,
+            5.0,
+            -8.0
+          ],
+          "color": "#6f9be0",
+          "intensity": 30,
+          "distance": 40
+        }
+      ],
+      "objects": [
+        {
+          "id": "net",
+          "type": "grid",
+          "size": 60,
+          "div": 24,
+          "y": -3.24,
+          "color": "#13293f",
+          "opacity": 0.28,
+          "enter": [
+            0,
+            0.6
+          ]
+        },
+        {
+          "id": "e1",
+          "type": "bar",
+          "at": [
+            -2.6,
+            -3.2,
+            -1.2
+          ],
+          "width": 0.52,
+          "depth": 0.52,
+          "height": 3.4,
+          "color": "#2f5d78",
+          "glow": "#2f5d78",
+          "glowStrength": 0.18,
+          "keyframes": [
+            [
+              0,
+              0.15
+            ],
+            [
+              1.6,
+              1.0
+            ],
+            [
+              5.2,
+              0.62
+            ],
+            [
+              9.6,
+              0.42
+            ]
+          ],
+          "enter": [
+            0.3,
+            1.4
+          ]
+        },
+        {
+          "id": "e2",
+          "type": "bar",
+          "at": [
+            -1.8,
+            -3.2,
+            -1.2
+          ],
+          "width": 0.52,
+          "depth": 0.52,
+          "height": 3.0,
+          "color": "#2a5468",
+          "glow": "#2a5468",
+          "glowStrength": 0.16,
+          "keyframes": [
+            [
+              0,
+              0.15
+            ],
+            [
+              1.7,
+              0.95
+            ],
+            [
+              5.4,
+              0.55
+            ],
+            [
+              9.7,
+              0.34
+            ]
+          ],
+          "enter": [
+            0.4,
+            1.5
+          ]
+        },
+        {
+          "id": "e3",
+          "type": "bar",
+          "at": [
+            -1.0,
+            -3.2,
+            -1.2
+          ],
+          "width": 0.52,
+          "depth": 0.52,
+          "height": 2.6,
+          "color": "#24495c",
+          "glow": "#24495c",
+          "glowStrength": 0.14,
+          "keyframes": [
+            [
+              0,
+              0.15
+            ],
+            [
+              1.8,
+              0.9
+            ],
+            [
+              5.6,
+              0.5
+            ],
+            [
+              9.8,
+              0.28
+            ]
+          ],
+          "enter": [
+            0.5,
+            1.6
+          ]
+        },
+        {
+          "id": "c1",
+          "type": "bar",
+          "at": [
+            1.0,
+            -3.2,
+            -1.2
+          ],
+          "width": 0.52,
+          "depth": 0.52,
+          "height": 2.2,
+          "color": "#7fbf2a",
+          "glow": "#7fbf2a",
+          "glowStrength": 0.5,
+          "keyframes": [
+            [
+              0,
+              0.12
+            ],
+            [
+              3.4,
+              0.3
+            ],
+            [
+              6.2,
+              0.72
+            ],
+            [
+              9.9,
+              1.0
+            ]
+          ],
+          "enter": [
+            2.8,
+            3.8
+          ]
+        },
+        {
+          "id": "c2",
+          "type": "bar",
+          "at": [
+            1.8,
+            -3.2,
+            -1.2
+          ],
+          "width": 0.52,
+          "depth": 0.52,
+          "height": 2.6,
+          "color": "#9ee83a",
+          "glow": "#9ee83a",
+          "glowStrength": 0.55,
+          "keyframes": [
+            [
+              0,
+              0.12
+            ],
+            [
+              3.5,
+              0.34
+            ],
+            [
+              6.4,
+              0.76
+            ],
+            [
+              10.0,
+              1.0
+            ]
+          ],
+          "enter": [
+            2.9,
+            3.9
+          ]
+        },
+        {
+          "id": "c3",
+          "type": "bar",
+          "at": [
+            2.6,
+            -3.2,
+            -1.2
+          ],
+          "width": 0.52,
+          "depth": 0.52,
+          "height": 3.0,
+          "color": "#b6ff1f",
+          "glow": "#b6ff1f",
+          "glowStrength": 0.6,
+          "keyframes": [
+            [
+              0,
+              0.12
+            ],
+            [
+              3.6,
+              0.38
+            ],
+            [
+              6.6,
+              0.8
+            ],
+            [
+              10.1,
+              1.0
+            ]
+          ],
+          "enter": [
+            3.0,
+            4.0
+          ]
+        },
+        {
+          "id": "base",
+          "type": "box",
+          "at": [
+            0.0,
+            -3.28,
+            -1.2
+          ],
+          "size": [
+            7.6,
+            0.16,
+            2.6
+          ],
+          "color": "#1b2c42",
+          "glow": "#1b2c42",
+          "glowStrength": 0.1,
+          "enter": [
+            0,
+            0.8
+          ]
+        },
+        {
+          "id": "tieBreak",
+          "type": "flow",
+          "points": [
+            [
+              -0.4,
+              0.4,
+              -1.2
+            ],
+            [
+              0.0,
+              0.9,
+              -1.2
+            ]
+          ],
+          "color": "#8ea3bd",
+          "radius": 0.02,
+          "particleRadius": 0.027999999999999997,
+          "particles": 12,
+          "speed": 0.4,
+          "tubeOpacity": 0.22,
+          "enter": [
+            2.6,
+            3.4
+          ]
+        },
+        {
+          "id": "capFlow",
+          "type": "flow",
+          "points": [
+            [
+              1.0,
+              0.4,
+              -1.2
+            ],
+            [
+              2.6,
+              1.1,
+              -1.2
+            ],
+            [
+              3.6,
+              2.4,
+              -1.2
+            ]
+          ],
+          "color": "#b6ff1f",
+          "radius": 0.03,
+          "particleRadius": 0.041999999999999996,
+          "particles": 30,
+          "speed": 0.22,
+          "tubeOpacity": 0.1,
+          "enter": [
+            3.6,
+            4.6
+          ]
+        },
+        {
+          "id": "divider",
+          "type": "box",
+          "at": [
+            0.0,
+            -1.4,
+            -1.2
+          ],
+          "size": [
+            0.035,
+            3.6,
+            2.4
+          ],
+          "color": "#2b4a6b",
+          "glow": "#2b4a6b",
+          "glowStrength": 0.25,
+          "enter": [
+            2.2,
+            3.2
+          ]
+        }
+      ],
+      "texts": [
+        {
+          "id": "kicker",
+          "role": "kicker",
+          "text": "第二张收入表",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "enter": [
+            0.2,
+            1.0
+          ]
+        },
+        {
+          "id": "leftLabel",
+          "role": "label",
+          "text": "电量收入",
+          "x": 0.06,
+          "y": 0.3,
+          "w": 0.42,
+          "enter": [
+            0.8,
+            1.8
+          ],
+          "align": "left"
+        },
+        {
+          "id": "leftTrend",
+          "role": "caption",
+          "text": "跟着发电量一起掉 ↓",
+          "x": 0.06,
+          "y": 0.345,
+          "w": 0.42,
+          "enter": [
+            2.0,
+            3.0
+          ],
+          "size": 32
+        },
+        {
+          "id": "rightLabel",
+          "role": "label",
+          "text": "容量收入",
+          "x": 0.52,
+          "y": 0.3,
+          "w": 0.42,
+          "enter": [
+            3.0,
+            4.0
+          ],
+          "align": "left",
+          "color": "#b6ff1f"
+        },
+        {
+          "id": "rightTrend",
+          "role": "caption",
+          "text": "只要「待命」就能收 ↑",
+          "x": 0.52,
+          "y": 0.345,
+          "w": 0.44,
+          "enter": [
+            4.0,
+            5.0
+          ],
+          "size": 32,
+          "color": "#d8ffa0"
+        },
+        {
+          "id": "hook",
+          "role": "title",
+          "text": "两根柱子，\n各算各的账",
+          "x": 0.08,
+          "y": 0.615,
+          "w": 0.86,
+          "enter": [
+            0.9,
+            1.9
+          ],
+          "size": 72,
+          "maxLines": 3
+        },
+        {
+          "id": "caption",
+          "role": "caption",
+          "text": "利润跟电量脱钩，不再绑在一根绳上。",
+          "x": 0.08,
+          "y": 0.795,
+          "w": 0.88,
+          "enter": [
+            5.4,
+            6.4
+          ]
+        },
+        {
+          "id": "src",
+          "role": "source",
+          "text": "来源 S02 · 容量电价机制（已人工确认）",
+          "x": 0.08,
+          "y": 0.915,
+          "w": 0.86,
+          "enter": [
+            1.2,
+            2.0
+          ]
+        }
+      ]
+    },
+    "audio_layout": [
+      {
+        "clip": "sh02",
+        "start": 0.5,
+        "seconds": 4.536,
+        "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。"
+      },
+      {
+        "clip": "sh03",
+        "start": 5.386,
+        "seconds": 4.32,
+        "text": "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "three",
+      "type": "font",
+      "source": "three.js r147（本地 vendor）",
+      "license": "MIT",
+      "path": "../../../../tools/vendor/three.min.js",
+      "note": "UMD 构建，内联进镜头页"
+    },
+    {
+      "id": "noto",
+      "type": "font",
+      "source": "Noto Sans SC（本机 Windows 字体目录）",
+      "license": "OFL-1.1",
+      "path": "fonts/NotoSansSC-VF.ttf",
+      "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+    },
+    {
+      "id": "engine",
+      "type": "2d",
+      "source": "本仓库 backend/app/video/cinema/scene.js",
+      "license": "本仓库自有",
+      "path": "scene.js",
+      "note": "程序化三维场景，非实拍"
+    }
+  ],
+  "audio_cues": [
+    {
+      "t": 3.4,
+      "kind": "whoosh",
+      "id": "sfx_whoosh",
+      "gain_db": -14.0
+    },
+    {
+      "t": 6.2,
+      "kind": "impact",
+      "id": "sfx_impact",
+      "gain_db": -14.0
+    },
+    {
+      "t": 8.6,
+      "kind": "tick",
+      "id": "sfx_tick",
+      "gain_db": -14.0
+    }
+  ],
+  "subtitle": {
+    "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。",
+    "in": 0.35,
+    "out": 9.905999999999999,
+    "style": "lower"
+  },
+  "evidence_refs": [
+    {
+      "source_id": "S02",
+      "claim": "容量电价把「可用容量」单独计价，利润不再完全绑在发电量上（已人工确认）",
+      "check": "confirmed"
+    }
+  ],
+  "quality_requirements": [
+    "camera_motion_has_purpose",
+    "knowledge_visualized",
+    "text_is_not_the_main_visual"
+  ],
+  "narration": "发电量下滑，收入却还能收上来——这就是第二张收入表。 它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。",
+  "status": "planned",
+  "qc": {}
+}

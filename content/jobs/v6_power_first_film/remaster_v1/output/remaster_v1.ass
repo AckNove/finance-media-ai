@@ -1,0 +1,21 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: AK,Microsoft YaHei,40,&H00E8F0F6,&H00FFFFFF,&H8C000000,&H00000000,-1,0,0,0,100,100,0.5,0,1,2,0,2,60,60,52,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.90,0:00:05.07,AK,,0,0,0,,发电量下滑，电费收入却还能收上来，钱从哪来？
+Dialogue: 0,0:00:06.16,0:00:10.70,AK,,0,0,0,,发电量下滑，收入却还能收上来——这就是第二张收入表。
+Dialogue: 0,0:00:11.05,0:00:15.37,AK,,0,0,0,,它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。
+Dialogue: 0,0:00:16.36,0:00:21.52,AK,,0,0,0,,估值依据也跟着换：从红利资产，变成AI的能源底座。
+Dialogue: 0,0:00:22.53,0:00:29.18,AK,,0,0,0,,但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。
+Dialogue: 0,0:00:29.48,0:00:33.72,AK,,0,0,0,,利润在降，说明这是存量再分配，不是总量扩张。
+Dialogue: 0,0:00:34.63,0:00:40.41,AK,,0,0,0,,一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。
+Dialogue: 0,0:00:40.71,0:00:47.00,AK,,0,0,0,,本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。

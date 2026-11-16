@@ -1,0 +1,93 @@
+{
+ "film": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\output\\final.mp4",
+ "bytes": 10379060,
+ "duration": 47.733,
+ "video": {
+  "codec": "h264",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30.0,
+  "pix_fmt": "yuv420p"
+ },
+ "audio": {
+  "codec": "aac",
+  "sample_rate": 48000,
+  "channels": 2
+ },
+ "metrics": {
+  "black_segments": 0,
+  "black_longest": 0.0,
+  "black_total": 0,
+  "freeze_segments": 2,
+  "freeze_longest": 0.6,
+  "silence_segments": 0,
+  "silence_longest": 0.0,
+  "mean_volume_db": -20.4,
+  "max_volume_db": -1.5,
+  "integrated_lufs": -17.4,
+  "true_peak_dbfs": null
+ },
+ "subtitles": {
+  "present": true,
+  "cues": 8,
+  "first": [
+   0.9,
+   5.076
+  ],
+  "last": [
+   40.717,
+   47.005
+  ],
+  "overlaps": 0
+ },
+ "keyframes": {
+  "s1": {
+   "in": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s1_in.png",
+   "mid": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s1_mid.png",
+   "out": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s1_out.png"
+  },
+  "s2": {
+   "in": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s2_in.png",
+   "mid": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s2_mid.png",
+   "out": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s2_out.png"
+  },
+  "s3": {
+   "in": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s3_in.png",
+   "mid": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s3_mid.png",
+   "out": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s3_out.png"
+  },
+  "s4": {
+   "in": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s4_in.png",
+   "mid": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s4_mid.png",
+   "out": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s4_out.png"
+  },
+  "s5": {
+   "in": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s5_in.png",
+   "mid": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s5_mid.png",
+   "out": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v1\\qc\\keyframes\\s5_out.png"
+  }
+ },
+ "thresholds": {
+  "max_black_seconds": 0.5,
+  "max_freeze_seconds": 1.5,
+  "max_silence_seconds": 2.0,
+  "loudness_target_lufs": -16.0,
+  "loudness_tolerance": 3.0
+ },
+ "checks": {
+  "resolution_1080x1920": true,
+  "fps_30": true,
+  "codec_h264": true,
+  "pixel_format_yuv420p": true,
+  "audio_aac": true,
+  "audio_48k_stereo": true,
+  "duration_covers_blueprint": true,
+  "no_long_black": true,
+  "no_long_freeze": true,
+  "no_long_silence": true,
+  "loudness_near_target": true,
+  "subtitles_do_not_overlap": true,
+  "subtitles_cover_whole_film": true
+ },
+ "failed": []
+}

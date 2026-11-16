@@ -1,0 +1,437 @@
+{
+  "scene_id": "s1",
+  "duration": 5.676,
+  "engine": "cinema-html",
+  "entry": "s1/index.html",
+  "narrative_purpose": "让观众先看见一个矛盾：电卖得少了，钱反而没少。",
+  "knowledge_objective": "观众知道这条片子要拆解的是「电力企业为什么在发电量下滑时还能收钱」。",
+  "visual_concept": "黄昏的输电网络从远处推近，两条收入流在塔与塔之间亮起来，像血管。",
+  "composition": {
+    "主体": "输电塔沿透视线退远",
+    "前景": "最近的塔与光环",
+    "背景": "黄昏天空与地面网格",
+    "文字区": "下三分之一，压在压暗层上"
+  },
+  "camera": [
+    {
+      "t": 0.0,
+      "pos": [
+        3.0,
+        4.4,
+        21.0
+      ],
+      "look": [
+        2.8,
+        2.6,
+        -8.0
+      ],
+      "fov": 33,
+      "roll": 0.0
+    },
+    {
+      "t": 2.4,
+      "pos": [
+        3.1,
+        2.9,
+        13.0
+      ],
+      "look": [
+        2.7,
+        2.5,
+        -8.4
+      ],
+      "fov": 32,
+      "roll": 0.0
+    },
+    {
+      "t": 5.7,
+      "pos": [
+        3.2,
+        2.1,
+        8.2
+      ],
+      "look": [
+        2.5,
+        2.5,
+        -9.0
+      ],
+      "fov": 31,
+      "roll": 0.0
+    }
+  ],
+  "visual_events": [
+    {
+      "t": 1.2,
+      "kind": "camera",
+      "target": "s1",
+      "note": "riser 音效与画面同步",
+      "params": {
+        "sfx": "riser"
+      }
+    },
+    {
+      "t": 2.4,
+      "kind": "highlight",
+      "target": "s1",
+      "note": "impact 音效与画面同步",
+      "params": {
+        "sfx": "impact"
+      }
+    }
+  ],
+  "motion_design": {
+    "stage": {
+      "exposure": 1.0,
+      "ambient": 0.18,
+      "keyLight": 0.5,
+      "scrimStrength": 0.86,
+      "sky": {
+        "top": "#31567f",
+        "bottom": "#04060b",
+        "fog": [
+          20,
+          85
+        ],
+        "css": "linear-gradient(to bottom, #36608f 0%, #27507c 16%, #16304f 36%, #0a1424 60%, #04060b 100%)"
+      },
+      "lights": [
+        {
+          "at": [
+            -4.0,
+            2.4,
+            6.0
+          ],
+          "color": "#7fd8ff",
+          "intensity": 12,
+          "distance": 24
+        },
+        {
+          "at": [
+            4.0,
+            4.0,
+            -14.0
+          ],
+          "color": "#9ec8ff",
+          "intensity": 66,
+          "distance": 60
+        },
+        {
+          "at": [
+            2.0,
+            0.6,
+            1.0
+          ],
+          "color": "#b6ff1f",
+          "intensity": 4,
+          "distance": 14
+        }
+      ],
+      "objects": [
+        {
+          "id": "net",
+          "type": "grid",
+          "size": 110,
+          "div": 34,
+          "y": -3.25,
+          "color": "#14263a",
+          "opacity": 0.3,
+          "enter": [
+            0,
+            0.7
+          ]
+        },
+        {
+          "id": "towerA",
+          "type": "pylon",
+          "at": [
+            3.4,
+            -3.2,
+            -2.2
+          ],
+          "height": 8.6,
+          "base": 1.0,
+          "thickness": 1.0,
+          "color": "#33445c",
+          "glow": "#6fc4f0",
+          "glowStrength": 0.3,
+          "enter": [
+            0.1,
+            1.0
+          ]
+        },
+        {
+          "id": "towerB",
+          "type": "pylon",
+          "at": [
+            6.8,
+            -3.2,
+            -10.0
+          ],
+          "height": 8.0,
+          "base": 0.95,
+          "thickness": 0.9,
+          "color": "#33445c",
+          "glow": "#6fc4f0",
+          "glowStrength": 0.3,
+          "enter": [
+            0.3,
+            1.2
+          ]
+        },
+        {
+          "id": "towerC",
+          "type": "pylon",
+          "at": [
+            0.9,
+            -3.2,
+            -16.0
+          ],
+          "height": 7.2,
+          "base": 0.9,
+          "thickness": 0.8,
+          "color": "#2b3a4e",
+          "glow": "#5aa8d8",
+          "glowStrength": 0.22,
+          "enter": [
+            0.5,
+            1.4
+          ]
+        },
+        {
+          "id": "towerD",
+          "type": "pylon",
+          "at": [
+            5.0,
+            -3.2,
+            -26.0
+          ],
+          "height": 6.4,
+          "base": 0.85,
+          "thickness": 0.7,
+          "color": "#243244",
+          "glow": "#4a93c0",
+          "glowStrength": 0.16,
+          "enter": [
+            0.7,
+            1.6
+          ]
+        },
+        {
+          "id": "flowPower",
+          "type": "flow",
+          "points": [
+            [
+              3.4,
+              2.7,
+              -2.2
+            ],
+            [
+              6.8,
+              2.4,
+              -10.0
+            ],
+            [
+              5.0,
+              2.1,
+              -26.0
+            ]
+          ],
+          "color": "#9ee83a",
+          "radius": 0.028,
+          "particleRadius": 0.0392,
+          "particles": 56,
+          "speed": -0.1,
+          "tubeOpacity": 0.08,
+          "enter": [
+            1.1,
+            2.0
+          ]
+        },
+        {
+          "id": "flowCapacity",
+          "type": "flow",
+          "points": [
+            [
+              3.4,
+              2.5,
+              -2.2
+            ],
+            [
+              0.9,
+              2.2,
+              -16.0
+            ]
+          ],
+          "color": "#45c8f5",
+          "radius": 0.024,
+          "particleRadius": 0.0336,
+          "particles": 44,
+          "speed": 0.09,
+          "tubeOpacity": 0.08,
+          "enter": [
+            1.5,
+            2.4
+          ]
+        },
+        {
+          "id": "ringA",
+          "type": "ring",
+          "at": [
+            3.4,
+            1.0,
+            -2.2
+          ],
+          "radius": 2.4,
+          "thickness": 0.016,
+          "color": "#35e0ff",
+          "opacity": 0.32,
+          "enter": [
+            1.6,
+            2.4
+          ],
+          "spin": 0.24
+        },
+        {
+          "id": "cap",
+          "type": "sphere",
+          "at": [
+            3.4,
+            2.85,
+            -2.2
+          ],
+          "radius": 0.13,
+          "color": "#b6ff1f",
+          "glowStrength": 1.4,
+          "enter": [
+            1.9,
+            2.5
+          ],
+          "pulse": 0.9,
+          "pulseSpeed": 0.5
+        }
+      ],
+      "texts": [
+        {
+          "id": "kicker",
+          "role": "kicker",
+          "text": "AK 带你拆解世界 · 第 01 期",
+          "x": 0.08,
+          "y": 0.055,
+          "w": 0.84,
+          "enter": [
+            0.2,
+            0.9
+          ]
+        },
+        {
+          "id": "q",
+          "role": "title",
+          "text": "发电量在掉，\n电费收入却还在涨",
+          "x": 0.08,
+          "y": 0.6,
+          "w": 0.86,
+          "enter": [
+            0.9,
+            1.8
+          ],
+          "size": 78,
+          "maxLines": 4
+        },
+        {
+          "id": "ask",
+          "role": "subtitle",
+          "text": "钱，从哪来？",
+          "x": 0.08,
+          "y": 0.795,
+          "w": 0.86,
+          "enter": [
+            2.4,
+            3.1
+          ],
+          "size": 56
+        },
+        {
+          "id": "src",
+          "role": "source",
+          "text": "来源 S02 · 容量电价机制（已人工确认）",
+          "x": 0.08,
+          "y": 0.915,
+          "w": 0.86,
+          "enter": [
+            3.2,
+            3.9
+          ]
+        }
+      ]
+    },
+    "audio_layout": [
+      {
+        "clip": "sh01",
+        "start": 0.9,
+        "seconds": 4.176,
+        "text": "发电量下滑，电费收入却还能收上来，钱从哪来？"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "three",
+      "type": "font",
+      "source": "three.js r147（本地 vendor）",
+      "license": "MIT",
+      "path": "../../../../tools/vendor/three.min.js",
+      "note": "UMD 构建，内联进镜头页"
+    },
+    {
+      "id": "noto",
+      "type": "font",
+      "source": "Noto Sans SC（本机 Windows 字体目录）",
+      "license": "OFL-1.1",
+      "path": "fonts/NotoSansSC-VF.ttf",
+      "note": "NotoSansSC-VF.ttf，随镜头目录分发"
+    },
+    {
+      "id": "engine",
+      "type": "2d",
+      "source": "本仓库 backend/app/video/cinema/scene.js",
+      "license": "本仓库自有",
+      "path": "scene.js",
+      "note": "程序化三维场景，非实拍"
+    }
+  ],
+  "audio_cues": [
+    {
+      "t": 1.2,
+      "kind": "riser",
+      "id": "sfx_riser",
+      "gain_db": -14.0
+    },
+    {
+      "t": 2.4,
+      "kind": "impact",
+      "id": "sfx_impact",
+      "gain_db": -14.0
+    }
+  ],
+  "subtitle": {
+    "text": "发电量下滑，电费收入却还能收上来，钱从哪来？",
+    "in": 0.75,
+    "out": 5.276000000000001,
+    "style": "lower"
+  },
+  "evidence_refs": [
+    {
+      "source_id": "S02",
+      "claim": "容量电价把「可用容量」单独计价，利润不再完全绑在发电量上（已人工确认）",
+      "check": "confirmed"
+    }
+  ],
+  "quality_requirements": [
+    "camera_motion_has_purpose",
+    "knowledge_visualized",
+    "text_is_not_the_main_visual"
+  ],
+  "narration": "发电量下滑，电费收入却还能收上来，钱从哪来？",
+  "status": "planned",
+  "qc": {}
+}
