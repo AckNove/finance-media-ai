@@ -111,8 +111,9 @@
   <div id="credit">Saiphani02 · CC BY 4.0</div>
 </div>
 <script>
-const SCENE = {"fps": 30, "duration": 3.4, "width": 1080, "height": 1920, "move": {"z0": 1.1, "z1": 1.02, "x0": -0.015, "x1": 0.02, "y0": 0.0, "y1": -0.01, "ease": "smooth"}};
+const SCENE = {"fps": 30, "duration": 3.4, "width": 1080, "height": 1920, "move": {"z0": 1.1, "z1": 1.02, "x0": -0.015, "x1": 0.02, "y0": 0.0, "y1": -0.01, "ease": "smooth"}, "videoStart": 0.0, "videoRate": 1.0};
 const photo = document.getElementById("photo");
+const VIDEO = photo && photo.tagName === "VIDEO" ? photo : null;
 const nodes = Array.from(document.querySelectorAll(".ak-text"));
 const overlays = Array.from(document.querySelectorAll(".ak-overlay"));
 const overlayLabels = Array.from(document.querySelectorAll(".ak-overlay-label"));
@@ -123,7 +124,7 @@ function ease(t) {
   return smooth(Math.min(1, Math.max(0, t)));
 }
 
-function seek(t) {
+async function seek(t) {
   const k = ease(SCENE.duration > 0 ? t / SCENE.duration : 1);
   const m = SCENE.move;
   const z = m.z0 + (m.z1 - m.z0) * k;
@@ -133,6 +134,16 @@ function seek(t) {
   const tx = Math.max(-maxShift, Math.min(maxShift, dx));
   const ty = Math.max(-maxShift, Math.min(maxShift, dy));
   photo.style.transform = `translate(${-tx}%, ${-ty}%) scale(${z})`;
+  if (VIDEO) {
+    // 视频按帧定位：先算目标时间，再等 seeked 事件，确保抓到的就是这一帧
+    const target = SCENE.videoStart + t * SCENE.videoRate;
+    await new Promise((resolve) => {
+      const done = () => resolve();
+      if (Math.abs(VIDEO.currentTime - target) < 0.002 && VIDEO.readyState >= 2) { resolve(); return; }
+      VIDEO.addEventListener("seeked", done, { once: true });
+      VIDEO.currentTime = Math.min(target, (VIDEO.duration || target) - 0.02);
+    });
+  }
   for (const node of nodes) {
     const at = Number(node.dataset.at || 0);
     const span = 0.45;
@@ -162,11 +173,20 @@ function seek(t) {
 window.__AK = { fps: SCENE.fps, duration: SCENE.duration, width: SCENE.width, height: SCENE.height };
 window.__seek = seek;
 
-function ready() {
-  seek(0);
+async function ready() {
+  if (VIDEO) {
+    await new Promise((resolve) => {
+      if (VIDEO.readyState >= 2) { resolve(); return; }
+      VIDEO.addEventListener("loadeddata", resolve, { once: true });
+    });
+  }
+  await seek(0);
   window.__ready = true;
 }
-if (photo.complete && photo.naturalWidth > 0) {
+if (VIDEO) {
+  if (VIDEO.readyState >= 2) { ready(); } else { VIDEO.addEventListener("loadeddata", ready, { once: true }); }
+  VIDEO.addEventListener("error", () => { window.__errors = ["视频加载失败"]; window.__ready = true; });
+} else if (photo.complete && photo.naturalWidth > 0) {
   ready();
 } else {
   photo.addEventListener("load", ready);

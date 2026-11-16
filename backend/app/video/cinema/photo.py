@@ -16,7 +16,9 @@ OpenKatana 的组合只认它自己的节点类型与样式白名单，图片得
 from __future__ import annotations
 
 import csv
+import html
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -94,6 +96,11 @@ class PhotoScene:
     label: str = "资料画面"
     credit: str = ""
     grade: str = "cinema"
+    # 视频镜头：photo_rel 指向预先裁好的 mp4；video_start 是源片段里的起始秒，
+    # video_rate 是播放倍速（小于 1 = 慢放，纪录片里常用）
+    video: bool = False
+    video_start: float = 0.0
+    video_rate: float = 1.0
     width: int = 1080
     height: int = 1920
 
@@ -200,7 +207,7 @@ PAGE_TEMPLATE = """<!doctype html>
 </head>
 <body>
 <div id="stage">
-  <img id="photo" src="{photo}" alt="">
+  {media_tag}
   <div class="grade-top"></div>
   <div class="grade-bottom"></div>
   <div class="vignette"></div>
@@ -212,6 +219,7 @@ PAGE_TEMPLATE = """<!doctype html>
 <script>
 const SCENE = {scene_json};
 const photo = document.getElementById("photo");
+const VIDEO = photo && photo.tagName === "VIDEO" ? photo : null;
 const nodes = Array.from(document.querySelectorAll(".ak-text"));
 const overlays = Array.from(document.querySelectorAll(".ak-overlay"));
 const overlayLabels = Array.from(document.querySelectorAll(".ak-overlay-label"));
@@ -222,7 +230,7 @@ function ease(t) {{
   return smooth(Math.min(1, Math.max(0, t)));
 }}
 
-function seek(t) {{
+async function seek(t) {{
   const k = ease(SCENE.duration > 0 ? t / SCENE.duration : 1);
   const m = SCENE.move;
   const z = m.z0 + (m.z1 - m.z0) * k;
@@ -232,6 +240,17 @@ function seek(t) {{
   const tx = Math.max(-maxShift, Math.min(maxShift, dx));
   const ty = Math.max(-maxShift, Math.min(maxShift, dy));
   photo.style.transform = `translate(${{-tx}}%, ${{-ty}}%) scale(${{z}})`;
+  if (VIDEO) {{
+    // 视频按帧定位：先算目标时间，再等 seeked 事件，确保抓到的就是这一帧
+    const target = SCENE.videoStart + t * SCENE.videoRate;
+    await new Promise((resolve) => {{
+      // 定位到位后再等两帧：否则截到的是上一帧（关键帧间隔大的片子尤其明显）
+      const done = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+      if (Math.abs(VIDEO.currentTime - target) < 0.002 && VIDEO.readyState >= 2) {{ done(); return; }}
+      VIDEO.addEventListener("seeked", done, {{ once: true }});
+      VIDEO.currentTime = Math.min(target, (VIDEO.duration || target) - 0.02);
+    }});
+  }}
   for (const node of nodes) {{
     const at = Number(node.dataset.at || 0);
     const span = 0.45;
@@ -261,11 +280,20 @@ function seek(t) {{
 window.__AK = {{ fps: SCENE.fps, duration: SCENE.duration, width: SCENE.width, height: SCENE.height }};
 window.__seek = seek;
 
-function ready() {{
-  seek(0);
+async function ready() {{
+  if (VIDEO) {{
+    await new Promise((resolve) => {{
+      if (VIDEO.readyState >= 2) {{ resolve(); return; }}
+      VIDEO.addEventListener("loadeddata", resolve, {{ once: true }});
+    }});
+  }}
+  await seek(0);
   window.__ready = true;
 }}
-if (photo.complete && photo.naturalWidth > 0) {{
+if (VIDEO) {{
+  if (VIDEO.readyState >= 2) {{ ready(); }} else {{ VIDEO.addEventListener("loadeddata", ready, {{ once: true }}); }}
+  VIDEO.addEventListener("error", () => {{ window.__errors = ["视频加载失败"]; window.__ready = true; }});
+}} else if (photo.complete && photo.naturalWidth > 0) {{
   ready();
 }} else {{
   photo.addEventListener("load", ready);
@@ -371,6 +399,24 @@ def _assert_registered(register_csv: Path, asset_id: str) -> dict[str, str]:
     raise PhotoSceneError(f"素材 {asset_id} 没有登记，不能进成片")
 
 
+_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _plain_text(raw: str, limit: int = 90) -> str:
+    """维基的 Artist/Credit 字段是 HTML（有时还是被截断的半截标签）。
+
+    截图专用的页面里绝不能出现未闭合标签：浏览器会把后面的 <script> 一起吞掉，
+    表现是「页面能开、视频能加载，但脚本一个字都没执行」。所以先剥标签再转义。
+    """
+    text = raw or ""
+    # 先砍掉末尾没闭合的半个标签（例如 `<a href="...`），再剥完整标签
+    text = re.sub(r"<[^>]*$", "", text)
+    text = _TAG_RE.sub("", text)
+    text = html.unescape(text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text[:limit]
+
+
 def build_photo_scene(
     scene: PhotoScene,
     *,
@@ -378,24 +424,36 @@ def build_photo_scene(
     scene_dir: Path,
     register_csv: Path,
 ) -> dict:
-    """写一个自包含镜头目录（index.html + 图片拷贝 + 字体），返回回执。"""
+    """写一个自包含镜头目录（index.html + 素材拷贝 + 字体），返回回执。
+
+    实拍图片直接拷；视频镜头拷贝的是**已经裁好 9:16 的 mp4**（裁切在 build_v2_scenes 里做，
+    这样页面只管播放，不用在浏览器里做几何变换，帧也稳）。
+    """
     row = _assert_registered(register_csv, scene.asset_id)
-    photo_path = project_root / row["local_path"]
-    if not photo_path.is_file():
-        raise PhotoSceneError(f"{scene.asset_id} 的文件不在了：{photo_path}")
+    if scene.video:
+        source_path = scene_dir / "clip.mp4"
+        if not source_path.is_file():
+            raise PhotoSceneError(f"{scene.asset_id} 的裁切片段还没生成：{source_path}")
+    else:
+        source_path = project_root / row["local_path"]
+        if not source_path.is_file():
+            raise PhotoSceneError(f"{scene.asset_id} 的文件不在了：{source_path}")
 
     scene_dir.mkdir(parents=True, exist_ok=True)
     (scene_dir / "fonts").mkdir(parents=True, exist_ok=True)
-    target_photo = scene_dir / "photo.jpg"
-    if not target_photo.exists() or target_photo.stat().st_size != photo_path.stat().st_size:
-        target_photo.write_bytes(photo_path.read_bytes())
+    target_photo = scene_dir / ("clip.mp4" if scene.video else "photo.jpg")
+    if not scene.video and (not target_photo.exists() or target_photo.stat().st_size != source_path.stat().st_size):
+        target_photo.write_bytes(source_path.read_bytes())
 
     font_src = project_root / "content" / "jobs" / "v6_power_first_film" / "fonts" / "NotoSansSC-VF.ttf"
     target_font = scene_dir / FONT_SRC
     if font_src.is_file() and not target_font.exists():
         target_font.write_bytes(font_src.read_bytes())
 
-    credit = scene.credit or f"{row.get('publisher_or_subject', '')} · {row.get('license', '')}"
+    publisher = _plain_text(row.get("publisher_or_subject", ""), 60)
+    license_name = _plain_text(row.get("license", ""), 24)
+    credit = scene.credit or f"{publisher or 'Wikimedia Commons 作者'} · {license_name}"
+    credit = _plain_text(credit, 90)
     if row.get("attribution_required") == "yes" and "CC" not in credit:
         credit = f"{credit} · CC 署名"
 
@@ -405,7 +463,11 @@ def build_photo_scene(
         width=scene.width,
         height=scene.height,
         grade=GRADES.get(scene.grade, GRADES["cinema"]),
-        photo="photo.jpg",
+        media_tag=(
+            '<video id="photo" src="clip.mp4" muted playsinline preload="auto"></video>'
+            if scene.video
+            else '<img id="photo" src="photo.jpg" alt="">'
+        ),
         label=scene.label,
         credit=credit,
         overlay_nodes=_overlay_nodes(scene.overlays, scene.width, scene.height),
@@ -425,6 +487,8 @@ def build_photo_scene(
                     "y1": scene.move.y1,
                     "ease": scene.move.ease,
                 },
+                "videoStart": scene.video_start,
+                "videoRate": scene.video_rate,
             },
             ensure_ascii=False,
         ),

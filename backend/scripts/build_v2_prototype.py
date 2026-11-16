@@ -79,12 +79,12 @@ class NarrationCue:
 
 # 六个画面，平均 3 秒一切；旁白只有三段，跨切点连续说完（他那种"画面在换、话没断"的节奏）
 SEGMENTS: tuple[Segment, ...] = (
-    Segment("A1_wide", 3.0, ((0.05, "whoosh"),)),
-    Segment("A1_tight", 2.6, ((0.02, "impact"),)),
+    Segment("V1_plant", 3.0, ((0.05, "whoosh"),)),
+    Segment("V2_line", 2.6, ((0.02, "impact"),)),
     Segment("B1_wide", 3.4, ((0.02, "whoosh"), (0.5, "tick"), (0.9, "tick"))),
     Segment("B1_tight", 2.8, ((0.02, "whoosh"), (0.6, "spark"))),
     Segment("C1_substation", 3.2, ((0.02, "whoosh"), (1.4, "impact"))),
-    Segment("E1_close", 3.0, ((0.02, "whoosh"),)),
+    Segment("V3_drone", 3.0, ((0.02, "whoosh"),)),
 )
 
 NARRATION_CUES: tuple[NarrationCue, ...] = (
@@ -108,10 +108,11 @@ def _run(
 
 
 def stage_scenes() -> dict:
-    from backend.scripts.build_v2_scenes import build as build_photo
+    from backend.scripts.build_v2_scenes import build as build_photo, build_videos
     from backend.app.video.cinema.v2_three_d import build_substation_scene
 
     receipts = build_photo()
+    receipts.extend(build_videos())
     receipts.append(build_substation_scene())
     return {"scenes": [item["scene"] for item in receipts]}
 

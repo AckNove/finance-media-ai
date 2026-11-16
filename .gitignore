@@ -178,3 +178,9 @@ content/jobs/*/remaster_v2/production/clips/
 content/jobs/*/remaster_v2/output/prototype.ass
 content/jobs/*/remaster_v2/output/prototype_concat.txt
 !content/jobs/v6_power_first_film/remaster_v2/output/prototype_15_20s.mp4
+
+# V2 重制：源视频与派生片段不入库（体积大、可用 acquire_real_videos.py 复现）
+content/jobs/*/remaster_v2/assets/real/_staging_video/
+content/jobs/*/remaster_v2/production/scenes/*/clip.mp4
+content/jobs/*/remaster_v2/production/clips/
+!content/jobs/v6_power_first_film/remaster_v2/output/prototype_15_20s.mp4

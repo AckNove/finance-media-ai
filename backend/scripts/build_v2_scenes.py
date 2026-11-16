@@ -145,6 +145,137 @@ SHOTS: tuple[Shot, ...] = (
 )
 
 
+@dataclass(frozen=True)
+class VideoShot:
+    """一段真实动态素材。crop_x 是取画面的横向位置（0=贴左边，1=贴右边）。"""
+
+    shot_id: str
+    asset_id: str
+    slot: str
+    start: float
+    duration: float
+    crop_x: float
+    grade: str
+    kicker: str
+    title: str
+    title_y: float = 0.70
+    kicker_y: float = 0.655
+    title_size: int = 78
+    rate: float = 1.0
+    crop_w: int = 810
+
+
+VIDEO_SHOTS: tuple[VideoShot, ...] = (
+    VideoShot(
+        shot_id="V1_plant",
+        asset_id="V01",  # Moorburg 电厂，CC BY 4.0
+        slot="plant_moorburg",
+        start=26.0,
+        duration=3.0,
+        crop_x=0.577,
+        grade="cinema",
+        kicker="真实电厂 · 动态素材",
+        title="发电量在掉，",
+        title_size=84,
+    ),
+    VideoShot(
+        shot_id="V2_line",
+        asset_id="V02",  # REN 高压线路检修，CC BY 2.0
+        slot="line_maintenance",
+        start=0.6,
+        duration=2.6,
+        crop_x=0.42,
+        grade="cinema",
+        kicker="真实线路检修 · 动态素材",
+        title="电费收入却还在涨",
+        title_size=84,
+    ),
+    VideoShot(
+        shot_id="V3_drone",
+        asset_id="V04",  # 卢布尔雅那供热站航拍，CC BY 3.0
+        slot="plant_drone",
+        start=12.0,
+        duration=3.0,
+        crop_x=0.55,
+        grade="dusk",
+        kicker="真实厂区 · 航拍素材",
+        title="钱没有变多，只是分法变了",
+        title_size=58,
+        rate=0.9,
+    ),
+)
+
+
+FFMPEG = PROJECT_ROOT / "tools" / "ffmpeg" / "bin" / "ffmpeg.exe"
+
+
+def prepare_clip(shot: VideoShot, *, scene_dir: Path, source: Path) -> Path:
+    """把源视频裁成 9:16、缩到 1080×1920、只保留这一段（逐帧确定性靠"固定 mp4"保证）。"""
+    scene_dir.mkdir(parents=True, exist_ok=True)
+    target = scene_dir / "clip.mp4"
+    width = 810
+    offset = int(round((1920 - width) * shot.crop_x))
+    command = [
+        str(FFMPEG), "-y", "-hide_banner", "-loglevel", "error",
+        "-ss", f"{shot.start:.3f}", "-t", f"{shot.duration + 0.4:.3f}",
+        "-i", str(source),
+        # 必须 setsar=1：源片带非方形像素比时，容器里会变成 1440×1920，object-fit:cover 再把画面切一刀
+        "-vf", f"crop={width}:1080:{offset}:0,scale=1080:1920:flags=lanczos,setsar=1",
+        # 每 15 帧一个关键帧：浏览器按 currentTime 定位时才能落到准确的那一帧
+        "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+        "-pix_fmt", "yuv420p", "-r", "30", "-g", "15", "-keyint_min", "15",
+        str(target),
+    ]
+    import subprocess
+
+    proc = subprocess.run(command, capture_output=True, text=True)
+    if proc.returncode != 0 or not target.is_file():
+        raise RuntimeError(f"{shot.shot_id} 裁切失败：{proc.stderr[-400:]}")
+    return target
+
+
+def build_videos(only: tuple[str, ...] = ()) -> list[dict]:
+    import json as _json
+
+    registry = _json.loads(
+        (REM / "assets" / "real" / "video_candidates.json").read_text(encoding="utf-8")
+    )
+    receipts: list[dict] = []
+    for shot in VIDEO_SHOTS:
+        if only and shot.shot_id not in only:
+            continue
+        item = registry.get(shot.slot)
+        if not item:
+            raise RuntimeError(f"素材登记里没有 {shot.slot}")
+        scene_dir = SCENES / shot.shot_id
+        prepare_clip(shot, scene_dir=scene_dir, source=PROJECT_ROOT / item["local_path"])
+        scene = PhotoScene(
+            scene_id=shot.shot_id,
+            asset_id=shot.asset_id,
+            photo_rel="clip.mp4",
+            duration=shot.duration,
+            move=PhotoMove(z0=1.02, z1=1.08, x0=0.0, x1=0.006, y0=0.0, y1=-0.006),
+            texts=(
+                PhotoText("kicker", shot.kicker, shot.kicker_y, at=0.1, size=30),
+                PhotoText("title", shot.title, shot.title_y, at=0.25, size=shot.title_size),
+            ),
+            label="资料画面",
+            grade=shot.grade,
+            video=True,
+            video_start=0.0,
+            video_rate=shot.rate,
+        )
+        receipts.append(
+            build_photo_scene(
+                scene,
+                project_root=PROJECT_ROOT,
+                scene_dir=scene_dir,
+                register_csv=REGISTER,
+            )
+        )
+    return receipts
+
+
 def build(only: tuple[str, ...] = ()) -> list[dict]:
     receipts: list[dict] = []
     for shot in SHOTS:
@@ -179,8 +310,9 @@ def build(only: tuple[str, ...] = ()) -> list[dict]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="生成 V2 实拍镜头页")
     parser.add_argument("--only", nargs="*", default=[], help="只建这些镜头（按 shot_id）")
+    parser.add_argument("--videos", action="store_true", help="只建动态素材镜头")
     args = parser.parse_args(argv)
-    receipts = build(tuple(args.only))
+    receipts = build_videos(tuple(args.only)) if args.videos else build(tuple(args.only))
     sys.stdout.reconfigure(encoding="utf-8")
     print(json.dumps({"built": len(receipts), "scenes": receipts}, ensure_ascii=False, indent=2))
     return 0
