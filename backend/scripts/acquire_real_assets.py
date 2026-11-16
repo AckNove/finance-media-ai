@@ -117,6 +117,19 @@ def _license_verdict(short: str, name: str) -> tuple[bool, list[str]]:
     return False, [f"授权「{short or name or '未知'}」不在允许商用的白名单里"]
 
 
+def fetch_by_title(title: str) -> list[Candidate]:
+    """按 Commons 文件标题精确取一条；标题写错就是空列表，不会悄悄给个别的东西。"""
+    params = {
+        "action": "query",
+        "titles": title if title.startswith("File:") else f"File:{title}",
+        "prop": "imageinfo",
+        "iiprop": "url|size|mime|extmetadata",
+        "iiurlwidth": "1920",
+    }
+    payload = _api(params)
+    return _candidates_from(payload)
+
+
 def search(query: str, *, limit: int = 12, kinds: str = "image") -> list[Candidate]:
     """按关键词搜真实拍摄素材；只回带 imageinfo 的条目。"""
     params = {
@@ -130,6 +143,10 @@ def search(query: str, *, limit: int = 12, kinds: str = "image") -> list[Candida
         "iiurlwidth": "1920",
     }
     payload = _api(params)
+    return _candidates_from(payload)
+
+
+def _candidates_from(payload: dict) -> list[Candidate]:
     pages = payload.get("query", {}).get("pages", [])
     out: list[Candidate] = []
     for page in pages:
@@ -227,13 +244,51 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--plan", action="store_true", help="按预设清单批量取")
     parser.add_argument("--dry-run", action="store_true", help="只查授权不下载")
     parser.add_argument("--limit", type=int, default=12)
+    parser.add_argument(
+        "--title", action="append", default=[],
+        help="按 Commons 文件标题精确取（可重复，格式 slot=File:xxx.jpg）",
+    )
     args = parser.parse_args(argv)
 
-    if not args.query and not args.plan:
-        parser.error("要么给 --query，要么用 --plan")
+    if not args.query and not args.plan and not args.title:
+        parser.error("要么给 --query、--title，要么用 --plan")
 
-    jobs = PLAN if args.plan else ((args.slot, args.query),)
-    results = [acquire(slot, query, limit=args.limit, dry_run=args.dry_run) for slot, query in jobs]
+    if args.title:
+        results = []
+        for item in args.title:
+            slot, _, title = item.partition("=")
+            found = fetch_by_title(title)
+            chosen = pick(found)
+            record = {"slot": slot, "query": title, "found": len(found),
+                      "usable": sum(1 for c in found if c.commercial_ok), "chosen": None}
+            if chosen is None:
+                record["status"] = "no_commercially_usable_asset"
+            else:
+                chosen.slot = slot
+                try:
+                    chosen = download(chosen, dest_dir=STAGING)
+                    record["status"] = "downloaded"
+                except Exception as error:  # noqa: BLE001
+                    record["status"] = "download_failed"
+                    record["error"] = f"{type(error).__name__}: {error}"
+                record["chosen"] = asdict(chosen)
+            results.append(record)
+    else:
+        jobs = PLAN if args.plan else ((args.slot, args.query),)
+        results = [acquire(slot, query, limit=args.limit, dry_run=args.dry_run) for slot, query in jobs]
+
+    # 合并而不是覆盖：分几次取素材时，前面的登记不能因为再跑一次就消失
+    merged: dict[str, dict] = {}
+    if REGISTRY_JSON.is_file():
+        try:
+            previous = json.loads(REGISTRY_JSON.read_text(encoding="utf-8"))
+            for item in previous.get("results", []):
+                merged[item.get("slot", "")] = item
+        except json.JSONDecodeError:
+            pass
+    for item in results:
+        merged[item.get("slot", "")] = item
+    results = list(merged.values())
 
     REGISTRY_JSON.parent.mkdir(parents=True, exist_ok=True)
     REGISTRY_JSON.write_text(

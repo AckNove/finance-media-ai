@@ -20,7 +20,7 @@
     ],
     "note": "只收允许商用且允许改编的授权；CC BY-SA 与 NC 一律不收。"
   },
-  "retrieved_at": "2026-11-16T14:14:33+08:00",
+  "retrieved_at": "2026-11-16T15:05:36+08:00",
   "results": [
     {
       "slot": "coal_power_plant",
@@ -414,6 +414,110 @@
           "why": "授权含 SA，不能用于变现内容"
         }
       ],
+      "status": "downloaded"
+    },
+    {
+      "slot": "china_plant_baqiao",
+      "query": "File:Baqiao-power-station.jpg",
+      "found": 1,
+      "usable": 1,
+      "chosen": {
+        "slot": "china_plant_baqiao",
+        "title": "File:Baqiao-power-station.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Baqiao-power-station.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/Baqiao-power-station.jpg/1920px-Baqiao-power-station.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 4000,
+        "height": 3000,
+        "size_bytes": 1788578,
+        "license_short": "CC0",
+        "license_name": "cc0",
+        "artist": "Hanno Böck",
+        "credit": "Own work",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/china_plant_baqiao_Baqiao_power_station_jpg.jpg",
+        "sha256": "1d3ee3fc7966753102400247ef520edd7d7eac648b88e06fc5f39129290f3451",
+        "retrieved_at": "2026-11-16T15:05:34+08:00"
+      },
+      "status": "downloaded"
+    },
+    {
+      "slot": "china_plant_shuozhou",
+      "query": "File:Shuozhou coal power plant.JPG",
+      "found": 1,
+      "usable": 1,
+      "chosen": {
+        "slot": "china_plant_shuozhou",
+        "title": "File:Shuozhou coal power plant.JPG",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Shuozhou_coal_power_plant.JPG",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Shuozhou_coal_power_plant.JPG/1920px-Shuozhou_coal_power_plant.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 3264,
+        "height": 2448,
+        "size_bytes": 1597381,
+        "license_short": "CC BY 3.0",
+        "license_name": "cc-by-3.0",
+        "artist": "Kleineolive",
+        "credit": "Own work",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/china_plant_shuozhou_Shuozhou_coal_power_plant_JPG.JPG",
+        "sha256": "406ca785571220884bcdf7f9a2261ce19830a1004d4b5d01dcc916fbcdcb2abb",
+        "retrieved_at": "2026-11-16T15:05:35+08:00"
+      },
+      "status": "downloaded"
+    },
+    {
+      "slot": "china_pylon_anshan",
+      "query": "File:Electricity pylon Anshan ZH 2017.jpg",
+      "found": 1,
+      "usable": 1,
+      "chosen": {
+        "slot": "china_pylon_anshan",
+        "title": "File:Electricity pylon Anshan ZH 2017.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Electricity_pylon_Anshan_ZH_2017.jpg",
+        "file_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Electricity_pylon_Anshan_ZH_2017.jpg/1920px-Electricity_pylon_Anshan_ZH_2017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "mime": "image/jpeg",
+        "width": 4160,
+        "height": 3120,
+        "size_bytes": 3430613,
+        "license_short": "CC BY 2.0",
+        "license_name": "cc-by-2.0",
+        "artist": "Rincewind42",
+        "credit": "IMG_20170919_091325_HDR",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/china_pylon_anshan_Electricity_pylon_Anshan_ZH_2017_jpg.jpg",
+        "sha256": "1ea8985ce7ac52737cc512878b47b27c5e3d59b06a4f0d7f332ae0030d227684",
+        "retrieved_at": "2026-11-16T15:05:36+08:00"
+      },
+      "status": "downloaded"
+    },
+    {
+      "slot": "china_industry_night",
+      "query": "File:Industry beijing night.jpg",
+      "found": 1,
+      "usable": 1,
+      "chosen": {
+        "slot": "china_industry_night",
+        "title": "File:Industry beijing night.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Industry_beijing_night.jpg",
+        "file_url": "https://upload.wikimedia.org/wikipedia/commons/2/20/Industry_beijing_night.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+        "mime": "image/jpeg",
+        "width": 1800,
+        "height": 1262,
+        "size_bytes": 245280,
+        "license_short": "CC BY 2.0",
+        "license_name": "cc-by-2.0",
+        "artist": "Peter Morgan from Beijing, China",
+        "credit": "Flickr",
+        "commercial_ok": true,
+        "reasons": [],
+        "local_path": "content/jobs/v6_power_first_film/remaster_v2/assets/real/_staging/china_industry_night_Industry_beijing_night_jpg.jpg",
+        "sha256": "1ad5ff2a6ac35253d7e7496098f06ff7838b2cef7287c267c5a679b4cb3143ba",
+        "retrieved_at": "2026-11-16T15:05:36+08:00"
+      },
       "status": "downloaded"
     }
   ]
