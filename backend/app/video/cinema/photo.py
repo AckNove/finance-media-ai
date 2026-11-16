@@ -78,6 +78,8 @@ class PhotoOverlay:
     at: float = 0.6
     grow: float = 0.9
     label_side: str = "above"  # above | below | inside
+    label_y: float | None = None  # 显式指定标签所在高度比例（None 表示贴着柱子顶）
+    label_color: str | None = None  # 标签文字色（默认跟柱子同色，深底上容易读不清）
 
 
 @dataclass(frozen=True)
@@ -188,6 +190,9 @@ PAGE_TEMPLATE = """<!doctype html>
     white-space: nowrap;
     font-size: 28px;
     letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: rgba(4,8,14,0.62);
     text-shadow: 0 2px 14px rgba(0,0,0,0.9);
     will-change: opacity;
   }}
@@ -286,10 +291,26 @@ def _overlay_nodes(overlays: tuple[PhotoOverlay, ...], width: int, height: int) 
                 "transform-origin:50% 100%;transform:scaleY(0.001);"
                 "box-shadow:0 0 40px rgba(182,255,31,0.25);"
             )
+        elif item.kind == "tick":
+            # 刻度线：细、短、从上往下落一点，用来做"量程"
+            style = (
+                f"left:{left:.0f}px;top:{top - h:.0f}px;width:{max(2, w * width):.0f}px;height:{h:.0f}px;"
+                f"background:{item.color};opacity:0;transform-origin:50% 100%;transform:scaleY(0.001);"
+            )
         elif item.kind == "rule":
             style = (
                 f"left:{left:.0f}px;top:{top:.0f}px;width:{w:.0f}px;height:{max(2, h):.0f}px;"
                 f"background:{item.color};transform-origin:0 50%;transform:scaleX(0.001);"
+            )
+        elif item.kind == "scrim":
+            style = (
+                f"left:{left:.0f}px;top:{top:.0f}px;width:{w:.0f}px;height:{h:.0f}px;"
+                f"background:{item.color};border-radius:12px;opacity:0;"
+            )
+        elif item.kind == "callout":
+            style = (
+                f"left:{left:.0f}px;top:{top:.0f}px;width:{max(2, w * width):.0f}px;height:{max(2, h * height):.0f}px;"
+                f"border-left:2px solid {item.color};opacity:0;"
             )
         else:  # chip
             style = (
@@ -301,7 +322,9 @@ def _overlay_nodes(overlays: tuple[PhotoOverlay, ...], width: int, height: int) 
             f'data-grow="{item.grow:.3f}" style="{style}"></div>'
         )
         if item.label:
-            if item.label_side == "below":
+            if item.label_y is not None:
+                label_top = item.label_y * height
+            elif item.label_side == "below":
                 label_top = top + 12
             elif item.label_side == "inside":
                 label_top = top - h / 2 - 18
@@ -309,7 +332,8 @@ def _overlay_nodes(overlays: tuple[PhotoOverlay, ...], width: int, height: int) 
                 label_top = top - h - 44
             parts.append(
                 f'<div class="ak-overlay-label" data-at="{item.at + item.grow:.3f}" style="'
-                f"left:{left:.0f}px;top:{label_top:.0f}px;color:{item.color};opacity:0\">{item.label}</div>"
+                f"left:{left:.0f}px;top:{label_top:.0f}px;color:{item.label_color or item.color};"
+                f'opacity:0">{item.label}</div>'
             )
         if item.note:
             parts.append(

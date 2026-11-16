@@ -151,6 +151,15 @@ def sfx_samples(kind: str, *, sample_rate: int = SAMPLE_RATE, level: float = SFX
             samples[index] = (body * 0.85 + click * 0.5) * envelope * level
         return samples
 
+    if kind == "spark":
+        # 极短的高频簇：数据冒出来、数字跳一下的时候点一下
+        length = int(0.22 * sample_rate)
+        out = [0.0] * length
+        for i in range(length):
+            env = max(0.0, 1.0 - i / length) ** 2.2
+            out[i] = 0.5 * math.sin(2 * math.pi * 2400 * i / sample_rate) * env
+            out[i] += 0.3 * math.sin(2 * math.pi * 3600 * i / sample_rate) * env
+        return out
     if kind == "riser":
         duration = 1.35
         total = int(duration * sample_rate)

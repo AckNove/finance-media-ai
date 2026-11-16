@@ -98,7 +98,7 @@ renderer.setSize(SCENE.width, SCENE.height, false);
 renderer.setPixelRatio(1);
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.95;
+renderer.toneMappingExposure = 1.02;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setClearColor(0x0a1119, 1);
@@ -155,18 +155,18 @@ const groundTex = noiseTexture(512, "#1d2229", 20, 2600);
 groundTex.repeat.set(26, 26);
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(220, 220),
-  new THREE.MeshStandardMaterial({{ map: groundTex, roughness: 0.95, metalness: 0.03, color: 0x8a929a }})
+  new THREE.MeshStandardMaterial({{ map: groundTex, roughness: 0.93, metalness: 0.04, color: 0x7b838b }})
 );
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene3.add(ground);
 
 /* ---------- 材质 ---------- */
-const concreteTex = noiseTexture(256, "#6d747b", 20, 700);
+const concreteTex = noiseTexture(256, "#585f66", 34, 900);
 concreteTex.repeat.set(3, 3);
 const MAT_CONCRETE = new THREE.MeshStandardMaterial({{ map: concreteTex, roughness: 0.95, metalness: 0.02, color: 0x8b9299 }});
 const MAT_STEEL = new THREE.MeshStandardMaterial({{ color: 0x5a656f, roughness: 0.6, metalness: 0.4 }});
-const MAT_TANK = new THREE.MeshStandardMaterial({{ map: concreteTex, color: 0x3d4854, roughness: 0.7, metalness: 0.25 }});
+const MAT_TANK = new THREE.MeshStandardMaterial({{ map: concreteTex, color: 0x333d47, roughness: 0.72, metalness: 0.22 }});
 const MAT_CERAMIC = new THREE.MeshStandardMaterial({{ color: 0x9ba6ad, roughness: 0.42, metalness: 0.04 }});
 const MAT_BUS = new THREE.MeshStandardMaterial({{ color: 0x8f9aa3, roughness: 0.42, metalness: 0.6 }});
 
@@ -309,8 +309,8 @@ arrester(-12, -4);
 arrester(-3.5, -9);
 arrester(7, -9);
 floodlight(-15, -12, 13);
-floodlight(-13, 8, 10);
-floodlight(15, 10, 10);
+floodlight(-21, 15, 11);
+floodlight(23, 15, 11);
 floodlight(17, -10, 12);
 for (let i = 0; i < 6; i += 1) {{
   towerFar(-42 + i * 17, -46 - (i % 2) * 7, 12 + (i % 3));
@@ -402,10 +402,10 @@ def build_substation_scene(
                 "width": width,
                 "height": height,
                 "camera": {
-                    "from": [19.0, 3.4, 17.0],
-                    "to": [10.5, 4.2, 5.5],
-                    "lookFrom": [-2.0, 3.0, -14.0],
-                    "lookTo": [-7.0, 3.6, -22.0],
+                    "from": [20.0, 3.8, 19.0],
+                    "to": [12.5, 4.6, 8.5],
+                    "lookFrom": [-4.0, 3.2, -16.0],
+                    "lookTo": [-9.0, 3.8, -24.0],
                 },
             },
             ensure_ascii=False,

@@ -63,36 +63,34 @@ SAMPLE_RATE = 48000
 
 @dataclass(frozen=True)
 class Segment:
+    """一个画面（一次"切"）。画面可以比旁白短——旁白跨切点是常态。"""
+
     scene_id: str
     duration: float
-    narration: str  # audio/narration 下的文件名（不含扩展名）
-    subtitle: str
     cues: tuple[tuple[float, str], ...] = ()  # (相对本镜起点, 音效类型)
 
 
-# 顺序＝成片顺序；字幕与旁白一一对应（旁白是已批准的脚本原文）
+@dataclass(frozen=True)
+class NarrationCue:
+    start: float
+    clip: str
+    subtitle: str
+
+
+# 六个画面，平均 3 秒一切；旁白只有三段，跨切点连续说完（他那种"画面在换、话没断"的节奏）
 SEGMENTS: tuple[Segment, ...] = (
-    Segment(
-        scene_id="A1_plant",
-        duration=5.4,
-        narration="sh01",
-        subtitle="发电量下滑，电费收入却还能收上来，钱从哪来？",
-        cues=((0.35, "whoosh"),),
-    ),
-    Segment(
-        scene_id="B1_substation",
-        duration=6.2,
-        narration="sh02",
-        subtitle="发电量下滑，收入却还能收上来——这就是第二张收入表。",
-        cues=((0.3, "whoosh"), (0.9, "tick"), (1.5, "tick")),
-    ),
-    Segment(
-        scene_id="C1_substation",
-        duration=6.4,
-        narration="sh03",
-        subtitle="它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。",
-        cues=((0.3, "whoosh"), (2.2, "impact")),
-    ),
+    Segment("A1_wide", 3.0, ((0.05, "whoosh"),)),
+    Segment("A1_tight", 2.6, ((0.02, "impact"),)),
+    Segment("B1_wide", 3.4, ((0.02, "whoosh"), (0.5, "tick"), (0.9, "tick"))),
+    Segment("B1_tight", 2.8, ((0.02, "whoosh"), (0.6, "spark"))),
+    Segment("C1_substation", 3.2, ((0.02, "whoosh"), (1.4, "impact"))),
+    Segment("E1_close", 3.0, ((0.02, "whoosh"),)),
+)
+
+NARRATION_CUES: tuple[NarrationCue, ...] = (
+    NarrationCue(0.10, "sh01", "发电量下滑，电费收入却还能收上来，钱从哪来？"),
+    NarrationCue(5.75, "sh02", "发电量下滑，收入却还能收上来——这就是第二张收入表。"),
+    NarrationCue(12.05, "sh03", "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。"),
 )
 
 
@@ -194,23 +192,21 @@ def stage_audio() -> dict:
     sfx = place_cues(total + 0.5, [(t, kind) for t, kind in cues])
     write_wav(AUDIO / "sfx.wav", sfx, sample_rate=SAMPLE_RATE)
 
-    offset = 0.0
     narration_rows = []
-    for segment in SEGMENTS:
-        source = NARRATION / f"{segment.narration}.mp3"
+    for cue in NARRATION_CUES:
+        source = NARRATION / f"{cue.clip}.mp3"
         if not source.is_file():
             raise FileNotFoundError(f"缺旁白：{source}")
         seconds = _narration_seconds(source)
         narration_rows.append(
             {
-                "scene": segment.scene_id,
+                "clip": cue.clip,
                 "file": str(source.relative_to(PROJECT_ROOT)),
-                "start": round(offset, 3),
+                "start": round(cue.start, 3),
                 "seconds": round(seconds, 3),
-                "fits": seconds <= segment.duration,
+                "ends_at": round(cue.start + seconds, 3),
             }
         )
-        offset += segment.duration
     return {
         "total_seconds": round(total, 3),
         "cues": len(cues),
@@ -246,14 +242,11 @@ def write_ass(path: Path) -> Path:
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
     lines = []
-    offset = 0.0
-    for segment in SEGMENTS:
-        start = offset + 0.4
-        end = offset + segment.duration - 0.15
-        lines.append(
-            f"Dialogue: 0,{_ass_time(start)},{_ass_time(end)},AK,,0,0,0,,{segment.subtitle}"
-        )
-        offset += segment.duration
+    for cue in NARRATION_CUES:
+        seconds = _narration_seconds(NARRATION / f"{cue.clip}.mp3")
+        start = cue.start - 0.05
+        end = cue.start + seconds + 0.35
+        lines.append(f"Dialogue: 0,{_ass_time(start)},{_ass_time(end)},AK,,0,0,0,,{cue.subtitle}")
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return path
 
@@ -276,20 +269,17 @@ def stage_assemble() -> dict:
     total = sum(item.duration for item in SEGMENTS)
     narration_inputs: list[str] = []
     filters: list[str] = []
-    offset = 0.0
-    index = 0
-    for segment in SEGMENTS:
-        narration_inputs += ["-i", str(NARRATION / f"{segment.narration}.mp3")]
-        delay_ms = int(round(offset * 1000))
+    for index, cue in enumerate(NARRATION_CUES):
+        narration_inputs += ["-i", str(NARRATION / f"{cue.clip}.mp3")]
+        delay_ms = int(round(cue.start * 1000))
         filters.append(f"[{index + 1}:a]adelay={delay_ms}|{delay_ms}[n{index}]")
-        offset += segment.duration
-        index += 1
 
-    narration_mix = "".join(f"[n{i}]" for i in range(index))
+    narration_mix = "".join(f"[n{i}]" for i in range(len(NARRATION_CUES)))
     filter_complex = (
-        "[0:v]subtitles=prototype.ass[vout];"
+        # 加暗角与极细颗粒：静照最容易显得"平"，颗粒和暗角是最便宜的质感补丁
+        "[0:v]subtitles=prototype.ass,vignette=PI/4.8,noise=alls=5:allf=t+u[vout];"
         + ";".join(filters)
-        + f";{narration_mix}amix=inputs={index}:duration=longest:normalize=0[narr];"
+        + f";{narration_mix}amix=inputs={len(NARRATION_CUES)}:duration=longest:normalize=0[narr];"
         + "[1:a]volume=1.0[music];[2:a]volume=0.85[sfx];"
         + "[narr][music][sfx]amix=inputs=3:duration=longest:normalize=0,"
         + "loudnorm=I=-16:TP=-1.5:LRA=11[aout]"

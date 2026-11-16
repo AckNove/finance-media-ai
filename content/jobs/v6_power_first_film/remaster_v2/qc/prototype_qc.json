@@ -1,6 +1,6 @@
 {
   "video": "content\\jobs\\v6_power_first_film\\remaster_v2\\output\\prototype_15_20s.mp4",
-  "bytes": 8030953,
+  "bytes": 9464749,
   "duration": 18.0,
   "video_codec": "h264",
   "audio_codec": "aac",
@@ -12,7 +12,7 @@
     "freeze_longest": 0.0,
     "silence_segments": 0,
     "silence_longest": 0.0,
-    "integrated_lufs": -15.4
+    "integrated_lufs": -15.9
   },
   "checks": {
     "duration_in_range": true,
