@@ -184,3 +184,16 @@ content/jobs/*/remaster_v2/assets/real/_staging_video/
 content/jobs/*/remaster_v2/production/scenes/*/clip.mp4
 content/jobs/*/remaster_v2/production/clips/
 !content/jobs/v6_power_first_film/remaster_v2/output/prototype_15_20s.mp4
+
+# V2.0 自动装配的中间产物（片段与逐帧帧序列，可再生）
+content/jobs/*/v2auto/frames/
+content/jobs/*/v2auto/clips/
+content/jobs/*/v2auto/media/
+content/jobs/*/v2auto/audio/*.wav
+
+content/jobs/*/v2auto/scenes/*/fonts/
+content/jobs/*/v2auto/scenes/*/clip.mp4
+content/jobs/*/v2auto/scenes/*/photo.jpg
+
+!content/jobs/v6_power_first_film/v2auto/output/final.mp4
+

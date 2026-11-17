@@ -1,0 +1,36 @@
+{
+  "scenes": [
+    {
+      "scene_id": "V01",
+      "duration": 4.176
+    },
+    {
+      "scene_id": "V02",
+      "duration": 4.536
+    },
+    {
+      "scene_id": "A03",
+      "duration": 4.32
+    },
+    {
+      "scene_id": "A04",
+      "duration": 5.16
+    },
+    {
+      "scene_id": "V05",
+      "duration": 6.648
+    },
+    {
+      "scene_id": "A06",
+      "duration": 4.248
+    },
+    {
+      "scene_id": "V07",
+      "duration": 5.784
+    },
+    {
+      "scene_id": "V08",
+      "duration": 6.288
+    }
+  ]
+}

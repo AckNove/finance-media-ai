@@ -1,0 +1,8 @@
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh01.wav'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh02.wav'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh03.wav'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh04.wav'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh05.wav'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh06.wav'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh07.wav'
+file 'D:/finance-media-ai/content/jobs/v6_power_first_film/v2auto/audio/sh08.wav'

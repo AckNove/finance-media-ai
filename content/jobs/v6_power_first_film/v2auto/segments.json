@@ -1,0 +1,158 @@
+{
+  "segments": [
+    {
+      "index": 1,
+      "text": "发电量下滑，电费收入却还能收上来，钱从哪来？",
+      "seconds": 4.176,
+      "kind": "real_image",
+      "scene_id": "V01",
+      "asset_id": "R01",
+      "local_path": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v2\\assets\\real\\_staging\\coal_power_plant_Coal_power_plant_52135634496_jpg.jpg",
+      "credit": "Mussi Katz from Israel · CC0"
+    },
+    {
+      "index": 2,
+      "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。",
+      "seconds": 4.536,
+      "kind": "real_image",
+      "scene_id": "V02",
+      "asset_id": "R03",
+      "local_path": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v2\\assets\\real\\_staging\\grid_control_room_20240407_USDA_RD_AR_LSC_D810L_0685_53892746738_jpg.jpg",
+      "credit": "USDAgov · Public domain"
+    },
+    {
+      "index": 3,
+      "text": "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。",
+      "seconds": 4.32,
+      "kind": "animation",
+      "scene_id": "A03",
+      "asset_id": "",
+      "local_path": "",
+      "credit": ""
+    },
+    {
+      "index": 4,
+      "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。",
+      "seconds": 5.16,
+      "kind": "animation",
+      "scene_id": "A04",
+      "asset_id": "",
+      "local_path": "",
+      "credit": ""
+    },
+    {
+      "index": 5,
+      "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。",
+      "seconds": 6.648,
+      "kind": "real_image",
+      "scene_id": "V05",
+      "asset_id": "R10",
+      "local_path": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v2\\assets\\real\\_staging\\china_plant_shuozhou_Shuozhou_coal_power_plant_JPG.JPG",
+      "credit": "Kleineolive · CC BY 3.0"
+    },
+    {
+      "index": 6,
+      "text": "利润在降，说明这是存量再分配，不是总量扩张。",
+      "seconds": 4.248,
+      "kind": "animation",
+      "scene_id": "A06",
+      "asset_id": "",
+      "local_path": "",
+      "credit": ""
+    },
+    {
+      "index": 7,
+      "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。",
+      "seconds": 5.784,
+      "kind": "real_image",
+      "scene_id": "V07",
+      "asset_id": "R02",
+      "local_path": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\remaster_v2\\assets\\real\\_staging\\substation_transformer_Electrical_substation_of_railways_in_Vizianagaram_jpg.jpg",
+      "credit": "Saiphani02 · CC BY 4.0"
+    },
+    {
+      "index": 8,
+      "text": "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。",
+      "seconds": 6.288,
+      "kind": "real_video",
+      "scene_id": "V08",
+      "asset_id": "PX-V8814707",
+      "local_path": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\assets\\real\\_staging_online\\PX-V8814707.mp4",
+      "credit": "Kampus Production · Pexels License"
+    }
+  ],
+  "holes": [],
+  "scenes": [
+    {
+      "scene": "V01",
+      "asset_id": "R01",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\V01",
+      "duration": 4.176,
+      "frames": 125,
+      "credit": "Mussi Katz from Israel · CC0",
+      "license": "",
+      "source_url": ""
+    },
+    {
+      "scene": "V02",
+      "asset_id": "R03",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\V02",
+      "duration": 4.536,
+      "frames": 136,
+      "credit": "USDAgov · Public domain",
+      "license": "",
+      "source_url": ""
+    },
+    {
+      "scene": "A03",
+      "template": "flow",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\A03",
+      "seconds": 4.32,
+      "frames": 130
+    },
+    {
+      "scene": "A04",
+      "template": "flow",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\A04",
+      "seconds": 5.16,
+      "frames": 155
+    },
+    {
+      "scene": "V05",
+      "asset_id": "R10",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\V05",
+      "duration": 6.648,
+      "frames": 199,
+      "credit": "Kleineolive · CC BY 3.0",
+      "license": "",
+      "source_url": ""
+    },
+    {
+      "scene": "A06",
+      "template": "flow",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\A06",
+      "seconds": 4.248,
+      "frames": 127
+    },
+    {
+      "scene": "V07",
+      "asset_id": "R02",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\V07",
+      "duration": 5.784,
+      "frames": 174,
+      "credit": "Saiphani02 · CC BY 4.0",
+      "license": "",
+      "source_url": ""
+    },
+    {
+      "scene": "V08",
+      "asset_id": "PX-V8814707",
+      "dir": "D:\\finance-media-ai\\content\\jobs\\v6_power_first_film\\v2auto\\scenes\\V08",
+      "duration": 6.288,
+      "frames": 189,
+      "credit": "Kampus Production · Pexels License",
+      "license": "",
+      "source_url": ""
+    }
+  ]
+}

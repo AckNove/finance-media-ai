@@ -420,29 +420,44 @@ def _plain_text(raw: str, limit: int = 90) -> str:
 def build_photo_scene(
     scene: PhotoScene,
     *,
-    project_root: Path,
+    project_root: Path | None = None,
     scene_dir: Path,
-    register_csv: Path,
+    register_csv: Path | None = None,
+    media_src: Path | None = None,
 ) -> dict:
     """写一个自包含镜头目录（index.html + 素材拷贝 + 字体），返回回执。
 
     实拍图片直接拷；视频镜头拷贝的是**已经裁好 9:16 的 mp4**（裁切在 build_v2_scenes 里做，
     这样页面只管播放，不用在浏览器里做几何变换，帧也稳）。
     """
-    row = _assert_registered(register_csv, scene.asset_id)
-    if scene.video:
-        source_path = scene_dir / "clip.mp4"
+    project_root = Path(project_root) if project_root is not None else Path(__file__).resolve().parents[4]
+    if media_src is not None:
+        # 自动装配（auto_film）直接把已经裁好/挑好的文件递进来，不必再回登记表里找一遍
+        source_path = Path(media_src)
         if not source_path.is_file():
-            raise PhotoSceneError(f"{scene.asset_id} 的裁切片段还没生成：{source_path}")
+            raise PhotoSceneError(f"素材文件不存在：{source_path}")
+        row = {"publisher_or_subject": "", "license": "", "local_path": str(source_path),
+               "source_url": "", "attribution_required": "no"}
     else:
-        source_path = project_root / row["local_path"]
-        if not source_path.is_file():
-            raise PhotoSceneError(f"{scene.asset_id} 的文件不在了：{source_path}")
+        if register_csv is None:
+            raise PhotoSceneError("没有给登记表，也没有给 media_src")
+        row = _assert_registered(register_csv, scene.asset_id)
+        if scene.video:
+            source_path = scene_dir / "clip.mp4"
+            if not source_path.is_file():
+                raise PhotoSceneError(f"{scene.asset_id} 的裁切片段还没生成：{source_path}")
+        else:
+            source_path = project_root / row["local_path"]
+            if not source_path.is_file():
+                raise PhotoSceneError(f"{scene.asset_id} 的文件不在了：{source_path}")
 
     scene_dir.mkdir(parents=True, exist_ok=True)
     (scene_dir / "fonts").mkdir(parents=True, exist_ok=True)
     target_photo = scene_dir / ("clip.mp4" if scene.video else "photo.jpg")
-    if not scene.video and (not target_photo.exists() or target_photo.stat().st_size != source_path.stat().st_size):
+    if scene.video and media_src is not None:
+        import shutil as _shutil
+        _shutil.copyfile(source_path, target_photo)
+    elif not scene.video and (not target_photo.exists() or target_photo.stat().st_size != source_path.stat().st_size):
         target_photo.write_bytes(source_path.read_bytes())
 
     font_src = project_root / "content" / "jobs" / "v6_power_first_film" / "fonts" / "NotoSansSC-VF.ttf"
