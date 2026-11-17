@@ -85,6 +85,7 @@ class VisualIntent:
     kind: str  # real_video | real_image | data | animation
     visual_goal: str
     queries: tuple[str, ...]
+    queries_en: tuple[str, ...] = ()
     shot_hint: str = ""
     source: str = "model"  # model | rules
 
@@ -241,11 +242,15 @@ PLAN_PROMPT = """你是财经纪录片的视觉导演。下面是一条视频的
 - 判据：如果一句画面可以"找一段真实影像就说明白"，就不要选 animation。
 - visual_goal：一句话说清这一镜要让观众看懂什么
 - queries：1–4 个中文检索词，写给素材库/图库用（要具体：写成"火电厂 冷却塔"而不是"电力"）
+- queries_en：2–4 个**英文**检索词，写给 Pexels 这类英文素材站用（必须是被收录的通用说法，
+  例如 "data center server room"、"power plant cooling tower"、"electricity substation transformer"；
+  不要把中文词直接音译，也不要写整句）
 - shot_hint：镜头提示（景别/机位/运动），一句话
 
 规矩：
 - 不要为了有画面而编造事实；某句确实只是过渡，就把 kind 设成 real_video 并给一个不误导的检索词。
 - queries 必须是能直接拿去图库/素材库搜索的具体词（2–8 个字），不要写整句。
+- queries_en 必须是英文，且是素材站真的会收录的通用题材词（不要写中国专有名词，英文站上没有）。
 - 输出必须是最小合法 JSON：双引号、无注释、无尾逗号。
 """
 
@@ -295,12 +300,19 @@ def model_intents(
         queries = tuple(str(q).strip() for q in (queries or []) if str(q).strip())[:MAX_QUERIES]
         if not queries:
             queries = rule_intent(line).queries
+        queries_en = item.get("queries_en")
+        if isinstance(queries_en, str):
+            queries_en = [queries_en]
+        queries_en = tuple(
+            str(q).strip() for q in (queries_en or []) if str(q).strip()
+        )[:MAX_QUERIES]
         intents.append(
             VisualIntent(
                 index=line.index,
                 kind=kind,
                 visual_goal=str(item.get("visual_goal", "")).strip(),
                 queries=queries,
+                queries_en=queries_en,
                 shot_hint=str(item.get("shot_hint", "")).strip(),
                 source="model",
             )
@@ -366,6 +378,32 @@ def load_library(roots: Iterable[Path]) -> list[LibraryAsset]:
     return assets
 
 
+_EN_STOP = {
+    "the", "and", "for", "with", "from", "into", "over", "under", "two", "three", "one",
+    "of", "on", "in", "at", "to", "by", "is", "are", "view", "shot", "close", "up",
+}
+_WORD_SPLIT = re.compile(r"[^a-z0-9]+")
+
+
+def _content_words(text: str) -> set[str]:
+    """英文实词（去掉 the/on/two 这类噪声）。"""
+
+    return {w for w in _WORD_SPLIT.split(str(text).lower()) if len(w) > 2 and w not in _EN_STOP}
+
+
+def english_hit(queries_en: Sequence[str], asset_text: str) -> float:
+    """逐条英文检索词算命中率，取最高（0–1）。"""
+
+    have = _content_words(asset_text)
+    best = 0.0
+    for query in queries_en or ():
+        want = _content_words(query)
+        if not want:
+            continue
+        best = max(best, len(want & have) / len(want))
+    return best
+
+
 def score_asset(intent: VisualIntent, line: ScriptLine, asset: LibraryAsset) -> float:
     """语义匹配分：检索词命中 + 正文二元组重合 + 类型贴合。0–1。"""
 
@@ -380,6 +418,9 @@ def score_asset(intent: VisualIntent, line: ScriptLine, asset: LibraryAsset) -> 
         query_hit = len(query_grams & asset_grams) / max(1, len(query_grams))
         line_hit = len(line_grams & asset_grams) / max(1, len(line_grams))
         lexical = 0.65 * query_hit + 0.35 * line_hit
+    # 中文检索词对不上英文标题是常态（Pexels 用英文索引）：再按英文检索词判一次，取较高者
+    if intent.queries_en:
+        lexical = max(lexical, english_hit(intent.queries_en, asset_text))
     # 类型贴合：要"视频"就给视频，要静态就静态都行；要动画那不需要真实素材
     kind_bonus = 0.0
     if intent.kind == "real_video":
