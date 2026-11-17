@@ -31,6 +31,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 FFPROBE = PROJECT_ROOT / "tools" / "ffmpeg" / "bin" / "ffprobe.exe"
+FFMPEG = PROJECT_ROOT / "tools" / "ffmpeg" / "bin" / "ffmpeg.exe"
 VOICEOVER_DIR = Path("audio") / "voiceover"
 AUDIO_SUFFIXES = (".wav", ".mp3", ".m4a", ".aac", ".flac", ".ogg")
 
@@ -137,8 +138,88 @@ def _sorted_audio_files(directory: Path) -> list[Path]:
     return sorted(files, key=lambda p: p.name)
 
 
-def import_per_line(job_root: Path, directory: Path, lines: list[str]) -> Voiceover:
-    """每句一个文件：文件名排序即句序。时长全部实测。"""
+# `01.wav` / `01_take2.wav` / `3-t2.mp3` → 第几句、第几遍
+_TAKE_RE = re.compile(r"^(?P<line>\d{1,2})(?:[ _-]*(?:take|t)[ _-]*(?P<take>\d+))?$", re.IGNORECASE)
+
+
+def collect_takes(directory: Path) -> dict[int, list[tuple[int, Path]]]:
+    """把目录里的音频按"第几句 + 第几遍"归组；认不出的文件放进 -1 组（调用方决定怎么办）。"""
+
+    groups: dict[int, list[tuple[int, Path]]] = {}
+    for path in _sorted_audio_files(directory):
+        match = _TAKE_RE.match(path.stem.strip())
+        if match:
+            line = int(match.group("line"))
+            take = int(match.group("take") or 1)
+        else:
+            line, take = -1, 1
+        groups.setdefault(line, []).append((take, path))
+    for items in groups.values():
+        items.sort(key=lambda pair: pair[0])
+    return groups
+
+
+def _pick_takes(groups: dict[int, list[tuple[int, Path]]], count: int) -> list[Path]:
+    """每一句选最新一遍（take 号最大）；缺哪句就报出来，不猜。"""
+
+    picked: list[Path] = []
+    missing: list[int] = []
+    for index in range(1, count + 1):
+        items = groups.get(index) or []
+        if not items:
+            missing.append(index)
+            continue
+        picked.append(items[-1][1])
+    if missing:
+        raise VoiceoverError(
+            "missing_lines",
+            "这些句子还没有录音：" + "、".join(f"第 {n} 句" for n in missing),
+        )
+    if -1 in groups:
+        raise VoiceoverError(
+            "unrecognised_files",
+            "这些文件名认不出是第几句（请用 01.wav / 01_take2.wav 这种命名）："
+            + "、".join(path.name for _, path in groups[-1]),
+        )
+    return picked
+
+
+def _clean_line(source: Path, target: Path, *, trim: bool, loudness: bool) -> Path:
+    """剪掉首尾静音、把响度拉到统一水平——这就是"对录音做剪辑"里最实在的一步。"""
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    filters: list[str] = []
+    if trim:
+        filters.append(
+            "silenceremove=start_periods=1:start_duration=0.05:start_threshold=-45dB:"
+            "stop_periods=-1:stop_duration=0.20:stop_threshold=-45dB"
+        )
+    if loudness:
+        filters.append("loudnorm=I=-16:TP=-1.5:LRA=11")
+    args = [str(FFMPEG), "-y", "-hide_banner", "-loglevel", "error", "-i", str(source)]
+    if filters:
+        args += ["-af", ",".join(filters)]
+    args += ["-ar", "48000", "-ac", "1", str(target)]
+    result = _run(args)
+    if result.returncode != 0 or not target.is_file():
+        raise VoiceoverError("clean_failed", f"处理录音失败：{source.name}（{result.stderr.strip()[:200]}）")
+    return target
+
+
+def import_per_line(
+    job_root: Path,
+    directory: Path,
+    lines: list[str],
+    *,
+    trim: bool = True,
+    loudness: bool = True,
+) -> Voiceover:
+    """每句一个文件：文件名排序即句序。时长全部实测。
+
+    支持多遍录音：`01.wav` / `01_take2.wav` 同时存在时**取 take 号最大的那一遍**，
+    这样"某一句重录"不需要删旧文件。导入时会剪掉首尾静音并统一响度（`trim`/`loudness`），
+    剪完再实测时长——时间轴量的是"真正说话的长度"，不是带着环境空调声的长度。
+    """
 
     texts = _normalise_lines(lines)
     if not texts:
@@ -146,31 +227,58 @@ def import_per_line(job_root: Path, directory: Path, lines: list[str]) -> Voiceo
     if not directory.is_dir():
         raise VoiceoverError("missing_directory", f"录音目录不存在：{directory}")
 
-    files = _sorted_audio_files(directory)
-    if not files:
+    groups = collect_takes(directory)
+    if not groups:
         raise VoiceoverError("no_audio", f"{directory} 里没有音频文件（支持 {', '.join(AUDIO_SUFFIXES)}）")
-    if len(files) != len(texts):
-        raise VoiceoverError(
-            "count_mismatch",
-            f"口播稿 {len(texts)} 句，录音却有 {len(files)} 个文件：句数与文件数必须一一对应",
-        )
+
+    try:
+        files = _pick_takes(groups, len(texts))
+    except VoiceoverError as error:
+        if error.reason == "missing_lines":
+            # 没有按句编号时退回"按文件名排序"，但句数对不上就直说
+            plain = _sorted_audio_files(directory)
+            if len(plain) != len(texts):
+                raise VoiceoverError(
+                    "count_mismatch",
+                    f"口播稿 {len(texts)} 句，录音却有 {len(plain)} 个文件：句数与文件数必须一一对应",
+                ) from error
+            files = plain
+        else:
+            raise
 
     cursor = 0.0
     result: list[VoiceLine] = []
+    fallbacks: list[str] = []
     for index, (path, text) in enumerate(zip(files, texts)):
-        seconds = probe_seconds(path)
+        target = job_root / VOICEOVER_DIR / f"line_{index + 1:02d}.wav"
+        stored = _clean_line(path, target, trim=trim, loudness=loudness)
+        seconds = probe_seconds(stored)
         if seconds <= 0:
-            raise VoiceoverError("unreadable_audio", f"量不出时长：{path.name}")
-        stored = _copy_into(job_root, path, f"line_{index + 1:02d}{path.suffix.lower()}")
+            # 剪完变空说明这条录音本来就只有静音（或格式怪），退回原始文件，不把人家的音弄没
+            stored = _copy_into(job_root, path, f"line_{index + 1:02d}_raw{path.suffix.lower()}")
+            seconds = probe_seconds(stored)
+            fallbacks.append(f"第 {index + 1} 句")
+        if seconds <= 0:
+            raise VoiceoverError("unreadable_audio", f"量不出时长：{stored.name}")
         result.append(VoiceLine(index=index, text=text, path=str(stored), seconds=seconds, start=round(cursor, 3)))
         cursor += seconds
 
+    cleaned_bits = []
+    if trim:
+        cleaned_bits.append("剪掉首尾静音")
+    if loudness:
+        cleaned_bits.append("响度统一到 −16 LUFS")
+    note = "每句一个文件，时长逐句实测"
+    if cleaned_bits:
+        note += "；已" + "、".join(cleaned_bits)
+    if fallbacks:
+        note += f"；这些句子处理后为空，已保留原始录音：{ '、'.join(fallbacks) }"
     return Voiceover(
         job_root=job_root,
         lines=result,
         alignment="per_line",
         source=str(directory),
-        note="每句一个文件，时长逐句实测",
+        note=note,
     )
 
 
@@ -272,6 +380,7 @@ def to_srt(voiceover: Voiceover) -> str:
 
 __all__ = [
     "AUDIO_SUFFIXES",
+    "collect_takes",
     "DEFAULT_GAP_SECONDS",
     "VOICEOVER_DIR",
     "VoiceLine",

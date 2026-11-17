@@ -121,6 +121,19 @@ def _motion_items(text: str) -> tuple[motion.MotionItem, ...]:
     return ()
 
 
+def _voiceover_line_seconds(job: Path, count: int) -> list[float] | None:
+    """读回真人录音的逐句实测时长；没有、或句数对不上，就返回 None（下游继续用 TTS）。"""
+
+    try:
+        from backend.app.video.voiceover import load_voiceover
+    except Exception:  # 导入失败不该让整个装配挂掉
+        return None
+    voiceover = load_voiceover(job)
+    if voiceover is None or len(voiceover.lines) != count:
+        return None
+    return [line.seconds for line in voiceover.lines]
+
+
 def build_segments(job: Path) -> tuple[list[Segment], list[str]]:
     plan = _plan(job)
     register = _register_index(job)
@@ -170,6 +183,13 @@ def build_segments(job: Path) -> tuple[list[Segment], list[str]]:
             local_path=str(path),
             credit=f"{row.get('publisher_or_subject', '')} · {row.get('license', '')}",
         ))
+    recorded = _voiceover_line_seconds(job, len(segments))
+    if recorded:
+        segments = [
+            Segment(**{**segment.__dict__, "seconds": round(seconds + 0.25, 3)})
+            for segment, seconds in zip(segments, recorded)
+        ]
+
     return segments, holes
 
 
@@ -306,8 +326,18 @@ def stage_audio_and_subs(job: Path) -> dict:
     cursor = 0.0
     lines: list[tuple[float, float, str]] = []
     pieces: list[Path] = []
+    from backend.app.video.voiceover import load_voiceover
+
+    voiceover = load_voiceover(job)
+    if voiceover is not None and len(voiceover.lines) != len(segments):
+        raise SystemExit(
+            f"真人录音 {len(voiceover.lines)} 句，镜头却有 {len(segments)} 个：句数对不上，先重新导入录音"
+        )
     for segment in segments:
-        source = narration_dir / f"sh{segment.index:02d}.mp3"
+        if voiceover is not None:
+            source = Path(voiceover.lines[segment.index - 1].path)
+        else:
+            source = narration_dir / f"sh{segment.index:02d}.mp3"
         if not source.is_file():
             raise SystemExit(f"缺配音：{source}")
         piece = out / "audio" / f"sh{segment.index:02d}.wav"
