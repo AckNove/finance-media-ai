@@ -1,0 +1,178 @@
+{
+  "shots": [
+    {
+      "index": 1,
+      "text": "发电量下滑，电费收入却还能收上来，钱从哪来？",
+      "seconds": 4.176,
+      "intent": {
+        "index": 1,
+        "kind": "real_video",
+        "visual_goal": "看到发电量下滑的电厂现场，抛出“钱从哪来”的悬念",
+        "queries": [
+          "火电厂 冷却塔",
+          "汽轮机房",
+          "电表 计量"
+        ],
+        "shot_hint": "低角度广角拍冷却塔白烟，镜头缓慢推近，色调偏冷",
+        "source": "model"
+      },
+      "asset_id": "V01",
+      "score": 0.45,
+      "fallback": "",
+      "note": "",
+      "ok": true
+    },
+    {
+      "index": 2,
+      "text": "发电量下滑，收入却还能收上来——这就是第二张收入表。",
+      "seconds": 4.536,
+      "intent": {
+        "index": 2,
+        "kind": "animation",
+        "visual_goal": "电量收入表旁边再滑出第二张收入表，让人看清还有另一笔进账",
+        "queries": [
+          "收入表",
+          "财务报表",
+          "电费账单"
+        ],
+        "shot_hint": "平面动画，第一张表旁侧滑出第二张表，两表并列对比",
+        "source": "model"
+      },
+      "asset_id": "",
+      "score": 0.0,
+      "fallback": "animation",
+      "note": "这一段讲的是关系/机制，交给程序化动画解释，不硬找真实素材。",
+      "ok": true
+    },
+    {
+      "index": 3,
+      "text": "它叫容量电价，利润跟电量脱钩，不再绑在一根绳上。",
+      "seconds": 4.32,
+      "intent": {
+        "index": 3,
+        "kind": "animation",
+        "visual_goal": "电价与电量两条曲线被剪开，利润不再跟着电量走",
+        "queries": [
+          "容量电价",
+          "电价机制",
+          "曲线图"
+        ],
+        "shot_hint": "两条原本重合的曲线被剪断后各自分离，容量电价曲线走平",
+        "source": "model"
+      },
+      "asset_id": "",
+      "score": 0.0,
+      "fallback": "animation",
+      "note": "这一段讲的是关系/机制，交给程序化动画解释，不硬找真实素材。",
+      "ok": true
+    },
+    {
+      "index": 4,
+      "text": "估值依据也跟着换：从红利资产，变成AI的能源底座。",
+      "seconds": 5.16,
+      "intent": {
+        "index": 4,
+        "kind": "real_video",
+        "visual_goal": "从电厂到数据中心，看到电力成为算力的底座",
+        "queries": [
+          "数据中心 机房",
+          "服务器 机柜",
+          "特高压 铁塔"
+        ],
+        "shot_hint": "机房走廊纵深横移，冷光机柜闪烁，结尾切到输电铁塔",
+        "source": "model"
+      },
+      "asset_id": "",
+      "score": 0.2,
+      "fallback": "manual",
+      "note": "素材库没有够贴近的画面（最高分 0.20 < 0.34）。需要补素材或人工指定。",
+      "ok": true
+    },
+    {
+      "index": 5,
+      "text": "但先别急着兴奋，反证在这儿：2026年上半年行业利润同比降6.2%。",
+      "seconds": 6.648,
+      "intent": {
+        "index": 5,
+        "kind": "data",
+        "visual_goal": "在真实行业画面上压出利润同比降6.2%的反证数字",
+        "queries": [
+          "电厂 集控室",
+          "统计报表",
+          "财报 数据"
+        ],
+        "shot_hint": "集控室实拍为底，叠加向下柱状图与“-6.2%”数字下压",
+        "source": "model"
+      },
+      "asset_id": "",
+      "score": 0.094,
+      "fallback": "animation",
+      "note": "素材库没有够贴近的画面（最高分 0.09 < 0.34）。改用数据动画解释。",
+      "ok": true
+    },
+    {
+      "index": 6,
+      "text": "利润在降，说明这是存量再分配，不是总量扩张。",
+      "seconds": 4.248,
+      "intent": {
+        "index": 6,
+        "kind": "animation",
+        "visual_goal": "同一块饼总量不变，只是扇形份额被重新划分",
+        "queries": [
+          "饼图",
+          "份额分配"
+        ],
+        "shot_hint": "饼图外圈总量数字固定不动，内部扇形比例被重新切分",
+        "source": "model"
+      },
+      "asset_id": "",
+      "score": 0.0,
+      "fallback": "animation",
+      "note": "这一段讲的是关系/机制，交给程序化动画解释，不硬找真实素材。",
+      "ok": true
+    },
+    {
+      "index": 7,
+      "text": "一句话：钱没变多，只是分法变了，别把再分配看成新蛋糕。",
+      "seconds": 5.784,
+      "intent": {
+        "index": 7,
+        "kind": "animation",
+        "visual_goal": "强调钱没变多、只是分法变了，避免误读为新蛋糕",
+        "queries": [
+          "饼图 分割",
+          "占比"
+        ],
+        "shot_hint": "画面停在同一块饼上，颜色块再次重切，总量标注保持静止",
+        "source": "model"
+      },
+      "asset_id": "",
+      "score": 0.0,
+      "fallback": "animation",
+      "note": "这一段讲的是关系/机制，交给程序化动画解释，不硬找真实素材。",
+      "ok": true
+    },
+    {
+      "index": 8,
+      "text": "本片为合规资料整理，不构成投资建议；所有数字均来自片尾列出的公开来源。",
+      "seconds": 6.288,
+      "intent": {
+        "index": 8,
+        "kind": "real_image",
+        "visual_goal": "呈现公开来源资料与合规声明，收束全片可信度",
+        "queries": [
+          "研究报告 文件",
+          "文件夹 资料",
+          "公告 文件"
+        ],
+        "shot_hint": "俯拍桌面文件与标注笔迹，缓慢推移至片尾字幕位置",
+        "source": "model"
+      },
+      "asset_id": "",
+      "score": 0.12,
+      "fallback": "manual",
+      "note": "素材库没有够贴近的画面（最高分 0.12 < 0.34）。需要补素材或人工指定。",
+      "ok": true
+    }
+  ]
+}

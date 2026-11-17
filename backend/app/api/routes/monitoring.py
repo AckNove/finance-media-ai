@@ -34,6 +34,7 @@ from backend.app.services.agent_registry import load_roster
 from backend.app.services.daily_service import collect_daily
 from backend.app.services.environment import collect_environment
 from backend.app.services.model_readiness import collect
+from backend.app.capabilities.media import pexels
 from backend.app.services.provider_guide import guide_of, summary_of
 
 router = APIRouter(
@@ -257,6 +258,23 @@ def get_providers() -> list[ProviderStatusOut]:
             )
         )
     return items
+
+
+@router.get(
+    "/media-status",
+    summary="素材检索状态（Pexels 是否可用、缺什么）",
+)
+def get_media_status() -> dict[str, object]:
+    """只报状态与文档地址，不回显密钥；没配置就直接说 BLOCKED。"""
+    status = pexels.status()
+    return {
+        "pexels": status.as_dict(),
+        "fallback": {
+            "manual_import": True,
+            "wikimedia_commons": True,
+            "note": "Pexels 不可用时，素材只能走人工导入或已授权公共素材库，不会抓站补数量。",
+        },
+    }
 
 
 @router.get(
