@@ -1,0 +1,61 @@
+{
+  "objective": "为什么中国电力行业，可能正在迎来一场新的财富分配？请围绕下面五个子问题收集可核实的事实，每个事实都要能追到具体来源与原文：①容量电价机制的具体规则与钱怎么算（哪一年出台、覆盖哪些机组、按什么标准给钱、回收多少固定成本）；②电力市场化改革的进展（现货市场、中长期交易、绿电直供、代理购电，各自改变了谁的收入）；③2023–2026 年电力行业的关键数据（发电量、利用小时、电价水平、行业利润、装机结构）；④这条产业链上的钱被谁拿走了（发电集团、电网、地方能源集团、用户、设备商）；⑤反方证据（利润下滑、利用小时下降、弃风弃光、电价下调、产能过剩）与这套逻辑的失效条件。",
+  "framework": "industry",
+  "framework_title": "行业研究",
+  "questions": [
+    {
+      "key": "definition",
+      "title": "行业定义与边界",
+      "question": "这个行业到底做什么、边界在哪、常被混淆的近邻行业是什么",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "stage",
+      "title": "发展阶段",
+      "question": "处于导入/成长/成熟/衰退的哪一段，依据是什么",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "market_size",
+      "title": "市场规模",
+      "question": "规模多大、按什么口径统计、增速多少",
+      "allowed_kinds": [
+        "fact"
+      ]
+    },
+    {
+      "key": "structure",
+      "title": "产业结构",
+      "question": "由哪些环节/玩家构成，集中度如何",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "supply_demand",
+      "title": "供需关系",
+      "question": "供给与需求的强弱、缺口或过剩有多大",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    },
+    {
+      "key": "competition",
+      "title": "竞争格局",
+      "question": "谁在打、靠什么打、价格战还是差异化",
+      "allowed_kinds": [
+        "fact",
+        "inference"
+      ]
+    }
+  ],
+  "note": "这一阶段只出研究框架，没有检索、没有调用模型"
+}

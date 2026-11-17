@@ -1,0 +1,223 @@
+{
+  "summary": "煤电容量电价机制自2024年1月1日起落地，用于计算容量电价的固定成本按330元/千瓦·年回收，2024-2025年多数地方回收30%（约100元），2026年起回收不低于50%（约165元）；这笔钱由工商业用户按用电量分摊，使煤电从只有电量收入变成还有容量收入。同期风光装机首次超过火电，火电电量增速低于整体，现货市场在广东、山西、山东正式运行。因此可核实的变化是收入结构重排；利润与电价水平尚缺证据。",
+  "findings": [
+    {
+      "claim": "容量电价把煤电固定成本按30%→50%两档回收，2026年起不低于50%（约165元/千瓦·年）",
+      "kind": "fact",
+      "source_ids": [
+        "S02",
+        "S03"
+      ],
+      "numbers": [
+        "330",
+        "30%",
+        "100",
+        "50%",
+        "165",
+        "2024",
+        "2026"
+      ],
+      "section": "policy"
+    },
+    {
+      "claim": "容量电费纳入系统运行费用，由工商业用户按用电量分摊，即成本从用户转向煤电机组",
+      "kind": "fact",
+      "source_ids": [
+        "S02"
+      ],
+      "numbers": [],
+      "section": "structure"
+    },
+    {
+      "claim": "煤电由单一电量电价改为两部制，收入从只按电量结算改为电量收入加容量收入，电量波动风险部分转移到用户侧",
+      "kind": "inference",
+      "source_ids": [
+        "S02",
+        "S03"
+      ],
+      "numbers": [
+        "330",
+        "50%"
+      ],
+      "section": "drivers"
+    },
+    {
+      "claim": "2025年一季度风光装机14.82亿千瓦首超火电14.51亿千瓦，同期发电设备利用小时769小时、同比减少81小时",
+      "kind": "fact",
+      "source_ids": [
+        "S18"
+      ],
+      "numbers": [
+        "14.82",
+        "14.51",
+        "39.8%",
+        "769",
+        "81"
+      ],
+      "section": "supply_demand"
+    },
+    {
+      "claim": "2026年1-9月发电量同比增2.2%，其中火电仅增0.7%；10月火电降7.3%，风光分别增33.7%和31.0%",
+      "kind": "fact",
+      "source_ids": [
+        "S13",
+        "S14",
+        "S15"
+      ],
+      "numbers": [
+        "74915.8",
+        "2.2%",
+        "47343.2",
+        "0.7%",
+        "7940",
+        "7.3%",
+        "33.7%",
+        "31.0%"
+      ],
+      "section": "supply_demand"
+    },
+    {
+      "claim": "现货市场2017年8省试点，广东、山西、山东已转正式运行；南方区域市场961家主体、发电侧自主申报率100%",
+      "kind": "fact",
+      "source_ids": [
+        "S05",
+        "S09",
+        "S10",
+        "S11"
+      ],
+      "numbers": [
+        "2017",
+        "8",
+        "961",
+        "100%"
+      ],
+      "section": "competition"
+    }
+  ],
+  "data_gaps": [
+    "缺2023-2026年电价水平（上网电价、代理购电价格）的连续数据，无法判断容量电费是否被电量电价下调抵消",
+    "缺发电集团、电网、地方能源集团、设备商的利润与收入分配数据，无法验证“钱被谁拿走”",
+    "缺弃风弃光率、火电利用小时的年度序列（S18仅2025年一季度一个点），无法判断产能过剩程度",
+    "缺行业整体利润与煤电度电盈利的统计口径数据",
+    "缺绿电直供、中长期交易、代理购电的具体规则原文与生效时间（S08仅为宁夏个案、S12原文被截断）",
+    "缺反方证据：煤电容量电费考核扣减（月内2次扣10%、4次扣100%）的实际执行情况"
+  ],
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 23,
+  "prompt_tokens": 12156,
+  "completion_tokens": 1918,
+  "cost_cny": 0.042234,
+  "dropped": [],
+  "generated_by": "model",
+  "framework": "industry",
+  "checklist": {
+    "framework": "industry",
+    "title": "行业研究",
+    "sections": {
+      "definition": {
+        "title": "行业定义与边界",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "stage": {
+        "title": "发展阶段",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "market_size": {
+        "title": "市场规模",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "structure": {
+        "title": "产业结构",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S02"
+        ]
+      },
+      "supply_demand": {
+        "title": "供需关系",
+        "claims": 2,
+        "facts": 2,
+        "inferences": 0,
+        "sources": [
+          "S18",
+          "S13",
+          "S14",
+          "S15"
+        ]
+      },
+      "competition": {
+        "title": "竞争格局",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S05",
+          "S09",
+          "S10",
+          "S11"
+        ]
+      },
+      "drivers": {
+        "title": "驱动因素",
+        "claims": 1,
+        "facts": 0,
+        "inferences": 1,
+        "sources": [
+          "S02",
+          "S03"
+        ]
+      },
+      "cycle": {
+        "title": "周期位置",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      },
+      "policy": {
+        "title": "政策与监管",
+        "claims": 1,
+        "facts": 1,
+        "inferences": 0,
+        "sources": [
+          "S02",
+          "S03"
+        ]
+      },
+      "risks": {
+        "title": "主要风险",
+        "claims": 0,
+        "facts": 0,
+        "inferences": 0,
+        "sources": []
+      }
+    },
+    "empty_sections": [
+      "definition",
+      "stage",
+      "market_size",
+      "cycle",
+      "risks"
+    ],
+    "inference_only_sections": [
+      "drivers"
+    ],
+    "unsectioned": [],
+    "coverage": 0.5
+  },
+  "skills_used": [
+    "investigative-storytelling"
+  ]
+}

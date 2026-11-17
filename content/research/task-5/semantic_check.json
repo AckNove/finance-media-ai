@@ -1,0 +1,252 @@
+{
+  "model_used": true,
+  "skipped_reason": "",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "model_call_id": 24,
+  "prompt_tokens": 9719,
+  "completion_tokens": 2785,
+  "cost_cny": 0.04443,
+  "checked_at": "2026-11-17T16:26:30+00:00",
+  "counts": {
+    "supported": 1,
+    "partially_supported": 4,
+    "contradicted": 0,
+    "insufficient_evidence": 1,
+    "unverifiable": 0
+  },
+  "checks": [
+    {
+      "index": 0,
+      "claim": "容量电价把煤电固定成本按30%→50%两档回收，2026年起不低于50%（约165元/千瓦·年）",
+      "claim_kind": "fact",
+      "verdict": "supported",
+      "reason": "S03原文明确给出2024—2025年30%左右（100元/千瓦·年）、2026年起不低于50%（165元/千瓦·年），S02给出固定成本330元/千瓦·年，各项数字与年份均可对上；只是“两档”的表述略有简化——30%是多数地方、50%是部分转型较快地方，并非统一的先后两档",
+      "evidence_ids": [
+        433,
+        438
+      ],
+      "source_ids": [
+        "S02",
+        "S03"
+      ],
+      "supporting": [
+        "用于计算容量电价的煤电机组固定成本实行全国统一标准，为每年每千瓦330元",
+        "2024年至2025年，多数地方通过容量电价回收固定成本的比例为30%左右，即每年每千瓦100元，部分煤电功能转型较快的地方适当高一些；2026年起，各地通过容量电价回收固定成本的比例提升至不低于50%，即每年每千瓦165元。"
+      ],
+      "contradicting": [],
+      "missing": [],
+      "issues": [],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 24,
+      "prompt_tokens": 1619,
+      "completion_tokens": 464,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-17T16:26:30+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 1,
+      "claim": "容量电费纳入系统运行费用，由工商业用户按用电量分摊，即成本从用户转向煤电机组",
+      "claim_kind": "fact",
+      "verdict": "insufficient_evidence",
+      "reason": "给定S02摘录只讲到固定成本标准和回收比例，未出现“系统运行费用”“工商业用户按用电量分摊”等内容；且“成本从用户转向煤电机组”与“由用户分摊”方向相反，属于无依据的反向推断",
+      "evidence_ids": [],
+      "source_ids": [
+        "S02"
+      ],
+      "supporting": [],
+      "contradicting": [],
+      "missing": [
+        "容量电费纳入系统运行费用、由工商业用户按用电量分摊的原文",
+        "成本转嫁方向的具体表述"
+      ],
+      "issues": [
+        {
+          "code": "causal_leap",
+          "note": "“即成本从用户转向煤电机组”由分摊机制直接推出成本转移方向，证据中没有这一因果链条，且与“用户分摊”方向相反"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 24,
+      "prompt_tokens": 1619,
+      "completion_tokens": 464,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-17T16:26:30+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 2,
+      "claim": "煤电由单一电量电价改为两部制，收入从只按电量结算改为电量收入加容量收入，电量波动风险部分转移到用户侧",
+      "claim_kind": "inference",
+      "verdict": "partially_supported",
+      "reason": "证据只支持“对煤电实行两部制”这一部分；是否由单一电量电价改为两部制、收入结构变为电量收入加容量收入、电量波动风险部分转移到用户侧，均无原文",
+      "evidence_ids": [
+        438
+      ],
+      "source_ids": [
+        "S02",
+        "S03"
+      ],
+      "supporting": [
+        "决定自2024年1月1日起建立煤电容量电价机制，对煤电实行两部制电"
+      ],
+      "contradicting": [],
+      "missing": [
+        "原电价机制为单一电量电价的表述",
+        "收入结构由电量收入+容量收入构成的原文",
+        "电量波动风险转移到用户侧的表述"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "只有“两部制”有原文支持，收入结构与风险转移部分无证据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 24,
+      "prompt_tokens": 1619,
+      "completion_tokens": 464,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-17T16:26:30+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 3,
+      "claim": "2025年一季度风光装机14.82亿千瓦首超火电14.51亿千瓦，同期发电设备利用小时769小时、同比减少81小时",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "14.82亿千瓦首超14.51亿千瓦火电有原文逐字支持，但“发电设备利用小时769小时、同比减少81小时”在给定证据中找不到，S18摘录止于用电量增速处",
+      "evidence_ids": [
+        479
+      ],
+      "source_ids": [
+        "S18"
+      ],
+      "supporting": [
+        "累计装机容量突破14.82亿千瓦",
+        "这一数字首次超过了火电装机容量（14.51亿千瓦）"
+      ],
+      "contradicting": [],
+      "missing": [
+        "2025年一季度发电设备利用小时769小时的数据",
+        "同比减少81小时的数据"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "装机超越部分有据，利用小时数部分无据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 24,
+      "prompt_tokens": 1619,
+      "completion_tokens": 464,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-17T16:26:30+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 4,
+      "claim": "2026年1-9月发电量同比增2.2%，其中火电仅增0.7%；10月火电降7.3%，风光分别增33.7%和31.0%",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "只有“10月火电同比下降7.3%”和“10月规上工业发电量7940亿千瓦时”能在S15中找到；1—9月发电量同比增2.2%、火电增0.7%以及风光增33.7%和31.0%在给定摘录中均未出现（S13、S14只有标题，S15摘录止于水电）",
+      "evidence_ids": [
+        467
+      ],
+      "source_ids": [
+        "S13",
+        "S14",
+        "S15"
+      ],
+      "supporting": [
+        "规上工业火电同比下降 7.3%",
+        "10 月份，规上工业发电量 7940 亿千瓦时"
+      ],
+      "contradicting": [],
+      "missing": [
+        "2026年1—9月发电量同比增2.2%的原文",
+        "1—9月火电同比增0.7%的原文",
+        "10月风电增33.7%、太阳能发电增31.0%的原文"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "仅10月火电降幅与发电量总量有据，其余同比数据缺原文"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 24,
+      "prompt_tokens": 1619,
+      "completion_tokens": 464,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-17T16:26:30+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    },
+    {
+      "index": 5,
+      "claim": "现货市场2017年8省试点，广东、山西、山东已转正式运行；南方区域市场961家主体、发电侧自主申报率100%",
+      "claim_kind": "fact",
+      "verdict": "partially_supported",
+      "reason": "S09可支持2017年8个试点地区以及山西、南方（以广东起步）、山东三个现货市场转正式运行；但“南方区域市场961家主体、发电侧自主申报率100%”在给定证据中没有对应原文（S10、S11未提供）",
+      "evidence_ids": [
+        449
+      ],
+      "source_ids": [
+        "S05",
+        "S09",
+        "S10",
+        "S11"
+      ],
+      "supporting": [
+        "2017年8月，国家发展改革委、国家能源局印发《关于开展电力现货市场建设试点工作的通知》，选择南方（以广东起步）、蒙西、浙江、山西、山东、福建、四川、甘",
+        "加上去年年末先后转正的山西省和广东省电力现货市场，截至目前，全国共有3个省份电力现货市场“转正”"
+      ],
+      "contradicting": [],
+      "missing": [
+        "南方区域市场961家主体的数据",
+        "发电侧自主申报率100%的数据"
+      ],
+      "issues": [
+        {
+          "code": "partial_support",
+          "note": "试点年份与转正省份有据，961家主体与100%申报率无据"
+        }
+      ],
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "model_call_id": 24,
+      "prompt_tokens": 1619,
+      "completion_tokens": 464,
+      "cost_cny": 0.007405,
+      "human_review_status": "pending",
+      "checked_at": "2026-11-17T16:26:30+00:00",
+      "notes": [
+        "usage_share:1/6"
+      ]
+    }
+  ],
+  "notes": [],
+  "note": "以上是模型对证据支持度的判断，不等于事实核查结论。人工复核状态单独记录，模型结果不会自动变成 verified。"
+}

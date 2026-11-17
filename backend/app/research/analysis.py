@@ -60,6 +60,40 @@ _PROMPT_TEMPLATE = """研究目标：{objective}
 
 _JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
 _CODE_FENCE = re.compile(r"^```(?:json)?|```$", re.MULTILINE)
+
+
+def _first_object(text: str) -> str | None:
+    """从模型输出里取出**第一个完整的 JSON 对象**（按括号配平，跳过字符串里的括号）。
+
+    为什么不用正则一把抓：模型常在 JSON 后面再补一句解释，`\\{.*\\}` 会把这句也吞进来，
+    直接 json.loads 就报错——而这其实是"模型多嘴"，不是"模型没按要求做"。
+    """
+
+    start = text.find("{")
+    if start < 0:
+        return None
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(start, len(text)):
+        char = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : index + 1]
+    return None
 _KINDS = ("fact", "inference", "hypothesis")
 
 
@@ -355,7 +389,10 @@ def parse_analysis(
     （不猜、不硬塞到某一节里）。
     """
     cleaned = _CODE_FENCE.sub("", str(text or "")).strip()
-    match = _JSON_BLOCK.search(cleaned)
+    candidate = _first_object(cleaned)
+    match = re.match(r"^\{.*\}$", candidate, re.DOTALL) if candidate else None
+    if match is None:
+        match = _JSON_BLOCK.search(cleaned)
     if match is None:
         raise AnalysisError("bad_output", "模型输出里没有 JSON 对象")
     try:
@@ -513,6 +550,21 @@ def analyze(
                     f"completion_tokens={completion_tokens}，max_tokens={tokens_cap}，"
                     f"数据点上限={points_cap}）：已减少证据重试仍不够，请提高 max_tokens"
                 ),
+                usage={**spent, "model_call_id": last_usage.get("model_call_id")},
+            )
+            continue
+        # 没撞上限但 JSON 仍然解析不了（模型多嘴/格式跑偏）：同样退到更少数据点重试一次，
+        # 而不是把整条研究链判死——证据越多模型越爱自由发挥。
+        try:
+            parse_analysis(
+                reply.text,
+                known_sources=sorted(_known_source_ids(digest)),
+                framework=framework,
+            )
+        except AnalysisError as error:
+            last_error = AnalysisError(
+                "bad_output",
+                f"{error}（数据点上限={points_cap}）：已减少证据重试仍无法解析",
                 usage={**spent, "model_call_id": last_usage.get("model_call_id")},
             )
             continue
