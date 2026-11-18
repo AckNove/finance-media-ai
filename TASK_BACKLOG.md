@@ -63,3 +63,12 @@
 - 现状：`content/jobs/v6_power_first_film/remaster_v1/output/final.mp4` 已出片，技术 QC 全过，作品评分 82.8 / 85。
 - 三件补法（按性价比）：三维杆件贴图 + 景深 + 体积雾（约 1.5h）；音效分层（约 40min）；S4 压到 9 秒（约 20min）。
 - 需要用户拍板：是先补到 85 再发，还是这个完成度先发。
+
+### B-20 按真人录音重排出片（已完成，2026-11-18）
+
+- 用户交付 7 段 m4a（267 秒）→ 降噪（afftdn+agate+loudnorm，噪声底 −41→−80 dB）→ whisper 转写 →
+  67 句对齐 → 39 镜 → 251 秒成片。
+- 字幕按录音内容重写（含用户新加的开场「大家好，我是AK」与结尾「我是AK，我们下期见！」）。
+- 音效 53 个落点：每个切点 whoosh、数据镜 tick、条形/数字镜 spark、转折 impact。
+- 成片 `content/jobs/v6_power_first_film/v2vo/output/final.mp4`：251.0s / 1080×1920 / 30fps / −16.2 LUFS / 技术 QC `failed=[]`。
+

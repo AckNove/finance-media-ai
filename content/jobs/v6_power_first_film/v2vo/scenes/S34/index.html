@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>S34</title>
+<style>
+  @font-face {
+    font-family: "AKSC";
+    src: url("fonts/NotoSansSC-VF.ttf") format("truetype");
+    font-display: block;
+  }
+  html, body { margin: 0; padding: 0; background: #05070c; }
+  #stage {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #05070c;
+    font-family: "AKSC", "Microsoft YaHei", sans-serif;
+  }
+  #photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform-origin: 50% 50%;
+    will-change: transform;
+    filter: contrast(1.12) saturate(0.86) brightness(0.94);
+  }
+  /* 电影感：上下压暗 + 一级调色（青蓝阴影 / 暖高光） */
+  .grade-top {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(6,14,26,0.55) 0%, rgba(6,14,26,0.0) 28%);
+    mix-blend-mode: multiply;
+  }
+  .grade-bottom {
+    position: absolute; inset: 0;
+    background: linear-gradient(0deg, rgba(4,8,16,0.92) 0%, rgba(4,8,16,0.55) 22%, rgba(4,8,16,0.0) 46%);
+  }
+  .vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0) 42%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+  }
+  .ak-text {
+    position: absolute;
+    left: 72px; right: 72px;
+    color: #f2f5f7;
+    line-height: 1.22;
+    white-space: pre-wrap;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.85);
+    will-change: opacity, transform;
+  }
+  #label {
+    position: absolute;
+    left: 40px; top: 40px;
+    padding: 8px 16px;
+    border: 1px solid rgba(242,245,247,0.35);
+    border-radius: 4px;
+    color: rgba(242,245,247,0.86);
+    font-size: 24px;
+    letter-spacing: 2px;
+    background: rgba(4,8,16,0.45);
+    opacity: 0.9;
+  }
+  #credit {
+    position: absolute;
+    left: 72px; bottom: 26px;
+    color: rgba(242,245,247,0.5);
+    font-size: 20px;
+    letter-spacing: 0.4px;
+  }
+  .ak-overlay {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  .ak-overlay-label {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: rgba(4,8,14,0.62);
+    text-shadow: 0 2px 14px rgba(0,0,0,0.9);
+    will-change: opacity;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="photo" src="photo.jpg" alt="">
+  <div class="grade-top"></div>
+  <div class="grade-bottom"></div>
+  <div class="vignette"></div>
+  <div id="label">资料画面</div>
+  
+  <div class="ak-text" data-at="0.100" style="top:1152px;font-size:30px;color:#f2f5f7;text-align:left;opacity:0">叙述</div>
+  <div class="ak-text" data-at="0.250" style="top:1267px;font-size:62px;color:#f2f5f7;text-align:left;opacity:0"></div>
+  <div id="credit">已登记素材</div>
+</div>
+<script>
+const SCENE = {"fps": 30, "duration": 7.28, "width": 1080, "height": 1920, "move": {"z0": 1.04, "z1": 1.1, "x0": -0.01, "x1": 0.012, "y0": 0.0, "y1": 0.0, "ease": "smooth"}, "videoStart": 0.0, "videoRate": 1.0};
+const photo = document.getElementById("photo");
+const VIDEO = photo && photo.tagName === "VIDEO" ? photo : null;
+const nodes = Array.from(document.querySelectorAll(".ak-text"));
+const overlays = Array.from(document.querySelectorAll(".ak-overlay"));
+const overlayLabels = Array.from(document.querySelectorAll(".ak-overlay-label"));
+
+function smooth(x) { return x * x * (3 - 2 * x); }
+function ease(t) {
+  if (SCENE.move.ease === "linear") return t;
+  return smooth(Math.min(1, Math.max(0, t)));
+}
+
+async function seek(t) {
+  const k = ease(SCENE.duration > 0 ? t / SCENE.duration : 1);
+  const m = SCENE.move;
+  const z = m.z0 + (m.z1 - m.z0) * k;
+  const dx = (m.x0 + (m.x1 - m.x0) * k) * 100;
+  const dy = (m.y0 + (m.y1 - m.y0) * k) * 100;
+  const maxShift = Math.max(0, (z - 1) * 50 * 0.8);
+  const tx = Math.max(-maxShift, Math.min(maxShift, dx));
+  const ty = Math.max(-maxShift, Math.min(maxShift, dy));
+  photo.style.transform = `translate(${-tx}%, ${-ty}%) scale(${z})`;
+  if (VIDEO) {
+    // 视频按帧定位：先算目标时间，再等 seeked 事件，确保抓到的就是这一帧
+    const target = SCENE.videoStart + t * SCENE.videoRate;
+    await new Promise((resolve) => {
+      // 定位到位后再等两帧：否则截到的是上一帧（关键帧间隔大的片子尤其明显）
+      const done = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+      if (Math.abs(VIDEO.currentTime - target) < 0.002 && VIDEO.readyState >= 2) { done(); return; }
+      VIDEO.addEventListener("seeked", done, { once: true });
+      VIDEO.currentTime = Math.min(target, (VIDEO.duration || target) - 0.02);
+    });
+  }
+  for (const node of nodes) {
+    const at = Number(node.dataset.at || 0);
+    const span = 0.45;
+    const p = Math.min(1, Math.max(0, (t - at) / span));
+    node.style.opacity = String(p);
+    node.style.transform = `translateY(${(1 - p) * 18}px)`;
+  }
+  for (const node of overlays) {
+    const at = Number(node.dataset.at || 0);
+    const grow = Math.max(0.05, Number(node.dataset.grow || 0.9));
+    const p = Math.min(1, Math.max(0, (t - at) / grow));
+    const eased = smooth(p);
+    node.style.opacity = String(Math.min(1, p * 3));
+    if (node.dataset.kind === "bar") {
+      node.style.transform = `scaleY(${Math.max(0.001, eased)})`;
+    } else {
+      node.style.transform = `scaleX(${Math.max(0.001, eased)})`;
+    }
+  }
+  for (const node of overlayLabels) {
+    const at = Number(node.dataset.at || 0);
+    const p = Math.min(1, Math.max(0, (t - at) / 0.4));
+    node.style.opacity = String(p);
+  }
+}
+
+window.__AK = { fps: SCENE.fps, duration: SCENE.duration, width: SCENE.width, height: SCENE.height };
+window.__seek = seek;
+
+async function ready() {
+  if (VIDEO) {
+    await new Promise((resolve) => {
+      if (VIDEO.readyState >= 2) { resolve(); return; }
+      VIDEO.addEventListener("loadeddata", resolve, { once: true });
+    });
+  }
+  await seek(0);
+  window.__ready = true;
+}
+if (VIDEO) {
+  if (VIDEO.readyState >= 2) { ready(); } else { VIDEO.addEventListener("loadeddata", ready, { once: true }); }
+  VIDEO.addEventListener("error", () => { window.__errors = ["视频加载失败"]; window.__ready = true; });
+} else if (photo.complete && photo.naturalWidth > 0) {
+  ready();
+} else {
+  photo.addEventListener("load", ready);
+  photo.addEventListener("error", () => { window.__errors = ["图片加载失败"]; window.__ready = true; });
+}
+</script>
+</body>
+</html>

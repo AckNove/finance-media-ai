@@ -205,3 +205,17 @@ content/jobs/*/v2auto/scenes/*/fonts/
 content/jobs/*/v2auto/scenes/*/clip.mp4
 content/jobs/*/v2auto/scenes/*/photo.jpg
 !content/jobs/v6_power_first_film/v2auto/output/final.mp4
+# 真人录音与按录音重排的中间产物（原件在用户机器上，中间件可再生）
+content/jobs/*/voiceover/raw/
+content/jobs/*/voiceover/clean/
+content/jobs/*/voiceover/pieces/
+content/jobs/*/voiceover/*.wav
+content/jobs/*/voiceover/transcript.json
+content/jobs/*/v2vo/frames/
+content/jobs/*/v2vo/clips/
+content/jobs/*/v2vo/media/
+content/jobs/*/v2vo/audio/*.wav
+content/jobs/*/v2vo/scenes/*/fonts/
+content/jobs/*/v2vo/scenes/*/clip.mp4
+content/jobs/*/v2vo/scenes/*/photo.jpg
+content/jobs/*/v2vo/output/*.mp4

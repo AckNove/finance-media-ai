@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>S53</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; background: #0a1220; overflow: hidden; }
+  #stage {
+    position: relative; width: 1080px; height: 1920px; overflow: hidden;
+    transform-origin: 50% 50%;
+    background: radial-gradient(120% 80% at 50% 0%, #16233a 0%, #0b1420 55%, #070d16 100%);
+    font-family: "Microsoft YaHei", "Noto Sans SC", "PingFang SC", sans-serif;
+  }
+  .glow {
+    position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5;
+  }
+  .kicker {
+    position: absolute; left: 9%; top: 12%; color: #5aa9d6; font-size: 30px; letter-spacing: 2px;
+  }
+  .title {
+    position: absolute; left: 9%; right: 9%; top: 15.5%; color: #f2f5f7; font-size: 62px;
+    line-height: 1.26; font-weight: 700;
+  }
+  .rules {
+    position: absolute; left: 9%; top: 27.5%; width: 22%; height: 6px; background: #b6ff1f;
+    transform-origin: left center;
+  }
+  .bar {
+    position: absolute; left: 9%; height: 84px; transform-origin: left center;
+    border-radius: 8px; transform: scaleX(0.001);
+  }
+  .bar-label {
+    position: absolute; left: 9%; color: #f2f5f7; font-size: 38px; transform: translateY(-58px);
+  }
+  .bar-note { color: #93a2b8; font-size: 28px; margin-left: 16px; }
+  .flow-box {
+    position: absolute; left: 9%; width: 82%; height: 118px; border-radius: 14px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16);
+    padding: 18px 26px; opacity: 0;
+  }
+  .flow-label { font-size: 42px; font-weight: 700; }
+  .flow-note { color: #93a2b8; font-size: 28px; margin-top: 6px; }
+  .flow-arrow {
+    position: absolute; left: 14%; width: 6px; height: 42px; background: #b6ff1f;
+    transform-origin: top center; transform: scaleY(0.001); opacity: 0;
+  }
+  .number {
+    position: absolute; left: 9%; top: 38%; color: #b6ff1f; font-size: 300px; font-weight: 800;
+    letter-spacing: -6px;
+  }
+  .number-label { position: absolute; left: 9%; top: 30%; color: #f2f5f7; font-size: 46px; }
+  .number-note { position: absolute; left: 9%; top: 68%; right: 9%; color: #93a2b8; font-size: 34px; line-height: 1.5; }
+  .source { position: absolute; left: 9%; bottom: 11%; color: #93a2b8; font-size: 26px; }
+  .credit { position: absolute; left: 9%; bottom: 5%; color: #6f7f96; font-size: 22px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="glow" style="left:-8%;top:4%;width:62%;height:34%;background:#1d4a6b"></div>
+  <div class="glow" style="right:-14%;top:22%;width:58%;height:30%;background:#3a2a52"></div>
+  <div class="kicker">叙述</div>
+  <div class="title">第一，容量电价比例会不会继续上调</div>
+  <div class="rules" data-at="0" data-grow="3.04"></div>
+  <div class="flow-box" data-at="0.3" data-grow="0.5" style="top:30.0%"><div class="flow-label" style="color:#b6ff1f">发电</div><div class="flow-note">按电量卖</div></div>
+<div class="flow-arrow" data-at="0.72" data-grow="0.3" style="top:41.0%"></div>
+<div class="flow-box" data-at="0.8500000000000001" data-grow="0.5" style="top:45.3%"><div class="flow-label" style="color:#b6ff1f">输送</div><div class="flow-note">过网付费</div></div>
+<div class="flow-arrow" data-at="1.27" data-grow="0.3" style="top:56.4%"></div>
+<div class="flow-box" data-at="1.4000000000000001" data-grow="0.5" style="top:60.7%"><div class="flow-label" style="color:#b6ff1f">待命</div><div class="flow-note">按容量结算</div></div>
+  <div class="source">依据已确认结论绘制（非实拍）</div>
+  <div class="credit">AK 视频生产系统 · 程序化解释动画（非实拍）</div>
+</div>
+<script>
+const SCENE = {"fps": 30, "duration": 3.04, "width": 1080, "height": 1920, "template": "flow", "tracks": [{"kind": "box", "top": 0.3, "at": 0.3, "grow": 0.5}, {"kind": "arrow", "top": 0.4104, "at": 0.72, "grow": 0.3}, {"kind": "box", "top": 0.4533, "at": 0.85, "grow": 0.5}, {"kind": "arrow", "top": 0.5637, "at": 1.27, "grow": 0.3}, {"kind": "box", "top": 0.6067, "at": 1.4, "grow": 0.5}], "number": {"value": 0.0, "unit": "", "decimals": 1, "label": "", "note": ""}};
+const nodes = Array.from(document.querySelectorAll("[data-at]"));
+const numberNode = document.getElementById("number");
+
+function smooth(x) { return x * x * (3 - 2 * x); }
+
+function formatNumber(value) {
+  const n = SCENE.number;
+  const fixed = Number(value).toFixed(n.decimals);
+  return fixed + (n.unit || "");
+}
+
+function seek(t) {
+  for (const node of nodes) {
+    const at = Number(node.dataset.at || 0);
+    const grow = Math.max(0.05, Number(node.dataset.grow || 0.4));
+    const p = Math.min(1, Math.max(0, (t - at) / grow));
+    const eased = smooth(p);
+    node.style.opacity = String(Math.min(1, p * 2.2));
+    if (node.classList.contains("bar")) node.style.transform = `scaleX(${Math.max(0.001, eased)})`;
+    if (node.classList.contains("flow-arrow")) node.style.transform = `scaleY(${Math.max(0.001, eased)})`;
+    if (node.classList.contains("flow-box")) node.style.transform = `translateY(${(1 - eased) * 16}px)`;
+    if (node.classList.contains("rules")) node.style.transform = `scaleX(${0.14 + 0.86 * eased})`;
+  }
+  // 整帧缓慢推近：动画镜里的元素很少，只靠元素动容易被判定格，整帧位移最保险
+  const stage = document.getElementById("stage");
+  const push = 1 + 0.05 * Math.min(1, Math.max(0, t / Math.max(0.5, SCENE.duration)));
+  stage.style.transform = `scale(${push})`;
+  const glows = document.querySelectorAll(".glow");
+  glows.forEach((glow, i) => {
+    const drift = Math.sin((t + i * 1.7) * 0.35) * 46;
+    glow.style.transform = `translate(${drift}px, ${drift * 0.4}px)`;
+  });
+  if (numberNode) {
+    const dur = SCENE.duration * 0.62;
+    const p = Math.min(1, Math.max(0, t / Math.max(0.4, dur)));
+    numberNode.textContent = formatNumber(SCENE.number.value * smooth(p));
+  }
+}
+
+window.__AK = { fps: SCENE.fps, duration: SCENE.duration, width: SCENE.width, height: SCENE.height };
+window.__seek = seek;
+seek(0);
+window.__ready = true;
+</script>
+</body>
+</html>

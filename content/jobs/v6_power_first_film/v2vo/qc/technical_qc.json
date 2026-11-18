@@ -1,0 +1,263 @@
+{
+ "film": "content\\jobs\\v6_power_first_film\\v2vo\\output\\final.mp4",
+ "bytes": 77788976,
+ "duration": 251.0,
+ "video": {
+  "codec": "h264",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30.0,
+  "pix_fmt": "yuv420p"
+ },
+ "audio": {
+  "codec": "aac",
+  "sample_rate": 48000,
+  "channels": 2
+ },
+ "metrics": {
+  "black_segments": 0,
+  "black_longest": 0.0,
+  "black_total": 0,
+  "freeze_segments": 0,
+  "freeze_longest": 0.0,
+  "silence_segments": 0,
+  "silence_longest": 0.0,
+  "mean_volume_db": -19.0,
+  "max_volume_db": -4.1,
+  "integrated_lufs": -16.2,
+  "true_peak_dbfs": null
+ },
+ "subtitles": {
+  "present": true,
+  "cues": 67,
+  "first": [
+   0.0,
+   1.36
+  ],
+  "last": [
+   248.099,
+   250.799
+  ],
+  "overlaps": 0
+ },
+ "keyframes": {
+  "S01": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S01_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S01_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S01_out.png"
+  },
+  "S02": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S02_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S02_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S02_out.png"
+  },
+  "S03": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S03_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S03_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S03_out.png"
+  },
+  "S04": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S04_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S04_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S04_out.png"
+  },
+  "S05": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S05_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S05_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S05_out.png"
+  },
+  "S06": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S06_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S06_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S06_out.png"
+  },
+  "S07": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S07_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S07_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S07_out.png"
+  },
+  "S08": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S08_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S08_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S08_out.png"
+  },
+  "S09": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S09_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S09_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S09_out.png"
+  },
+  "S10": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S10_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S10_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S10_out.png"
+  },
+  "S11": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S11_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S11_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S11_out.png"
+  },
+  "S12": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S12_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S12_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S12_out.png"
+  },
+  "S13": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S13_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S13_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S13_out.png"
+  },
+  "S14": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S14_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S14_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S14_out.png"
+  },
+  "S15": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S15_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S15_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S15_out.png"
+  },
+  "S16": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S16_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S16_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S16_out.png"
+  },
+  "S17": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S17_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S17_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S17_out.png"
+  },
+  "S18": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S18_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S18_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S18_out.png"
+  },
+  "S19": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S19_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S19_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S19_out.png"
+  },
+  "S20": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S20_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S20_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S20_out.png"
+  },
+  "S21": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S21_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S21_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S21_out.png"
+  },
+  "S22": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S22_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S22_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S22_out.png"
+  },
+  "S23": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S23_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S23_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S23_out.png"
+  },
+  "S24": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S24_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S24_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S24_out.png"
+  },
+  "S25": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S25_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S25_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S25_out.png"
+  },
+  "S26": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S26_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S26_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S26_out.png"
+  },
+  "S27": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S27_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S27_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S27_out.png"
+  },
+  "S28": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S28_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S28_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S28_out.png"
+  },
+  "S29": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S29_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S29_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S29_out.png"
+  },
+  "S30": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S30_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S30_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S30_out.png"
+  },
+  "S31": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S31_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S31_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S31_out.png"
+  },
+  "S32": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S32_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S32_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S32_out.png"
+  },
+  "S33": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S33_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S33_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S33_out.png"
+  },
+  "S34": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S34_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S34_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S34_out.png"
+  },
+  "S35": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S35_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S35_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S35_out.png"
+  },
+  "S36": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S36_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S36_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S36_out.png"
+  },
+  "S37": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S37_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S37_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S37_out.png"
+  },
+  "S38": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S38_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S38_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S38_out.png"
+  },
+  "S39": {
+   "in": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S39_in.png",
+   "mid": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S39_mid.png",
+   "out": "content\\jobs\\v6_power_first_film\\v2vo\\qc\\keyframes\\S39_out.png"
+  }
+ },
+ "thresholds": {
+  "max_black_seconds": 0.5,
+  "max_freeze_seconds": 1.5,
+  "max_silence_seconds": 2.0,
+  "loudness_target_lufs": -16.0,
+  "loudness_tolerance": 3.0
+ },
+ "checks": {
+  "resolution_1080x1920": true,
+  "fps_30": true,
+  "codec_h264": true,
+  "pixel_format_yuv420p": true,
+  "audio_aac": true,
+  "audio_48k_stereo": true,
+  "duration_covers_blueprint": true,
+  "no_long_black": true,
+  "no_long_freeze": true,
+  "no_long_silence": true,
+  "loudness_near_target": true,
+  "subtitles_do_not_overlap": true,
+  "subtitles_cover_whole_film": true
+ },
+ "failed": []
+}

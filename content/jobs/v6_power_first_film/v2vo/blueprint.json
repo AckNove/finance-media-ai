@@ -1,0 +1,239 @@
+{
+  "film": "电力第二张收入表（按真人录音重排）",
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "duration": 6.693,
+      "kind": "real_image",
+      "asset_id": "R01"
+    },
+    {
+      "scene_id": "S02",
+      "duration": 4.927,
+      "kind": "motion",
+      "asset_id": ""
+    },
+    {
+      "scene_id": "S03",
+      "duration": 5.7,
+      "kind": "real_image",
+      "asset_id": "R02"
+    },
+    {
+      "scene_id": "S04",
+      "duration": 6.848,
+      "kind": "real_image",
+      "asset_id": "R03"
+    },
+    {
+      "scene_id": "S05",
+      "duration": 7.632,
+      "kind": "real_image",
+      "asset_id": "R08"
+    },
+    {
+      "scene_id": "S06",
+      "duration": 7.48,
+      "kind": "real_image",
+      "asset_id": "R04"
+    },
+    {
+      "scene_id": "S07",
+      "duration": 5.145,
+      "kind": "real_image",
+      "asset_id": "R05"
+    },
+    {
+      "scene_id": "S08",
+      "duration": 4.755,
+      "kind": "real_image",
+      "asset_id": "R09"
+    },
+    {
+      "scene_id": "S09",
+      "duration": 7.344,
+      "kind": "real_image",
+      "asset_id": "R06"
+    },
+    {
+      "scene_id": "S10",
+      "duration": 7.943,
+      "kind": "motion",
+      "asset_id": ""
+    },
+    {
+      "scene_id": "S11",
+      "duration": 6.973,
+      "kind": "real_image",
+      "asset_id": "R10"
+    },
+    {
+      "scene_id": "S12",
+      "duration": 6.2,
+      "kind": "real_image",
+      "asset_id": "R07"
+    },
+    {
+      "scene_id": "S13",
+      "duration": 7.473,
+      "kind": "real_video",
+      "asset_id": "V03"
+    },
+    {
+      "scene_id": "S14",
+      "duration": 5.087,
+      "kind": "motion",
+      "asset_id": ""
+    },
+    {
+      "scene_id": "S15",
+      "duration": 8.253,
+      "kind": "motion",
+      "asset_id": ""
+    },
+    {
+      "scene_id": "S16",
+      "duration": 6.704,
+      "kind": "real_video",
+      "asset_id": "V01"
+    },
+    {
+      "scene_id": "S17",
+      "duration": 5.845,
+      "kind": "real_video",
+      "asset_id": "V04"
+    },
+    {
+      "scene_id": "S18",
+      "duration": 4.057,
+      "kind": "real_image",
+      "asset_id": "R11"
+    },
+    {
+      "scene_id": "S19",
+      "duration": 5.805,
+      "kind": "real_image",
+      "asset_id": "R11"
+    },
+    {
+      "scene_id": "S20",
+      "duration": 6.675,
+      "kind": "real_image",
+      "asset_id": "R12"
+    },
+    {
+      "scene_id": "S21",
+      "duration": 7.04,
+      "kind": "real_image",
+      "asset_id": "PX-P6203470"
+    },
+    {
+      "scene_id": "S22",
+      "duration": 4.44,
+      "kind": "real_image",
+      "asset_id": "PX-P40819903"
+    },
+    {
+      "scene_id": "S23",
+      "duration": 5.121,
+      "kind": "real_image",
+      "asset_id": "R01"
+    },
+    {
+      "scene_id": "S24",
+      "duration": 5.391,
+      "kind": "real_image",
+      "asset_id": "R02"
+    },
+    {
+      "scene_id": "S25",
+      "duration": 6.868,
+      "kind": "real_image",
+      "asset_id": "R03"
+    },
+    {
+      "scene_id": "S26",
+      "duration": 8.28,
+      "kind": "real_image",
+      "asset_id": "R04"
+    },
+    {
+      "scene_id": "S27",
+      "duration": 5.527,
+      "kind": "real_image",
+      "asset_id": "R05"
+    },
+    {
+      "scene_id": "S28",
+      "duration": 6.173,
+      "kind": "real_image",
+      "asset_id": "R06"
+    },
+    {
+      "scene_id": "S29",
+      "duration": 8.3,
+      "kind": "real_image",
+      "asset_id": "R07"
+    },
+    {
+      "scene_id": "S30",
+      "duration": 5.24,
+      "kind": "real_image",
+      "asset_id": "R08"
+    },
+    {
+      "scene_id": "S31",
+      "duration": 7.512,
+      "kind": "real_video",
+      "asset_id": "V05"
+    },
+    {
+      "scene_id": "S32",
+      "duration": 7.511,
+      "kind": "motion",
+      "asset_id": ""
+    },
+    {
+      "scene_id": "S33",
+      "duration": 5.697,
+      "kind": "real_image",
+      "asset_id": "R09"
+    },
+    {
+      "scene_id": "S34",
+      "duration": 7.28,
+      "kind": "real_image",
+      "asset_id": "R10"
+    },
+    {
+      "scene_id": "S35",
+      "duration": 7.16,
+      "kind": "real_image",
+      "asset_id": "R11"
+    },
+    {
+      "scene_id": "S36",
+      "duration": 7.68,
+      "kind": "real_image",
+      "asset_id": "R12"
+    },
+    {
+      "scene_id": "S37",
+      "duration": 6.66,
+      "kind": "real_image",
+      "asset_id": "PX-P6203470"
+    },
+    {
+      "scene_id": "S38",
+      "duration": 5.6,
+      "kind": "real_image",
+      "asset_id": "PX-P40819903"
+    },
+    {
+      "scene_id": "S39",
+      "duration": 5.96,
+      "kind": "real_image",
+      "asset_id": "R01"
+    }
+  ]
+}
